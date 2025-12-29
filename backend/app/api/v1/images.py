@@ -28,7 +28,39 @@ topic_repo = TopicRepository()
 
 def _convert_to_response(image_doc: dict) -> ImageResponse:
     """將 MongoDB 文檔轉換為 ImageResponse"""
-    image_doc.pop("_id", None)
+    from datetime import datetime
+    
+    # 保存 _id（如果需要）
+    mongo_id = image_doc.pop("_id", None)
+    
+    # 確保 id 欄位存在（如果沒有，使用 MongoDB 的 _id）
+    if "id" not in image_doc:
+        if mongo_id:
+            image_doc["id"] = str(mongo_id)
+        else:
+            raise ValueError("Image document must have either 'id' or '_id' field")
+    
+    # 確保所有必需欄位都存在
+    if "keywords" not in image_doc or image_doc["keywords"] is None:
+        image_doc["keywords"] = []
+    
+    if "order" not in image_doc:
+        image_doc["order"] = 0
+    
+    if "license" not in image_doc or not image_doc.get("license"):
+        image_doc["license"] = "Unknown"
+    
+    if "fetched_at" not in image_doc:
+        image_doc["fetched_at"] = datetime.utcnow()
+    
+    # 確保 source 是正確的類型
+    if isinstance(image_doc.get("source"), str):
+        from app.models.image import ImageSource
+        try:
+            image_doc["source"] = ImageSource(image_doc["source"])
+        except:
+            logger.warning(f"無法轉換 source: {image_doc.get('source')}")
+    
     return ImageResponse(**image_doc)
 
 
