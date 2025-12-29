@@ -26,3 +26,11 @@
   }
 }
 
+/* 移動端優化 */
+@media (max-width: 1023px) {
+  /* 防止側邊欄打開時背景滾動 */
+  body.sidebar-open {
+    overflow: hidden;
+  }
+}
+

@@ -207,10 +207,10 @@ export default function TopicDetail() {
         </div>
       )}
 
-      {/* 三欄式佈局 */}
-      <div className="grid grid-cols-12 gap-6">
-        {/* 左欄：圖片區塊 */}
-        <div className="col-span-12 lg:col-span-4">
+             {/* 三欄式佈局 */}
+             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+               {/* 左欄：圖片區塊 */}
+               <div className="lg:col-span-4">
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex justify-between items-center mb-4">
               <h3 className="font-semibold text-gray-700">

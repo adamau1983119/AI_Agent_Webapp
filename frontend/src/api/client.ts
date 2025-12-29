@@ -90,7 +90,7 @@ export { fetchAPI, fetchAPIWithPagination, API_BASE_URL, USE_MOCK, delay }
 import { topicsAPI } from './topics'
 import { contentsAPI } from './contents'
 import { imagesAPI } from './images'
-import { mockSchedules } from './mockData'
+import { schedulesAPI } from './schedules'
 import type { Topic, Content, Image, Schedule } from '@/types'
 // delay 已在同檔案中定義（第 20 行），不需要導入
 
@@ -134,13 +134,13 @@ export const api = {
   deleteImage: imagesAPI.deleteImage,
   reorderImages: imagesAPI.reorderImages,
 
-  // 排程相關（尚未實作）
-  getSchedules: async (date?: string): Promise<Schedule[]> => {
-    // 排程功能尚未實作，暫時使用 mock 資料
-    await delay(300)
-    return mockSchedules
-  },
+  // 排程相關（使用專用 API）
+  getSchedules: schedulesAPI.getSchedules,
+  manualGenerateTopics: schedulesAPI.manualGenerateTopics,
+  startScheduler: schedulesAPI.startScheduler,
+  stopScheduler: schedulesAPI.stopScheduler,
+  getSchedulerStatus: schedulesAPI.getSchedulerStatus,
 }
 
 // 導出專用 API 模組供新代碼使用
-export { topicsAPI, contentsAPI, imagesAPI }
+export { topicsAPI, contentsAPI, imagesAPI, schedulesAPI }

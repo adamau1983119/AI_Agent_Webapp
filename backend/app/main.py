@@ -54,8 +54,8 @@ class CustomCORSMiddleware(BaseHTTPMiddleware):
 async def lifespan(app: FastAPI):
     """
     應用生命週期管理
-    - 啟動時：連接 MongoDB、設定日誌
-    - 關閉時：斷開 MongoDB 連接
+    - 啟動時：連接 MongoDB、設定日誌、啟動排程服務
+    - 關閉時：斷開 MongoDB 連接、停止排程服務
     """
     # 啟動時執行
     # 設定日誌系統
@@ -71,8 +71,29 @@ async def lifespan(app: FastAPI):
     logger.info(f"CORS_ORIGINS 設定值: {settings.CORS_ORIGINS}")
     logger.info(f"CORS_ORIGINS 類型: {type(settings.CORS_ORIGINS)}")
     
+    # 啟動排程服務（僅在生產環境自動啟動）
+    scheduler_service = None
+    if settings.ENVIRONMENT == "production":
+        try:
+            from app.services.automation.scheduler import SchedulerService
+            scheduler_service = SchedulerService()
+            scheduler_service.start()
+            logger.info("排程服務已啟動")
+        except Exception as e:
+            logger.error(f"啟動排程服務失敗: {e}")
+    
     yield
+    
     # 關閉時執行
+    # 停止排程服務
+    if scheduler_service:
+        try:
+            scheduler_service.stop()
+            logger.info("排程服務已停止")
+        except Exception as e:
+            logger.error(f"停止排程服務失敗: {e}")
+    
+    # 斷開 MongoDB 連接
     await close_mongo_connection()
 
 
@@ -135,13 +156,14 @@ async def health_check():
 
 
 # 註冊 API 路由
-from app.api.v1 import topics, contents, images, user, health
+from app.api.v1 import topics, contents, images, user, health, schedules
 
 app.include_router(health.router, prefix="/api/v1")
 app.include_router(topics.router, prefix="/api/v1")
 app.include_router(contents.router, prefix="/api/v1")
 app.include_router(images.router, prefix="/api/v1")
 app.include_router(user.router, prefix="/api/v1")
+app.include_router(schedules.router, prefix="/api/v1")
 
 
 if __name__ == "__main__":

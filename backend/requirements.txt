@@ -37,3 +37,10 @@ python-dateutil>=2.9.0
 # DuckDuckGo 圖片搜尋（無需 API Key）
 duckduckgo-images-api>=1.0.0
 
+# 排程服務
+APScheduler>=3.10.4
+
+# RSS 解析
+feedparser>=6.0.10
+beautifulsoup4>=4.12.0
+

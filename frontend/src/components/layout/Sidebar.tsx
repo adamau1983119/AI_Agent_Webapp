@@ -10,14 +10,22 @@ const menuItems = [
 
 export default function Sidebar() {
   const location = useLocation()
-  const { setCurrentPage } = useUIStore()
+  const { setCurrentPage, sidebarOpen, setSidebarOpen } = useUIStore()
 
   const handleClick = (path: string) => {
     setCurrentPage(path === '/' ? 'dashboard' : path.slice(1))
+    // 移動端點擊後關閉側邊欄
+    if (window.innerWidth < 1024) {
+      setSidebarOpen(false)
+    }
   }
 
   return (
-    <aside className="w-64 bg-white border-r border-gray-200 flex flex-col">
+    <aside
+      className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 flex flex-col transform transition-transform duration-300 ease-in-out ${
+        sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+      }`}
+    >
       {/* Logo */}
       <div className="p-6 border-b border-gray-200">
         <div className="flex items-center gap-2">
