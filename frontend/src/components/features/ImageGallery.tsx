@@ -31,7 +31,7 @@ export default function ImageGallery({
   const deleteMutation = useMutation({
     mutationFn: (imageId: string) => imagesAPI.deleteImage(topicId, imageId),
     onSuccess: () => {
-      queryClient.invalidateQueries(['images', topicId])
+      queryClient.invalidateQueries({ queryKey: ['images', topicId] })
       showSuccess('圖片已成功刪除')
       onImageUpdate?.()
       setDeletingId(null)
@@ -48,7 +48,7 @@ export default function ImageGallery({
     mutationFn: (orders: ImageReorderItem[]) =>
       imagesAPI.reorderImages(topicId, orders),
     onSuccess: () => {
-      queryClient.invalidateQueries(['images', topicId])
+      queryClient.invalidateQueries({ queryKey: ['images', topicId] })
       showSuccess('圖片順序已更新')
       setIsReordering(false)
       setReorderedImages([])
