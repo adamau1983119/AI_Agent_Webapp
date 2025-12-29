@@ -3,8 +3,9 @@ FastAPI 應用入口
 """
 from contextlib import asynccontextmanager
 import logging
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
 from app.config import settings
 from app.database import connect_to_mongo, close_mongo_connection, check_connection
 from app.middleware.auth import APIKeyMiddleware
@@ -12,6 +13,41 @@ from app.middleware.rate_limit import RateLimitMiddleware
 from app.utils.logger import setup_logging
 
 logger = logging.getLogger(__name__)
+
+
+class CustomCORSMiddleware(BaseHTTPMiddleware):
+    """自定義 CORS 中間件，確保 CORS header 正確設定"""
+    
+    async def dispatch(self, request: Request, call_next):
+        # 獲取請求來源
+        origin = request.headers.get("origin")
+        
+        # 檢查來源是否在允許列表中
+        allowed_origins = settings.CORS_ORIGINS
+        if isinstance(allowed_origins, str):
+            allowed_origins = [origin.strip() for origin in allowed_origins.split(',') if origin.strip()]
+        
+        # 處理 OPTIONS 預檢請求
+        if request.method == "OPTIONS":
+            response = Response()
+            if origin and origin in allowed_origins:
+                response.headers["Access-Control-Allow-Origin"] = origin
+                response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+                response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-API-Key"
+                response.headers["Access-Control-Allow-Credentials"] = "true"
+                response.headers["Access-Control-Max-Age"] = "3600"
+            return response
+        
+        # 處理實際請求
+        response = await call_next(request)
+        
+        # 設定 CORS header
+        if origin and origin in allowed_origins:
+            response.headers["Access-Control-Allow-Origin"] = origin
+            response.headers["Access-Control-Allow-Credentials"] = "true"
+            response.headers["Access-Control-Expose-Headers"] = "X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset"
+        
+        return response
 
 
 @asynccontextmanager
@@ -52,6 +88,7 @@ app = FastAPI(
 # 調試：輸出 CORS 設定
 logger.info(f"設定 CORS，允許的來源: {settings.CORS_ORIGINS}")
 
+# 先添加標準 CORS 中間件
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
@@ -60,6 +97,9 @@ app.add_middleware(
     allow_headers=["Content-Type", "Authorization", "X-API-Key"],
     expose_headers=["X-RateLimit-Limit", "X-RateLimit-Remaining", "X-RateLimit-Reset"],
 )
+
+# 添加自定義 CORS 中間件（在最外層，確保 header 不被覆蓋）
+app.add_middleware(CustomCORSMiddleware)
 
 # 添加請求限流中間件（在 CORS 之後）
 app.add_middleware(
