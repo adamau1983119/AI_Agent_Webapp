@@ -1,0 +1,39 @@
+# FastAPI 核心
+fastapi>=0.115.0
+uvicorn[standard]>=0.32.0
+python-multipart>=0.0.12
+
+# MongoDB
+motor>=3.6.0
+pymongo>=4.10.0
+
+# 資料驗證（使用更新版本以支援 Python 3.13）
+pydantic>=2.10.0
+pydantic-settings>=2.6.0
+
+# 環境變數
+python-dotenv>=1.0.1
+
+# HTTP 客戶端
+httpx>=0.27.0
+aiohttp>=3.10.0
+
+# AI 服務
+google-generativeai>=0.3.0  # Google Gemini（可選）
+# ollama 不需要額外安裝，使用 httpx 直接調用 API
+
+# 日誌
+loguru>=0.7.3
+
+# 工具
+python-dateutil>=2.9.0
+
+# AI 服務（待整合）
+# dashscope==1.17.0  # 通義千問 SDK
+
+# 圖片處理（待整合）
+# Pillow==10.1.0
+
+# DuckDuckGo 圖片搜尋（無需 API Key）
+duckduckgo-images-api>=1.0.0
+

@@ -1,0 +1,306 @@
+"""
+建立「香港元朗5大必吃平民美食」主題範例
+使用真實 API 生成內容和搜尋圖片
+"""
+import asyncio
+import json
+import hashlib
+from datetime import datetime
+from app.database import connect_to_mongo, close_mongo_connection
+from app.services.repositories.topic_repository import TopicRepository
+from app.services.repositories.content_repository import ContentRepository
+from app.services.repositories.image_repository import ImageRepository
+from app.services.ai.qwen import QwenService
+from app.services.ai.ollama import OllamaService
+from app.services.images.image_service_manager import ImageServiceManager
+from app.config import settings
+from app.models.topic import Category, Status
+from app.models.image import ImageSource
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+async def create_yuen_long_food_topic():
+    """建立香港元朗美食主題"""
+    topic_repo = TopicRepository()
+    
+    topic_data = {
+        "id": "yuen_long_food_2026",
+        "title": "香港元朗5大必吃平民美食",
+        "category": Category.FOOD,
+        "status": Status.PENDING,
+        "source": "OpenRice 香港",
+        "sources": [
+            {
+                "name": "OpenRice 香港",
+                "url": "https://www.openrice.com/zh/hongkong",
+                "type": "food_platform",
+                "keywords": ["元朗", "Yuen Long", "平民美食", "street food", "香港美食", "Hong Kong food", "local food", "必吃", "推薦"],
+                "verified": True,
+                "verified_at": datetime.utcnow().isoformat(),
+                "reliability": "high"
+            },
+            {
+                "name": "香港旅遊發展局",
+                "url": "https://www.discoverhongkong.com",
+                "type": "official",
+                "keywords": ["元朗", "Yuen Long", "美食", "food", "香港", "Hong Kong"],
+                "verified": True,
+                "verified_at": datetime.utcnow().isoformat(),
+                "reliability": "very_high"
+            }
+        ],
+        "generated_at": datetime.utcnow(),
+        "created_at": datetime.utcnow(),
+        "updated_at": datetime.utcnow()
+    }
+    
+    try:
+        # 檢查是否已存在
+        existing = await topic_repo.get_topic_by_id("yuen_long_food_2026")
+        if existing:
+            logger.info("✅ 主題已存在，使用現有主題")
+            return existing
+        
+        # 建立新主題
+        topic = await topic_repo.create_topic(topic_data)
+        logger.info(f"✅ 美食主題建立成功: {topic['id']}")
+        return topic
+    except Exception as e:
+        logger.error(f"❌ 建立主題失敗: {e}")
+        raise
+
+
+async def generate_content_for_yuen_long():
+    """為元朗美食主題生成內容"""
+    content_repo = ContentRepository()
+    topic_repo = TopicRepository()
+    
+    # 根據配置選擇 AI 服務
+    if settings.AI_SERVICE in ["ollama", "ollama_cloud"]:
+        ai_service = OllamaService()
+        logger.info(f"使用 Ollama 服務（{'雲端' if settings.OLLAMA_API_KEY else '本地'}）")
+    elif settings.AI_SERVICE == "qwen":
+        ai_service = QwenService()
+        logger.info("使用通義千問服務")
+    else:
+        if settings.OLLAMA_API_KEY:
+            ai_service = OllamaService()
+            logger.info("使用 Ollama 雲端服務（自動選擇）")
+        else:
+            ai_service = QwenService()
+            logger.info("使用通義千問服務（自動選擇）")
+    
+    topic_id = "yuen_long_food_2026"
+    
+    # 取得主題
+    topic = await topic_repo.get_topic_by_id(topic_id)
+    if not topic:
+        raise ValueError(f"主題不存在: {topic_id}")
+    
+    # 提取關鍵字
+    keywords = []
+    for source in topic.get("sources", []):
+        keywords.extend(source.get("keywords", []))
+    keywords = list(set(keywords))  # 去重
+    
+    logger.info(f"📝 開始生成元朗美食內容，關鍵字: {keywords}")
+    
+    try:
+        # 生成短文（500字以內）和腳本（30秒以內）
+        result = await ai_service.generate_both(
+            topic_title=topic["title"],
+            topic_category=topic["category"],
+            keywords=keywords,
+            article_length=500,
+            script_duration=30
+        )
+        
+        article = result.get("article", "")
+        script = result.get("script", "")
+        
+        logger.info(f"✅ 內容生成成功")
+        logger.info(f"📄 短文長度: {len(article)} 字")
+        logger.info(f"🎬 腳本長度: {len(script)} 字")
+        
+        # 計算字數
+        word_count = len(article) + len(script)
+        
+        # 生成唯一 ID
+        content_id = f"content_{topic_id}_{hashlib.md5((article[:50] + script[:50]).encode()).hexdigest()[:12]}"
+        
+        # 儲存內容
+        content_data = {
+            "id": content_id,
+            "topic_id": topic_id,
+            "article": article,
+            "script": script,
+            "word_count": word_count,
+            "model_used": settings.AI_SERVICE,
+            "generated_at": datetime.utcnow(),
+            "updated_at": datetime.utcnow(),
+            "versions": []
+        }
+        
+        # 檢查是否已存在內容
+        existing_content = await content_repo.get_content_by_topic_id(topic_id)
+        if existing_content:
+            # 更新現有內容
+            content_id = existing_content.get("id") or existing_content.get("_id")
+            if content_id:
+                await content_repo.update_content(
+                    content_id,
+                    content_data,
+                    create_version=True
+                )
+                logger.info("✅ 內容已更新")
+            else:
+                # 如果沒有 ID，建立新內容
+                await content_repo.create_content(content_data)
+                logger.info("✅ 內容已建立（新）")
+        else:
+            # 建立新內容
+            await content_repo.create_content(content_data)
+            logger.info("✅ 內容已建立")
+        
+        return {"article": article, "script": script}
+    except Exception as e:
+        logger.error(f"❌ 生成內容失敗: {e}")
+        raise
+
+
+async def search_images_for_yuen_long():
+    """為元朗美食主題搜尋圖片"""
+    image_repo = ImageRepository()
+    image_manager = ImageServiceManager()
+    
+    topic_id = "yuen_long_food_2026"
+    
+    # 元朗美食相關關鍵字
+    keywords = "Yuen Long Hong Kong food street food local cuisine 元朗 香港美食 街頭小食"
+    
+    logger.info(f"🖼️ 開始搜尋元朗美食圖片，關鍵字: {keywords}")
+    
+    try:
+        # 搜尋圖片
+        images = await image_manager.search_images(
+            keywords=keywords,
+            page=1,
+            limit=8  # 選擇 8 張圖片
+        )
+        
+        if not images:
+            logger.warning("⚠️ 未找到圖片")
+            return []
+        
+        logger.info(f"✅ 找到 {len(images)} 張圖片")
+        
+        # 刪除現有圖片
+        existing_images = await image_repo.get_images_by_topic_id(topic_id)
+        for img in existing_images:
+            image_id = img.get("id") or img.get("_id")
+            if image_id:
+                await image_repo.delete_image(image_id)
+        
+        # 儲存新圖片
+        saved_images = []
+        for idx, img in enumerate(images[:8]):  # 最多儲存 8 張
+            # 生成唯一 ID
+            image_id = f"img_{hashlib.md5(img.get('url', '').encode()).hexdigest()[:12]}"
+            
+            image_data = {
+                "id": image_id,
+                "topic_id": topic_id,
+                "url": img.get("url", ""),
+                "source": ImageSource(img.get("source", "Unsplash")),
+                "photographer": img.get("photographer", ""),
+                "photographer_url": img.get("photographer_url", ""),
+                "license": img.get("license", "Unsplash License"),
+                "keywords": img.get("keywords", []),
+                "order": idx,
+                "width": img.get("width"),
+                "height": img.get("height"),
+                "fetched_at": datetime.utcnow(),
+            }
+            
+            image = await image_repo.create_image(image_data)
+            saved_images.append(image)
+            logger.info(f"✅ 圖片 {idx + 1}/8 已儲存: {img.get('url', '')[:50]}...")
+        
+        logger.info(f"✅ 共儲存 {len(saved_images)} 張圖片")
+        return saved_images
+    except Exception as e:
+        logger.error(f"❌ 搜尋圖片失敗: {e}")
+        raise
+
+
+async def main():
+    """主函數"""
+    logger.info("=" * 60)
+    logger.info("🍽️ 開始建立「香港元朗5大必吃平民美食」主題")
+    logger.info("=" * 60)
+    
+    try:
+        # 連接資料庫
+        await connect_to_mongo()
+        logger.info("✅ 資料庫連接成功")
+        
+        # 1. 建立主題
+        logger.info("\n📋 步驟 1: 建立美食主題")
+        topic = await create_yuen_long_food_topic()
+        
+        # 2. 生成內容
+        logger.info("\n📝 步驟 2: 生成內容（使用真實 AI API）")
+        content = await generate_content_for_yuen_long()
+        
+        # 3. 搜尋圖片
+        logger.info("\n🖼️ 步驟 3: 搜尋圖片（使用真實圖片 API）")
+        images = await search_images_for_yuen_long()
+        
+        # 4. 儲存結果
+        result = {
+            "topic": {
+                "id": topic["id"],
+                "title": topic["title"],
+                "category": topic["category"],
+                "status": topic["status"]
+            },
+            "content": {
+                "article": content["article"],
+                "script": content["script"],
+                "word_count": len(content["article"]) + len(content["script"])
+            },
+            "images": [
+                {
+                    "url": img["url"],
+                    "source": img["source"],
+                    "order": img["order"]
+                }
+                for img in images
+            ],
+            "created_at": datetime.utcnow().isoformat()
+        }
+        
+        # 儲存到檔案
+        with open("yuen_long_food_result.json", "w", encoding="utf-8") as f:
+            json.dump(result, f, ensure_ascii=False, indent=2)
+        
+        logger.info("\n" + "=" * 60)
+        logger.info("✅ 元朗美食主題建立完成！")
+        logger.info("=" * 60)
+        logger.info(f"📄 結果已儲存到: yuen_long_food_result.json")
+        logger.info(f"🌐 可以在 Dashboard 查看: http://localhost:5173/topics/{topic['id']}")
+        
+    except Exception as e:
+        logger.error(f"❌ 執行失敗: {e}")
+        import traceback
+        traceback.print_exc()
+    finally:
+        await close_mongo_connection()
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
+

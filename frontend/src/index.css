@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-gray-50 text-gray-900;
+  }
+}
+
+@layer components {
+  .sidebar-item {
+    @apply flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 transition-colors;
+  }
+  
+  .sidebar-item:hover {
+    @apply bg-gray-100;
+  }
+  
+  .sidebar-item.active {
+    @apply bg-primary text-white;
+  }
+  
+  .sidebar-item.active:hover {
+    @apply bg-primary-dark;
+  }
+}
+

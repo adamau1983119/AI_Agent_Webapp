@@ -1,0 +1,55 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv
+
+# Node
+node_modules/
+dist/
+build/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 環境變數
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 作業系統
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 日誌
+logs/
+*.log
+
+# 備份
+*.bak
+*.backup
+backup_version*/
+backup_*/
+
+# 測試結果
+*_result.json
+test_report_*.json
+
+# 測試腳本（可選，如果需要可以保留）
+# test_*.py
+# test_*.ps1
+
