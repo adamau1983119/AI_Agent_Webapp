@@ -8,7 +8,7 @@ import UpcomingEvents from '@/components/features/UpcomingEvents'
 import RecentActivities from '@/components/features/RecentActivities'
 
 export default function Dashboard() {
-  const { data: topics = [], isLoading } = useQuery({
+  const { data: topicsResponse, isLoading } = useQuery({
     queryKey: ['topics'],
     queryFn: () => topicsAPI.getTopics(),
   })
@@ -18,13 +18,16 @@ export default function Dashboard() {
     queryFn: () => api.getSchedules(),
   })
 
+  // 從分頁響應中提取 topics 數組
+  const topics = topicsResponse?.data || []
+
   // 計算統計資料
   const pendingCount = topics.filter((t) => t.status === 'pending').length
   const confirmedCount = topics.filter((t) => t.status === 'confirmed').length
   const totalTopics = topics.length
   const todayTopics = topics.filter((t) => {
     const today = new Date().toISOString().split('T')[0]
-    return t.generatedAt.startsWith(today)
+    return t.generatedAt?.startsWith(today) || false
   }).length
 
   return (
