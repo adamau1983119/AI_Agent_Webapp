@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { topicsAPI, contentsAPI, imagesAPI } from '@/api/client'
-import { showSuccess, showError, showLoading, updateLoading } from '@/utils/toast'
+import { showSuccess, showError } from '@/utils/toast'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import ErrorDisplay from '@/components/ui/ErrorDisplay'
 import EmptyState from '@/components/ui/EmptyState'
@@ -53,7 +53,7 @@ export default function TopicDetail() {
   const deleteMutation = useMutation({
     mutationFn: () => topicsAPI.deleteTopic(id!),
     onSuccess: () => {
-      queryClient.invalidateQueries(['topics'])
+      queryClient.invalidateQueries({ queryKey: ['topics'] })
       showSuccess('主題已成功刪除')
       navigate('/topics')
     },
@@ -67,8 +67,8 @@ export default function TopicDetail() {
   const confirmMutation = useMutation({
     mutationFn: () => topicsAPI.updateTopicStatus(id!, 'confirmed'),
     onSuccess: () => {
-      queryClient.invalidateQueries(['topic', id])
-      queryClient.invalidateQueries(['topics'])
+      queryClient.invalidateQueries({ queryKey: ['topic', id] })
+      queryClient.invalidateQueries({ queryKey: ['topics'] })
       showSuccess('主題已確認')
     },
     onError: (error) => {
@@ -101,7 +101,7 @@ export default function TopicDetail() {
           <p className="text-sm text-gray-400 mb-4">主題 ID: {id}</p>
           {topicError && (
             <p className="text-sm text-red-500">
-              錯誤: {topicError instanceof Error ? topicError.message : '未知錯誤'}
+              錯誤: {String(topicError)}
             </p>
           )}
           <button
@@ -197,6 +197,8 @@ export default function TopicDetail() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <ImageSearch
             topicId={id!}
+            topic={topic || null}
+            content={content || null}
             onImageSelect={() => {
               setShowImageSearch(false)
             }}

@@ -2,11 +2,11 @@
  * 圖片搜尋元件
  */
 
-import { useState } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { imagesAPI } from '@/api/client'
 import { showSuccess, showError } from '@/utils/toast'
-import type { ImageSearchParams } from '@/api/images'
+import type { Topic, Content } from '@/types'
 import Pagination from '@/components/ui/Pagination'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import ErrorDisplay from '@/components/ui/ErrorDisplay'
@@ -14,12 +14,111 @@ import EmptyState from '@/components/ui/EmptyState'
 
 interface ImageSearchProps {
   topicId: string
+  topic?: Topic | null
+  content?: Content | null
   onImageSelect: (image: { url: string; source: string; photographer?: string; license: string }) => void
   onClose: () => void
 }
 
+/**
+ * 從內容中提取關鍵字
+ */
+function extractKeywords(topic: Topic | null | undefined, content: Content | null | undefined): string[] {
+  const keywords: Set<string> = new Set()
+  
+  // 從主題標題提取關鍵字
+  if (topic?.title) {
+    // 移除常見的停用詞和數字
+    const titleWords = topic.title
+      .replace(/[0-9]/g, '') // 移除數字
+      .replace(/[大必吃平民美食推薦]/g, '') // 移除常見詞
+      .split(/[、，,]/)
+      .map(w => w.trim())
+      .filter(w => w.length > 1)
+    
+    titleWords.forEach(word => {
+      if (word.length > 1) {
+        keywords.add(word)
+      }
+    })
+  }
+  
+  // 從文章內容提取關鍵字
+  if (content?.article) {
+    const article = content.article
+    
+    // 提取常見的食物名稱（中文）
+    const foodKeywords = [
+      '老婆餅', '雞蛋仔', '腸粉', '燒賣', '叉燒包', '蝦餃', '燒鵝', '燒肉',
+      '雲吞', '魚蛋', '牛腩', '煲仔飯', '車仔麵', '絲襪奶茶', '菠蘿包',
+      '蛋撻', '燒餅', '油條', '豆漿', '小籠包', '生煎包', '鍋貼', '餃子',
+      '拉麵', '烏冬', '壽司', '刺身', '天婦羅', '章魚燒', '大阪燒',
+      '漢堡', '披薩', '義大利麵', '牛排', '沙拉', '三明治', '熱狗',
+      '蛋糕', '餅乾', '巧克力', '冰淇淋', '布丁', '馬卡龍', '可頌'
+    ]
+    
+    foodKeywords.forEach(keyword => {
+      if (article.includes(keyword)) {
+        keywords.add(keyword)
+      }
+    })
+    
+    // 提取常見的形容詞+名詞組合
+    const patterns = [
+      /傳統[\u4e00-\u9fa5]+/g,  // 傳統XX
+      /街頭[\u4e00-\u9fa5]+/g,  // 街頭XX
+      /經典[\u4e00-\u9fa5]+/g,  // 經典XX
+      /特色[\u4e00-\u9fa5]+/g,  // 特色XX
+      /招牌[\u4e00-\u9fa5]+/g,  // 招牌XX
+    ]
+    
+    patterns.forEach(pattern => {
+      const matches = article.match(pattern)
+      if (matches) {
+        matches.forEach(match => {
+          const keyword = match.replace(/傳統|街頭|經典|特色|招牌/g, '').trim()
+          if (keyword.length > 1) {
+            keywords.add(keyword)
+          }
+        })
+      }
+    })
+  }
+  
+  // 從腳本內容提取關鍵字
+  if (content?.script) {
+    const script = content.script
+    
+    // 提取場景描述中的關鍵字
+    const scenePatterns = [
+      /\[鏡頭[^\]]+\]/g,
+      /特寫[^\s]+/g,
+      /近景[^\s]+/g,
+      /遠景[^\s]+/g,
+    ]
+    
+    scenePatterns.forEach(pattern => {
+      const matches = script.match(pattern)
+      if (matches) {
+        matches.forEach(match => {
+          const keyword = match
+            .replace(/\[|\]|鏡頭|特寫|近景|遠景/g, '')
+            .trim()
+          if (keyword.length > 1) {
+            keywords.add(keyword)
+          }
+        })
+      }
+    })
+  }
+  
+  return Array.from(keywords).slice(0, 10) // 最多返回 10 個關鍵字
+}
+
 export default function ImageSearch({
   topicId,
+  topic,
+  content,
   onImageSelect,
   onClose,
 }: ImageSearchProps) {
@@ -28,6 +127,18 @@ export default function ImageSearch({
   const [source, setSource] = useState<'unsplash' | 'pexels' | 'pixabay' | undefined>()
   const [page, setPage] = useState(1)
   const limit = 20
+  
+  // 提取建議的關鍵字
+  const suggestedKeywords = useMemo(() => {
+    return extractKeywords(topic, content)
+  }, [topic, content])
+  
+  // 當打開對話框時，如果有建議關鍵字，自動填入第一個
+  useEffect(() => {
+    if (suggestedKeywords.length > 0 && !keywords) {
+      setKeywords(suggestedKeywords[0])
+    }
+  }, [suggestedKeywords])
 
   // 搜尋圖片
   const {
@@ -66,7 +177,7 @@ export default function ImageSearch({
         order: 0, // 將在後端自動設定
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries(['images', topicId])
+      queryClient.invalidateQueries({ queryKey: ['images', topicId] })
       showSuccess('圖片已成功新增')
       onImageSelect({
         url: '',
@@ -108,6 +219,32 @@ export default function ImageSearch({
           ×
         </button>
       </div>
+
+      {/* 建議關鍵字 */}
+      {suggestedKeywords.length > 0 && (
+        <div className="mb-4">
+          <p className="text-sm text-gray-600 mb-2">建議關鍵字（從內容中提取）：</p>
+          <div className="flex flex-wrap gap-2">
+            {suggestedKeywords.map((keyword, index) => (
+              <button
+                key={index}
+                type="button"
+                onClick={() => {
+                  setKeywords(keyword)
+                  setPage(1)
+                }}
+                className={`px-3 py-1 text-sm rounded-full border transition-colors ${
+                  keywords === keyword
+                    ? 'bg-primary text-white border-primary'
+                    : 'bg-white text-gray-700 border-gray-300 hover:border-primary hover:text-primary'
+                }`}
+              >
+                {keyword}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* 搜尋表單 */}
       <form onSubmit={handleSearch} className="mb-6">
