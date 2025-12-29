@@ -133,6 +133,16 @@ async def get_topic_detail(topic_id: str = Path(..., description="主題 ID")):
         # 轉換為回應格式
         topic.pop("_id", None)
         
+        # 確保所有必需欄位都存在
+        required_fields = ["id", "title", "category", "status", "source", "generated_at", "updated_at"]
+        for field in required_fields:
+            if field not in topic:
+                logger.error(f"主題 {topic_id} 缺少必需欄位: {field}, topic keys: {list(topic.keys())}")
+                raise HTTPException(
+                    status_code=500,
+                    detail=f"主題資料不完整，缺少欄位: {field}"
+                )
+        
         # 確保有 created_at（如果沒有，使用 generated_at）
         if "created_at" not in topic or not topic.get("created_at"):
             topic["created_at"] = topic.get("generated_at", datetime.utcnow())
@@ -172,14 +182,22 @@ async def get_topic_detail(topic_id: str = Path(..., description="主題 ID")):
             topic["sources"] = []
         
         try:
-            return TopicDetailResponse(
+            response = TopicDetailResponse(
                 **topic,
                 content=content_response,
                 images=image_responses
             )
+            return response
         except Exception as e:
-            logger.error(f"建立 TopicDetailResponse 失敗: {e}, topic keys: {list(topic.keys())}")
-            raise
+            logger.error(f"建立 TopicDetailResponse 失敗: {e}")
+            logger.error(f"Topic 資料: {topic}")
+            logger.error(f"Topic keys: {list(topic.keys())}")
+            logger.error(f"Content response: {content_response}")
+            logger.error(f"Image responses count: {len(image_responses)}")
+            raise HTTPException(
+                status_code=500,
+                detail=f"建立主題詳情回應失敗: {str(e)}"
+            )
     except HTTPException:
         raise
     except Exception as e:
