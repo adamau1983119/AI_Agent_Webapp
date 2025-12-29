@@ -2,6 +2,7 @@
 FastAPI 應用入口
 """
 from contextlib import asynccontextmanager
+import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
@@ -9,6 +10,8 @@ from app.database import connect_to_mongo, close_mongo_connection, check_connect
 from app.middleware.auth import APIKeyMiddleware
 from app.middleware.rate_limit import RateLimitMiddleware
 from app.utils.logger import setup_logging
+
+logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
@@ -27,6 +30,11 @@ async def lifespan(app: FastAPI):
     
     # 連接 MongoDB
     await connect_to_mongo()
+    
+    # 調試：輸出 CORS 設定
+    logger.info(f"CORS_ORIGINS 設定值: {settings.CORS_ORIGINS}")
+    logger.info(f"CORS_ORIGINS 類型: {type(settings.CORS_ORIGINS)}")
+    
     yield
     # 關閉時執行
     await close_mongo_connection()
@@ -41,6 +49,9 @@ app = FastAPI(
 )
 
 # 設定 CORS（安全策略）
+# 調試：輸出 CORS 設定
+logger.info(f"設定 CORS，允許的來源: {settings.CORS_ORIGINS}")
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
