@@ -28,7 +28,20 @@ def _convert_to_response(content_doc: dict) -> ContentResponse:
     """將 MongoDB 文檔轉換為 ContentResponse"""
     from datetime import datetime
     
-    content_doc.pop("_id", None)
+    # 保存 _id（如果需要）
+    mongo_id = content_doc.pop("_id", None)
+    content_doc.pop("_id", None)  # 確保移除
+    
+    # 確保 id 欄位存在（如果沒有，使用 topic_id 或從 _id 生成）
+    if "id" not in content_doc:
+        if "topic_id" in content_doc:
+            # 通常內容的 id 和 topic_id 相同（一個主題只有一個內容）
+            content_doc["id"] = content_doc["topic_id"]
+        elif mongo_id:
+            # 如果沒有 topic_id，使用 MongoDB 的 _id
+            content_doc["id"] = str(mongo_id)
+        else:
+            raise ValueError("Content document must have either 'id' or 'topic_id' field")
     
     # 確保所有必需欄位都存在
     if "word_count" not in content_doc:
