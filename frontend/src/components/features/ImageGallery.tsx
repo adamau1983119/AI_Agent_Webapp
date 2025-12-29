@@ -146,14 +146,14 @@ export default function ImageGallery({
         {sortedImages.map((image, index) => (
           <div
             key={image.id}
-            className="relative group aspect-square rounded-lg overflow-hidden bg-gray-100"
+            className="relative group aspect-square rounded-lg overflow-hidden bg-gray-100 cursor-pointer"
+            onClick={() => !isReordering && setPreviewImage(image)}
           >
             {/* 圖片 */}
             <img
               src={image.url}
               alt={`Image ${image.order}`}
-              className="w-full h-full object-cover cursor-pointer"
-              onClick={() => !isReordering && setPreviewImage(image)}
+              className="w-full h-full object-cover pointer-events-none"
               onError={(e) => {
                 e.currentTarget.src =
                   'https://via.placeholder.com/400x400?text=Image'
@@ -162,9 +162,15 @@ export default function ImageGallery({
 
             {/* 排序模式下的控制按鈕 */}
             {isReordering && (
-              <div className="absolute inset-0 bg-black/50 flex items-center justify-center gap-2">
+              <div 
+                className="absolute inset-0 bg-black/50 flex items-center justify-center gap-2 z-10"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <button
-                  onClick={() => handleMoveUp(index)}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleMoveUp(index)
+                  }}
                   disabled={index === 0}
                   className="px-3 py-1 bg-white/90 text-gray-800 rounded text-xs font-medium hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
@@ -174,7 +180,10 @@ export default function ImageGallery({
                   {index + 1}
                 </span>
                 <button
-                  onClick={() => handleMoveDown(index)}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleMoveDown(index)
+                  }}
                   disabled={index === sortedImages.length - 1}
                   className="px-3 py-1 bg-white/90 text-gray-800 rounded text-xs font-medium hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
@@ -185,13 +194,16 @@ export default function ImageGallery({
 
             {/* 懸停時顯示的操作按鈕（非排序模式） */}
             {!isReordering && (
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-all duration-200 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
+              <div 
+                className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-all duration-200 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 pointer-events-none"
+              >
                 <button
                   onClick={(e) => {
                     e.stopPropagation()
                     setPreviewImage(image)
                   }}
-                  className="px-3 py-1 bg-white/90 text-gray-800 rounded text-xs font-medium hover:bg-white transition-colors"
+                  onMouseDown={(e) => e.stopPropagation()}
+                  className="px-3 py-1 bg-white/90 text-gray-800 rounded text-xs font-medium hover:bg-white transition-colors pointer-events-auto"
                 >
                   預覽
                 </button>
@@ -200,8 +212,9 @@ export default function ImageGallery({
                     e.stopPropagation()
                     handleDelete(image.id)
                   }}
+                  onMouseDown={(e) => e.stopPropagation()}
                   disabled={deletingId === image.id}
-                  className="px-3 py-1 bg-red-500/90 text-white rounded text-xs font-medium hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-3 py-1 bg-red-500/90 text-white rounded text-xs font-medium hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed pointer-events-auto"
                 >
                   {deletingId === image.id ? '刪除中...' : '刪除'}
                 </button>
@@ -209,7 +222,9 @@ export default function ImageGallery({
             )}
 
             {/* 底部資訊 */}
-            <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs p-2">
+            <div 
+              className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs p-2 pointer-events-none"
+            >
               <div className="flex justify-between items-center">
                 <span>{image.source}</span>
                 <span>#{image.order + 1}</span>
