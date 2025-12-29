@@ -176,9 +176,19 @@ export const topicsAPI = {
 
     try {
       const topic = await fetchAPI<any>(`/topics/${id}`)
+      if (!topic) {
+        console.warn(`Topic not found: ${id}`)
+        return null
+      }
       return convertTopic(topic)
-    } catch (error) {
-      console.error('Failed to fetch topic, falling back to mock data', error)
+    } catch (error: any) {
+      // 如果是 404 錯誤，直接返回 null（主題不存在）
+      if (error?.status === 404) {
+        console.warn(`Topic not found (404): ${id}`, error)
+        return null
+      }
+      // 其他錯誤，記錄並嘗試使用 mock 數據
+      console.error(`Failed to fetch topic ${id}, falling back to mock data`, error)
       await delay(300)
       return mockTopics.find((t) => t.id === id) || null
     }

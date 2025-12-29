@@ -97,7 +97,19 @@ export default function TopicDetail() {
     return (
       <div className="p-6">
         <div className="text-center py-12">
-          <p className="text-gray-500">找不到主題</p>
+          <p className="text-gray-500 mb-4">找不到主題</p>
+          <p className="text-sm text-gray-400 mb-4">主題 ID: {id}</p>
+          {topicError && (
+            <p className="text-sm text-red-500">
+              錯誤: {topicError instanceof Error ? topicError.message : '未知錯誤'}
+            </p>
+          )}
+          <button
+            onClick={() => navigate('/topics')}
+            className="mt-4 px-4 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+          >
+            返回主題列表
+          </button>
         </div>
       </div>
     )
