@@ -107,9 +107,13 @@ async def get_topic_detail(topic_id: str = Path(..., description="主題 ID")):
         content = await content_repo.get_content_by_topic_id(topic_id)
         content_response = None
         if content:
-            from app.schemas.content import ContentResponse
-            from app.api.v1.contents import _convert_to_response
-            content_response = _convert_to_response(content)
+            try:
+                from app.schemas.content import ContentResponse
+                from app.api.v1.contents import _convert_to_response
+                content_response = _convert_to_response(content)
+            except Exception as e:
+                logger.warning(f"轉換內容資料失敗，跳過: {e}, content keys: {list(content.keys()) if isinstance(content, dict) else 'not dict'}")
+                content_response = None
         
         # 取得圖片列表
         images = await image_repo.get_images_by_topic_id(topic_id)
@@ -182,6 +186,21 @@ async def get_topic_detail(topic_id: str = Path(..., description="主題 ID")):
             topic["sources"] = []
         
         try:
+            # 確保 category 和 status 是正確的類型
+            if isinstance(topic.get("category"), str):
+                from app.models.topic import Category
+                try:
+                    topic["category"] = Category(topic["category"])
+                except:
+                    logger.warning(f"無法轉換 category: {topic.get('category')}")
+            
+            if isinstance(topic.get("status"), str):
+                from app.models.topic import Status
+                try:
+                    topic["status"] = Status(topic["status"])
+                except:
+                    logger.warning(f"無法轉換 status: {topic.get('status')}")
+            
             response = TopicDetailResponse(
                 **topic,
                 content=content_response,
@@ -192,8 +211,11 @@ async def get_topic_detail(topic_id: str = Path(..., description="主題 ID")):
             logger.error(f"建立 TopicDetailResponse 失敗: {e}")
             logger.error(f"Topic 資料: {topic}")
             logger.error(f"Topic keys: {list(topic.keys())}")
+            logger.error(f"Topic values: {[(k, type(v).__name__) for k, v in topic.items()]}")
             logger.error(f"Content response: {content_response}")
             logger.error(f"Image responses count: {len(image_responses)}")
+            import traceback
+            logger.error(f"Traceback: {traceback.format_exc()}")
             raise HTTPException(
                 status_code=500,
                 detail=f"建立主題詳情回應失敗: {str(e)}"
