@@ -26,6 +26,10 @@ export default function Dashboard() {
     queryFn: () => topicsAPI.getTopics(),
     retry: 2,
     retryDelay: 1000,
+    staleTime: 0, // 不使用過期緩存
+    gcTime: 0, // 立即清除緩存（React Query v5）或 cacheTime: 0（v4）
+    // 當有錯誤時，不使用緩存數據
+    enabled: true,
   })
 
   const {
@@ -38,6 +42,10 @@ export default function Dashboard() {
     queryFn: () => api.getSchedules(),
     retry: 2,
     retryDelay: 1000,
+    staleTime: 0, // 不使用過期緩存
+    gcTime: 0, // 立即清除緩存
+    // 當有錯誤時，不使用緩存數據
+    enabled: true,
   })
 
   // 取得推薦列表
@@ -86,7 +94,8 @@ export default function Dashboard() {
   }
 
   // 從分頁響應中提取 topics 數組
-  const topics = topicsResponse?.data || []
+  // 重要：如果有錯誤，不使用緩存數據，返回空數組
+  const topics = (topicsError || schedulesError) ? [] : (topicsResponse?.data || [])
 
   // 計算統計資料
   const pendingCount = topics.filter((t) => t.status === 'pending').length
@@ -127,9 +136,9 @@ export default function Dashboard() {
         />
         <ProgressCard
           title="內容評分"
-          value="85/100"
-          percentage={85}
-          message="不錯的進展！"
+          value={topics.length > 0 ? `${Math.round(topics.reduce((sum, t) => sum + (t.wordCount || 0), 0) / topics.length)}/100` : "0/100"}
+          percentage={topics.length > 0 ? Math.min(100, Math.round(topics.reduce((sum, t) => sum + (t.wordCount || 0), 0) / topics.length)) : 0}
+          message={topics.length > 0 ? "不錯的進展！" : "等待數據..."}
           color="green"
         />
         <div className="relative">

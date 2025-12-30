@@ -1,24 +1,6 @@
 export default function RecentActivities() {
-  const activities = [
-    {
-      icon: 'document',
-      title: '新主題已生成',
-      time: '2 小時前',
-      color: 'purple',
-    },
-    {
-      icon: 'image',
-      title: '圖片已更新',
-      time: '5 小時前',
-      color: 'blue',
-    },
-    {
-      icon: 'check',
-      title: '主題已確認',
-      time: '1 天前',
-      color: 'green',
-    },
-  ]
+  // 暫時移除 mock 數據，等待真實 API
+  const activities: Array<{ icon: string; title: string; time: string; color: string }> = []
 
   const iconColors = {
     purple: 'bg-purple-100 text-primary',
@@ -33,17 +15,21 @@ export default function RecentActivities() {
         <button className="text-sm text-primary hover:text-primary-dark">View more</button>
       </div>
       <div className="space-y-3">
-        {activities.map((activity, index) => (
-          <div key={index} className="flex items-start gap-3">
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${iconColors[activity.color as keyof typeof iconColors]}`}>
-              <ActivityIcon name={activity.icon} />
+        {activities.length > 0 ? (
+          activities.map((activity, index) => (
+            <div key={index} className="flex items-start gap-3">
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${iconColors[activity.color as keyof typeof iconColors]}`}>
+                <ActivityIcon name={activity.icon} />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-gray-800">{activity.title}</p>
+                <p className="text-xs text-gray-500">{activity.time}</p>
+              </div>
             </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium text-gray-800">{activity.title}</p>
-              <p className="text-xs text-gray-500">{activity.time}</p>
-            </div>
-          </div>
-        ))}
+          ))
+        ) : (
+          <p className="text-sm text-gray-500 text-center py-4">暫無最近活動</p>
+        )}
       </div>
     </div>
   )
