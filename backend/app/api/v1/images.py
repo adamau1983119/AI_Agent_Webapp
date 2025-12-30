@@ -2,7 +2,7 @@
 Images API 端點
 """
 from typing import Optional
-from fastapi import APIRouter, HTTPException, Query, Path
+from fastapi import APIRouter, HTTPException, Query, Path, Body
 from app.schemas.image import (
     ImageCreate,
     ImageUpdate,
