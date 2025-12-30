@@ -29,7 +29,7 @@ export default function ImageGallery({
     mutationFn: (minCount: number) => imagesAPI.matchPhotos(topicId, minCount),
     onMutate: () => {
       setIsMatching(true)
-      showSuccess('正在智能匹配照片...', { duration: 2000 })
+      showSuccess('正在智能匹配照片...')
     },
     onSuccess: (data) => {
       setIsMatching(false)
@@ -57,7 +57,6 @@ export default function ImageGallery({
       showError(error?.message || '驗證匹配度失敗')
     },
   })
-  const queryClient = useQueryClient()
   const [previewImage, setPreviewImage] = useState<Image | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [isReordering, setIsReordering] = useState(false)
