@@ -143,18 +143,29 @@ app = FastAPI(
 # 設定 CORS（安全策略）
 # 調試：輸出 CORS 設定
 logger.info(f"設定 CORS，允許的來源: {settings.CORS_ORIGINS}")
+logger.info(f"CORS_ORIGINS 類型: {type(settings.CORS_ORIGINS)}")
 
-# 先添加標準 CORS 中間件
+# 確保 CORS_ORIGINS 是列表格式
+cors_origins_list = settings.CORS_ORIGINS
+if isinstance(cors_origins_list, str):
+    cors_origins_list = [origin.strip() for origin in cors_origins_list.split(',') if origin.strip()]
+elif not isinstance(cors_origins_list, list):
+    cors_origins_list = list(cors_origins_list) if cors_origins_list else []
+
+logger.info(f"解析後的 CORS_ORIGINS: {cors_origins_list}")
+
+# 添加標準 CORS 中間件（FastAPI 內建）
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,
+    allow_origins=cors_origins_list if cors_origins_list else ["*"],  # 如果為空，允許所有來源
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allow_headers=["Content-Type", "Authorization", "X-API-Key"],
+    allow_headers=["Content-Type", "Authorization", "X-API-Key", "Accept"],
     expose_headers=["X-RateLimit-Limit", "X-RateLimit-Remaining", "X-RateLimit-Reset"],
 )
 
-# 添加自定義 CORS 中間件（在最外層，確保 header 不被覆蓋）
+# 添加自定義 CORS 中間件（作為備份，確保 header 不被覆蓋）
+# 注意：中間件的順序很重要，後添加的中間件會先執行
 app.add_middleware(CustomCORSMiddleware)
 
 # 添加請求限流中間件（在 CORS 之後）
