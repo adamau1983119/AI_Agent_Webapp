@@ -125,7 +125,7 @@ export const api = {
     type: 'article' | 'script' | 'both',
     articleLength: number = 500,
     scriptDuration: number = 30
-  ): Promise<Content> => {
+  ) => {
     return contentsAPI.generateContent(topicId, {
       type,
       article_length: articleLength,
@@ -142,8 +142,9 @@ export const api = {
     keywords: string,
     page: number = 1,
     limit: number = 20
-  ): Promise<Image[]> => {
-    return imagesAPI.searchImages({ keywords, page, limit })
+  ) => {
+    const result = await imagesAPI.searchImages({ keywords, page, limit })
+    return result.data
   },
   createImage: imagesAPI.createImage,
   updateImage: imagesAPI.updateImage,
