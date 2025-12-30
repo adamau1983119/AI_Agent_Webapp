@@ -87,9 +87,10 @@ export default function Dashboard() {
 
   // 如果有連接錯誤，顯示錯誤訊息
   if (hasError) {
+    const error = topicsError || schedulesError || undefined
     return (
       <div className="p-4 sm:p-6">
-        <ConnectionErrorDisplay error={topicsError || schedulesError} onRetry={handleRetry} />
+        <ConnectionErrorDisplay error={error} onRetry={handleRetry} />
       </div>
     )
   }
