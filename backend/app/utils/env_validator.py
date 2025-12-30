@@ -71,7 +71,7 @@ class EnvironmentValidator:
                     warnings.append("OLLAMA_API_KEY 未設定，ollama_cloud 服務可能無法使用")
                 # ollama 本地服務不需要 API Key
         
-        # 5. 檢查圖片服務配置
+        # 5. 檢查圖片服務配置（改為警告，不阻止啟動）
         image_services_configured = []
         if settings.UNSPLASH_ACCESS_KEY:
             image_services_configured.append("Unsplash")
@@ -81,9 +81,10 @@ class EnvironmentValidator:
             image_services_configured.append("Pixabay")
         
         if not image_services_configured:
-            errors.append(
+            warnings.append(
                 "所有圖片服務的 API Key 都未設定（UNSPLASH_ACCESS_KEY、"
-                "PEXELS_API_KEY、PIXABAY_API_KEY），圖片搜尋將完全失敗"
+                "PEXELS_API_KEY、PIXABAY_API_KEY），圖片搜尋功能將無法使用。"
+                "建議至少設定一個圖片服務的 API Key。"
             )
         else:
             logger.info(f"已配置的圖片服務: {', '.join(image_services_configured)}")
