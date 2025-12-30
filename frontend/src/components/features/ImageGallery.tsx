@@ -22,6 +22,42 @@ export default function ImageGallery({
   onImageUpdate,
 }: ImageGalleryProps) {
   const queryClient = useQueryClient()
+  const [isMatching, setIsMatching] = useState(false)
+
+  // 智能匹配照片
+  const matchMutation = useMutation({
+    mutationFn: (minCount: number) => imagesAPI.matchPhotos(topicId, minCount),
+    onMutate: () => {
+      setIsMatching(true)
+      showSuccess('正在智能匹配照片...', { duration: 2000 })
+    },
+    onSuccess: (data) => {
+      setIsMatching(false)
+      queryClient.invalidateQueries({ queryKey: ['images', topicId] })
+      showSuccess(`已匹配 ${data.data.length} 張照片`)
+    },
+    onError: (error: any) => {
+      setIsMatching(false)
+      showError(error?.message || '匹配照片失敗')
+    },
+  })
+
+  // 驗證匹配度
+  const validateMutation = useMutation({
+    mutationFn: () => imagesAPI.validateMatch(topicId),
+    onSuccess: (data) => {
+      if (data.overall_match) {
+        showSuccess('照片與文字匹配度良好')
+      } else {
+        showError(`發現 ${data.warnings.length} 個匹配問題`)
+        console.warn('匹配問題:', data.warnings)
+      }
+    },
+    onError: (error: any) => {
+      showError(error?.message || '驗證匹配度失敗')
+    },
+  })
+  const queryClient = useQueryClient()
   const [previewImage, setPreviewImage] = useState<Image | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [isReordering, setIsReordering] = useState(false)

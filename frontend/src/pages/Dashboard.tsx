@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { topicsAPI, api, schedulesAPI } from '@/api/client'
+import { topicsAPI, api, schedulesAPI, recommendationsAPI } from '@/api/client'
 import ProgressCard from '@/components/ui/ProgressCard'
 import TopicCard from '@/components/ui/TopicCard'
 import Calendar from '@/components/features/Calendar'
@@ -34,6 +34,17 @@ export default function Dashboard() {
   } = useQuery({
     queryKey: ['schedules'],
     queryFn: () => api.getSchedules(),
+    retry: 2,
+    retryDelay: 1000,
+  })
+
+  // 取得推薦列表
+  const {
+    data: recommendations,
+    isLoading: recommendationsLoading,
+  } = useQuery({
+    queryKey: ['recommendations', 'user_default'],
+    queryFn: () => recommendationsAPI.getRecommendations('user_default', { limit: 5 }),
     retry: 2,
     retryDelay: 1000,
   })
@@ -166,6 +177,35 @@ export default function Dashboard() {
 
         {/* 右側資訊欄 */}
         <div className="lg:col-span-4 space-y-6">
+          {/* 推薦主題 */}
+          {recommendations && recommendations.recommendations.length > 0 && (
+            <div className="bg-white rounded-lg shadow p-6">
+              <h3 className="font-bold text-gray-800 mb-4">為您推薦</h3>
+              <div className="space-y-3">
+                {recommendations.recommendations.slice(0, 3).map((rec) => (
+                  <div
+                    key={rec.id}
+                    className="p-3 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg border border-purple-200"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <p className="font-semibold text-gray-800 text-sm mb-1">{rec.keyword}</p>
+                        <p className="text-xs text-gray-600 mb-2">{rec.reason}</p>
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-0.5 bg-purple-100 text-purple-700 rounded text-xs">
+                            {rec.category}
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            信心度: {Math.round(rec.confidence_score * 100)}%
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           <UpcomingEvents />
           <RecentActivities />
         </div>

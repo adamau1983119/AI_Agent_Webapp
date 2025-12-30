@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { topicsAPI, contentsAPI, imagesAPI } from '@/api/client'
+import { topicsAPI, contentsAPI, imagesAPI, interactionsAPI } from '@/api/client'
 import { showSuccess, showError } from '@/utils/toast'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import ErrorDisplay from '@/components/ui/ErrorDisplay'
@@ -9,6 +9,7 @@ import EmptyState from '@/components/ui/EmptyState'
 import TopicEditor from '@/components/features/TopicEditor'
 import ImageGallery from '@/components/features/ImageGallery'
 import ImageSearch from '@/components/features/ImageSearch'
+import InteractionButtons from '@/components/features/InteractionButtons'
 
 export default function TopicDetail() {
   const { id } = useParams<{ id: string }>()
@@ -17,6 +18,31 @@ export default function TopicDetail() {
   const [showEditor, setShowEditor] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [showImageSearch, setShowImageSearch] = useState(false)
+  const [viewStartTime, setViewStartTime] = useState<number | null>(null)
+
+  // 記錄瀏覽時間
+  useEffect(() => {
+    if (topic) {
+      setViewStartTime(Date.now())
+      
+      return () => {
+        // 組件卸載時記錄瀏覽時間
+        if (viewStartTime) {
+          const duration = Math.floor((Date.now() - viewStartTime) / 1000)
+          if (duration > 5) {
+            // 只記錄超過 5 秒的瀏覽
+            interactionsAPI.createInteraction({
+              user_id: 'user_default',
+              topic_id: id!,
+              article_id: content?.id,
+              action: 'view',
+              duration,
+            }).catch(console.error)
+          }
+        }
+      }
+    }
+  }, [topic, content, id, viewStartTime])
 
   const {
     data: topic,
@@ -289,6 +315,18 @@ export default function TopicDetail() {
         {/* 右欄：資訊區塊 */}
         <div className="col-span-12 lg:col-span-3">
           <div className="bg-white rounded-lg shadow p-6 space-y-4">
+            {/* 互動按鈕 */}
+            <div>
+              <h3 className="font-semibold text-gray-700 mb-3">互動</h3>
+              <InteractionButtons
+                topicId={id!}
+                articleId={content?.id}
+                scriptId={content?.id}
+                onEdit={() => setShowEditor(true)}
+                onReplace={() => setShowImageSearch(true)}
+              />
+            </div>
+
             <div>
               <h3 className="font-semibold text-gray-700 mb-2">分類</h3>
               <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">

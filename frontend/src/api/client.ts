@@ -110,6 +110,10 @@ import { topicsAPI } from './topics'
 import { contentsAPI } from './contents'
 import { imagesAPI } from './images'
 import { schedulesAPI } from './schedules'
+import { interactionsAPI } from './interactions'
+import { recommendationsAPI } from './recommendations'
+import { discoverAPI } from './discover'
+import { validateAPI } from './validate'
 import type { Topic, Content, Image, Schedule } from '@/types'
 // delay 已在同檔案中定義（第 20 行），不需要導入
 
@@ -162,4 +166,13 @@ export const api = {
 }
 
 // 導出專用 API 模組供新代碼使用
-export { topicsAPI, contentsAPI, imagesAPI, schedulesAPI }
+export {
+  topicsAPI,
+  contentsAPI,
+  imagesAPI,
+  schedulesAPI,
+  interactionsAPI,
+  recommendationsAPI,
+  discoverAPI,
+  validateAPI,
+}
