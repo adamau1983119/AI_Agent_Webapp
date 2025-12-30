@@ -31,33 +31,47 @@ class SchedulerService:
             logger.warning("排程服務已經在運行")
             return
         
-        # 設定每日任務
-        # 07:00 - 時尚趨勢
+        # 設定每日任務（使用 UTC 時間，需根據時區調整）
+        # 注意：CronTrigger 使用 UTC 時間
+        # 如果服務器在 UTC+8（香港時間），需要減 8 小時
+        
+        # 計算 UTC 時間（假設目標是香港時間 07:00, 12:00, 18:00）
+        # 香港時間 = UTC + 8，所以 UTC 時間 = 香港時間 - 8
+        # 07:00 HKT = 23:00 UTC (前一天)
+        # 12:00 HKT = 04:00 UTC
+        # 18:00 HKT = 10:00 UTC
+        
+        # 07:00 香港時間 = 23:00 UTC（前一天）
         self.scheduler.add_job(
             self._generate_topics_for_timeslot,
-            CronTrigger(hour=7, minute=0),
+            CronTrigger(hour=23, minute=0, timezone='UTC'),  # 香港時間 07:00
             id="fashion_topics_07:00",
             args=[Category.FASHION, "07:00"],
             replace_existing=True
         )
         
-        # 12:00 - 美食推薦
+        # 12:00 香港時間 = 04:00 UTC
         self.scheduler.add_job(
             self._generate_topics_for_timeslot,
-            CronTrigger(hour=12, minute=0),
+            CronTrigger(hour=4, minute=0, timezone='UTC'),  # 香港時間 12:00
             id="food_topics_12:00",
             args=[Category.FOOD, "12:00"],
             replace_existing=True
         )
         
-        # 18:00 - 社會趨勢
+        # 18:00 香港時間 = 10:00 UTC
         self.scheduler.add_job(
             self._generate_topics_for_timeslot,
-            CronTrigger(hour=18, minute=0),
+            CronTrigger(hour=10, minute=0, timezone='UTC'),  # 香港時間 18:00
             id="trend_topics_18:00",
             args=[Category.TREND, "18:00"],
             replace_existing=True
         )
+        
+        logger.info("排程任務已設定：")
+        logger.info("  - 07:00 HKT (23:00 UTC) - 時尚趨勢")
+        logger.info("  - 12:00 HKT (04:00 UTC) - 美食推薦")
+        logger.info("  - 18:00 HKT (10:00 UTC) - 社會趨勢")
         
         self.scheduler.start()
         self.is_running = True

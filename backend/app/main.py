@@ -73,22 +73,52 @@ async def lifespan(app: FastAPI):
     
     # 啟動排程服務（生產環境自動啟動，開發環境可手動啟動）
     scheduler_service = None
-    if settings.ENVIRONMENT == "production":
+    scheduler_monitor = None
+    
+    # 檢查是否應該啟動排程服務
+    # 生產環境或明確設定 AUTO_START_SCHEDULER=true 時啟動
+    should_start_scheduler = (
+        settings.ENVIRONMENT == "production" or 
+        getattr(settings, 'AUTO_START_SCHEDULER', 'false').lower() == 'true'
+    )
+    
+    if should_start_scheduler:
         try:
             from app.services.automation.scheduler import SchedulerService
+            from app.services.automation.scheduler_monitor import SchedulerMonitor
+            
             scheduler_service = SchedulerService()
             scheduler_service.start()
-            logger.info("排程服務已啟動（生產環境）")
+            logger.info("✅ 排程服務已啟動（生產環境）")
+            
+            # 啟動監控服務（僅生產環境）
+            if settings.ENVIRONMENT == "production":
+                scheduler_monitor = SchedulerMonitor(scheduler_service)
+                # 在背景任務中啟動監控
+                asyncio.create_task(scheduler_monitor.start_monitoring())
+                logger.info("✅ 排程監控服務已啟動")
+                
+                # 確保今日主題已生成（啟動時檢查一次）
+                asyncio.create_task(scheduler_monitor.ensure_today_topics())
         except Exception as e:
-            logger.error(f"啟動排程服務失敗: {e}")
+            logger.error(f"❌ 啟動排程服務失敗: {e}", exc_info=True)
     else:
         # 開發環境：記錄提示，可通過 API 手動啟動
-        logger.info("開發環境：排程服務未自動啟動，可通過 POST /api/v1/schedules/start 手動啟動")
-        logger.info("或使用 POST /api/v1/schedules/generate 立即生成主題")
+        logger.info("ℹ️ 開發環境：排程服務未自動啟動")
+        logger.info("   可通過 POST /api/v1/schedules/start 手動啟動")
+        logger.info("   或使用 POST /api/v1/schedules/generate-today 立即生成今日主題")
     
     yield
     
     # 關閉時執行
+    # 停止監控服務
+    if scheduler_monitor:
+        try:
+            scheduler_monitor.stop_monitoring()
+            logger.info("排程監控服務已停止")
+        except Exception as e:
+            logger.error(f"停止排程監控服務失敗: {e}")
+    
     # 停止排程服務
     if scheduler_service:
         try:
