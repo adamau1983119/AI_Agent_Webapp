@@ -1,9 +1,10 @@
 /**
  * Discover API
  * 主題發掘相關 API
+ * 只使用真實後端 API，不使用 Mock 數據
  */
 
-import { fetchAPI, USE_MOCK, delay } from './client'
+import { fetchAPI } from './client'
 
 /**
  * 主題發掘請求
@@ -69,26 +70,6 @@ export const discoverAPI = {
    * 自動發掘主題
    */
   autoDiscoverTopics: async (data: DiscoverTopicsRequest): Promise<DiscoverTopicsResponse> => {
-    if (USE_MOCK) {
-      await delay(2000)
-      return {
-        timestamp: new Date().toISOString(),
-        category: data.category,
-        time_slot: data.time_slot || 'morning',
-        region: data.region || 'global',
-        topics: [
-          {
-            title: `Mock ${data.category} topic 1`,
-            keyword: `Mock ${data.category} keyword 1`,
-            category: data.category,
-            source: 'Mock Source',
-            sources: [],
-            validation: { valid: true },
-          },
-        ],
-      }
-    }
-
     return await fetchAPI<DiscoverTopicsResponse>('/discover/topics/auto', {
       method: 'POST',
       body: JSON.stringify(data),
@@ -99,16 +80,6 @@ export const discoverAPI = {
    * 手動發掘主題
    */
   manualDiscoverTopics: async (data: DiscoverTopicsRequest): Promise<DiscoverTopicsResponse> => {
-    if (USE_MOCK) {
-      await delay(2000)
-      return {
-        timestamp: new Date().toISOString(),
-        category: data.category,
-        region: data.region || 'global',
-        topics: [],
-      }
-    }
-
     return await fetchAPI<DiscoverTopicsResponse>('/discover/topics/manual', {
       method: 'POST',
       body: JSON.stringify(data),
@@ -125,24 +96,6 @@ export const discoverAPI = {
       date?: string
     }
   ): Promise<RankingsResponse> => {
-    if (USE_MOCK) {
-      await delay(300)
-      return {
-        date: options?.date || new Date().toISOString().split('T')[0],
-        category,
-        region: options?.region || 'global',
-        rankings: [
-          {
-            rank: 1,
-            keyword: `Mock ${category} keyword 1`,
-            search_volume: 50000,
-            trend: 'up',
-            source: 'Mock Source',
-          },
-        ],
-      }
-    }
-
     const params = new URLSearchParams()
     params.append('category', category)
     if (options?.region) params.append('region', options.region)
@@ -151,4 +104,3 @@ export const discoverAPI = {
     return await fetchAPI<RankingsResponse>(`/discover/topics/rankings?${params.toString()}`)
   },
 }
-

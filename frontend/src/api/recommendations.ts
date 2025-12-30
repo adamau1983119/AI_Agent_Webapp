@@ -1,9 +1,10 @@
 /**
  * Recommendations API
  * 推薦系統相關 API
+ * 只使用真實後端 API，不使用 Mock 數據
  */
 
-import { fetchAPI, USE_MOCK, delay } from './client'
+import { fetchAPI } from './client'
 
 /**
  * 推薦回應
@@ -53,24 +54,6 @@ export const recommendationsAPI = {
       limit?: number
     }
   ): Promise<RecommendationListResponse> => {
-    if (USE_MOCK) {
-      await delay(500)
-      return {
-        user_id: userId,
-        recommendations: [
-          {
-            id: 'rec_001',
-            user_id: userId,
-            category: 'fashion',
-            keyword: 'Dior 2026 春夏秀',
-            confidence_score: 0.85,
-            reason: '顧客偏好fashion主題，推薦分數：0.85',
-            generated_at: new Date().toISOString(),
-          },
-        ],
-      }
-    }
-
     const params = new URLSearchParams()
     if (options?.category) params.append('category', options.category)
     if (options?.limit) params.append('limit', options.limit.toString())
@@ -89,14 +72,6 @@ export const recommendationsAPI = {
       end_date?: string
     }
   ): Promise<RecommendationHistoryResponse> => {
-    if (USE_MOCK) {
-      await delay(300)
-      return {
-        user_id: userId,
-        history: [],
-      }
-    }
-
     const params = new URLSearchParams()
     if (options?.start_date) params.append('start_date', options.start_date)
     if (options?.end_date) params.append('end_date', options.end_date)
@@ -105,4 +80,3 @@ export const recommendationsAPI = {
     return await fetchAPI<RecommendationHistoryResponse>(`/recommendations/${userId}/history${query ? `?${query}` : ''}`)
   },
 }
-

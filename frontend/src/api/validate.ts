@@ -1,9 +1,10 @@
 /**
  * Validate API
  * 資料驗證相關 API
+ * 只使用真實後端 API，不使用 Mock 數據
  */
 
-import { fetchAPI, USE_MOCK, delay } from './client'
+import { fetchAPI } from './client'
 
 /**
  * 驗證來源請求
@@ -88,26 +89,6 @@ export const validateAPI = {
    * 驗證並抓取來源資料
    */
   validateSources: async (data: ValidateSourcesRequest): Promise<ValidateSourcesResponse> => {
-    if (USE_MOCK) {
-      await delay(1000)
-      return {
-        topic_id: data.topic_id,
-        validated_sources: data.sources.map((source) => ({
-          valid: true,
-          url: source.url,
-          name: source.name,
-          fetched_at: new Date().toISOString(),
-          reliability: 'high',
-        })),
-        validation_summary: {
-          total_sources: data.sources.length,
-          verified_sources: data.sources.length,
-          failed_sources: 0,
-        },
-        failed_sources: [],
-      }
-    }
-
     return await fetchAPI<ValidateSourcesResponse>('/validate/sources', {
       method: 'POST',
       body: JSON.stringify(data),
@@ -120,18 +101,6 @@ export const validateAPI = {
   validateTopicConsistency: async (
     data: ValidateConsistencyRequest
   ): Promise<ValidateConsistencyResponse> => {
-    if (USE_MOCK) {
-      await delay(500)
-      return {
-        valid: true,
-        confidence: 0.9,
-        consistency_score: 0.9,
-        sources_verified: data.sources.length,
-        is_factual: false,
-        warnings: [],
-      }
-    }
-
     return await fetchAPI<ValidateConsistencyResponse>('/validate/topic-consistency', {
       method: 'POST',
       body: JSON.stringify(data),
@@ -142,19 +111,8 @@ export const validateAPI = {
    * 檢查來源健康度
    */
   checkSourceHealth: async (sourceUrl: string): Promise<SourceHealthResponse> => {
-    if (USE_MOCK) {
-      await delay(300)
-      return {
-        health_score: 0.9,
-        status: 'healthy',
-        response_time: 0.5,
-        status_code: 200,
-      }
-    }
-
     // URL 編碼
     const encodedUrl = encodeURIComponent(sourceUrl)
     return await fetchAPI<SourceHealthResponse>(`/validate/source-health/${encodedUrl}`)
   },
 }
-

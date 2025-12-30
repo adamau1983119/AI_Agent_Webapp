@@ -12,8 +12,9 @@ const gradientClasses = {
 }
 
 export default function TopicCard({ topic }: TopicCardProps) {
-  const contentProgress = 85 // Mock 資料，後續從 API 獲取
-  const imageProgress = 100 // Mock 資料，後續從 API 獲取
+  // 從 topic 數據計算進度
+  const contentProgress = topic.wordCount > 0 ? Math.min(100, (topic.wordCount / 500) * 100) : 0
+  const imageProgress = topic.imageCount >= 8 ? 100 : Math.min(100, (topic.imageCount / 8) * 100)
 
   return (
     <Link to={`/topics/${topic.id}`}>

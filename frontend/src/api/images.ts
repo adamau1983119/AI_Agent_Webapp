@@ -1,9 +1,9 @@
 /**
  * 圖片相關 API
+ * 只使用真實後端 API，不使用 Mock 數據
  */
 
-import { fetchAPI, fetchAPIWithPagination, USE_MOCK, delay } from './client'
-import { mockImages } from './mockData'
+import { fetchAPI, fetchAPIWithPagination } from './client'
 import type { Image } from '@/types'
 
 /**
@@ -62,6 +62,13 @@ export interface ImageReorderItem {
 }
 
 /**
+ * 圖片列表響應
+ */
+export interface ImageListResponse {
+  data: Image[]
+}
+
+/**
  * 圖片 API
  */
 export const imagesAPI = {
@@ -69,21 +76,10 @@ export const imagesAPI = {
    * 取得主題圖片列表
    */
   getImages: async (topicId: string): Promise<Image[]> => {
-    if (USE_MOCK) {
-      await delay(300)
-      return mockImages[topicId] || []
-    }
-
-    try {
-      const response = await fetchAPI<any>(`/images/${topicId}`)
-      // 後端可能返回 { data: [...] } 或直接返回陣列
-      const images = Array.isArray(response) ? response : response.data || []
-      return images.map(convertImage)
-    } catch (error) {
-      // 生產環境不應該 fallback 到 mock 數據
-      console.error('Failed to fetch images from backend', error)
-      throw error  // 直接拋出錯誤
-    }
+    const response = await fetchAPI<any>(`/images/${topicId}`)
+    // 後端可能返回 { data: [...] } 或直接返回陣列
+    const images = Array.isArray(response) ? response : response.data || []
+    return images.map(convertImage)
   },
 
   /**
@@ -92,64 +88,38 @@ export const imagesAPI = {
   searchImages: async (
     params: ImageSearchParams
   ): Promise<{ data: Image[]; pagination: any }> => {
-    if (USE_MOCK) {
-      await delay(500)
-      return {
-        data: [],
-        pagination: {
-          page: params.page || 1,
-          limit: params.limit || 20,
-          total: 0,
-          totalPages: 0,
-        },
-      }
+    const urlParams = new URLSearchParams({
+      keywords: params.keywords,
+      page: (params.page || 1).toString(),
+      limit: (params.limit || 20).toString(),
+    })
+    if (params.source) {
+      urlParams.append('source', params.source)
     }
 
-    try {
-      const urlParams = new URLSearchParams({
-        keywords: params.keywords,
-        page: (params.page || 1).toString(),
-        limit: (params.limit || 20).toString(),
-      })
-      if (params.source) {
-        urlParams.append('source', params.source)
-      }
+    const response = await fetchAPIWithPagination<any>(
+      `/images/search?${urlParams.toString()}`
+    )
 
-      const response = await fetchAPIWithPagination<any>(
-        `/images/search?${urlParams.toString()}`
-      )
+    const page = params.page || 1
+    const limit = params.limit || 20
+    const pagination = response.pagination || {
+      page,
+      limit,
+      total: response.data.length,
+      totalPages: Math.ceil(response.data.length / limit),
+    }
 
-      const page = params.page || 1
-      const limit = params.limit || 20
-      const pagination = response.pagination || {
-        page,
-        limit,
-        total: response.data.length,
-        totalPages: Math.ceil(response.data.length / limit),
-      }
-
-      return {
-        data: response.data.map(convertImage),
-        pagination: {
-          page: pagination.page || page,
-          limit: pagination.limit || limit,
-          total: pagination.total || response.data.length,
-          totalPages:
-            pagination.totalPages ||
-            Math.ceil((pagination.total || response.data.length) / (pagination.limit || limit)),
-        },
-      }
-    } catch (error) {
-      console.error('Failed to search images', error)
-      return {
-        data: [],
-        pagination: {
-          page: params.page || 1,
-          limit: params.limit || 20,
-          total: 0,
-          totalPages: 0,
-        },
-      }
+    return {
+      data: response.data.map(convertImage),
+      pagination: {
+        page: pagination.page || page,
+        limit: pagination.limit || limit,
+        total: pagination.total || response.data.length,
+        totalPages:
+          pagination.totalPages ||
+          Math.ceil((pagination.total || response.data.length) / (pagination.limit || limit)),
+      },
     }
   },
 
@@ -160,17 +130,6 @@ export const imagesAPI = {
     topicId: string,
     data: ImageCreate
   ): Promise<Image> => {
-    if (USE_MOCK) {
-      await delay(300)
-      return {
-        id: `image_${Date.now()}`,
-        topicId,
-        ...data,
-        photographer: data.photographer || '',
-        order: data.order || 0,
-      }
-    }
-
     const image = await fetchAPI<any>(`/images/${topicId}`, {
       method: 'POST',
       body: JSON.stringify({
@@ -190,19 +149,6 @@ export const imagesAPI = {
     imageId: string,
     data: ImageUpdate
   ): Promise<Image> => {
-    if (USE_MOCK) {
-      await delay(300)
-      return {
-        id: imageId,
-        topicId,
-        url: data.url || '',
-        source: data.source || '',
-        photographer: data.photographer || '',
-        license: data.license || '',
-        order: data.order || 0,
-      }
-    }
-
     const image = await fetchAPI<any>(`/images/${topicId}/${imageId}`, {
       method: 'PUT',
       body: JSON.stringify(data),
@@ -215,11 +161,6 @@ export const imagesAPI = {
    * 刪除圖片
    */
   deleteImage: async (topicId: string, imageId: string): Promise<void> => {
-    if (USE_MOCK) {
-      await delay(300)
-      return
-    }
-
     await fetchAPI(`/images/${topicId}/${imageId}`, {
       method: 'DELETE',
     })
@@ -232,11 +173,6 @@ export const imagesAPI = {
     topicId: string,
     orders: ImageReorderItem[]
   ): Promise<void> => {
-    if (USE_MOCK) {
-      await delay(300)
-      return
-    }
-
     await fetchAPI(`/images/${topicId}/reorder`, {
       method: 'PUT',
       body: JSON.stringify({
@@ -252,11 +188,6 @@ export const imagesAPI = {
     topicId: string,
     minCount: number = 8
   ): Promise<Image[]> => {
-    if (USE_MOCK) {
-      await delay(2000)
-      return []
-    }
-
     const response = await fetchAPI<{ data: any[] }>(`/images/${topicId}/match?min_count=${minCount}`, {
       method: 'POST',
     })
@@ -281,16 +212,6 @@ export const imagesAPI = {
     overall_match: boolean
     warnings: string[]
   }> => {
-    if (USE_MOCK) {
-      await delay(1000)
-      return {
-        topic_id: topicId,
-        validation_results: [],
-        overall_match: true,
-        warnings: [],
-      }
-    }
-
     return await fetchAPI(`/images/validate-match`, {
       method: 'POST',
       body: JSON.stringify({

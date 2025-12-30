@@ -1,6 +1,6 @@
 /**
  * API 客戶端設定
- * 支援真實 API 和 Mock 資料（可通過環境變數切換）
+ * 只使用真實後端 API，不使用 Mock 數據
  */
 
 import {
@@ -12,10 +12,6 @@ import {
 import { handleAPIError } from './errors'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
-const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true'
-
-// 模擬 API 延遲
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 /**
  * HTTP 請求輔助函數（使用攔截器）
@@ -96,7 +92,7 @@ async function fetchAPIWithPagination<T>(
 }
 
 // 導出基礎函數供專用模組使用
-export { fetchAPI, fetchAPIWithPagination, API_BASE_URL, USE_MOCK, delay }
+export { fetchAPI, fetchAPIWithPagination, API_BASE_URL }
 
 /**
  * 統一的 API 介面

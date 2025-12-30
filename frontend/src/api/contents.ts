@@ -1,9 +1,9 @@
 /**
  * 內容相關 API
+ * 只使用真實後端 API，不使用 Mock 數據
  */
 
-import { fetchAPI, USE_MOCK, delay } from './client'
-import { mockContents } from './mockData'
+import { fetchAPI } from './client'
 import type { Content } from '@/types'
 
 /**
@@ -52,19 +52,8 @@ export const contentsAPI = {
    * 取得主題內容
    */
   getContent: async (topicId: string): Promise<Content | null> => {
-    if (USE_MOCK) {
-      await delay(300)
-      return mockContents[topicId] || null
-    }
-
-    try {
-      const content = await fetchAPI<any>(`/contents/${topicId}`)
-      return convertContent(content)
-    } catch (error) {
-      // 生產環境不應該 fallback 到 mock 數據
-      console.error('Failed to fetch content from backend', error)
-      throw error  // 直接拋出錯誤
-    }
+    const content = await fetchAPI<any>(`/contents/${topicId}`)
+    return convertContent(content)
   },
 
   /**
@@ -74,22 +63,6 @@ export const contentsAPI = {
     topicId: string,
     params: GenerateContentParams
   ): Promise<Content> => {
-    if (USE_MOCK) {
-      await delay(2000) // 模擬生成時間
-      return (
-        mockContents[topicId] || {
-          id: `content_${topicId}`,
-          topicId,
-          article: '生成的短文內容...',
-          script: '生成的腳本內容...',
-          wordCount: params.article_length || 500,
-          estimatedDuration: params.script_duration || 30,
-          modelUsed: 'qwen-turbo',
-          version: 1,
-        }
-      )
-    }
-
     const content = await fetchAPI<any>(`/contents/${topicId}/generate`, {
       method: 'POST',
       body: JSON.stringify({
@@ -109,13 +82,6 @@ export const contentsAPI = {
     topicId: string,
     data: ContentUpdate
   ): Promise<Content> => {
-    if (USE_MOCK) {
-      await delay(300)
-      const content = mockContents[topicId]
-      if (!content) throw new Error('Content not found')
-      return { ...content, ...data }
-    }
-
     const content = await fetchAPI<any>(`/contents/${topicId}`, {
       method: 'PUT',
       body: JSON.stringify(data),
@@ -128,11 +94,6 @@ export const contentsAPI = {
    * 取得內容版本歷史
    */
   getContentVersions: async (topicId: string): Promise<Content[]> => {
-    if (USE_MOCK) {
-      await delay(300)
-      return []
-    }
-
     const versions = await fetchAPI<any[]>(`/contents/${topicId}/versions`)
     return versions.map(convertContent)
   },
@@ -144,22 +105,6 @@ export const contentsAPI = {
     topicId: string,
     params: GenerateContentParams
   ): Promise<Content> => {
-    if (USE_MOCK) {
-      await delay(2000)
-      return (
-        mockContents[topicId] || {
-          id: `content_${topicId}`,
-          topicId,
-          article: '重新生成的短文內容...',
-          script: '重新生成的腳本內容...',
-          wordCount: params.article_length || 500,
-          estimatedDuration: params.script_duration || 30,
-          modelUsed: 'qwen-turbo',
-          version: 1,
-        }
-      )
-    }
-
     const content = await fetchAPI<any>(`/contents/${topicId}/regenerate`, {
       method: 'POST',
       body: JSON.stringify({

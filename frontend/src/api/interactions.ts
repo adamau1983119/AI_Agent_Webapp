@@ -1,9 +1,10 @@
 /**
  * Interactions API
  * 互動追蹤相關 API
+ * 只使用真實後端 API，不使用 Mock 數據
  */
 
-import { fetchAPI, USE_MOCK, delay } from './client'
+import { fetchAPI } from './client'
 
 /**
  * 互動類型
@@ -80,21 +81,6 @@ export const interactionsAPI = {
    * 記錄互動
    */
   createInteraction: async (data: CreateInteractionRequest): Promise<InteractionResponse> => {
-    if (USE_MOCK) {
-      await delay(300)
-      return {
-        id: `interaction_${Date.now()}`,
-        user_id: data.user_id,
-        topic_id: data.topic_id,
-        article_id: data.article_id,
-        photo_id: data.photo_id,
-        script_id: data.script_id,
-        action: data.action,
-        duration: data.duration,
-        created_at: new Date().toISOString(),
-      }
-    }
-
     return await fetchAPI<InteractionResponse>('/interactions', {
       method: 'POST',
       body: JSON.stringify(data),
@@ -115,20 +101,6 @@ export const interactionsAPI = {
       limit?: number
     }
   ): Promise<InteractionListResponse> => {
-    if (USE_MOCK) {
-      await delay(300)
-      return {
-        user_id: userId,
-        interactions: [],
-        pagination: {
-          page: 1,
-          limit: 20,
-          total: 0,
-          totalPages: 0,
-        },
-      }
-    }
-
     const params = new URLSearchParams()
     if (options?.action) params.append('action', options.action)
     if (options?.category) params.append('category', options.category)
@@ -145,23 +117,6 @@ export const interactionsAPI = {
    * 取得互動統計
    */
   getInteractionStats: async (userId: string): Promise<InteractionStatsResponse> => {
-    if (USE_MOCK) {
-      await delay(300)
-      return {
-        user_id: userId,
-        stats: {
-          total_likes: 0,
-          total_dislikes: 0,
-          total_edits: 0,
-          total_replaces: 0,
-          total_views: 0,
-          avg_view_time: 0,
-          category_distribution: {},
-        },
-      }
-    }
-
     return await fetchAPI<InteractionStatsResponse>(`/interactions/${userId}/stats`)
   },
 }
-
