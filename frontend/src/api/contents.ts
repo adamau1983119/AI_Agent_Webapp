@@ -61,9 +61,9 @@ export const contentsAPI = {
       const content = await fetchAPI<any>(`/contents/${topicId}`)
       return convertContent(content)
     } catch (error) {
-      console.error('Failed to fetch content, falling back to mock data', error)
-      await delay(300)
-      return mockContents[topicId] || null
+      // 生產環境不應該 fallback 到 mock 數據
+      console.error('Failed to fetch content from backend', error)
+      throw error  // 直接拋出錯誤
     }
   },
 

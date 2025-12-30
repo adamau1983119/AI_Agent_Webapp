@@ -80,9 +80,9 @@ export const imagesAPI = {
       const images = Array.isArray(response) ? response : response.data || []
       return images.map(convertImage)
     } catch (error) {
-      console.error('Failed to fetch images, falling back to mock data', error)
-      await delay(300)
-      return mockImages[topicId] || []
+      // 生產環境不應該 fallback 到 mock 數據
+      console.error('Failed to fetch images from backend', error)
+      throw error  // 直接拋出錯誤
     }
   },
 

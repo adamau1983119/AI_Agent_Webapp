@@ -143,25 +143,9 @@ export const topicsAPI = {
         },
       }
     } catch (error) {
-      console.error('Failed to fetch topics, falling back to mock data', error)
-      await delay(500)
-      // 返回 Mock 資料的分頁格式
-      const page = filters?.page || 1
-      const limit = filters?.limit || 12
-      const start = (page - 1) * limit
-      const end = start + limit
-      const paginatedTopics = mockTopics.slice(start, end)
-      const totalPages = Math.ceil(mockTopics.length / limit)
-
-      return {
-        data: paginatedTopics,
-        pagination: {
-          page,
-          limit,
-          total: mockTopics.length,
-          totalPages,
-        },
-      }
+      // 生產環境不應該 fallback 到 mock 數據，應該顯示錯誤
+      console.error('Failed to fetch topics from backend', error)
+      throw error  // 直接拋出錯誤，讓前端顯示錯誤訊息
     }
   },
 
@@ -187,10 +171,9 @@ export const topicsAPI = {
         console.warn(`Topic not found (404): ${id}`, error)
         return null
       }
-      // 其他錯誤，記錄並嘗試使用 mock 數據
-      console.error(`Failed to fetch topic ${id}, falling back to mock data`, error)
-      await delay(300)
-      return mockTopics.find((t) => t.id === id) || null
+      // 其他錯誤，直接拋出，不 fallback 到 mock 數據
+      console.error(`Failed to fetch topic ${id}`, error)
+      throw error
     }
   },
 
