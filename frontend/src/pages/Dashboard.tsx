@@ -1,13 +1,18 @@
-import { useQuery } from '@tanstack/react-query'
-import { topicsAPI, api } from '@/api/client'
+import { useState } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { topicsAPI, api, schedulesAPI } from '@/api/client'
 import ProgressCard from '@/components/ui/ProgressCard'
 import TopicCard from '@/components/ui/TopicCard'
 import Calendar from '@/components/features/Calendar'
 import TodayTopics from '@/components/features/TodayTopics'
 import UpcomingEvents from '@/components/features/UpcomingEvents'
 import RecentActivities from '@/components/features/RecentActivities'
+import toast from 'react-hot-toast'
 
 export default function Dashboard() {
+  const queryClient = useQueryClient()
+  const [isGenerating, setIsGenerating] = useState(false)
+
   const { data: topicsResponse, isLoading } = useQuery({
     queryKey: ['topics'],
     queryFn: () => topicsAPI.getTopics(),
@@ -17,6 +22,33 @@ export default function Dashboard() {
     queryKey: ['schedules'],
     queryFn: () => api.getSchedules(),
   })
+
+  // 生成今日主題的 mutation
+  const generateTodayMutation = useMutation({
+    mutationFn: (force: boolean) => schedulesAPI.generateTodayAllTopics(force),
+    onMutate: () => {
+      setIsGenerating(true)
+      toast.loading('正在生成今日主題...', { id: 'generate-today' })
+    },
+    onSuccess: (data) => {
+      setIsGenerating(false)
+      toast.success(data.message || '今日主題生成任務已啟動', { id: 'generate-today' })
+      // 重新獲取數據
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ['topics'] })
+        queryClient.invalidateQueries({ queryKey: ['schedules'] })
+      }, 3000) // 3秒後刷新，給後端時間生成
+    },
+    onError: (error: any) => {
+      setIsGenerating(false)
+      toast.error(error?.message || '生成今日主題失敗', { id: 'generate-today' })
+    },
+  })
+
+  const handleGenerateToday = () => {
+    if (isGenerating) return
+    generateTodayMutation.mutate(false)
+  }
 
   // 從分頁響應中提取 topics 數組
   const topics = topicsResponse?.data || []
@@ -55,13 +87,24 @@ export default function Dashboard() {
           message="不錯的進展！"
           color="green"
         />
-        <ProgressCard
-          title="今日主題"
-          value={`${todayTopics}/6`}
-          percentage={Math.round((todayTopics / 6) * 100)}
-          message="好的開始！"
-          color="orange"
-        />
+        <div className="relative">
+          <ProgressCard
+            title="今日主題"
+            value={`${todayTopics}/9`}
+            percentage={Math.round((todayTopics / 9) * 100)}
+            message={todayTopics >= 9 ? "已完成！" : "好的開始！"}
+            color="orange"
+          />
+          {todayTopics < 9 && (
+            <button
+              onClick={handleGenerateToday}
+              disabled={isGenerating}
+              className="absolute top-2 right-2 px-3 py-1 text-xs bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {isGenerating ? '生成中...' : '立即生成'}
+            </button>
+          )}
+        </div>
       </div>
 
       {/* 中間區域：日曆 + 主題列表 */}

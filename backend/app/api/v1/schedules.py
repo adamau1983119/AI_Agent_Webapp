@@ -41,6 +41,11 @@ class ManualGenerationRequest(BaseModel):
     count: int = 3
 
 
+class GenerateTodayRequest(BaseModel):
+    """生成今日所有主題請求"""
+    force: bool = False  # 是否強制重新生成
+
+
 @router.get("", response_model=List[ScheduleResponse])
 async def get_schedules(date: Optional[str] = Query(None, description="日期篩選（YYYY-MM-DD）")):
     """
@@ -148,6 +153,73 @@ async def manual_generate_topics(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.post("/generate-today", response_model=dict)
+async def generate_today_all_topics(
+    request: GenerateTodayRequest = GenerateTodayRequest(),
+    background_tasks: BackgroundTasks = None
+):
+    """
+    立即生成今日所有主題（3個分類 × 3個主題 = 9個主題）
+    
+    用於補齊今日缺失的主題
+    """
+    try:
+        scheduler_service = get_scheduler_service()
+        
+        # 檢查今日是否已有主題
+        topic_repo = TopicRepository()
+        today = datetime.now().strftime("%Y-%m-%d")
+        existing_topics, _ = await topic_repo.list_topics(date=today, limit=100)
+        
+        if not request.force and len(existing_topics) >= 9:
+            return {
+                "message": "今日主題已完整，無需重新生成",
+                "existing_count": len(existing_topics),
+                "required_count": 9
+            }
+        
+        # 在背景任務中執行
+        async def generate_all_task():
+            try:
+                results = {}
+                for category in [Category.FASHION, Category.FOOD, Category.TREND]:
+                    try:
+                        topics = await scheduler_service.trigger_manual_generation(
+                            category=category,
+                            count=3
+                        )
+                        results[category.value] = {
+                            "count": len(topics),
+                            "topics": [t.get("id") for t in topics]
+                        }
+                        logger.info(f"生成 {category.value} 主題完成，共 {len(topics)} 個")
+                    except Exception as e:
+                        logger.error(f"生成 {category.value} 主題失敗: {e}")
+                        results[category.value] = {"error": str(e)}
+                
+                logger.info(f"今日主題生成完成: {results}")
+            except Exception as e:
+                logger.error(f"生成今日主題失敗: {e}")
+        
+        if background_tasks:
+            background_tasks.add_task(generate_all_task)
+        else:
+            # 如果沒有 background_tasks，直接執行（同步）
+            import asyncio
+            asyncio.create_task(generate_all_task())
+        
+        return {
+            "message": "今日主題生成任務已啟動",
+            "categories": ["fashion", "food", "trend"],
+            "expected_count": 9,
+            "existing_count": len(existing_topics)
+        }
+        
+    except Exception as e:
+        logger.error(f"啟動今日主題生成任務失敗: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.post("/start")
 async def start_scheduler():
     """啟動排程服務"""
@@ -177,17 +249,18 @@ async def get_scheduler_status():
     """取得排程服務狀態"""
     try:
         scheduler_service = get_scheduler_service()
-        return {
-            "status": "running" if scheduler_service.is_running else "stopped",
-            "jobs": [
-                {
+        jobs = []
+        if scheduler_service.is_running:
+            for job in scheduler_service.scheduler.get_jobs():
+                jobs.append({
                     "id": job.id,
                     "next_run_time": job.next_run_time.isoformat() if job.next_run_time else None
-                }
-                for job in scheduler_service.scheduler.get_jobs()
-            ]
+                })
+        
+        return {
+            "status": "running" if scheduler_service.is_running else "stopped",
+            "jobs": jobs
         }
     except Exception as e:
         logger.error(f"取得排程服務狀態失敗: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-

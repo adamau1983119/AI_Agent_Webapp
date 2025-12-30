@@ -71,16 +71,20 @@ async def lifespan(app: FastAPI):
     logger.info(f"CORS_ORIGINS 設定值: {settings.CORS_ORIGINS}")
     logger.info(f"CORS_ORIGINS 類型: {type(settings.CORS_ORIGINS)}")
     
-    # 啟動排程服務（僅在生產環境自動啟動）
+    # 啟動排程服務（生產環境自動啟動，開發環境可手動啟動）
     scheduler_service = None
     if settings.ENVIRONMENT == "production":
         try:
             from app.services.automation.scheduler import SchedulerService
             scheduler_service = SchedulerService()
             scheduler_service.start()
-            logger.info("排程服務已啟動")
+            logger.info("排程服務已啟動（生產環境）")
         except Exception as e:
             logger.error(f"啟動排程服務失敗: {e}")
+    else:
+        # 開發環境：記錄提示，可通過 API 手動啟動
+        logger.info("開發環境：排程服務未自動啟動，可通過 POST /api/v1/schedules/start 手動啟動")
+        logger.info("或使用 POST /api/v1/schedules/generate 立即生成主題")
     
     yield
     

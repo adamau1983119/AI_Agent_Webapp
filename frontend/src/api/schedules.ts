@@ -113,5 +113,35 @@ export const schedulesAPI = {
       jobs: Array<{ id: string; next_run_time: string | null }>
     }>('/schedules/status')
   },
+
+  /**
+   * 立即生成今日所有主題
+   */
+  generateTodayAllTopics: async (force: boolean = false): Promise<{
+    message: string
+    categories: string[]
+    expected_count: number
+    existing_count: number
+  }> => {
+    if (USE_MOCK) {
+      await delay(2000)
+      return {
+        message: '今日主題生成任務已啟動',
+        categories: ['fashion', 'food', 'trend'],
+        expected_count: 9,
+        existing_count: 0,
+      }
+    }
+
+    return await fetchAPI<{
+      message: string
+      categories: string[]
+      expected_count: number
+      existing_count: number
+    }>('/schedules/generate-today', {
+      method: 'POST',
+      body: JSON.stringify({ force }),
+    })
+  },
 }
 
