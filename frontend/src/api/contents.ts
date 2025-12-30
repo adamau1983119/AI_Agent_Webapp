@@ -52,8 +52,17 @@ export const contentsAPI = {
    * 取得主題內容
    */
   getContent: async (topicId: string): Promise<Content | null> => {
-    const content = await fetchAPI<any>(`/contents/${topicId}`)
-    return convertContent(content)
+    try {
+      const content = await fetchAPI<any>(`/contents/${topicId}`)
+      return convertContent(content)
+    } catch (error: any) {
+      // 如果是 404 錯誤（內容不存在），返回 null
+      if (error?.status === 404) {
+        return null
+      }
+      // 其他錯誤，直接拋出
+      throw error
+    }
   },
 
   /**

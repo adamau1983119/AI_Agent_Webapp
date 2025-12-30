@@ -63,6 +63,23 @@ export default function TopicDetail() {
     queryKey: ['content', id],
     queryFn: () => contentsAPI.getContent(id!),
     enabled: !!id,
+    retry: false, // 404 不重試
+  })
+
+  // 生成內容的 mutation
+  const generateContentMutation = useMutation({
+    mutationFn: () => contentsAPI.generateContent(id!, {
+      type: 'both',
+      article_length: 500,
+      script_duration: 30,
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['content', id] })
+      showSuccess('內容生成成功')
+    },
+    onError: (error: any) => {
+      showError(error?.message || '生成內容失敗')
+    },
   })
 
   const {
@@ -254,20 +271,37 @@ export default function TopicDetail() {
             ) : imagesError ? (
               <ErrorDisplay error={imagesError} />
             ) : images.length === 0 ? (
-              <EmptyState
-                message="沒有圖片"
-                size="sm"
-                action={{
-                  label: '搜尋圖片',
-                  onClick: () => setShowImageSearch(true),
-                }}
-              />
+              <div className="space-y-3">
+                <EmptyState
+                  message="沒有圖片"
+                  size="sm"
+                />
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => imagesAPI.matchPhotos(id!, 8).then(() => {
+                      queryClient.invalidateQueries({ queryKey: ['images', id] })
+                      showSuccess('正在智能匹配照片...')
+                    }).catch((err) => {
+                      showError(err?.message || '匹配照片失敗')
+                    })}
+                    className="flex-1 px-3 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                  >
+                    智能匹配照片（8張）
+                  </button>
+                  <button
+                    onClick={() => setShowImageSearch(true)}
+                    className="flex-1 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                  >
+                    手動搜尋
+                  </button>
+                </div>
+              </div>
             ) : (
               <ImageGallery
                 images={images}
                 topicId={id!}
                 onImageUpdate={() => {
-                  // 圖片更新後的處理
+                  queryClient.invalidateQueries({ queryKey: ['images', id] })
                 }}
               />
             )}
@@ -279,7 +313,7 @@ export default function TopicDetail() {
           <div className="bg-white rounded-lg shadow p-6 space-y-6">
             {contentLoading ? (
               <LoadingSpinner size="sm" text="載入內容中..." />
-            ) : contentError ? (
+            ) : contentError && (contentError as any)?.status !== 404 ? (
               <ErrorDisplay error={contentError} />
             ) : content ? (
               <>
@@ -307,7 +341,16 @@ export default function TopicDetail() {
                 </div>
               </>
             ) : (
-              <EmptyState message="尚未生成內容" size="sm" />
+              <div className="space-y-3">
+                <EmptyState message="尚未生成內容" size="sm" />
+                <button
+                  onClick={() => generateContentMutation.mutate()}
+                  disabled={generateContentMutation.isPending}
+                  className="w-full px-4 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {generateContentMutation.isPending ? '生成中...' : '生成內容（500字文章 + 30秒腳本）'}
+                </button>
+              </div>
             )}
           </div>
         </div>
