@@ -65,6 +65,9 @@ export default function Dashboard() {
     refetchTopics()
     refetchSchedules()
   }
+  
+  // 如果有連接錯誤且沒有數據，顯示錯誤訊息
+  const shouldShowError = hasError && (!topicsResponse || !schedules)
 
   // 生成今日主題的 mutation
   const generateTodayMutation = useMutation({
