@@ -108,6 +108,16 @@ export default function Dashboard() {
 
   return (
     <div className="p-4 sm:p-6">
+      {/* 錯誤警告（如果有連接錯誤） */}
+      {shouldShowError && (
+        <div className="mb-4">
+          <ConnectionErrorDisplay 
+            error={topicsError || schedulesError || undefined} 
+            onRetry={handleRetry} 
+          />
+        </div>
+      )}
+      
       {/* 進度卡片區 */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <ProgressCard
