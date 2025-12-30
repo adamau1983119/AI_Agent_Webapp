@@ -244,4 +244,59 @@ export const imagesAPI = {
       }),
     })
   },
+
+  /**
+   * 根據文章內容匹配照片（分層閾值檢查）
+   */
+  matchPhotos: async (
+    topicId: string,
+    minCount: number = 8
+  ): Promise<Image[]> => {
+    if (USE_MOCK) {
+      await delay(2000)
+      return []
+    }
+
+    const response = await fetchAPI<{ data: any[] }>(`/images/${topicId}/match?min_count=${minCount}`, {
+      method: 'POST',
+    })
+    const images = Array.isArray(response) ? response : response.data || []
+    return images.map(convertImage)
+  },
+
+  /**
+   * 驗證照片與文字匹配度
+   */
+  validateMatch: async (
+    topicId: string,
+    articleId?: string
+  ): Promise<{
+    topic_id: string
+    validation_results: Array<{
+      mentioned_item: string
+      has_matching_photo: boolean
+      photo_id: string
+      match_score: number
+    }>
+    overall_match: boolean
+    warnings: string[]
+  }> => {
+    if (USE_MOCK) {
+      await delay(1000)
+      return {
+        topic_id: topicId,
+        validation_results: [],
+        overall_match: true,
+        warnings: [],
+      }
+    }
+
+    return await fetchAPI(`/images/validate-match`, {
+      method: 'POST',
+      body: JSON.stringify({
+        topic_id: topicId,
+        article_id: articleId,
+      }),
+    })
+  },
 }

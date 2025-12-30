@@ -34,7 +34,7 @@ export default function ImageGallery({
     onSuccess: (data) => {
       setIsMatching(false)
       queryClient.invalidateQueries({ queryKey: ['images', topicId] })
-      showSuccess(`已匹配 ${data.data.length} 張照片`)
+      showSuccess(`已匹配 ${data.length} 張照片`)
     },
     onError: (error: any) => {
       setIsMatching(false)
