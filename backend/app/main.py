@@ -156,7 +156,7 @@ async def health_check():
 
 
 # 註冊 API 路由
-from app.api.v1 import topics, contents, images, user, health, schedules
+from app.api.v1 import topics, contents, images, user, health, schedules, interactions, recommendations, discover, validate
 
 app.include_router(health.router, prefix="/api/v1")
 app.include_router(topics.router, prefix="/api/v1")
@@ -164,6 +164,10 @@ app.include_router(contents.router, prefix="/api/v1")
 app.include_router(images.router, prefix="/api/v1")
 app.include_router(user.router, prefix="/api/v1")
 app.include_router(schedules.router, prefix="/api/v1")
+app.include_router(interactions.router, prefix="/api/v1")
+app.include_router(recommendations.router, prefix="/api/v1")
+app.include_router(discover.router, prefix="/api/v1")
+app.include_router(validate.router, prefix="/api/v1")
 
 
 if __name__ == "__main__":

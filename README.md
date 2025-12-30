@@ -1,5 +1,11 @@
 # AI Agent Webapp for Social Media Content Generation
 
+## ⚠️ 重要設計要求
+
+**所有版面設定必須確保在手機和平板上使用 Webapp 也能清楚顯示。**
+
+詳細設計要求請參考：[專案設計要求.md](./專案設計要求.md)
+
 > **專案名稱**：AI Agent Webapp for Social Media Content Generation  
 > **版本**：1.0.0  
 > **狀態**：開發中  

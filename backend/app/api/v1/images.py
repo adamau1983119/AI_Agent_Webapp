@@ -333,3 +333,147 @@ async def reorder_images(
     except Exception as e:
         logger.error(f"重新排序圖片失敗: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/{topic_id}/match", response_model=ImageListResponse)
+async def match_photos_for_topic(
+    topic_id: str = Path(..., description="主題 ID"),
+    min_count: int = Query(default=8, ge=1, le=20, description="最少照片數量")
+):
+    """
+    根據文章內容匹配照片（分層閾值檢查）
+    """
+    try:
+        from app.services.images.enhanced_photo_matcher import EnhancedPhotoMatcher
+        from app.services.repositories.content_repository import ContentRepository
+        
+        photo_matcher = EnhancedPhotoMatcher()
+        content_repo = ContentRepository()
+        
+        # 取得文章內容
+        content = await content_repo.get_content_by_topic_id(topic_id)
+        if not content:
+            raise HTTPException(
+                status_code=404,
+                detail=f"主題內容不存在: {topic_id}"
+            )
+        
+        article_text = content.get("article", "")
+        
+        # 匹配照片
+        match_result = await photo_matcher.match_photos_with_layers(
+            article_text=article_text,
+            topic_id=topic_id,
+            min_count=min_count
+        )
+        
+        # 保存匹配的照片到資料庫
+        matched_photos = match_result.get("matched_photos", [])
+        saved_images = []
+        
+        existing_images = await image_repo.get_images_by_topic_id(topic_id)
+        max_order = max([img.get("order", 0) for img in existing_images]) if existing_images else -1
+        
+        for idx, photo in enumerate(matched_photos):
+            try:
+                image_data = {
+                    "id": photo.get("id", f"img_{topic_id}_{idx}"),
+                    "topic_id": topic_id,
+                    "url": photo.get("url", ""),
+                    "source": photo.get("source", ImageSource.UNSPLASH.value),
+                    "photographer": photo.get("photographer"),
+                    "photographer_url": photo.get("photographer_url"),
+                    "license": photo.get("license", "Unknown"),
+                    "keywords": photo.get("keywords", []),
+                    "order": max_order + idx + 1,
+                    "width": photo.get("width"),
+                    "height": photo.get("height"),
+                    "fetched_at": datetime.utcnow(),
+                    "match_score": photo.get("overall_score", 0.0),
+                    "matches_item": photo.get("matches_item")
+                }
+                
+                created = await image_repo.create_image(image_data)
+                saved_images.append(_convert_to_response(created))
+            except Exception as e:
+                logger.warning(f"保存照片失敗: {e}")
+                continue
+        
+        return ImageListResponse(data=saved_images)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"匹配照片失敗: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/validate-match")
+async def validate_photo_match(
+    topic_id: str = Body(..., description="主題 ID"),
+    article_id: Optional[str] = Body(None, description="文章 ID")
+):
+    """
+    驗證照片與文字匹配度
+    """
+    try:
+        from app.services.images.enhanced_photo_matcher import EnhancedPhotoMatcher
+        from app.services.repositories.content_repository import ContentRepository
+        
+        photo_matcher = EnhancedPhotoMatcher()
+        content_repo = ContentRepository()
+        
+        # 取得文章內容
+        content = await content_repo.get_content_by_topic_id(topic_id)
+        if not content:
+            raise HTTPException(
+                status_code=404,
+                detail=f"主題內容不存在: {topic_id}"
+            )
+        
+        article_text = content.get("article", "")
+        
+        # 取得照片
+        images = await image_repo.get_images_by_topic_id(topic_id)
+        
+        # 驗證匹配
+        validation_results = []
+        core_features = photo_matcher._extract_core_features(article_text)
+        
+        for image in images:
+            photo_dict = {
+                "url": image.get("url", ""),
+                "description": "",
+                "keywords": image.get("keywords", [])
+            }
+            
+            core_match_score = photo_matcher._calculate_core_match_score(core_features, photo_dict)
+            
+            mentioned_item = None
+            for feature in core_features:
+                if feature.lower() in str(image.get("keywords", [])).lower():
+                    mentioned_item = feature
+                    break
+            
+            validation_results.append({
+                "mentioned_item": mentioned_item or "未提及",
+                "has_matching_photo": core_match_score >= 0.85,
+                "photo_id": image.get("id"),
+                "match_score": core_match_score
+            })
+        
+        overall_match = all(result["has_matching_photo"] for result in validation_results if result["mentioned_item"] != "未提及")
+        
+        return {
+            "topic_id": topic_id,
+            "validation_results": validation_results,
+            "overall_match": overall_match,
+            "warnings": [
+                result["mentioned_item"] for result in validation_results
+                if not result["has_matching_photo"] and result["mentioned_item"] != "未提及"
+            ]
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"驗證照片匹配失敗: {e}")
+        raise HTTPException(status_code=500, detail=str(e))

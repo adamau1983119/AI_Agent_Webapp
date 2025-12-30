@@ -7,14 +7,16 @@ from app.schemas.user_preferences import (
     UserPreferencesUpdate,
 )
 from app.services.repositories.user_preferences_repository import UserPreferencesRepository
+from app.services.repositories.preference_service import PreferenceService
 import logging
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/user", tags=["user"])
 
-# Repository 實例
+# Repository 和 Service 實例
 preferences_repo = UserPreferencesRepository()
+preference_service = PreferenceService()
 
 
 def _convert_to_response(prefs_doc: dict) -> UserPreferencesResponse:
@@ -82,4 +84,17 @@ async def update_preferences(update_data: UserPreferencesUpdate):
         raise
     except Exception as e:
         logger.error(f"更新使用者偏好失敗: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/preferences/update-from-interactions", response_model=UserPreferencesResponse)
+async def update_preferences_from_interactions():
+    """
+    根據互動數據自動更新偏好模型
+    """
+    try:
+        updated = await preference_service.update_preferences_from_interactions("user_default")
+        return _convert_to_response(updated)
+    except Exception as e:
+        logger.error(f"根據互動更新偏好失敗: {e}")
         raise HTTPException(status_code=500, detail=str(e))

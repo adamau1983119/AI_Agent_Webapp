@@ -6,6 +6,24 @@
   body {
     @apply bg-gray-50 text-gray-900;
   }
+  
+  /* 防止文字選擇（按鈕） */
+  button {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  
+  /* 防止 iOS 自動縮放輸入框 */
+  input[type="text"],
+  input[type="email"],
+  input[type="number"],
+  input[type="tel"],
+  input[type="url"],
+  input[type="search"],
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
 }
 
 @layer components {
@@ -24,6 +42,35 @@
   .sidebar-item.active:hover {
     @apply bg-primary-dark;
   }
+  
+  /* 觸控優化 */
+  .touch-manipulation {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* 安全區域支持 */
+  .safe-area-top {
+    padding-top: max(1rem, env(safe-area-inset-top));
+  }
+  
+  .safe-area-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+  
+  .safe-area-left {
+    padding-left: max(1rem, env(safe-area-inset-left));
+  }
+  
+  .safe-area-right {
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+  
+  /* 滾動優化 */
+  .overflow-y-auto {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
 }
 
 /* 移動端優化 */
@@ -32,5 +79,30 @@
   body.sidebar-open {
     overflow: hidden;
   }
+  
+  /* 響應式字體 */
+  html {
+    font-size: 14px;
+  }
+}
+
+/* 平板優化 */
+@media (min-width: 768px) and (max-width: 1023px) {
+  html {
+    font-size: 15px;
+  }
+}
+
+/* 桌面優化 */
+@media (min-width: 1024px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+/* 全局觸控優化 */
+* {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
 }
 
