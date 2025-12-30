@@ -15,6 +15,12 @@ export default function Dashboard() {
   usePageTitle()
   const queryClient = useQueryClient()
   const [isGenerating, setIsGenerating] = useState(false)
+  
+  // 部署版本標記（用於驗證自動部署）
+  const APP_VERSION = '2025-12-30-15:50-test-auto-deploy'
+  if (import.meta.env.DEV) {
+    console.log('🚀 App Version:', APP_VERSION)
+  }
 
   const {
     data: topicsResponse,
