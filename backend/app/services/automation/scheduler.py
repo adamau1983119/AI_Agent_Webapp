@@ -130,7 +130,7 @@ class SchedulerService:
                         topic_id=topic_id,
                         auto_generate_content=True,
                         auto_search_images=True,
-                        image_count=3
+                        image_count=8  # 改為 8 張照片（符合需求）
                     )
                     
                     logger.info(f"主題 {topic_id} 建立並處理完成")
@@ -191,7 +191,7 @@ class SchedulerService:
                         topic_id=topic_id,
                         auto_generate_content=True,
                         auto_search_images=True,
-                        image_count=3
+                        image_count=8  # 改為 8 張照片（符合需求）
                     )
                     
                     logger.info(f"主題 {topic_id} 建立並處理完成")
