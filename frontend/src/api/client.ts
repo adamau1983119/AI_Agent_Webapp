@@ -42,7 +42,26 @@ async function fetchAPI<T>(
   } catch (error) {
     // 4. 統一錯誤處理
     const apiError = handleAPIError(error)
-    console.error(`API request failed: ${endpoint}`, apiError)
+    
+    // 詳細錯誤日誌（開發環境）
+    if (import.meta.env.DEV) {
+      console.error(`❌ API request failed: ${endpoint}`, {
+        url,
+        error: apiError,
+        message: apiError.message,
+        status: apiError.status,
+      })
+      
+      // 提供診斷建議
+      if (apiError.message.includes('Failed to fetch') || apiError.message.includes('NetworkError')) {
+        console.error('💡 診斷建議：')
+        console.error('  1. 檢查後端服務是否運行：', API_BASE_URL.replace('/api/v1', '/health'))
+        console.error('  2. 檢查 VITE_API_URL 環境變數：', API_BASE_URL)
+        console.error('  3. 檢查 CORS 設定是否正確')
+        console.error('  4. 檢查網路連接')
+      }
+    }
+    
     throw apiError
   }
 }

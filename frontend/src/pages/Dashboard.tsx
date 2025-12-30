@@ -7,21 +7,44 @@ import Calendar from '@/components/features/Calendar'
 import TodayTopics from '@/components/features/TodayTopics'
 import UpcomingEvents from '@/components/features/UpcomingEvents'
 import RecentActivities from '@/components/features/RecentActivities'
+import ConnectionErrorDisplay from '@/components/ui/ConnectionErrorDisplay'
 import toast from 'react-hot-toast'
 
 export default function Dashboard() {
   const queryClient = useQueryClient()
   const [isGenerating, setIsGenerating] = useState(false)
 
-  const { data: topicsResponse, isLoading } = useQuery({
+  const {
+    data: topicsResponse,
+    isLoading: topicsLoading,
+    error: topicsError,
+    refetch: refetchTopics,
+  } = useQuery({
     queryKey: ['topics'],
     queryFn: () => topicsAPI.getTopics(),
+    retry: 2,
+    retryDelay: 1000,
   })
 
-  const { data: schedules = [] } = useQuery({
+  const {
+    data: schedules = [],
+    isLoading: schedulesLoading,
+    error: schedulesError,
+    refetch: refetchSchedules,
+  } = useQuery({
     queryKey: ['schedules'],
     queryFn: () => api.getSchedules(),
+    retry: 2,
+    retryDelay: 1000,
   })
+
+  const isLoading = topicsLoading || schedulesLoading
+  const hasError = topicsError || schedulesError
+
+  const handleRetry = () => {
+    refetchTopics()
+    refetchSchedules()
+  }
 
   // 生成今日主題的 mutation
   const generateTodayMutation = useMutation({
@@ -61,6 +84,15 @@ export default function Dashboard() {
     const today = new Date().toISOString().split('T')[0]
     return t.generatedAt?.startsWith(today) || false
   }).length
+
+  // 如果有連接錯誤，顯示錯誤訊息
+  if (hasError) {
+    return (
+      <div className="p-4 sm:p-6">
+        <ConnectionErrorDisplay error={topicsError || schedulesError} onRetry={handleRetry} />
+      </div>
+    )
+  }
 
   return (
     <div className="p-4 sm:p-6">
