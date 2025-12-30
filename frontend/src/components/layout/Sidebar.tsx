@@ -2,7 +2,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { useUIStore } from '@/stores/uiStore'
 
 const menuItems = [
-  { path: '/', label: 'Dashboard', icon: 'home' },
+  { path: '/', label: '控制面板', icon: 'home' },
   { path: '/topics', label: '主題', icon: 'document' },
   { path: '/preferences', label: '設定', icon: 'settings' },
   { path: '/schedule', label: '排程', icon: 'calendar' },

@@ -56,8 +56,9 @@ export const contentsAPI = {
       const content = await fetchAPI<any>(`/contents/${topicId}`)
       return convertContent(content)
     } catch (error: any) {
-      // 如果是 404 錯誤（內容不存在），返回 null
+      // 如果是 404 錯誤（內容不存在），靜默返回 null（這是正常情況）
       if (error?.status === 404) {
+        // 不在控制台顯示 404 錯誤，因為內容可能尚未生成
         return null
       }
       // 其他錯誤，直接拋出

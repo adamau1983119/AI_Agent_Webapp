@@ -61,7 +61,8 @@ export async function responseInterceptor(
     const error = handleHTTPError(response.status, errorData)
 
     // 2. 顯示錯誤給用戶（如果沒有跳過）
-    if (!skipErrorHandler) {
+    // 注意：404 錯誤通常由調用方處理，這裡不顯示給用戶
+    if (!skipErrorHandler && response.status !== 404) {
       showErrorToUser(error)
     }
 

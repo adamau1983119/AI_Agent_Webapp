@@ -1,4 +1,8 @@
+import { usePageTitle } from '@/hooks/usePageTitle'
+
 export default function Preferences() {
+  usePageTitle()
+  
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold text-gray-800 mb-6">偏好設定</h1>

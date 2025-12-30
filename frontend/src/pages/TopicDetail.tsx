@@ -10,6 +10,7 @@ import TopicEditor from '@/components/features/TopicEditor'
 import ImageGallery from '@/components/features/ImageGallery'
 import ImageSearch from '@/components/features/ImageSearch'
 import InteractionButtons from '@/components/features/InteractionButtons'
+import { usePageTitle } from '@/hooks/usePageTitle'
 
 export default function TopicDetail() {
   const { id } = useParams<{ id: string }>()
@@ -30,6 +31,9 @@ export default function TopicDetail() {
     queryFn: () => topicsAPI.getTopic(id!),
     enabled: !!id,
   })
+
+  // 設定頁面標題
+  usePageTitle(topic ? `${topic.title} - AI代理Web應用程式` : '主題詳情 - AI代理Web應用程式')
 
   const {
     data: content,

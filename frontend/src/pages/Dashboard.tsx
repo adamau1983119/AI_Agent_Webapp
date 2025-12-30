@@ -9,8 +9,10 @@ import UpcomingEvents from '@/components/features/UpcomingEvents'
 import RecentActivities from '@/components/features/RecentActivities'
 import ConnectionErrorDisplay from '@/components/ui/ConnectionErrorDisplay'
 import toast from 'react-hot-toast'
+import { usePageTitle } from '@/hooks/usePageTitle'
 
 export default function Dashboard() {
+  usePageTitle()
   const queryClient = useQueryClient()
   const [isGenerating, setIsGenerating] = useState(false)
 

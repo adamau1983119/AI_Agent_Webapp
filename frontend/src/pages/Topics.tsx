@@ -2,17 +2,19 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { topicsAPI } from '@/api/client'
-import type { TopicFilters } from '@/api/topics'
+import type { TopicFilters as TopicFiltersType } from '@/api/topics'
 import TopicCard from '@/components/ui/TopicCard'
 import TopicFilters from '@/components/features/TopicFilters'
 import Pagination from '@/components/ui/Pagination'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import ErrorDisplay from '@/components/ui/ErrorDisplay'
 import EmptyState from '@/components/ui/EmptyState'
+import { usePageTitle } from '@/hooks/usePageTitle'
 
 export default function Topics() {
+  usePageTitle()
   const navigate = useNavigate()
-  const [filters, setFilters] = useState<TopicFilters>({
+  const [filters, setFilters] = useState<TopicFiltersType>({
     page: 1,
     limit: 12,
   })
@@ -30,7 +32,7 @@ export default function Topics() {
   const topics = topicsResponse?.data || []
   const pagination = topicsResponse?.pagination
 
-  const handleFilterChange = (newFilters: TopicFilters) => {
+  const handleFilterChange = (newFilters: TopicFiltersType) => {
     setFilters(newFilters)
   }
 
