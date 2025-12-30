@@ -150,7 +150,25 @@ export default function ImageGallery({
   return (
     <>
       {/* 排序控制按鈕 */}
-      <div className="mb-4 flex justify-end">
+      <div className="mb-4 flex justify-between items-center">
+        <div className="flex gap-2">
+          <button
+            onClick={() => validateMutation.mutate()}
+            disabled={validateMutation.isPending}
+            className="px-3 py-1 text-sm font-medium text-blue-700 bg-blue-100 rounded-md hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {validateMutation.isPending ? '驗證中...' : '✓ 驗證匹配度'}
+          </button>
+          {images.length < 8 && (
+            <button
+              onClick={() => matchMutation.mutate(8)}
+              disabled={isMatching}
+              className="px-3 py-1 text-sm font-medium text-primary bg-primary/10 rounded-md hover:bg-primary/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isMatching ? '匹配中...' : '🔍 智能匹配（補齊至8張）'}
+            </button>
+          )}
+        </div>
         {!isReordering ? (
           <button
             onClick={handleStartReorder}

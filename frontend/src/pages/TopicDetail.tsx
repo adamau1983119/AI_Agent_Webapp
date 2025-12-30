@@ -82,6 +82,22 @@ export default function TopicDetail() {
     },
   })
 
+  // 重新生成內容的 mutation
+  const regenerateContentMutation = useMutation({
+    mutationFn: () => contentsAPI.regenerateContent(id!, {
+      type: 'both',
+      article_length: 500,
+      script_duration: 30,
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['content', id] })
+      showSuccess('內容重新生成成功')
+    },
+    onError: (error: any) => {
+      showError(error?.message || '重新生成內容失敗')
+    },
+  })
+
   const {
     data: images = [],
     isLoading: imagesLoading,
@@ -317,6 +333,16 @@ export default function TopicDetail() {
               <ErrorDisplay error={contentError} />
             ) : content ? (
               <>
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="font-semibold text-gray-700">內容</h3>
+                  <button
+                    onClick={() => regenerateContentMutation.mutate()}
+                    disabled={regenerateContentMutation.isPending}
+                    className="px-3 py-1 text-xs font-medium text-primary bg-primary/10 rounded-md hover:bg-primary/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {regenerateContentMutation.isPending ? '重新生成中...' : '🔄 重新生成'}
+                  </button>
+                </div>
                 <div>
                   <h3 className="font-semibold text-gray-700 mb-2">短文</h3>
                   <div className="bg-gray-50 rounded-lg p-4 max-h-96 overflow-y-auto">
