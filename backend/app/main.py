@@ -2,6 +2,7 @@
 FastAPI 應用入口
 """
 from contextlib import asynccontextmanager
+import asyncio
 import logging
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
