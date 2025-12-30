@@ -27,16 +27,23 @@ class CustomCORSMiddleware(BaseHTTPMiddleware):
         allowed_origins = settings.CORS_ORIGINS
         if isinstance(allowed_origins, str):
             allowed_origins = [origin.strip() for origin in allowed_origins.split(',') if origin.strip()]
+        elif not isinstance(allowed_origins, list):
+            allowed_origins = list(allowed_origins) if allowed_origins else []
         
         # 處理 OPTIONS 預檢請求
         if request.method == "OPTIONS":
-            response = Response()
-            if origin and origin in allowed_origins:
-                response.headers["Access-Control-Allow-Origin"] = origin
-                response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, PATCH, DELETE, OPTIONS"
-                response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-API-Key"
-                response.headers["Access-Control-Allow-Credentials"] = "true"
-                response.headers["Access-Control-Max-Age"] = "3600"
+            response = Response(status_code=200)
+            if origin:
+                # 檢查來源是否在允許列表中，或者允許所有來源（開發環境）
+                if origin in allowed_origins or "*" in allowed_origins or not allowed_origins:
+                    response.headers["Access-Control-Allow-Origin"] = origin if origin in allowed_origins else "*"
+                    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+                    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-API-Key, Accept"
+                    response.headers["Access-Control-Allow-Credentials"] = "true"
+                    response.headers["Access-Control-Max-Age"] = "3600"
+                    logger.debug(f"✅ CORS preflight 允許: {origin}")
+                else:
+                    logger.warning(f"❌ CORS preflight 拒絕: {origin} (不在允許列表中: {allowed_origins})")
             return response
         
         # 處理實際請求
