@@ -3,7 +3,7 @@
 處理主題生成後的完整流程：內容生成 → 圖片搜尋 → 準備發布
 """
 import logging
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 from datetime import datetime
 from app.services.repositories.topic_repository import TopicRepository
 from app.services.repositories.content_repository import ContentRepository
@@ -200,27 +200,47 @@ class AutomationWorkflow:
         topic: Dict[str, Any],
         count: int
     ) -> int:
-        """搜尋並添加圖片"""
+        """搜尋並添加圖片（根據短文和劇本內容）"""
         topic_id = topic["id"]
         topic_title = topic["title"]
         
-        # 提取關鍵字用於圖片搜尋
+        # 1. 優先從已生成的內容中提取關鍵字
+        content = await self.content_repo.get_content_by_topic_id(topic_id)
         keywords_list = []
-        for source in topic.get("sources", []):
-            if "keywords" in source:
-                keywords_list.extend(source["keywords"])
         
-        # 如果沒有關鍵字，使用標題
+        if content:
+            # 從短文和劇本中提取關鍵字
+            article = content.get("article", "")
+            script = content.get("script", "")
+            
+            # 提取關鍵字（簡單的關鍵字提取）
+            if article:
+                # 從短文中提取關鍵字（取前50字中的關鍵詞）
+                article_keywords = self._extract_keywords_from_text(article[:200])
+                keywords_list.extend(article_keywords)
+            
+            if script:
+                # 從劇本中提取關鍵字
+                script_keywords = self._extract_keywords_from_text(script[:200])
+                keywords_list.extend(script_keywords)
+        
+        # 2. 如果沒有從內容中提取到關鍵字，使用主題的關鍵字
+        if not keywords_list:
+            for source in topic.get("sources", []):
+                if "keywords" in source:
+                    keywords_list.extend(source["keywords"])
+        
+        # 3. 如果還是沒有關鍵字，使用標題
         if not keywords_list:
             keywords_list = [topic_title]
         
-        # 使用第一個關鍵字搜尋圖片
-        search_keyword = keywords_list[0] if keywords_list else topic_title
+        # 4. 組合關鍵字用於搜尋（使用前3個關鍵字）
+        search_keywords = " ".join(keywords_list[:3]) if keywords_list else topic_title
         
         try:
             # 搜尋圖片（帶重試機制）
             images = await self._search_images_with_retry(
-                search_keyword,
+                search_keywords,
                 count
             )
             
@@ -268,6 +288,22 @@ class AutomationWorkflow:
         except Exception as e:
             logger.error(f"搜尋圖片失敗: {e}")
             return 0
+    
+    def _extract_keywords_from_text(self, text: str) -> List[str]:
+        """從文本中提取關鍵字（簡單實現）"""
+        import re
+        
+        # 移除標點符號和特殊字符
+        text = re.sub(r'[^\w\s]', ' ', text)
+        
+        # 分割成詞
+        words = text.split()
+        
+        # 過濾掉太短的詞（少於2個字符）
+        keywords = [w for w in words if len(w) >= 2]
+        
+        # 去重並限制數量
+        return list(set(keywords))[:5]
     
     @retry_with_backoff(
         config=RetryConfig(max_attempts=3, initial_delay=1.0, max_delay=10.0),

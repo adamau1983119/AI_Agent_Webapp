@@ -127,8 +127,11 @@ class TopicCollector:
                             # 提取關鍵字
                             keywords = self._extract_keywords(title, category)
                             
+                            # 如果標題是英文，嘗試翻譯成中文
+                            chinese_title = await self._translate_title_to_chinese(title, category)
+                            
                             topic = {
-                                "title": title,
+                                "title": chinese_title,
                                 "category": category.value,
                                 "source": feed.feed.get("title", "RSS Feed"),
                                 "sources": [
@@ -136,7 +139,8 @@ class TopicCollector:
                                         "type": "rss",
                                         "name": feed.feed.get("title", "RSS Feed"),
                                         "url": link,
-                                        "title": title,
+                                        "title": chinese_title,
+                                        "original_title": title,  # 保留原始英文標題
                                         "fetched_at": datetime.utcnow(),
                                         "verified": True,
                                         "keywords": keywords,
@@ -159,30 +163,124 @@ class TopicCollector:
         category: Category,
         count: int
     ) -> List[Dict[str, Any]]:
-        """從備用關鍵字生成主題"""
+        """從備用關鍵字生成主題（使用 AI 生成中文標題）"""
         topics = []
         keywords = self.fallback_keywords.get(category, [])
         
-        for keyword in keywords[:count]:
-            topic = {
-                "title": keyword,
-                "category": category.value,
-                "source": "AI Generated",
-                "sources": [
-                    {
-                        "type": "ai",
-                        "name": "AI Generated Topic",
-                        "url": "",
-                        "title": keyword,
-                        "fetched_at": datetime.utcnow(),
-                        "verified": False,
-                        "keywords": [keyword],
+        # 嘗試使用 AI 生成中文標題
+        try:
+            from app.services.ai.ai_service_factory import AIServiceFactory
+            from app.config import settings
+            from app.prompts.title_prompt import build_title_prompt
+            
+            ai_service = AIServiceFactory.get_service(settings.AI_SERVICE)
+            
+            for keyword in keywords[:count]:
+                try:
+                    # 使用 AI 生成中文標題
+                    prompt = build_title_prompt(category, keyword=keyword)
+                    chinese_title = await ai_service._call_api(prompt)
+                    
+                    # 清理標題（移除可能的引號、換行等）
+                    chinese_title = chinese_title.strip().strip('"').strip("'").strip()
+                    # 只取第一行（避免 AI 返回多行）
+                    chinese_title = chinese_title.split('\n')[0].strip()
+                    
+                    topic = {
+                        "title": chinese_title,
+                        "category": category.value,
+                        "source": "AI Generated",
+                        "sources": [
+                            {
+                                "type": "ai",
+                                "name": "AI Generated Topic",
+                                "url": "",
+                                "title": chinese_title,
+                                "fetched_at": datetime.utcnow(),
+                                "verified": False,
+                                "keywords": [keyword],
+                            }
+                        ],
                     }
-                ],
-            }
-            topics.append(topic)
+                    topics.append(topic)
+                except Exception as e:
+                    logger.warning(f"使用 AI 生成標題失敗，使用關鍵字作為標題: {e}")
+                    # 如果 AI 生成失敗，使用關鍵字作為標題
+                    topic = {
+                        "title": keyword,
+                        "category": category.value,
+                        "source": "AI Generated",
+                        "sources": [
+                            {
+                                "type": "ai",
+                                "name": "AI Generated Topic",
+                                "url": "",
+                                "title": keyword,
+                                "fetched_at": datetime.utcnow(),
+                                "verified": False,
+                                "keywords": [keyword],
+                            }
+                        ],
+                    }
+                    topics.append(topic)
+        except Exception as e:
+            logger.warning(f"無法使用 AI 生成標題，使用關鍵字作為標題: {e}")
+            # 如果完全無法使用 AI，直接使用關鍵字
+            for keyword in keywords[:count]:
+                topic = {
+                    "title": keyword,
+                    "category": category.value,
+                    "source": "AI Generated",
+                    "sources": [
+                        {
+                            "type": "ai",
+                            "name": "AI Generated Topic",
+                            "url": "",
+                            "title": keyword,
+                            "fetched_at": datetime.utcnow(),
+                            "verified": False,
+                            "keywords": [keyword],
+                        }
+                    ],
+                }
+                topics.append(topic)
         
         return topics
+    
+    async def _translate_title_to_chinese(
+        self,
+        english_title: str,
+        category: Category
+    ) -> str:
+        """將英文標題翻譯成中文"""
+        # 簡單判斷是否為英文（包含英文字母）
+        has_english = any(c.isalpha() and ord(c) < 128 for c in english_title)
+        
+        if not has_english:
+            # 如果已經是中文，直接返回
+            return english_title
+        
+        # 嘗試使用 AI 翻譯
+        try:
+            from app.services.ai.ai_service_factory import AIServiceFactory
+            from app.config import settings
+            from app.prompts.title_prompt import build_title_prompt
+            
+            ai_service = AIServiceFactory.get_service(settings.AI_SERVICE)
+            prompt = build_title_prompt(category, english_title=english_title)
+            chinese_title = await ai_service._call_api(prompt)
+            
+            # 清理標題
+            chinese_title = chinese_title.strip().strip('"').strip("'").strip()
+            chinese_title = chinese_title.split('\n')[0].strip()
+            
+            if chinese_title and len(chinese_title) > 5:  # 確保翻譯成功
+                return chinese_title
+        except Exception as e:
+            logger.warning(f"翻譯標題失敗: {e}，使用原始標題")
+        
+        # 如果翻譯失敗，返回原始標題
+        return english_title
     
     def _extract_keywords(
         self,
