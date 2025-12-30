@@ -3,15 +3,13 @@
  * 支援真實 API 和 Mock 資料（可通過環境變數切換）
  */
 
-import { mockTopics, mockContents, mockImages, mockSchedules } from './mockData'
-import type { Topic, Content, Image, Schedule } from '@/types'
 import {
   requestInterceptor,
   responseInterceptor,
   paginationResponseInterceptor,
   type RequestConfig,
 } from './interceptors'
-import { APIError, handleAPIError } from './errors'
+import { handleAPIError } from './errors'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
 const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true'
@@ -114,7 +112,6 @@ import { interactionsAPI } from './interactions'
 import { recommendationsAPI } from './recommendations'
 import { discoverAPI } from './discover'
 import { validateAPI } from './validate'
-import type { Topic, Content, Image, Schedule } from '@/types'
 // delay 已在同檔案中定義（第 20 行），不需要導入
 
 export const api = {

@@ -41,7 +41,6 @@ export default function Dashboard() {
   // 取得推薦列表
   const {
     data: recommendations,
-    isLoading: recommendationsLoading,
   } = useQuery({
     queryKey: ['recommendations', 'user_default'],
     queryFn: () => recommendationsAPI.getRecommendations('user_default', { limit: 5 }),
