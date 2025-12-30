@@ -23,37 +23,65 @@ class CustomCORSMiddleware(BaseHTTPMiddleware):
         # 獲取請求來源
         origin = request.headers.get("origin")
         
-        # 檢查來源是否在允許列表中
+        # 解析允許的來源列表
         allowed_origins = settings.CORS_ORIGINS
         if isinstance(allowed_origins, str):
-            allowed_origins = [origin.strip() for origin in allowed_origins.split(',') if origin.strip()]
+            allowed_origins = [o.strip() for o in allowed_origins.split(',') if o.strip()]
         elif not isinstance(allowed_origins, list):
             allowed_origins = list(allowed_origins) if allowed_origins else []
+        
+        # 如果沒有設定允許的來源，允許所有來源（開發環境）
+        if not allowed_origins:
+            allowed_origins = ["*"]
         
         # 處理 OPTIONS 預檢請求
         if request.method == "OPTIONS":
             response = Response(status_code=200)
-            if origin:
-                # 檢查來源是否在允許列表中，或者允許所有來源（開發環境）
-                if origin in allowed_origins or "*" in allowed_origins or not allowed_origins:
-                    response.headers["Access-Control-Allow-Origin"] = origin if origin in allowed_origins else "*"
-                    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, PATCH, DELETE, OPTIONS"
-                    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-API-Key, Accept"
-                    response.headers["Access-Control-Allow-Credentials"] = "true"
-                    response.headers["Access-Control-Max-Age"] = "3600"
-                    logger.debug(f"✅ CORS preflight 允許: {origin}")
+            # 對於預檢請求，總是設定 CORS header
+            if "*" in allowed_origins:
+                response.headers["Access-Control-Allow-Origin"] = "*"
+            elif origin and origin in allowed_origins:
+                response.headers["Access-Control-Allow-Origin"] = origin
+            elif origin:
+                # 如果 origin 不在列表中，但仍然允許（開發環境）
+                response.headers["Access-Control-Allow-Origin"] = origin
+                logger.warning(f"⚠️ CORS: 允許未列出的來源 {origin}")
+            else:
+                # 沒有 origin header，使用第一個允許的來源
+                if allowed_origins and allowed_origins[0] != "*":
+                    response.headers["Access-Control-Allow-Origin"] = allowed_origins[0]
                 else:
-                    logger.warning(f"❌ CORS preflight 拒絕: {origin} (不在允許列表中: {allowed_origins})")
+                    response.headers["Access-Control-Allow-Origin"] = "*"
+            
+            response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+            response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-API-Key, Accept"
+            response.headers["Access-Control-Allow-Credentials"] = "true"
+            response.headers["Access-Control-Max-Age"] = "3600"
+            logger.debug(f"✅ CORS preflight 回應: {origin} -> {response.headers.get('Access-Control-Allow-Origin')}")
             return response
         
         # 處理實際請求
         response = await call_next(request)
         
-        # 設定 CORS header
-        if origin and origin in allowed_origins:
+        # 設定 CORS header（確保所有響應都有）
+        if "*" in allowed_origins:
+            response.headers["Access-Control-Allow-Origin"] = "*"
+        elif origin and origin in allowed_origins:
             response.headers["Access-Control-Allow-Origin"] = origin
             response.headers["Access-Control-Allow-Credentials"] = "true"
-            response.headers["Access-Control-Expose-Headers"] = "X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset"
+        elif origin:
+            # 開發環境：允許未列出的來源
+            response.headers["Access-Control-Allow-Origin"] = origin
+            response.headers["Access-Control-Allow-Credentials"] = "true"
+            logger.debug(f"⚠️ CORS: 允許未列出的來源 {origin}")
+        else:
+            # 沒有 origin，使用第一個允許的來源或 *
+            if allowed_origins and allowed_origins[0] != "*":
+                response.headers["Access-Control-Allow-Origin"] = allowed_origins[0]
+            else:
+                response.headers["Access-Control-Allow-Origin"] = "*"
+        
+        response.headers["Access-Control-Expose-Headers"] = "X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset"
         
         return response
 

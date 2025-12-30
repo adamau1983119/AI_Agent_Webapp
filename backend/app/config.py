@@ -75,9 +75,11 @@ class Settings(BaseSettings):
     # 支援格式：
     # 1. JSON 格式: ["http://localhost:5173","http://localhost:3000"]
     # 2. 逗號分隔: http://localhost:5173,http://localhost:3000
+    # 注意：生產環境需要包含 Vercel 前端 URL
     CORS_ORIGINS: Union[str, List[str]] = [
         "http://localhost:5173",
         "http://localhost:3000",
+        "https://ai-agent-webapp-ten.vercel.app",  # Vercel 生產環境
     ]
     
     @field_validator('CORS_ORIGINS', mode='before')
