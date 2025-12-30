@@ -20,6 +20,28 @@ export default function TopicDetail() {
   const [showImageSearch, setShowImageSearch] = useState(false)
   const [viewStartTime, setViewStartTime] = useState<number | null>(null)
 
+  const {
+    data: topic,
+    isLoading: topicLoading,
+    error: topicError,
+    refetch: refetchTopic,
+  } = useQuery({
+    queryKey: ['topic', id],
+    queryFn: () => topicsAPI.getTopic(id!),
+    enabled: !!id,
+  })
+
+  const {
+    data: content,
+    isLoading: contentLoading,
+    error: contentError,
+  } = useQuery({
+    queryKey: ['content', id],
+    queryFn: () => contentsAPI.getContent(id!),
+    enabled: !!id,
+    retry: false, // 404 不重試
+  })
+
   // 記錄瀏覽時間
   useEffect(() => {
     if (topic) {
@@ -43,28 +65,6 @@ export default function TopicDetail() {
       }
     }
   }, [topic, content, id, viewStartTime])
-
-  const {
-    data: topic,
-    isLoading: topicLoading,
-    error: topicError,
-    refetch: refetchTopic,
-  } = useQuery({
-    queryKey: ['topic', id],
-    queryFn: () => topicsAPI.getTopic(id!),
-    enabled: !!id,
-  })
-
-  const {
-    data: content,
-    isLoading: contentLoading,
-    error: contentError,
-  } = useQuery({
-    queryKey: ['content', id],
-    queryFn: () => contentsAPI.getContent(id!),
-    enabled: !!id,
-    retry: false, // 404 不重試
-  })
 
   // 生成內容的 mutation
   const generateContentMutation = useMutation({
