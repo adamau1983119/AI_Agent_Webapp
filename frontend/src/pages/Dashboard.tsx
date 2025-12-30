@@ -106,16 +106,6 @@ export default function Dashboard() {
     return t.generatedAt?.startsWith(today) || false
   }).length
 
-  // 如果有連接錯誤，顯示錯誤訊息
-  if (hasError) {
-    const error = topicsError || schedulesError || undefined
-    return (
-      <div className="p-4 sm:p-6">
-        <ConnectionErrorDisplay error={error} onRetry={handleRetry} />
-      </div>
-    )
-  }
-
   return (
     <div className="p-4 sm:p-6">
       {/* 進度卡片區 */}

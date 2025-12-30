@@ -2,7 +2,7 @@
 排程 API 端點
 """
 from typing import Optional, List
-from fastapi import APIRouter, HTTPException, Query, BackgroundTasks
+from fastapi import APIRouter, HTTPException, Query, BackgroundTasks, Body
 from datetime import datetime
 from app.models.topic import Category
 from app.services.automation.scheduler import SchedulerService
@@ -155,8 +155,8 @@ async def manual_generate_topics(
 
 @router.post("/generate-today", response_model=dict)
 async def generate_today_all_topics(
-    request: GenerateTodayRequest = GenerateTodayRequest(),
-    background_tasks: BackgroundTasks = None
+    request: GenerateTodayRequest = Body(...),
+    background_tasks: BackgroundTasks = BackgroundTasks()
 ):
     """
     立即生成今日所有主題（3個分類 × 3個主題 = 9個主題）
@@ -174,8 +174,9 @@ async def generate_today_all_topics(
         if not request.force and len(existing_topics) >= 9:
             return {
                 "message": "今日主題已完整，無需重新生成",
-                "existing_count": len(existing_topics),
-                "required_count": 9
+                "categories": ["fashion", "food", "trend"],
+                "expected_count": 9,
+                "existing_count": len(existing_topics)
             }
         
         # 在背景任務中執行
@@ -184,6 +185,7 @@ async def generate_today_all_topics(
                 results = {}
                 for category in [Category.FASHION, Category.FOOD, Category.TREND]:
                     try:
+                        logger.info(f"開始生成 {category.value} 主題...")
                         topics = await scheduler_service.trigger_manual_generation(
                             category=category,
                             count=3
@@ -192,32 +194,28 @@ async def generate_today_all_topics(
                             "count": len(topics),
                             "topics": [t.get("id") for t in topics]
                         }
-                        logger.info(f"生成 {category.value} 主題完成，共 {len(topics)} 個")
+                        logger.info(f"✅ 生成 {category.value} 主題完成，共 {len(topics)} 個")
                     except Exception as e:
-                        logger.error(f"生成 {category.value} 主題失敗: {e}")
+                        logger.error(f"❌ 生成 {category.value} 主題失敗: {e}", exc_info=True)
                         results[category.value] = {"error": str(e)}
                 
-                logger.info(f"今日主題生成完成: {results}")
+                logger.info(f"📊 今日主題生成完成: {results}")
             except Exception as e:
-                logger.error(f"生成今日主題失敗: {e}")
+                logger.error(f"❌ 生成今日主題失敗: {e}", exc_info=True)
         
-        if background_tasks:
-            background_tasks.add_task(generate_all_task)
-        else:
-            # 如果沒有 background_tasks，直接執行（同步）
-            import asyncio
-            asyncio.create_task(generate_all_task())
+        # 使用 BackgroundTasks 執行
+        background_tasks.add_task(generate_all_task)
         
         return {
-            "message": "今日主題生成任務已啟動",
+            "message": "今日主題生成任務已啟動，正在後台處理中...",
             "categories": ["fashion", "food", "trend"],
             "expected_count": 9,
             "existing_count": len(existing_topics)
         }
         
     except Exception as e:
-        logger.error(f"啟動今日主題生成任務失敗: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"❌ 啟動今日主題生成任務失敗: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"啟動生成任務失敗: {str(e)}")
 
 
 @router.post("/start")

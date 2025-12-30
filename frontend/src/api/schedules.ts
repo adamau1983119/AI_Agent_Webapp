@@ -88,7 +88,10 @@ export const schedulesAPI = {
       existing_count: number
     }>('/schedules/generate-today', {
       method: 'POST',
-      body: JSON.stringify({ force }),
+      body: JSON.stringify({ force: force }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
     })
   },
 }
