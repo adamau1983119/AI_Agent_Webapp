@@ -72,6 +72,18 @@ async def lifespan(app: FastAPI):
         log_file=settings.LOG_FILE if settings.ENVIRONMENT != "development" else None,
     )
     
+    # 1. 環境變數驗證（強制檢查，缺失則阻止啟動）
+    try:
+        from app.utils.env_validator import EnvironmentValidator
+        validation_result = EnvironmentValidator.validate_all()
+        logger.info("✅ 環境變數驗證通過")
+        if validation_result.get("warnings"):
+            logger.warning(f"⚠️  發現 {len(validation_result['warnings'])} 個警告")
+    except Exception as e:
+        logger.error(f"❌ 環境變數驗證失敗: {e}")
+        logger.error("應用程式啟動被阻止，請檢查環境變數配置")
+        raise
+    
     # 連接 MongoDB
     await connect_to_mongo()
     

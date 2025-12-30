@@ -12,6 +12,8 @@ from app.services.ai.ai_service_factory import AIServiceFactory
 from app.services.images.image_service import ImageService
 from app.config import settings
 from app.models.topic import Status
+from app.utils.error_reporter import ErrorReporter, ErrorType
+from app.utils.retry_wrapper import retry_with_backoff, RetryConfig
 
 logger = logging.getLogger(__name__)
 
@@ -58,17 +60,35 @@ class AutomationWorkflow:
             if not topic:
                 raise ValueError(f"主題不存在: {topic_id}")
             
-            # 2. 生成內容
+            # 2. 生成內容（使用結構化錯誤回報）
             if auto_generate_content:
                 try:
                     await self._generate_content(topic)
                     result["content_generated"] = True
+                except ValueError as e:
+                    # 配置錯誤（如 API Key 未設定）
+                    if "API Key 未設定" in str(e) or "未設定" in str(e):
+                        error = ErrorReporter.create_configuration_error(
+                            message=f"AI 服務配置錯誤: {e}",
+                            service=settings.AI_SERVICE,
+                            missing_key=f"{settings.AI_SERVICE.upper()}_API_KEY"
+                        )
+                    else:
+                        error = ErrorReporter.create_generation_error(
+                            message=f"生成內容失敗: {e}",
+                            service=settings.AI_SERVICE
+                        )
+                    ErrorReporter.log_error(error, {"topic_id": topic_id})
+                    result["errors"].append(error)
                 except Exception as e:
-                    error_msg = f"生成內容失敗: {e}"
-                    logger.error(error_msg)
-                    result["errors"].append(error_msg)
+                    error = ErrorReporter.create_generation_error(
+                        message=f"生成內容失敗: {e}",
+                        service=settings.AI_SERVICE
+                    )
+                    ErrorReporter.log_error(error, {"topic_id": topic_id})
+                    result["errors"].append(error)
             
-            # 3. 搜尋並添加圖片
+            # 3. 搜尋並添加圖片（使用結構化錯誤回報）
             if auto_search_images:
                 try:
                     images_added = await self._search_and_add_images(
@@ -76,10 +96,28 @@ class AutomationWorkflow:
                         image_count
                     )
                     result["images_added"] = images_added
+                except ValueError as e:
+                    # 配置錯誤（所有圖片服務 API Key 都未設定）
+                    if "沒有可用的圖片服務" in str(e) or "API Key 都未設定" in str(e):
+                        error = ErrorReporter.create_configuration_error(
+                            message="所有圖片服務的 API Key 都未設定，圖片搜尋失敗",
+                            service="image_service",
+                            missing_key="UNSPLASH_ACCESS_KEY, PEXELS_API_KEY, PIXABAY_API_KEY"
+                        )
+                    else:
+                        error = ErrorReporter.create_generation_error(
+                            message=f"搜尋圖片失敗: {e}",
+                            service="image_service"
+                        )
+                    ErrorReporter.log_error(error, {"topic_id": topic_id})
+                    result["errors"].append(error)
                 except Exception as e:
-                    error_msg = f"搜尋圖片失敗: {e}"
-                    logger.error(error_msg)
-                    result["errors"].append(error_msg)
+                    error = ErrorReporter.create_generation_error(
+                        message=f"搜尋圖片失敗: {e}",
+                        service="image_service"
+                    )
+                    ErrorReporter.log_error(error, {"topic_id": topic_id})
+                    result["errors"].append(error)
             
             logger.info(f"主題 {topic_id} 處理完成: {result}")
             return result
@@ -90,8 +128,12 @@ class AutomationWorkflow:
             result["errors"].append(error_msg)
             return result
     
+    @retry_with_backoff(
+        config=RetryConfig(max_attempts=3, initial_delay=1.0, max_delay=10.0),
+        service_name="AI_Service"
+    )
     async def _generate_content(self, topic: Dict[str, Any]) -> None:
-        """生成內容"""
+        """生成內容（帶重試機制）"""
         topic_id = topic["id"]
         topic_title = topic["title"]
         topic_category = topic["category"]
@@ -176,13 +218,10 @@ class AutomationWorkflow:
         search_keyword = keywords_list[0] if keywords_list else topic_title
         
         try:
-            # 搜尋圖片
-            images = await self.image_service.search_images(
-                keywords=search_keyword,
-                source=None,  # 自動選擇
-                page=1,
-                limit=count,
-                use_fallback=True
+            # 搜尋圖片（帶重試機制）
+            images = await self._search_images_with_retry(
+                search_keyword,
+                count
             )
             
             # 添加圖片到主題
@@ -229,4 +268,22 @@ class AutomationWorkflow:
         except Exception as e:
             logger.error(f"搜尋圖片失敗: {e}")
             return 0
+    
+    @retry_with_backoff(
+        config=RetryConfig(max_attempts=3, initial_delay=1.0, max_delay=10.0),
+        service_name="Image_Service"
+    )
+    async def _search_images_with_retry(
+        self,
+        keywords: str,
+        limit: int
+    ) -> list:
+        """搜尋圖片（帶重試機制）"""
+        return await self.image_service.search_images(
+            keywords=keywords,
+            source=None,  # 自動選擇
+            page=1,
+            limit=limit,
+            use_fallback=True
+        )
 

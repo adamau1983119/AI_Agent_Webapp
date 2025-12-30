@@ -1,0 +1,136 @@
+{
+  "priority_checklist": {
+    "immediate_fixes": [
+      {
+        "id": "P1",
+        "item": "環境變數檢查",
+        "description": "在應用啟動時強制檢查 ENVIRONMENT、AUTO_START_SCHEDULER、AI_SERVICE、各 API Key、MONGODB_URL，若缺失則阻止服務啟動。",
+        "status": "completed",
+        "files": [
+          "backend/app/utils/env_validator.py",
+          "backend/app/main.py"
+        ]
+      },
+      {
+        "id": "P2",
+        "item": "AI 服務 API Key",
+        "description": "確認 QWEN_API_KEY 或其他 AI 服務的 API Key 已設定，否則內容生成必然失敗。",
+        "status": "completed",
+        "files": [
+          "backend/app/utils/env_validator.py"
+        ]
+      },
+      {
+        "id": "P3",
+        "item": "圖片服務 API Key",
+        "description": "至少設定一個圖片服務 API Key (Unsplash/Pexels/Pixabay)，否則圖片搜尋會完全失敗。",
+        "status": "completed",
+        "files": [
+          "backend/app/utils/env_validator.py"
+        ]
+      },
+      {
+        "id": "P4",
+        "item": "錯誤回報機制",
+        "description": "在 workflow.process_topic 中結構化錯誤訊息，回傳至前端，避免靜默失敗。",
+        "status": "completed",
+        "files": [
+          "backend/app/utils/error_reporter.py",
+          "backend/app/services/automation/workflow.py"
+        ]
+      },
+      {
+        "id": "P5",
+        "item": "排程健康檢查",
+        "description": "新增 /health/detailed API，檢查資料庫、排程、AI 服務、圖片服務狀態，並在失敗時發送告警。",
+        "status": "completed",
+        "files": [
+          "backend/app/api/v1/health.py"
+        ]
+      }
+    ],
+    "medium_term_fixes": [
+      {
+        "id": "M1",
+        "item": "重試機制",
+        "description": "為 AI 服務與圖片服務加上重試策略 (exponential backoff)，避免暫時性失敗。",
+        "status": "completed",
+        "files": [
+          "backend/app/utils/retry_wrapper.py",
+          "backend/app/services/automation/workflow.py"
+        ]
+      },
+      {
+        "id": "M2",
+        "item": "監控與告警",
+        "description": "整合 Slack/Email/Telegram 通知，當排程或生成失敗時立即告警。",
+        "status": "pending",
+        "files": []
+      },
+      {
+        "id": "M3",
+        "item": "結構化日誌",
+        "description": "使用 structlog 或 JSON 格式日誌，記錄主題 ID、服務名稱、錯誤類型，方便快速定位問題。",
+        "status": "pending",
+        "files": []
+      }
+    ],
+    "long_term_fixes": [
+      {
+        "id": "L1",
+        "item": "任務佇列",
+        "description": "使用 Celery 或類似工具處理異步任務，提升系統穩定性與可擴展性。",
+        "status": "pending",
+        "files": []
+      },
+      {
+        "id": "L2",
+        "item": "資料庫事務",
+        "description": "在生成內容與圖片時使用事務，確保資料一致性，避免部分成功部分失敗。",
+        "status": "pending",
+        "files": []
+      }
+    ],
+    "critical_failures": [
+      {
+        "id": "F1",
+        "risk": "排程未啟動",
+        "description": "ENVIRONMENT 預設為 development，導致排程服務不會自動啟動。",
+        "mitigation": "已添加 AUTO_START_SCHEDULER 環境變數檢查，並在啟動時驗證",
+        "status": "mitigated"
+      },
+      {
+        "id": "F2",
+        "risk": "AI 服務 API Key 缺失",
+        "description": "QWEN_API_KEY 未設定，內容生成必然失敗。",
+        "mitigation": "已添加啟動時強制檢查，缺失時阻止服務啟動",
+        "status": "mitigated"
+      },
+      {
+        "id": "F3",
+        "risk": "圖片服務全部失敗",
+        "description": "所有圖片服務 API Key 未設定，圖片搜尋完全失敗。",
+        "mitigation": "已添加啟動時檢查，至少需要一個圖片服務 API Key",
+        "status": "mitigated"
+      }
+    ],
+    "implementation_summary": {
+      "completed_files": [
+        "backend/app/utils/env_validator.py - 環境變數驗證器",
+        "backend/app/utils/error_reporter.py - 結構化錯誤回報器",
+        "backend/app/utils/retry_wrapper.py - 重試包裝器",
+        "backend/app/api/v1/health.py - 詳細健康檢查 API",
+        "backend/app/main.py - 啟動時環境驗證",
+        "backend/app/config.py - AUTO_START_SCHEDULER 配置",
+        "backend/app/services/automation/workflow.py - 整合錯誤回報和重試機制"
+      ],
+      "next_steps": [
+        "實施監控與告警（M2）",
+        "實施結構化日誌（M3）",
+        "考慮實施任務佇列（L1）",
+        "考慮實施資料庫事務（L2）"
+      ]
+    }
+  }
+}
+
