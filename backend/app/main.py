@@ -112,6 +112,45 @@ async def lifespan(app: FastAPI):
         logger.error("應用程式啟動被阻止，請檢查環境變數配置")
         raise
     
+    # 2. 詳細環境變數狀態日誌（用於排查配置問題）
+    logger.info("=== 啟動環境變數驗證 ===")
+    logger.info(f"AI_SERVICE: {settings.AI_SERVICE}")
+    
+    # DeepSeek 配置
+    if settings.DEEPSEEK_API_KEY:
+        logger.info("✅ DEEPSEEK_API_KEY 存在")
+    else:
+        logger.warning("⚠️ DEEPSEEK_API_KEY 不存在")
+    
+    # Google Custom Search 配置
+    if settings.GOOGLE_API_KEY:
+        logger.info("✅ GOOGLE_API_KEY 存在")
+    else:
+        logger.warning("⚠️ GOOGLE_API_KEY 不存在")
+    
+    if settings.GOOGLE_SEARCH_ENGINE_ID:
+        logger.info("✅ GOOGLE_SEARCH_ENGINE_ID 存在")
+    else:
+        logger.warning("⚠️ GOOGLE_SEARCH_ENGINE_ID 不存在")
+    
+    # 其他圖片服務配置
+    if settings.UNSPLASH_ACCESS_KEY:
+        logger.info("✅ UNSPLASH_ACCESS_KEY 存在")
+    else:
+        logger.warning("⚠️ UNSPLASH_ACCESS_KEY 不存在")
+    
+    if settings.PEXELS_API_KEY:
+        logger.info("✅ PEXELS_API_KEY 存在")
+    else:
+        logger.warning("⚠️ PEXELS_API_KEY 不存在")
+    
+    if settings.PIXABAY_API_KEY:
+        logger.info("✅ PIXABAY_API_KEY 存在")
+    else:
+        logger.warning("⚠️ PIXABAY_API_KEY 不存在")
+    
+    logger.info("=== 環境變數驗證完成 ===")
+    
     # 連接 MongoDB
     await connect_to_mongo()
     

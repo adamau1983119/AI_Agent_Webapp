@@ -113,23 +113,14 @@ async def generate_content(
                 detail=f"主題不存在: {topic_id}"
             )
         
-        # 調用 AI 服務生成內容（根據配置選擇服務）
+        # 調用 AI 服務生成內容（使用統一的 AIServiceFactory）
         from app.config import settings
+        from app.services.ai.ai_service_factory import AIServiceFactory
         from datetime import datetime
         
-        # 根據配置選擇 AI 服務
-        if settings.AI_SERVICE in ["ollama", "ollama_cloud"]:
-            from app.services.ai.ollama import OllamaService
-            ai_service = OllamaService()
-        elif settings.AI_SERVICE == "gemini":
-            from app.services.ai.gemini import GeminiService
-            ai_service = GeminiService()
-        elif settings.AI_SERVICE == "openai":
-            from app.services.ai.openai import OpenAIService
-            ai_service = OpenAIService()
-        else:  # 預設使用通義千問
-            from app.services.ai.qwen import QwenService
-            ai_service = QwenService()
+        # 使用統一的 Factory 獲取 AI 服務（每次請求時動態獲取最新配置）
+        ai_service = AIServiceFactory.get_service(settings.AI_SERVICE)
+        logger.info(f"使用 AI 服務: {settings.AI_SERVICE} (請求 ID: {topic_id})")
         
         # 取得關鍵字（從主題的 sources 中提取）
         keywords = []
@@ -213,7 +204,9 @@ async def generate_content(
             return _convert_to_response(created)
             
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        error_msg = str(e)
+        logger.error(f"生成內容失敗 (ValueError): {error_msg}")
+        raise HTTPException(status_code=400, detail=error_msg)
     except HTTPException:
         raise
     except Exception as e:

@@ -97,3 +97,32 @@ async def check_source_health(source_url: str):
         logger.error(f"檢查來源健康度失敗: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+
+@router.get("/images")
+async def validate_images():
+    """
+    驗證圖片服務配置狀態
+    返回各圖片服務 API Key 的可用性
+    """
+    from app.config import settings
+    
+    # 使用列表推導式過濾 None，確保只返回實際可用的服務
+    available_services = [
+        svc for svc in [
+            "duckduckgo",  # 總是可用
+            "unsplash" if settings.UNSPLASH_ACCESS_KEY else None,
+            "pexels" if settings.PEXELS_API_KEY else None,
+            "pixabay" if settings.PIXABAY_API_KEY else None,
+            "google_custom_search" if (settings.GOOGLE_API_KEY and settings.GOOGLE_SEARCH_ENGINE_ID) else None
+        ] if svc
+    ]
+    
+    return {
+        "unsplash": bool(settings.UNSPLASH_ACCESS_KEY),
+        "pexels": bool(settings.PEXELS_API_KEY),
+        "pixabay": bool(settings.PIXABAY_API_KEY),
+        "google_api_key": bool(settings.GOOGLE_API_KEY),
+        "google_search_engine_id": bool(settings.GOOGLE_SEARCH_ENGINE_ID),
+        "duckduckgo": True,  # DuckDuckGo 不需要 API Key
+        "available_services": available_services
+    }
