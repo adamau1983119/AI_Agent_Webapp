@@ -6,6 +6,7 @@ from typing import List, Dict, Any, Optional
 from app.services.images.unsplash import UnsplashService
 from app.services.images.pexels import PexelsService
 from app.services.images.pixabay import PixabayService
+from app.services.images.duckduckgo import DuckDuckGoService
 from app.models.image import ImageSource
 import logging
 
@@ -19,6 +20,7 @@ class ImageService:
         self.unsplash = UnsplashService()
         self.pexels = PexelsService()
         self.pixabay = PixabayService()
+        self.duckduckgo = DuckDuckGoService()  # 無需 API Key 的備援服務
         
         # 服務優先順序
         self.services = [
@@ -54,6 +56,7 @@ class ImageService:
                 ImageSource.UNSPLASH: self.unsplash,
                 ImageSource.PEXELS: self.pexels,
                 ImageSource.PIXABAY: self.pixabay,
+                ImageSource.DUCKDUCKGO: self.duckduckgo,
             }
             
             service = service_map.get(source)
@@ -84,7 +87,20 @@ class ImageService:
                 last_error = e
                 continue
         
-        # 所有服務都失敗
+        # 所有 API 服務都失敗，嘗試使用 DuckDuckGo（不需要 API Key）
+        if use_fallback:
+            logger.info("所有 API 服務都失敗或未設定 API Key，嘗試使用 DuckDuckGo（不需要 API Key）...")
+            try:
+                images = await self.duckduckgo.search_images(keywords, page, limit)
+                logger.info(f"✅ DuckDuckGo 搜尋成功，找到 {len(images)} 張圖片")
+                return images
+            except Exception as e:
+                logger.error(f"DuckDuckGo 搜尋也失敗: {e}")
+                if last_error:
+                    raise last_error
+                raise ValueError("所有圖片服務都失敗，包括不需要 API Key 的 DuckDuckGo")
+        
+        # 如果 use_fallback=False，則拋出錯誤
         if last_error:
             raise last_error
         raise ValueError("沒有可用的圖片服務（所有 API Key 都未設定）")
