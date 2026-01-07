@@ -66,12 +66,19 @@ async def test_image_search():
                 if attempt.get('message'):
                     print(f"       訊息: {attempt.get('message')}")
         
-        # 顯示前3張圖片
+        # 顯示所有圖片
         items = result.get('items', [])
         if items:
-            print(f"\n   前 {min(3, len(items))} 張圖片:")
-            for i, img in enumerate(items[:3], 1):
-                print(f"     {i}. {img.get('source', 'unknown')} - {img.get('url', '')[:60]}...")
+            print(f"\n   返回的 {len(items)} 張圖片:")
+            for i, img in enumerate(items, 1):
+                url = img.get('url', '')
+                source = img.get('source', 'unknown')
+                title = img.get('title', '')[:50] if img.get('title') else '無標題'
+                print(f"\n     {i}. {source}")
+                print(f"        URL: {url}")
+                print(f"        標題: {title}")
+                if img.get('thumbnail_url') and img.get('thumbnail_url') != url:
+                    print(f"        縮圖: {img.get('thumbnail_url')}")
         else:
             print("\n   [WARN] 沒有返回圖片")
             
@@ -99,9 +106,16 @@ async def test_image_search():
         
         items = result.get('items', [])
         if items:
-            print(f"\n   前 {min(3, len(items))} 張圖片:")
-            for i, img in enumerate(items[:3], 1):
-                print(f"     {i}. {img.get('source', 'unknown')} - {img.get('url', '')[:60]}...")
+            print(f"\n   返回的 {len(items)} 張圖片:")
+            for i, img in enumerate(items, 1):
+                url = img.get('url', '')
+                source = img.get('source', 'unknown')
+                title = img.get('title', '')[:50] if img.get('title') else '無標題'
+                print(f"\n     {i}. {source}")
+                print(f"        URL: {url}")
+                print(f"        標題: {title}")
+                if img.get('thumbnail_url') and img.get('thumbnail_url') != url:
+                    print(f"        縮圖: {img.get('thumbnail_url')}")
         else:
             print("\n   [WARN] 沒有返回圖片")
             if result.get('attempts'):
