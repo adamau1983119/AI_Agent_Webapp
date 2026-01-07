@@ -16,15 +16,15 @@ export default function Dashboard() {
   const queryClient = useQueryClient()
   const [isGenerating, setIsGenerating] = useState(false)
   
-  // 調試：檢查環境變數是否正確讀取
-  if (import.meta.env.PROD) {
-    console.log('🔍 生產環境調試資訊：')
-    console.log('  VITE_API_URL:', import.meta.env.VITE_API_URL || '未設置')
-    console.log('  當前 API Base URL:', import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1')
-    // 強制清除所有緩存
-    queryClient.clear()
-    console.log('✅ 已清除所有 React Query 緩存')
-  }
+  // 調試：檢查環境變數是否正確讀取（僅在首次掛載時執行）
+  useEffect(() => {
+    if (import.meta.env.PROD) {
+      console.log('🔍 生產環境調試資訊：')
+      console.log('  VITE_API_URL:', import.meta.env.VITE_API_URL || '未設置')
+      console.log('  當前 API Base URL:', import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1')
+      // 注意：不要清除緩存，這會導致重複請求
+    }
+  }, []) // 空依賴數組，確保只執行一次
 
   const {
     data: topicsResponse,
