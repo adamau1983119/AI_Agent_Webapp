@@ -10,6 +10,7 @@ import { handleHTTPError, showErrorToUser, type APIError } from './errors'
 export interface RequestConfig extends RequestInit {
   skipAuth?: boolean // 跳過認證
   skipErrorHandler?: boolean // 跳過錯誤處理
+  timeout?: number // 請求超時時間（毫秒），預設 10000
 }
 
 /**

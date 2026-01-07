@@ -34,12 +34,12 @@ export default function Dashboard() {
   } = useQuery({
     queryKey: ['topics'],
     queryFn: () => topicsAPI.getTopics(),
-    retry: 2,
-    retryDelay: 1000,
+    retry: 1, // 減少重試次數
+    retryDelay: 2000,
     staleTime: 0, // 不使用過期緩存
     gcTime: 0, // 立即清除緩存（React Query v5）或 cacheTime: 0（v4）
-    // 當有錯誤時，不使用緩存數據
     enabled: true,
+    refetchOnWindowFocus: false, // 避免視窗聚焦時自動重試
   })
 
   const {
@@ -50,12 +50,12 @@ export default function Dashboard() {
   } = useQuery({
     queryKey: ['schedules'],
     queryFn: () => api.getSchedules(),
-    retry: 2,
-    retryDelay: 1000,
+    retry: 1, // 減少重試次數
+    retryDelay: 2000,
     staleTime: 0, // 不使用過期緩存
     gcTime: 0, // 立即清除緩存
-    // 當有錯誤時，不使用緩存數據
     enabled: true,
+    refetchOnWindowFocus: false, // 避免視窗聚焦時自動重試
   })
 
   // 取得推薦列表（暫時禁用，等待後端修復）
@@ -77,8 +77,9 @@ export default function Dashboard() {
     refetchSchedules()
   }
   
-  // 如果有連接錯誤且沒有數據，顯示錯誤訊息
-  const shouldShowError = hasError && (!topicsResponse || !schedules)
+  // 如果有連接錯誤，顯示錯誤訊息
+  // 或者如果載入時間過長（超過 10 秒），也顯示錯誤提示
+  const shouldShowError = hasError || (isLoading && (topicsError || schedulesError))
 
   // 生成今日主題的 mutation
   const generateTodayMutation = useMutation({
@@ -126,9 +127,24 @@ export default function Dashboard() {
       {shouldShowError && (
         <div className="mb-4">
           <ConnectionErrorDisplay 
-            error={topicsError || schedulesError || undefined} 
+            error={topicsError || schedulesError || new Error('無法連接到後端服務')} 
             onRetry={handleRetry} 
           />
+        </div>
+      )}
+      
+      {/* 載入超時提示 */}
+      {isLoading && !hasError && (
+        <div className="mb-4 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <p className="text-sm text-yellow-800">
+            ⚠️ 載入時間較長，請檢查後端服務是否正常運行
+          </p>
+          <button
+            onClick={handleRetry}
+            className="mt-2 text-sm text-yellow-700 hover:text-yellow-900 underline"
+          >
+            重試
+          </button>
         </div>
       )}
       

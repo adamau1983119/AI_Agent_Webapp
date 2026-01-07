@@ -21,39 +21,55 @@ async function fetchAPI<T>(
   options?: RequestConfig
 ): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`
+  const timeout = options?.timeout || 10000 // 預設 10 秒超時
 
   try {
     // 1. 請求攔截器處理
     const config = requestInterceptor(options || {})
 
-    // 2. 發送請求
-    const response = await fetch(url, config)
+    // 2. 發送請求（帶超時）
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), timeout)
+    
+    try {
+      const response = await fetch(url, {
+        ...config,
+        signal: controller.signal,
+      })
+      clearTimeout(timeoutId)
 
-    // 3. 響應攔截器處理
-    const data = await responseInterceptor(response, options?.skipErrorHandler)
+      // 3. 響應攔截器處理
+      const data = await responseInterceptor(response, options?.skipErrorHandler)
 
-    return data as T
+      return data as T
+    } catch (fetchError: any) {
+      clearTimeout(timeoutId)
+      if (fetchError.name === 'AbortError') {
+        throw new Error(`請求超時（${timeout}ms）：${endpoint}`)
+      }
+      throw fetchError
+    }
   } catch (error) {
     // 4. 統一錯誤處理
     const apiError = handleAPIError(error)
     
-    // 詳細錯誤日誌（開發環境）
-    if (import.meta.env.DEV) {
-      console.error(`❌ API request failed: ${endpoint}`, {
-        url,
-        error: apiError,
-        message: apiError.message,
-        status: apiError.status,
-      })
-      
-      // 提供診斷建議
-      if (apiError.message.includes('Failed to fetch') || apiError.message.includes('NetworkError')) {
-        console.error('💡 診斷建議：')
-        console.error('  1. 檢查後端服務是否運行：', API_BASE_URL.replace('/api/v1', '/health'))
-        console.error('  2. 檢查 VITE_API_URL 環境變數：', API_BASE_URL)
-        console.error('  3. 檢查 CORS 設定是否正確')
-        console.error('  4. 檢查網路連接')
-      }
+    // 詳細錯誤日誌（開發和生產環境都顯示）
+    console.error(`❌ API request failed: ${endpoint}`, {
+      url,
+      error: apiError,
+      message: apiError.message,
+      status: apiError.status,
+    })
+    
+    // 提供診斷建議
+    if (apiError.message.includes('Failed to fetch') || 
+        apiError.message.includes('NetworkError') ||
+        apiError.message.includes('請求超時')) {
+      console.error('💡 診斷建議：')
+      console.error('  1. 檢查後端服務是否運行：', API_BASE_URL.replace('/api/v1', '/health'))
+      console.error('  2. 檢查 VITE_API_URL 環境變數：', API_BASE_URL)
+      console.error('  3. 檢查 CORS 設定是否正確')
+      console.error('  4. 檢查網路連接')
     }
     
     throw apiError
