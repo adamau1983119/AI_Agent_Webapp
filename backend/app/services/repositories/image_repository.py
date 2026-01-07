@@ -1,6 +1,6 @@
 """
 Image Repository
-?ä? Image ??CRUD ?ä?
+æä¾› Image çš„ CRUD æ“ä½œ
 """
 from typing import Optional, List, Dict, Any
 from datetime import datetime
@@ -19,28 +19,28 @@ class ImageRepository(BaseRepository):
     
     async def create_image(self, image_data: Dict[str, Any]) -> Dict[str, Any]:
         """
-        å»ºç? Image
+        å»ºç«‹ Image
         
         Args:
-            image_data: Image è³‡æ?
+            image_data: Image è³‡æ–™
             
         Returns:
-            å»ºç???Image
+            å»ºç«‹çš„ Image
         """
-        # ç¢ºä??‚é??³è?
+        # ç¢ºä¿æ™‚é–“æˆ³è¨˜
         image_data.setdefault("fetched_at", datetime.utcnow())
         
         return await self.create(image_data)
     
     async def get_image_by_id(self, image_id: str) -> Optional[Dict[str, Any]]:
         """
-        ?¹æ? ID ?–å? Image
+        æ ¹æ“š ID å–å¾— Image
         
         Args:
             image_id: Image ID
             
         Returns:
-            Image è³‡æ?
+            Image è³‡æ–™
         """
         return await self.find_by_id(image_id)
     
@@ -50,14 +50,14 @@ class ImageRepository(BaseRepository):
         sort_by_order: bool = True
     ) -> List[Dict[str, Any]]:
         """
-        ?¹æ? Topic ID ?–å??€??Images
+        æ ¹æ“š Topic ID å–å¾—æ‰€æœ‰ Images
         
         Args:
             topic_id: Topic ID
-            sort_by_order: ?¯å¦??order ?’å?
+            sort_by_order: æ˜¯å¦æŒ‰ order æ’åº
             
         Returns:
-            Images ?—è¡¨
+            Images åˆ—è¡¨
         """
         filter = {"topic_id": topic_id}
         sort = [("order", 1)] if sort_by_order else None
@@ -70,26 +70,26 @@ class ImageRepository(BaseRepository):
         update_data: Dict[str, Any]
     ) -> Optional[Dict[str, Any]]:
         """
-        ?´æ–° Image
+        æ›´æ–° Image
         
         Args:
             image_id: Image ID
-            update_data: ?´æ–°è³‡æ?
+            update_data: æ›´æ–°è³‡æ–™
             
         Returns:
-            ?´æ–°å¾Œç? Image
+            æ›´æ–°å¾Œçš„ Image
         """
         return await self.update_by_id(image_id, {"$set": update_data})
     
     async def delete_image(self, image_id: str) -> bool:
         """
-        ?ªé™¤ Image
+        åˆªé™¤ Image
         
         Args:
             image_id: Image ID
             
         Returns:
-            ?¯å¦?å?
+            æ˜¯å¦æˆåŠŸ
         """
         return await self.delete_by_id(image_id)
     
@@ -99,18 +99,18 @@ class ImageRepository(BaseRepository):
         image_orders: List[Dict[str, int]]
     ) -> bool:
         """
-        ?æ–°?’å? Images
+        æ›´æ–°æ’åº Images
         
         Args:
             topic_id: Topic ID
-            image_orders: ?–ç??’å??—è¡¨ [{"image_id": "xxx", "order": 1}, ...]
+            image_orders: åœ–ç‰‡æ’åºåˆ—è¡¨ [{"image_id": "xxx", "order": 1}, ...]
             
         Returns:
-            ?¯å¦?å?
+            æ˜¯å¦æˆåŠŸ
         """
         collection = await self._get_collection()
         
-        # ?¹æ¬¡?´æ–°
+        # æ‰¹æ¬¡æ›´æ–°
         operations = []
         for item in image_orders:
             operations.append({
@@ -128,12 +128,12 @@ class ImageRepository(BaseRepository):
     
     async def count_by_topic_id(self, topic_id: str) -> int:
         """
-        è¨ˆç? Topic ?„å??‡æ•¸??
+        è¨ˆç®— Topic çš„åœ–ç‰‡æ•¸é‡
         
         Args:
             topic_id: Topic ID
             
         Returns:
-            ?–ç??¸é?
+            åœ–ç‰‡æ•¸é‡
         """
         return await self.count({"topic_id": topic_id})
