@@ -133,12 +133,25 @@ class GoogleCustomSearchService(ImageServiceBase):
                     link = item.get("link", "")
                     mime = item.get("mime", "")
                     
-                    # 只保留圖片類型的結果
+                    # 只保留有效的連結
                     if not link:
                         continue
+                    
+                    # 如果 mime 存在且不是圖片類型，跳過
+                    # 但如果 mime 為空，我們仍然保留（因為 searchType=image 應該確保都是圖片）
                     if mime and not mime.startswith("image/"):
                         logger.debug(f"[{trace_id}] 跳過非圖片結果: {link} (mime={mime})")
                         continue
+                    
+                    # 檢查連結是否看起來像圖片 URL
+                    image_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.svg']
+                    is_image_url = any(link.lower().endswith(ext) for ext in image_extensions)
+                    
+                    # 如果 mime 為空且 URL 也不像圖片，跳過
+                    if not mime and not is_image_url:
+                        # 但對於 Google Custom Search，如果 searchType=image，我們應該信任結果
+                        # 所以這裡我們仍然保留
+                        pass
                     
                     result.append({
                         "id": f"google_{hash(link) % 1000000}",
@@ -155,12 +168,14 @@ class GoogleCustomSearchService(ImageServiceBase):
                     })
                 
                 if not result:
-                    logger.info(f"[{trace_id}] Google Custom Search 無圖片結果")
+                    logger.warning(f"[{trace_id}] Google Custom Search 過濾後無圖片結果: 原始 items={len(items)}, totalResults={total_results}")
+                    # 不要拋出異常，讓 ImageServiceManager 嘗試下一個服務
+                    # 但記錄詳細資訊以便診斷
                     raise ImageSearchError(
                         ErrorCode.NO_RESULTS,
                         "google_custom_search",
-                        "查詢無圖片結果",
-                        {"total_results": total_results}
+                        f"查詢無圖片結果（原始結果: {len(items)} 個，總結果數: {total_results}）",
+                        {"total_results": total_results, "items_count": len(items)}
                     )
                 
                 logger.info(f"[{trace_id}] ✅ Google Custom Search 成功: 返回 {len(result)} 張圖片")
