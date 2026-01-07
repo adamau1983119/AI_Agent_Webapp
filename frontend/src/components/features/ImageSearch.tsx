@@ -162,7 +162,7 @@ export default function ImageSearch({
   const searchResults = searchResponse?.data || []
   const pagination = searchResponse?.pagination
   const attempts = searchResponse?.attempts || []
-  const source = searchResponse?.source
+  const usedSource = searchResponse?.source  // 重命名避免與狀態變數衝突
   const traceId = searchResponse?.trace_id
 
   // 新增圖片到主題
@@ -289,8 +289,8 @@ export default function ImageSearch({
       {/* 診斷模式開關 */}
       <div className="mb-4 flex items-center justify-between">
         <div className="text-sm text-gray-600">
-          {source && (
-            <span>使用來源: <strong>{source}</strong></span>
+          {usedSource && (
+            <span>使用來源: <strong>{usedSource}</strong></span>
           )}
           {traceId && diagnosticMode && (
             <span className="ml-4">追蹤 ID: <code className="text-xs bg-gray-100 px-1 rounded">{traceId}</code></span>
