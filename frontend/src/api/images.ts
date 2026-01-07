@@ -134,32 +134,46 @@ export const imagesAPI = {
       urlParams.append('source', sourceMap[params.source] || params.source)
     }
 
-    const response = await fetchAPI<ImageSearchResponse>(
-      `/images/search?${urlParams.toString()}`
-    )
+    // 直接使用 fetch 獲取完整響應，避免 responseInterceptor 提取 data 欄位
+    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
+    const url = `${API_BASE_URL}/images/search?${urlParams.toString()}`
+    
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+
+    if (!response.ok) {
+      throw new Error(`API request failed: ${response.status} ${response.statusText}`)
+    }
+
+    // 解析完整的 JSON 響應（包含 data, pagination, source, attempts, trace_id）
+    const responseData = await response.json()
 
     const page = params.page || 1
     const limit = params.limit || 20
-    const pagination = response.pagination || {
+    const pagination = responseData.pagination || {
       page,
       limit,
-      total: response.data?.length || 0,
-      totalPages: Math.ceil((response.data?.length || 0) / limit),
+      total: responseData.data?.length || 0,
+      totalPages: Math.ceil((responseData.data?.length || 0) / limit),
     }
 
     return {
-      data: (response.data || []).map(convertImage),
+      data: (responseData.data || []).map(convertImage),
       pagination: {
         page: pagination.page || page,
         limit: pagination.limit || limit,
-        total: pagination.total || response.data?.length || 0,
+        total: pagination.total || responseData.data?.length || 0,
         totalPages:
           pagination.totalPages ||
-          Math.ceil((pagination.total || response.data?.length || 0) / (pagination.limit || limit)),
+          Math.ceil((pagination.total || responseData.data?.length || 0) / (pagination.limit || limit)),
       },
-      source: response.source,
-      attempts: response.attempts,
-      trace_id: response.trace_id,
+      source: responseData.source,
+      attempts: responseData.attempts || [],
+      trace_id: responseData.trace_id,
     }
   },
 
