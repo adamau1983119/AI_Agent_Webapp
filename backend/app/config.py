@@ -1,7 +1,7 @@
 """
 應用配置管理
 """
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import field_validator
 from typing import List, Union
 import json
@@ -51,8 +51,13 @@ class Settings(BaseSettings):
     OLLAMA_API_KEY: str = ""
     OLLAMA_CLOUD_BASE_URL: str = "https://api.ollama.com"  # Ollama 雲端 API 端點（標準端點）
     
-    # 選擇使用的 AI 服務（qwen, openai, gemini, ollama, ollama_cloud）
-    AI_SERVICE: str = "qwen"  # 預設使用通義千問，香港用戶改為 "ollama" 或 "ollama_cloud"
+    # DeepSeek AI（OpenAI 兼容 API，推薦）
+    DEEPSEEK_API_KEY: str = ""
+    DEEPSEEK_MODEL: str = "deepseek-chat"  # 或 "deepseek-chat-v3" 用於最新版本
+    DEEPSEEK_BASE_URL: str = "https://api.deepseek.com/v1/chat/completions"
+    
+    # 選擇使用的 AI 服務（qwen, openai, gemini, ollama, ollama_cloud, deepseek）
+    AI_SERVICE: str = "deepseek"  # 預設使用 DeepSeek API（推薦）
     
     # 圖片服務配置
     UNSPLASH_ACCESS_KEY: str = ""
@@ -101,9 +106,11 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = "INFO"
     LOG_FILE: str = "logs/app.log"
     
-    class Config:
-        env_file = ".env"
-        case_sensitive = True
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        case_sensitive=True,
+        extra="ignore",  # 忽略未定義的環境變數，避免錯誤
+    )
 
 
 # 全域設定實例

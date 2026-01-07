@@ -66,6 +66,10 @@ class EnvironmentValidator:
             elif ai_service == "gemini":
                 if not settings.GEMINI_API_KEY:
                     errors.append("AI_SERVICE=gemini 但 GEMINI_API_KEY 未設定")
+            elif ai_service == "deepseek":
+                deepseek_key = getattr(settings, 'DEEPSEEK_API_KEY', '')
+                if not deepseek_key:
+                    errors.append("AI_SERVICE=deepseek 但 DEEPSEEK_API_KEY 未設定")
             elif ai_service in ["ollama", "ollama_cloud"]:
                 if ai_service == "ollama_cloud" and not settings.OLLAMA_API_KEY:
                     warnings.append("OLLAMA_API_KEY 未設定，ollama_cloud 服務可能無法使用")
@@ -73,11 +77,11 @@ class EnvironmentValidator:
         
         # 5. 檢查圖片服務配置（改為警告，不阻止啟動）
         image_services_configured = []
-        if settings.UNSPLASH_ACCESS_KEY:
+        if getattr(settings, 'UNSPLASH_ACCESS_KEY', ''):
             image_services_configured.append("Unsplash")
-        if settings.PEXELS_API_KEY:
+        if getattr(settings, 'PEXELS_API_KEY', ''):
             image_services_configured.append("Pexels")
-        if settings.PIXABAY_API_KEY:
+        if getattr(settings, 'PIXABAY_API_KEY', ''):
             image_services_configured.append("Pixabay")
         
         if not image_services_configured:
@@ -149,6 +153,8 @@ class EnvironmentValidator:
             return bool(settings.OPENAI_API_KEY)
         elif ai_service == "gemini":
             return bool(settings.GEMINI_API_KEY)
+        elif ai_service == "deepseek":
+            return bool(getattr(settings, 'DEEPSEEK_API_KEY', ''))
         elif ai_service in ["ollama", "ollama_cloud"]:
             if ai_service == "ollama_cloud":
                 return bool(settings.OLLAMA_API_KEY)
@@ -160,9 +166,9 @@ class EnvironmentValidator:
     def validate_image_services() -> bool:
         """驗證圖片服務配置"""
         return bool(
-            settings.UNSPLASH_ACCESS_KEY or
-            settings.PEXELS_API_KEY or
-            settings.PIXABAY_API_KEY
+            getattr(settings, 'UNSPLASH_ACCESS_KEY', '') or
+            getattr(settings, 'PEXELS_API_KEY', '') or
+            getattr(settings, 'PIXABAY_API_KEY', '')
         )
     
     @staticmethod

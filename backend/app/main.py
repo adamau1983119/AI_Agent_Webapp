@@ -117,34 +117,40 @@ async def lifespan(app: FastAPI):
     logger.info(f"AI_SERVICE: {settings.AI_SERVICE}")
     
     # DeepSeek 配置
-    if settings.DEEPSEEK_API_KEY:
+    deepseek_key = getattr(settings, 'DEEPSEEK_API_KEY', '')
+    if deepseek_key:
         logger.info("✅ DEEPSEEK_API_KEY 存在")
     else:
         logger.warning("⚠️ DEEPSEEK_API_KEY 不存在")
     
     # Google Custom Search 配置
-    if settings.GOOGLE_API_KEY:
+    google_key = getattr(settings, 'GOOGLE_API_KEY', '')
+    if google_key:
         logger.info("✅ GOOGLE_API_KEY 存在")
     else:
         logger.warning("⚠️ GOOGLE_API_KEY 不存在")
     
-    if settings.GOOGLE_SEARCH_ENGINE_ID:
+    google_search_id = getattr(settings, 'GOOGLE_SEARCH_ENGINE_ID', '')
+    if google_search_id:
         logger.info("✅ GOOGLE_SEARCH_ENGINE_ID 存在")
     else:
         logger.warning("⚠️ GOOGLE_SEARCH_ENGINE_ID 不存在")
     
     # 其他圖片服務配置
-    if settings.UNSPLASH_ACCESS_KEY:
+    unsplash_key = getattr(settings, 'UNSPLASH_ACCESS_KEY', '')
+    if unsplash_key:
         logger.info("✅ UNSPLASH_ACCESS_KEY 存在")
     else:
         logger.warning("⚠️ UNSPLASH_ACCESS_KEY 不存在")
     
-    if settings.PEXELS_API_KEY:
+    pexels_key = getattr(settings, 'PEXELS_API_KEY', '')
+    if pexels_key:
         logger.info("✅ PEXELS_API_KEY 存在")
     else:
         logger.warning("⚠️ PEXELS_API_KEY 不存在")
     
-    if settings.PIXABAY_API_KEY:
+    pixabay_key = getattr(settings, 'PIXABAY_API_KEY', '')
+    if pixabay_key:
         logger.info("✅ PIXABAY_API_KEY 存在")
     else:
         logger.warning("⚠️ PIXABAY_API_KEY 不存在")
