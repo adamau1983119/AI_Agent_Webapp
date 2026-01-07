@@ -34,12 +34,23 @@ export default function Dashboard() {
   } = useQuery({
     queryKey: ['topics'],
     queryFn: () => topicsAPI.getTopics(),
-    retry: 1, // 減少重試次數
-    retryDelay: 2000,
-    staleTime: 0, // 不使用過期緩存
-    gcTime: 0, // 立即清除緩存（React Query v5）或 cacheTime: 0（v4）
+    retry: (failureCount, error: any) => {
+      // 429 錯誤不重試，等待用戶手動重試
+      if (error?.status === 429) {
+        return false
+      }
+      // 其他錯誤最多重試 1 次
+      return failureCount < 1
+    },
+    retryDelay: (attemptIndex) => {
+      // 指數退避：2秒、4秒
+      return Math.min(1000 * 2 ** attemptIndex, 4000)
+    },
+    staleTime: 30000, // 30 秒內認為數據新鮮
+    gcTime: 5 * 60 * 1000, // 5 分鐘緩存
     enabled: true,
     refetchOnWindowFocus: false, // 避免視窗聚焦時自動重試
+    refetchOnMount: false, // 避免組件掛載時自動重試
   })
 
   const {
@@ -50,12 +61,23 @@ export default function Dashboard() {
   } = useQuery({
     queryKey: ['schedules'],
     queryFn: () => api.getSchedules(),
-    retry: 1, // 減少重試次數
-    retryDelay: 2000,
-    staleTime: 0, // 不使用過期緩存
-    gcTime: 0, // 立即清除緩存
+    retry: (failureCount, error: any) => {
+      // 429 錯誤不重試，等待用戶手動重試
+      if (error?.status === 429) {
+        return false
+      }
+      // 其他錯誤最多重試 1 次
+      return failureCount < 1
+    },
+    retryDelay: (attemptIndex) => {
+      // 指數退避：2秒、4秒
+      return Math.min(1000 * 2 ** attemptIndex, 4000)
+    },
+    staleTime: 30000, // 30 秒內認為數據新鮮
+    gcTime: 5 * 60 * 1000, // 5 分鐘緩存
     enabled: true,
     refetchOnWindowFocus: false, // 避免視窗聚焦時自動重試
+    refetchOnMount: false, // 避免組件掛載時自動重試
   })
 
   // 取得推薦列表（暫時禁用，等待後端修復）
@@ -132,6 +154,33 @@ export default function Dashboard() {
           />
         </div>
       )}
+      
+      {/* 速率限制警告 */}
+      {(topicsError as any)?.status === 429 || (schedulesError as any)?.status === 429 ? (
+        <div className="mb-4 bg-orange-50 border border-orange-200 rounded-lg p-4">
+          <div className="flex items-start gap-3">
+            <div className="flex-1">
+              <h3 className="font-semibold text-orange-800 mb-1">
+                ⚠️ 請求過於頻繁
+              </h3>
+              <p className="text-sm text-orange-700 mb-3">
+                後端服務限制了請求頻率，請稍後再試。
+                {(topicsError as any)?.details?.retryAfter && (
+                  <span className="block mt-1">
+                    建議等待 {(topicsError as any).details.retryAfter} 秒後再試。
+                  </span>
+                )}
+              </p>
+              <button
+                onClick={handleRetry}
+                className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-sm"
+              >
+                重試
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
       
       {/* 載入超時提示 */}
       {isLoading && !hasError && (

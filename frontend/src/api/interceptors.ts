@@ -60,10 +60,21 @@ export async function responseInterceptor(
     }
 
     const error = handleHTTPError(response.status, errorData)
+    
+    // 2. 對於 429 錯誤，添加 Retry-After 資訊
+    if (response.status === 429) {
+      const retryAfter = response.headers.get('Retry-After')
+      if (retryAfter) {
+        error.details = {
+          ...error.details,
+          retryAfter: parseInt(retryAfter, 10),
+        }
+      }
+    }
 
-    // 2. 顯示錯誤給用戶（如果沒有跳過）
-    // 注意：404 錯誤通常由調用方處理，這裡不顯示給用戶
-    if (!skipErrorHandler && response.status !== 404) {
+    // 3. 顯示錯誤給用戶（如果沒有跳過）
+    // 注意：404 和 429 錯誤通常由調用方處理，這裡不顯示給用戶
+    if (!skipErrorHandler && response.status !== 404 && response.status !== 429) {
       showErrorToUser(error)
     }
 
