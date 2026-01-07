@@ -14,6 +14,7 @@ from app.schemas.image import (
 from app.services.repositories.image_repository import ImageRepository
 from app.services.repositories.topic_repository import TopicRepository
 from app.models.image import ImageSource
+from app.config import settings
 from datetime import datetime
 import logging
 
@@ -77,32 +78,31 @@ async def search_images(
     支援多個圖片來源（Unsplash/Pexels/Pixabay/Google Custom Search），自動備援
     如果所有 API Key 都未設定，會自動使用 DuckDuckGo
     """
+    import uuid
+    from app.services.images.image_service_manager import ImageServiceManager
+    from app.services.images.exceptions import ImageSearchError
+    from app.schemas.common import PaginationResponse
+    from app.schemas.image import ImageResponse, ImageSearchAttempt
+    
+    # 生成 trace_id
+    trace_id = str(uuid.uuid4())[:8]
+    logger.info(f"[{trace_id}] 圖片搜尋請求: keywords='{keywords}', source={source}, page={page}, limit={limit}")
+    
     try:
-        from app.services.images.image_service_manager import ImageServiceManager
-        from app.schemas.common import PaginationResponse
-        
         image_service = ImageServiceManager()
         
-        # 搜尋圖片（ImageServiceManager 已內建完整的備援機制，包括 Google Custom Search 和 DuckDuckGo）
-        try:
-            images = await image_service.search_images(
-                keywords=keywords,
-                source=source,
-                page=page,
-                limit=limit
-            )
-        except Exception as e:
-            logger.warning(f"圖片搜尋服務異常，返回空結果: {e}")
-            images = []  # 如果搜尋失敗，返回空列表而不是拋出異常
+        # 搜尋圖片（返回包含 source、items 和 attempts 的字典）
+        result = await image_service.search_images(
+            keywords=keywords,
+            source=source,
+            page=page,
+            limit=limit,
+            trace_id=trace_id
+        )
         
         # 轉換為回應格式
-        from app.schemas.image import ImageResponse
         image_responses = []
-        for img in images:
-            # 建立臨時 ID（如果沒有）
-            if "id" not in img:
-                img["id"] = f"temp_{hash(img.get('url', ''))}"
-            
+        for img in result.get("items", []):
             # 確保所有必需欄位都存在
             img_id = img.get("id", "")
             if not img_id:
@@ -140,27 +140,67 @@ async def search_images(
                 fetched_at=datetime.utcnow()
             ))
         
+        # 轉換 attempts
+        attempts = []
+        for attempt in result.get("attempts", []):
+            attempts.append(ImageSearchAttempt(
+                source=attempt.get("source", "unknown"),
+                status=attempt.get("status", "unknown"),
+                count=attempt.get("count"),
+                code=attempt.get("code"),
+                message=attempt.get("message"),
+                details=attempt.get("details"),
+                exception_type=attempt.get("exception_type")
+            ))
+        
         # 注意：實際 API 可能不提供總數，這裡使用估算
-        total = len(images) * page if images else 0
+        total = len(image_responses) * page if image_responses else 0
         
         return ImageSearchResponse(
             data=image_responses,
-            pagination=PaginationResponse.create(page, limit, total)
+            pagination=PaginationResponse.create(page, limit, total),
+            source=result.get("source"),
+            attempts=attempts,
+            trace_id=trace_id
+        )
+        
+    except ImageSearchError as e:
+        logger.warning(f"[{trace_id}] 圖片搜尋錯誤: {e.code} - {e.message}")
+        # 返回 200，但包含錯誤資訊
+        attempts = [ImageSearchAttempt(
+            source=e.source,
+            status="error",
+            code=e.code,
+            message=e.message,
+            details=e.details
+        )]
+        return ImageSearchResponse(
+            data=[],
+            pagination=PaginationResponse.create(page, limit, 0),
+            source=None,
+            attempts=attempts,
+            trace_id=trace_id
         )
     except ValueError as e:
-        logger.warning(f"圖片搜尋參數錯誤: {e}")
-        # 返回空結果而不是拋出異常
+        logger.warning(f"[{trace_id}] 圖片搜尋參數錯誤: {e}")
         return ImageSearchResponse(
             data=[],
-            pagination=PaginationResponse.create(page, limit, 0)
+            pagination=PaginationResponse.create(page, limit, 0),
+            source=None,
+            attempts=[],
+            trace_id=trace_id
         )
     except Exception as e:
-        logger.error(f"搜尋圖片失敗: {e}", exc_info=True)
-        # 即使出現異常，也返回空結果而不是 500 錯誤
-        # 這樣前端可以正常顯示，只是沒有圖片
-        return ImageSearchResponse(
-            data=[],
-            pagination=PaginationResponse.create(page, limit, 0)
+        logger.exception(f"[{trace_id}] 圖片搜尋發生未處理異常")
+        # 僅在不可恢復的錯誤時返回 500
+        from fastapi.responses import JSONResponse
+        return JSONResponse(
+            status_code=500,
+            content={
+                "message": "伺服器內部錯誤",
+                "trace_id": trace_id,
+                "error": str(e) if getattr(settings, 'DEBUG', False) else None
+            }
         )
 
 

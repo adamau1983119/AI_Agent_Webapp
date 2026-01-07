@@ -60,10 +60,24 @@ class ImageResponse(BaseModel):
         }
 
 
+class ImageSearchAttempt(BaseModel):
+    """圖片搜尋嘗試記錄"""
+    source: str = Field(..., description="圖片來源")
+    status: str = Field(..., description="狀態：success, no_results, error, unavailable, exception")
+    count: Optional[int] = Field(None, description="結果數量（成功時）")
+    code: Optional[str] = Field(None, description="錯誤代碼（錯誤時）")
+    message: Optional[str] = Field(None, description="錯誤訊息（錯誤時）")
+    details: Optional[dict] = Field(None, description="額外詳情")
+    exception_type: Optional[str] = Field(None, description="異常類型（異常時）")
+
+
 class ImageSearchResponse(BaseModel):
     """圖片搜尋回應"""
     data: List[ImageResponse] = Field(..., description="圖片列表")
     pagination: PaginationResponse = Field(..., description="分頁資訊")
+    source: Optional[str] = Field(None, description="最終使用的圖片來源")
+    attempts: List[ImageSearchAttempt] = Field(default_factory=list, description="搜尋嘗試記錄")
+    trace_id: Optional[str] = Field(None, description="追蹤 ID")
 
 
 class ImageListResponse(BaseModel):

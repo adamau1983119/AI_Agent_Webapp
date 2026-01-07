@@ -6,7 +6,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { imagesAPI } from '@/api/client'
 import { showSuccess, showError } from '@/utils/toast'
-import type { Topic, Content } from '@/types'
+import type { Topic, Content, ImageSource } from '@/types'
 import Pagination from '@/components/ui/Pagination'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import ErrorDisplay from '@/components/ui/ErrorDisplay'
@@ -124,8 +124,9 @@ export default function ImageSearch({
 }: ImageSearchProps) {
   const queryClient = useQueryClient()
   const [keywords, setKeywords] = useState('')
-  const [source, setSource] = useState<'unsplash' | 'pexels' | 'pixabay' | undefined>()
+  const [source, setSource] = useState<ImageSource | undefined>()
   const [page, setPage] = useState(1)
+  const [diagnosticMode, setDiagnosticMode] = useState(false) // 診斷模式開關
   const limit = 20
   
   // 提取建議的關鍵字
@@ -160,6 +161,9 @@ export default function ImageSearch({
 
   const searchResults = searchResponse?.data || []
   const pagination = searchResponse?.pagination
+  const attempts = searchResponse?.attempts || []
+  const source = searchResponse?.source
+  const traceId = searchResponse?.trace_id
 
   // 新增圖片到主題
   const createMutation = useMutation({
@@ -260,9 +264,7 @@ export default function ImageSearch({
             value={source || ''}
             onChange={(e) =>
               setSource(
-                e.target.value
-                  ? (e.target.value as 'unsplash' | 'pexels' | 'pixabay')
-                  : undefined
+                e.target.value ? (e.target.value as ImageSource) : undefined
               )
             }
             className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
@@ -271,6 +273,8 @@ export default function ImageSearch({
             <option value="unsplash">Unsplash</option>
             <option value="pexels">Pexels</option>
             <option value="pixabay">Pixabay</option>
+            <option value="google_custom_search">Google</option>
+            <option value="duckduckgo">DuckDuckGo</option>
           </select>
           <button
             type="submit"
@@ -282,13 +286,76 @@ export default function ImageSearch({
         </div>
       </form>
 
+      {/* 診斷模式開關 */}
+      <div className="mb-4 flex items-center justify-between">
+        <div className="text-sm text-gray-600">
+          {source && (
+            <span>使用來源: <strong>{source}</strong></span>
+          )}
+          {traceId && diagnosticMode && (
+            <span className="ml-4">追蹤 ID: <code className="text-xs bg-gray-100 px-1 rounded">{traceId}</code></span>
+          )}
+        </div>
+        <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={diagnosticMode}
+            onChange={(e) => setDiagnosticMode(e.target.checked)}
+            className="rounded"
+          />
+          診斷模式
+        </label>
+      </div>
+
       {/* 搜尋結果 */}
       {isLoading ? (
         <LoadingSpinner />
       ) : error ? (
         <ErrorDisplay error={error} onRetry={() => refetch()} />
       ) : searchResults.length === 0 && keywords ? (
-        <EmptyState message="沒有找到圖片" description="嘗試使用不同的關鍵字" />
+        <div>
+          <EmptyState message="沒有找到圖片" description="嘗試使用不同的關鍵字" />
+          {/* 顯示 attempts 資訊 */}
+          {attempts.length > 0 && (
+            <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+              <h4 className="text-sm font-semibold text-gray-700 mb-2">搜尋嘗試記錄：</h4>
+              <ul className="space-y-2">
+                {attempts.map((attempt: any, idx: number) => (
+                  <li key={idx} className="text-sm text-gray-600">
+                    <span className="font-medium">{attempt.source}:</span>{' '}
+                    {attempt.status === 'success' && (
+                      <span className="text-green-600">成功 ({attempt.count} 張)</span>
+                    )}
+                    {attempt.status === 'no_results' && (
+                      <span className="text-yellow-600">無結果</span>
+                    )}
+                    {attempt.status === 'error' && (
+                      <span className="text-red-600">
+                        錯誤 ({attempt.code}): {attempt.message}
+                        {diagnosticMode && attempt.details && (
+                          <pre className="mt-1 text-xs bg-white p-2 rounded overflow-auto">
+                            {JSON.stringify(attempt.details, null, 2)}
+                          </pre>
+                        )}
+                      </span>
+                    )}
+                    {attempt.status === 'unavailable' && (
+                      <span className="text-gray-500">不可用 ({attempt.message})</span>
+                    )}
+                    {attempt.status === 'exception' && (
+                      <span className="text-red-600">
+                        異常: {attempt.message}
+                        {diagnosticMode && attempt.exception_type && (
+                          <span className="ml-2 text-xs">({attempt.exception_type})</span>
+                        )}
+                      </span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
       ) : (
         <>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">

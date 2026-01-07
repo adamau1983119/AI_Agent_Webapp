@@ -34,6 +34,14 @@ export interface Image {
   order: number
 }
 
+// 圖片來源類型
+export type ImageSource = 
+  | 'unsplash'
+  | 'pexels'
+  | 'pixabay'
+  | 'google_custom_search'
+  | 'duckduckgo'
+
 // 使用者偏好類型
 export interface UserPreferences {
   fashionWeight: number

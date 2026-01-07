@@ -5,6 +5,7 @@ Google Custom Search 圖片服務（需要 API Key）
 import httpx
 from typing import List, Dict, Any
 from app.services.images.base import ImageServiceBase
+from app.services.images.exceptions import ImageSearchError, ErrorCode
 from app.config import settings
 from app.models.image import ImageSource
 import logging
@@ -16,20 +17,22 @@ class GoogleCustomSearchService(ImageServiceBase):
     """Google Custom Search 圖片服務（需要 API Key）"""
     
     def __init__(self):
-        self.api_key = settings.GOOGLE_API_KEY
-        self.search_engine_id = settings.GOOGLE_SEARCH_ENGINE_ID
+        self.api_key = getattr(settings, 'GOOGLE_API_KEY', '')
+        self.search_engine_id = getattr(settings, 'GOOGLE_SEARCH_ENGINE_ID', '')
         self.base_url = "https://www.googleapis.com/customsearch/v1"
         
+        # 初始化時驗證配置
         if not self.api_key or not self.search_engine_id:
             logger.warning("Google Custom Search API Key 或 Search Engine ID 未設定")
         else:
-            logger.info("初始化 Google Custom Search 圖片服務")
+            logger.info("✅ Google Custom Search 服務已初始化")
     
     async def search_images(
         self,
         keywords: str,
         page: int = 1,
-        limit: int = 20
+        limit: int = 20,
+        trace_id: str = ""
     ) -> List[Dict[str, Any]]:
         """
         搜尋圖片（使用 Google Custom Search API）
@@ -38,40 +41,109 @@ class GoogleCustomSearchService(ImageServiceBase):
             keywords: 搜尋關鍵字
             page: 頁碼（Google 限制每頁最多 10 張）
             limit: 每頁數量（最多 10）
+            trace_id: 追蹤 ID
             
         Returns:
             圖片列表
+            
+        Raises:
+            ImageSearchError: 當搜尋失敗時
         """
+        # 驗證配置
         if not self.api_key or not self.search_engine_id:
-            raise ValueError("Google Custom Search API Key 或 Search Engine ID 未設定")
+            raise ImageSearchError(
+                ErrorCode.INVALID_CONFIG,
+                "google_custom_search",
+                "GOOGLE_API_KEY 或 GOOGLE_SEARCH_ENGINE_ID 未設定"
+            )
         
         limit = min(limit, 10)  # Google 限制每頁最多 10 張
         
+        params = {
+            "key": self.api_key,
+            "cx": self.search_engine_id,
+            "q": keywords,
+            "searchType": "image",  # 關鍵：必須指定為圖片搜尋
+            "num": limit,
+            "start": (page - 1) * limit + 1,  # Google 的 start 從 1 開始
+            "safe": "active",  # 安全搜尋
+        }
+        
+        # 記錄請求（隱藏 API Key）
+        safe_params = {k: v for k, v in params.items() if k != "key"}
+        logger.info(f"[{trace_id}] Google Custom Search 請求: {safe_params}")
+        
         try:
-            params = {
-                "key": self.api_key,
-                "cx": self.search_engine_id,
-                "q": keywords,
-                "searchType": "image",  # 只搜尋圖片
-                "num": limit,
-                "start": (page - 1) * limit + 1,  # Google 的 start 從 1 開始
-                "safe": "active",  # 安全搜尋
-            }
-            
             async with httpx.AsyncClient(timeout=10.0) as client:
                 response = await client.get(self.base_url, params=params)
-                response.raise_for_status()
                 
+                # 記錄響應狀態
+                logger.info(f"[{trace_id}] Google Custom Search 響應: status={response.status_code}")
+                
+                # 處理不同狀態碼
+                if response.status_code == 429:
+                    logger.warning(f"[{trace_id}] Google Custom Search API 配額已用完")
+                    raise ImageSearchError(
+                        ErrorCode.RATE_LIMIT,
+                        "google_custom_search",
+                        "API 配額已用完",
+                        {"status_code": 429}
+                    )
+                
+                if response.status_code == 403:
+                    logger.error(f"[{trace_id}] Google Custom Search API Key 無效或權限不足")
+                    raise ImageSearchError(
+                        ErrorCode.INVALID_CONFIG_OR_PERMISSION,
+                        "google_custom_search",
+                        "API Key 無效或權限不足",
+                        {"status_code": 403}
+                    )
+                
+                if response.status_code >= 500:
+                    logger.error(f"[{trace_id}] Google Custom Search 上游服務錯誤: {response.status_code}")
+                    raise ImageSearchError(
+                        ErrorCode.UPSTREAM_ERROR,
+                        "google_custom_search",
+                        f"上游服務錯誤: {response.status_code}",
+                        {"status_code": response.status_code}
+                    )
+                
+                if response.status_code != 200:
+                    logger.warning(f"[{trace_id}] Google Custom Search HTTP 錯誤: {response.status_code}")
+                    raise ImageSearchError(
+                        ErrorCode.HTTP_ERROR,
+                        "google_custom_search",
+                        f"HTTP 錯誤: {response.status_code}",
+                        {"status_code": response.status_code}
+                    )
+                
+                response.raise_for_status()
                 data = response.json()
+                
+                # 記錄搜尋資訊
+                search_info = data.get("searchInformation", {})
+                total_results = search_info.get("totalResults", "0")
+                logger.info(f"[{trace_id}] Google Custom Search 結果: totalResults={total_results}, items={len(data.get('items', []))}")
+                
                 items = data.get("items", [])
                 
-                # 轉換為統一格式
+                # 轉換為統一格式，過濾非圖片結果
                 result = []
                 for item in items:
+                    link = item.get("link", "")
+                    mime = item.get("mime", "")
+                    
+                    # 只保留圖片類型的結果
+                    if not link:
+                        continue
+                    if mime and not mime.startswith("image/"):
+                        logger.debug(f"[{trace_id}] 跳過非圖片結果: {link} (mime={mime})")
+                        continue
+                    
                     result.append({
-                        "id": f"google_{item.get('link', '')[:50]}",
-                        "url": item.get("link", ""),
-                        "thumbnail_url": item.get("image", {}).get("thumbnailLink", item.get("link", "")),
+                        "id": f"google_{hash(link) % 1000000}",
+                        "url": link,
+                        "thumbnail_url": item.get("image", {}).get("thumbnailLink", link),
                         "width": item.get("image", {}).get("width", 0),
                         "height": item.get("image", {}).get("height", 0),
                         "title": item.get("title", ""),
@@ -82,20 +154,36 @@ class GoogleCustomSearchService(ImageServiceBase):
                         "keywords": [keywords],
                     })
                 
-                logger.info(f"✅ Google Custom Search 搜尋成功，找到 {len(result)} 張圖片")
+                if not result:
+                    logger.info(f"[{trace_id}] Google Custom Search 無圖片結果")
+                    raise ImageSearchError(
+                        ErrorCode.NO_RESULTS,
+                        "google_custom_search",
+                        "查詢無圖片結果",
+                        {"total_results": total_results}
+                    )
+                
+                logger.info(f"[{trace_id}] ✅ Google Custom Search 成功: 返回 {len(result)} 張圖片")
                 return result
                 
-        except httpx.HTTPStatusError as e:
-            if e.response.status_code == 403:
-                logger.error("Google Custom Search API 配額已用完或 API Key 無效")
-            elif e.response.status_code == 429:
-                logger.error("Google Custom Search API 請求過於頻繁")
-            else:
-                logger.error(f"Google Custom Search API 調用失敗: {e.response.status_code} - {e.response.text}")
+        except ImageSearchError:
             raise
+        except httpx.TimeoutException:
+            logger.error(f"[{trace_id}] Google Custom Search 請求超時")
+            raise ImageSearchError(
+                ErrorCode.TIMEOUT_ERROR,
+                "google_custom_search",
+                "請求超時",
+                {"timeout": 10.0}
+            )
         except Exception as e:
-            logger.error(f"調用 Google Custom Search API 時發生錯誤: {e}")
-            raise
+            logger.exception(f"[{trace_id}] Google Custom Search 發生未處理異常")
+            raise ImageSearchError(
+                ErrorCode.UNKNOWN_ERROR,
+                "google_custom_search",
+                f"未知錯誤: {str(e)}",
+                {"exception_type": type(e).__name__}
+            )
     
     async def get_image_info(self, image_id: str) -> Dict[str, Any]:
         """

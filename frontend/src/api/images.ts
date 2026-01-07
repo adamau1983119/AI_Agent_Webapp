@@ -4,7 +4,7 @@
  */
 
 import { fetchAPI, fetchAPIWithPagination } from './client'
-import type { Image } from '@/types'
+import type { Image, ImageSource } from '@/types'
 
 /**
  * 類型轉換函數：API Image → Frontend Image
@@ -26,9 +26,38 @@ function convertImage(apiImage: any): Image {
  */
 export interface ImageSearchParams {
   keywords: string
-  source?: 'unsplash' | 'pexels' | 'pixabay'
+  source?: ImageSource
   page?: number
   limit?: number
+}
+
+/**
+ * 圖片搜尋嘗試記錄
+ */
+export interface ImageSearchAttempt {
+  source: string
+  status: 'success' | 'no_results' | 'error' | 'unavailable' | 'exception'
+  count?: number
+  code?: string
+  message?: string
+  details?: any
+  exception_type?: string
+}
+
+/**
+ * 圖片搜尋響應
+ */
+export interface ImageSearchResponse {
+  data: Image[]
+  pagination: {
+    page: number
+    limit: number
+    total: number
+    totalPages: number
+  }
+  source?: string
+  attempts?: ImageSearchAttempt[]
+  trace_id?: string
 }
 
 /**
@@ -87,17 +116,25 @@ export const imagesAPI = {
    */
   searchImages: async (
     params: ImageSearchParams
-  ): Promise<{ data: Image[]; pagination: any }> => {
+  ): Promise<ImageSearchResponse> => {
     const urlParams = new URLSearchParams({
       keywords: params.keywords,
       page: (params.page || 1).toString(),
       limit: (params.limit || 20).toString(),
     })
     if (params.source) {
-      urlParams.append('source', params.source)
+      // 將前端格式轉換為後端格式
+      const sourceMap: Record<ImageSource, string> = {
+        'unsplash': 'Unsplash',
+        'pexels': 'Pexels',
+        'pixabay': 'Pixabay',
+        'google_custom_search': 'Google Custom Search',
+        'duckduckgo': 'DuckDuckGo',
+      }
+      urlParams.append('source', sourceMap[params.source] || params.source)
     }
 
-    const response = await fetchAPIWithPagination<any>(
+    const response = await fetchAPI<ImageSearchResponse>(
       `/images/search?${urlParams.toString()}`
     )
 
@@ -106,20 +143,23 @@ export const imagesAPI = {
     const pagination = response.pagination || {
       page,
       limit,
-      total: response.data.length,
-      totalPages: Math.ceil(response.data.length / limit),
+      total: response.data?.length || 0,
+      totalPages: Math.ceil((response.data?.length || 0) / limit),
     }
 
     return {
-      data: response.data.map(convertImage),
+      data: (response.data || []).map(convertImage),
       pagination: {
         page: pagination.page || page,
         limit: pagination.limit || limit,
-        total: pagination.total || response.data.length,
+        total: pagination.total || response.data?.length || 0,
         totalPages:
           pagination.totalPages ||
-          Math.ceil((pagination.total || response.data.length) / (pagination.limit || limit)),
+          Math.ceil((pagination.total || response.data?.length || 0) / (pagination.limit || limit)),
       },
+      source: response.source,
+      attempts: response.attempts,
+      trace_id: response.trace_id,
     }
   },
 
