@@ -1,10 +1,33 @@
 import { format } from 'date-fns'
+import { useState, FormEvent } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useUIStore } from '@/stores/uiStore'
 
 export default function Header() {
   const today = new Date()
   const dateStr = format(today, 'EEEE, MMMM d')
   const { toggleSidebar } = useUIStore()
+  const navigate = useNavigate()
+  const [searchQuery, setSearchQuery] = useState('')
+
+  const handleSearch = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    if (searchQuery.trim()) {
+      // 導航到 Topics 頁面並帶上搜索參數
+      navigate(`/topics?search=${encodeURIComponent(searchQuery.trim())}`)
+      setSearchQuery('') // 清空搜索框
+    }
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      if (searchQuery.trim()) {
+        navigate(`/topics?search=${encodeURIComponent(searchQuery.trim())}`)
+        setSearchQuery('')
+      }
+    }
+  }
 
   return (
     <header className="bg-white border-b border-gray-200 px-4 sm:px-6 py-4">
@@ -29,13 +52,30 @@ export default function Header() {
 
         <div className="flex items-center gap-2 sm:gap-4">
           {/* 搜索框 - 移動端隱藏 */}
-          <div className="hidden md:block relative">
+          <form onSubmit={handleSearch} className="hidden md:block relative">
             <input
               type="text"
-              placeholder="Q Search"
+              placeholder="搜尋主題..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={handleKeyDown}
               className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary w-48 lg:w-64"
+              aria-label="搜尋主題"
+              autoComplete="off"
             />
-          </div>
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                aria-label="清除搜索"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            )}
+          </form>
 
           {/* 通知按鈕 */}
           <button className="relative p-2 text-gray-600 hover:text-gray-800">

@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { topicsAPI } from '@/api/client'
 import type { TopicFilters as TopicFiltersType } from '@/api/topics'
 import TopicCard from '@/components/ui/TopicCard'
@@ -14,10 +14,24 @@ import { usePageTitle } from '@/hooks/usePageTitle'
 export default function Topics() {
   usePageTitle()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const [filters, setFilters] = useState<TopicFiltersType>({
     page: 1,
     limit: 12,
+    search: searchParams.get('search') || undefined,
   })
+
+  // 當 URL 參數變化時，更新 filters
+  useEffect(() => {
+    const searchQuery = searchParams.get('search')
+    if (searchQuery !== filters.search) {
+      setFilters((prev) => ({
+        ...prev,
+        search: searchQuery || undefined,
+        page: 1, // 重置到第一頁
+      }))
+    }
+  }, [searchParams])
 
   const {
     data: topicsResponse,

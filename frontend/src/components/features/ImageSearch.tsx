@@ -259,6 +259,8 @@ export default function ImageSearch({
             onChange={(e) => setKeywords(e.target.value)}
             placeholder="輸入關鍵字搜尋圖片..."
             className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+            aria-label="圖片搜尋關鍵字"
+            autoComplete="off"
           />
           <select
             value={source || ''}
@@ -268,6 +270,7 @@ export default function ImageSearch({
               )
             }
             className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+            aria-label="圖片來源選擇"
           >
             <option value="">所有來源</option>
             <option value="unsplash">Unsplash</option>
