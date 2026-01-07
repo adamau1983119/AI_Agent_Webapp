@@ -1,4 +1,4 @@
-                                                    import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { topicsAPI, api, schedulesAPI, recommendationsAPI } from '@/api/client'
 import ProgressCard from '@/components/ui/ProgressCard'
