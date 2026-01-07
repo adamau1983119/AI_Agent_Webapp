@@ -1,4 +1,4 @@
-import { useState } from 'react'
+                                                    import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { topicsAPI, api, schedulesAPI, recommendationsAPI } from '@/api/client'
 import ProgressCard from '@/components/ui/ProgressCard'
@@ -21,6 +21,9 @@ export default function Dashboard() {
     console.log('🔍 生產環境調試資訊：')
     console.log('  VITE_API_URL:', import.meta.env.VITE_API_URL || '未設置')
     console.log('  當前 API Base URL:', import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1')
+    // 強制清除所有緩存
+    queryClient.clear()
+    console.log('✅ 已清除所有 React Query 緩存')
   }
 
   const {
@@ -55,7 +58,7 @@ export default function Dashboard() {
     enabled: true,
   })
 
-  // 取得推薦列表
+  // 取得推薦列表（暫時禁用，等待後端修復）
   const {
     data: recommendations,
   } = useQuery({
@@ -63,6 +66,7 @@ export default function Dashboard() {
     queryFn: () => recommendationsAPI.getRecommendations('user_default', { limit: 5 }),
     retry: 2,
     retryDelay: 1000,
+    enabled: false, // 暫時禁用，避免 500 錯誤影響 Dashboard
   })
 
   const isLoading = topicsLoading || schedulesLoading

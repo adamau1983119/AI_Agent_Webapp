@@ -25,8 +25,18 @@ class AutomationWorkflow:
         self.topic_repo = TopicRepository()
         self.content_repo = ContentRepository()
         self.image_repo = ImageRepository()
-        self.ai_service = AIServiceFactory.get_service(settings.AI_SERVICE)
+        # 不再在初始化時固定 AI Service，改為動態獲取
         self.image_service = ImageService()
+    
+    def _get_ai_service(self):
+        """
+        動態獲取 AI Service（每次調用時獲取最新配置）
+        這樣可以支援動態切換 AI Service，無需重啟服務
+        
+        Returns:
+            AI 服務實例
+        """
+        return AIServiceFactory.get_service(settings.AI_SERVICE)
     
     async def process_topic(
         self,
@@ -144,8 +154,11 @@ class AutomationWorkflow:
             if "keywords" in source:
                 keywords.extend(source["keywords"])
         
+        # 動態獲取 AI Service（每次調用時獲取最新配置）
+        ai_service = self._get_ai_service()
+        
         # 生成內容（短文和腳本）
-        result = await self.ai_service.generate_both(
+        result = await ai_service.generate_both(
             topic_title=topic_title,
             topic_category=topic_category,
             keywords=keywords,
@@ -170,7 +183,7 @@ class AutomationWorkflow:
                 "script": result["script"],
                 "word_count": word_count,
                 "estimated_duration": estimated_duration,
-                "model_used": getattr(self.ai_service, 'model_name', 'unknown'),
+                "model_used": getattr(ai_service, 'model_name', 'unknown'),
                 "prompt_version": "v1.0",
                 "version": existing_content.get("version", 0) + 1,
                 "updated_at": now,
@@ -185,7 +198,7 @@ class AutomationWorkflow:
                 "script": result["script"],
                 "word_count": word_count,
                 "estimated_duration": estimated_duration,
-                "model_used": getattr(self.ai_service, 'model_name', 'unknown'),
+                "model_used": getattr(ai_service, 'model_name', 'unknown'),
                 "prompt_version": "v1.0",
                 "version": 1,
                 "generated_at": now,

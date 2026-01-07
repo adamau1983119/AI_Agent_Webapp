@@ -331,6 +331,6 @@ python test_backend_api_comprehensive.py
 
 ---
 
-**最後更新**：2025-12-24  
+**最後更新**：2026-01-06  
 **維護者**：開發團隊
 

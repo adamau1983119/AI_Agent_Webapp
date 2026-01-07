@@ -103,11 +103,14 @@ class InteractionRepository(BaseRepository):
         
         skip = (page - 1) * limit
         
+        # 取得集合實例
+        collection = await self._get_collection()
+        
         # 查詢總數
-        total = await self.collection.count_documents(query)
+        total = await collection.count_documents(query)
         
         # 查詢數據
-        cursor = self.collection.find(query).sort("created_at", -1).skip(skip).limit(limit)
+        cursor = collection.find(query).sort("created_at", -1).skip(skip).limit(limit)
         interactions = await cursor.to_list(length=limit)
         
         # 移除 MongoDB 的 _id
@@ -173,7 +176,9 @@ class InteractionRepository(BaseRepository):
             }}
         ]
         
-        result = await self.collection.aggregate(pipeline).to_list(length=1)
+        # 取得集合實例
+        collection = await self._get_collection()
+        result = await collection.aggregate(pipeline).to_list(length=1)
         
         if result:
             stats = result[0]
@@ -201,7 +206,7 @@ class InteractionRepository(BaseRepository):
             }}
         ]
         
-        category_result = await self.collection.aggregate(category_pipeline).to_list(length=None)
+        category_result = await collection.aggregate(category_pipeline).to_list(length=None)
         category_distribution = {
             cat["_id"]: {
                 "likes": cat.get("likes", 0),

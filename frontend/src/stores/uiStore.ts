@@ -9,7 +9,7 @@ interface UIState {
 }
 
 export const useUIStore = create<UIState>((set) => ({
-  sidebarOpen: false, // 移動端默認關閉
+  sidebarOpen: false, // 移�?端�?認�???
   currentPage: 'dashboard',
   setSidebarOpen: (open: boolean) => set({ sidebarOpen: open }),
   toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),

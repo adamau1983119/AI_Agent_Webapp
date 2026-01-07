@@ -1,0 +1,21 @@
+[core]
+	repositoryformatversion = 0
+	filemode = false
+	bare = false
+	logallrefupdates = true
+	symlinks = false
+	ignorecase = true
+	quotepath = false
+	precomposeunicode = true
+[user]
+	name = AI Agent Webapp Developer
+	email = developer@aiagentwebapp.local
+[i18n]
+	commitencoding = utf-8
+	logoutputencoding = utf-8
+[remote "origin"]
+	url = https://github.com/adamau1983119/AI_Agent_Webapp.git
+	fetch = +refs/heads/*:refs/remotes/origin/*
+[branch "main"]
+	remote = origin
+	merge = refs/heads/main
