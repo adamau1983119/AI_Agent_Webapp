@@ -74,32 +74,26 @@ async def search_images(
     """
     搜尋圖片
     
-    支援多個圖片來源（Unsplash/Pexels/Pixabay），自動備援
+    支援多個圖片來源（Unsplash/Pexels/Pixabay/Google Custom Search），自動備援
+    如果所有 API Key 都未設定，會自動使用 DuckDuckGo
     """
     try:
-        from app.services.images.image_service import ImageService
+        from app.services.images.image_service_manager import ImageServiceManager
         from app.schemas.common import PaginationResponse
         
-        image_service = ImageService()
+        image_service = ImageServiceManager()
         
-        # 搜尋圖片（如果所有 API Key 都未設定，會自動使用 DuckDuckGo）
+        # 搜尋圖片（ImageServiceManager 已內建完整的備援機制，包括 Google Custom Search 和 DuckDuckGo）
         try:
             images = await image_service.search_images(
                 keywords=keywords,
                 source=source,
                 page=page,
-                limit=limit,
-                use_fallback=True
+                limit=limit
             )
-        except ValueError as e:
-            # 如果所有服務都失敗，嘗試直接使用 DuckDuckGo
-            if "沒有可用的圖片服務" in str(e) or "所有圖片服務都失敗" in str(e):
-                logger.warning(f"圖片搜尋失敗: {e}，嘗試使用 DuckDuckGo...")
-                from app.services.images.duckduckgo import DuckDuckGoService
-                duckduckgo = DuckDuckGoService()
-                images = await duckduckgo.search_images(keywords, page, limit)
-            else:
-                raise
+        except Exception as e:
+            logger.warning(f"圖片搜尋服務異常，返回空結果: {e}")
+            images = []  # 如果搜尋失敗，返回空列表而不是拋出異常
         
         # 轉換為回應格式
         from app.schemas.image import ImageResponse
@@ -154,10 +148,20 @@ async def search_images(
             pagination=PaginationResponse.create(page, limit, total)
         )
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.warning(f"圖片搜尋參數錯誤: {e}")
+        # 返回空結果而不是拋出異常
+        return ImageSearchResponse(
+            data=[],
+            pagination=PaginationResponse.create(page, limit, 0)
+        )
     except Exception as e:
-        logger.error(f"搜尋圖片失敗: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"搜尋圖片失敗: {e}", exc_info=True)
+        # 即使出現異常，也返回空結果而不是 500 錯誤
+        # 這樣前端可以正常顯示，只是沒有圖片
+        return ImageSearchResponse(
+            data=[],
+            pagination=PaginationResponse.create(page, limit, 0)
+        )
 
 
 @router.get("/{topic_id}", response_model=ImageListResponse)

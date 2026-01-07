@@ -25,13 +25,12 @@ class ImageServiceManager:
         self.duckduckgo = DuckDuckGoService()  # 無需 API Key 的備援服務
         
         # 服務優先順序
-        # 注意：Google Custom Search 放在 API 服務之後，DuckDuckGo 放在最後作為備援
+        # 注意：Google Custom Search 放在 API 服務之後，DuckDuckGo 不放在這裡，作為最後備援
         self.services = [
             ("Unsplash", self.unsplash, ImageSource.UNSPLASH),
             ("Pexels", self.pexels, ImageSource.PEXELS),
             ("Pixabay", self.pixabay, ImageSource.PIXABAY),
             ("Google Custom Search", self.google_custom_search, ImageSource.GOOGLE_CUSTOM_SEARCH),  # Google（需要 API Key）
-            ("DuckDuckGo", self.duckduckgo, ImageSource.DUCKDUCKGO),  # 最後備援（不需要 API Key）
         ]
     
     async def search_images(
@@ -90,15 +89,19 @@ class ImageServiceManager:
                 last_error = e
                 continue
         
-        # 所有服務都失敗，嘗試使用 DuckDuckGo（不需要 API Key）
+        # 所有 API 服務都失敗，嘗試使用 DuckDuckGo（不需要 API Key）
         logger.info("所有 API 服務都失敗或未設定 API Key，嘗試使用 DuckDuckGo（不需要 API Key）...")
         try:
             images = await self.duckduckgo.search_images(keywords, page, limit)
-            logger.info(f"✅ DuckDuckGo 搜尋成功，找到 {len(images)} 張圖片")
-            return images
-        except Exception as e:
-            logger.error(f"DuckDuckGo 搜尋也失敗: {e}")
-            if last_error:
-                raise last_error
+            if images and len(images) > 0:
+                logger.info(f"✅ DuckDuckGo 搜尋成功，找到 {len(images)} 張圖片")
+                return images
             else:
-                raise ValueError("所有圖片服務都失敗，包括不需要 API Key 的 DuckDuckGo")
+                logger.warning("DuckDuckGo 搜尋返回空結果")
+                return []  # 返回空列表而不是拋出異常
+        except Exception as e:
+            logger.error(f"DuckDuckGo 搜尋也失敗: {e}", exc_info=True)
+            # 即使 DuckDuckGo 也失敗，返回空列表而不是拋出異常
+            # 這樣前端可以正常顯示，只是沒有圖片
+            logger.warning("所有圖片服務都失敗，返回空列表")
+            return []
