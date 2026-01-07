@@ -192,15 +192,21 @@ async def search_images(
         )
     except Exception as e:
         logger.exception(f"[{trace_id}] 圖片搜尋發生未處理異常")
-        # 僅在不可恢復的錯誤時返回 500
-        from fastapi.responses import JSONResponse
-        return JSONResponse(
-            status_code=500,
-            content={
-                "message": "伺服器內部錯誤",
-                "trace_id": trace_id,
-                "error": str(e) if getattr(settings, 'DEBUG', False) else None
-            }
+        # 即使發生未處理異常，也返回 200 而不是 500，但包含錯誤資訊
+        # 這樣前端可以正常顯示錯誤訊息
+        error_message = str(e) if getattr(settings, 'DEBUG', False) else "伺服器內部錯誤"
+        attempts = [ImageSearchAttempt(
+            source="unknown",
+            status="exception",
+            message=error_message,
+            exception_type=type(e).__name__
+        )]
+        return ImageSearchResponse(
+            data=[],
+            pagination=PaginationResponse.create(page, limit, 0),
+            source=None,
+            attempts=attempts,
+            trace_id=trace_id
         )
 
 
