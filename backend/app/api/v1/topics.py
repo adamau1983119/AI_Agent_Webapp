@@ -68,14 +68,35 @@ async def list_topics(
         # 轉換為回應格式
         topic_responses = []
         for topic in topics:
-            # 取得圖片數量和字數
-            image_count = await image_repo.count_by_topic_id(topic["id"])
-            content = await content_repo.get_content_by_topic_id(topic["id"])
-            word_count = content.get("word_count", 0) if content else 0
-            
-            topic["image_count"] = image_count
-            topic["word_count"] = word_count
-            topic_responses.append(_convert_to_response(topic))
+            try:
+                # 取得圖片數量和字數（如果查詢失敗，使用默認值）
+                try:
+                    image_count = await image_repo.count_by_topic_id(topic["id"])
+                except Exception as e:
+                    logger.warning(f"取得主題 {topic['id']} 的圖片數量失敗: {e}")
+                    image_count = 0
+                
+                try:
+                    content = await content_repo.get_content_by_topic_id(topic["id"])
+                    word_count = content.get("word_count", 0) if content else 0
+                except Exception as e:
+                    logger.warning(f"取得主題 {topic['id']} 的內容失敗: {e}")
+                    word_count = 0
+                
+                topic["image_count"] = image_count
+                topic["word_count"] = word_count
+                topic_responses.append(_convert_to_response(topic))
+            except Exception as e:
+                logger.warning(f"處理主題 {topic.get('id', 'unknown')} 時發生錯誤: {e}")
+                # 即使處理單個主題失敗，也繼續處理其他主題
+                # 使用默認值
+                topic["image_count"] = 0
+                topic["word_count"] = 0
+                try:
+                    topic_responses.append(_convert_to_response(topic))
+                except Exception as e2:
+                    logger.error(f"無法轉換主題 {topic.get('id', 'unknown')} 為回應格式: {e2}")
+                    continue
         
         pagination = PaginationResponse.create(page, limit, total)
         
