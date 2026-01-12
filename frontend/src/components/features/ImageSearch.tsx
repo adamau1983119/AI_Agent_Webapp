@@ -6,7 +6,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { imagesAPI } from '@/api/client'
 import { showSuccess, showError } from '@/utils/toast'
-import type { Topic, Content, ImageSource } from '@/types'
+import type { Topic, Content, ImageSource, Image } from '@/types'
 import Pagination from '@/components/ui/Pagination'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import ErrorDisplay from '@/components/ui/ErrorDisplay'
@@ -18,6 +18,89 @@ interface ImageSearchProps {
   content?: Content | null
   onImageSelect: (image: { url: string; source: string; photographer?: string; license: string }) => void
   onClose: () => void
+}
+
+/**
+ * 圖片項目組件（處理圖片加載狀態和錯誤）
+ */
+function ImageItem({
+  image,
+  diagnosticMode,
+  onSelect,
+  isPending,
+}: {
+  image: Image
+  diagnosticMode: boolean
+  onSelect: () => void
+  isPending: boolean
+}) {
+  const [imageError, setImageError] = useState(false)
+  const [imageLoading, setImageLoading] = useState(true)
+
+  return (
+    <div className="relative group aspect-square rounded-lg overflow-hidden bg-gray-100 cursor-pointer">
+      {imageLoading && !imageError && (
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-200">
+          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      )}
+      {imageError ? (
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-200 p-2">
+          <div className="text-xs text-gray-500 text-center mb-1">
+            ⚠️ 圖片無法載入
+          </div>
+          <div className="text-xs text-gray-400 text-center truncate w-full" title={image.url}>
+            {image.url.length > 30 ? `${image.url.substring(0, 30)}...` : image.url}
+          </div>
+          {diagnosticMode && (
+            <div className="text-xs text-gray-400 mt-1">
+              CORS 限制或 URL 無效
+            </div>
+          )}
+          <button
+            onClick={onSelect}
+            disabled={isPending}
+            className="mt-2 px-3 py-1 bg-primary text-white rounded text-xs font-medium hover:bg-primary-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isPending ? '新增中...' : '仍可選擇'}
+          </button>
+        </div>
+      ) : (
+        <>
+          <img
+            src={image.url}
+            alt={image.id}
+            className="w-full h-full object-cover"
+            onLoad={() => setImageLoading(false)}
+            onError={(e) => {
+              setImageLoading(false)
+              setImageError(true)
+              if (diagnosticMode) {
+                console.error('圖片載入失敗:', {
+                  id: image.id,
+                  url: image.url,
+                  source: image.source
+                })
+              }
+            }}
+            crossOrigin="anonymous"
+          />
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-all duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100">
+            <button
+              onClick={onSelect}
+              disabled={isPending}
+              className="px-4 py-2 bg-white text-gray-800 rounded text-sm font-medium hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isPending ? '新增中...' : '選擇'}
+            </button>
+          </div>
+          <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs p-2">
+            {image.source}
+          </div>
+        </>
+      )}
+    </div>
+  )
 }
 
 /**
@@ -363,32 +446,13 @@ export default function ImageSearch({
         <>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
             {searchResults.map((image) => (
-              <div
+              <ImageItem
                 key={image.id}
-                className="relative group aspect-square rounded-lg overflow-hidden bg-gray-100 cursor-pointer"
-              >
-                <img
-                  src={image.url}
-                  alt={image.id}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    e.currentTarget.src =
-                      'https://via.placeholder.com/400x400?text=Image'
-                  }}
-                />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-all duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100">
-                  <button
-                    onClick={() => handleSelectImage(image)}
-                    disabled={createMutation.isPending}
-                    className="px-4 py-2 bg-white text-gray-800 rounded text-sm font-medium hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {createMutation.isPending ? '新增中...' : '選擇'}
-                  </button>
-                </div>
-                <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs p-2">
-                  {image.source}
-                </div>
-              </div>
+                image={image}
+                diagnosticMode={diagnosticMode}
+                onSelect={() => handleSelectImage(image)}
+                isPending={createMutation.isPending}
+              />
             ))}
           </div>
 
