@@ -112,6 +112,24 @@ export default function TopicDetail() {
     enabled: !!id,
   })
 
+  // 智能匹配照片的 mutation
+  const matchPhotosMutation = useMutation({
+    mutationFn: (minCount: number) => imagesAPI.matchPhotos(id!, minCount),
+    onMutate: () => {
+      showSuccess('正在智能匹配照片...')
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['images', id] })
+      queryClient.invalidateQueries({ queryKey: ['topic', id] })
+      showSuccess(`已成功匹配 ${data.length} 張照片`)
+    },
+    onError: (error: any) => {
+      const errorMessage = error?.response?.data?.detail || error?.message || '匹配照片失敗'
+      showError(errorMessage)
+      console.error('匹配照片失敗:', error)
+    },
+  })
+
   // 刪除主題
   const deleteMutation = useMutation({
     mutationFn: () => topicsAPI.deleteTopic(id!),
@@ -298,15 +316,12 @@ export default function TopicDetail() {
                 />
                 <div className="flex gap-2">
                   <button
-                    onClick={() => imagesAPI.matchPhotos(id!, 8).then(() => {
-                      queryClient.invalidateQueries({ queryKey: ['images', id] })
-                      showSuccess('正在智能匹配照片...')
-                    }).catch((err) => {
-                      showError(err?.message || '匹配照片失敗')
-                    })}
-                    className="flex-1 px-3 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                    onClick={() => matchPhotosMutation.mutate(8)}
+                    disabled={matchPhotosMutation.isPending || !content}
+                    className="flex-1 px-3 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                    title={!content ? '請先生成內容才能匹配照片' : ''}
                   >
-                    智能匹配照片（8張）
+                    {matchPhotosMutation.isPending ? '匹配中...' : '智能匹配照片（8張）'}
                   </button>
                   <button
                     onClick={() => setShowImageSearch(true)}
