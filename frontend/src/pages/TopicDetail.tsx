@@ -118,8 +118,9 @@ export default function TopicDetail() {
     onMutate: () => {
       showSuccess('正在智能匹配照片...')
     },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['images', id] })
+    onSuccess: async (data) => {
+      // 立即重新獲取圖片列表，確保UI更新
+      await queryClient.refetchQueries({ queryKey: ['images', id] })
       queryClient.invalidateQueries({ queryKey: ['topic', id] })
       showSuccess(`已成功匹配 ${data.length} 張照片`)
     },

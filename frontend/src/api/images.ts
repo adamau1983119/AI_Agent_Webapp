@@ -242,10 +242,16 @@ export const imagesAPI = {
     topicId: string,
     minCount: number = 8
   ): Promise<Image[]> => {
-    const response = await fetchAPI<{ data: any[] }>(`/images/${topicId}/match?min_count=${minCount}`, {
+    const response = await fetchAPI<any>(`/images/${topicId}/match?min_count=${minCount}`, {
       method: 'POST',
     })
-    const images = Array.isArray(response) ? response : response.data || []
+    // responseInterceptor 已經提取了 data 欄位，所以 response 應該是數組
+    // 但為了兼容性，仍然檢查兩種格式
+    const images = Array.isArray(response) ? response : (response?.data || [])
+    if (!Array.isArray(images) || images.length === 0) {
+      console.warn('匹配照片返回的數據格式異常:', { response, images })
+      return []
+    }
     return images.map(convertImage)
   },
 

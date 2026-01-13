@@ -217,9 +217,10 @@ export default function ImageGallery({
       setIsMatching(true)
       showSuccess('正在智能匹配照片...')
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       setIsMatching(false)
-      queryClient.invalidateQueries({ queryKey: ['images', topicId] })
+      // 立即重新獲取圖片列表，確保UI更新
+      await queryClient.refetchQueries({ queryKey: ['images', topicId] })
       showSuccess(`已匹配 ${data.length} 張照片`)
     },
     onError: (error: any) => {
