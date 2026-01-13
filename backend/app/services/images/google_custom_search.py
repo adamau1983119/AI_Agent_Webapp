@@ -67,6 +67,8 @@ class GoogleCustomSearchService(ImageServiceBase):
             "num": limit,
             "start": (page - 1) * limit + 1,  # Google 的 start 從 1 開始
             "safe": "active",  # 安全搜尋
+            "imgType": "photo",  # 過濾掉 icon/clipart，只保留照片
+            "fileType": "jpg|png",  # 限制常見圖片格式（可選，可能減少結果數量）
         }
         
         # 記錄請求（隱藏 API Key）
@@ -127,31 +129,21 @@ class GoogleCustomSearchService(ImageServiceBase):
                 
                 items = data.get("items", [])
                 
-                # 轉換為統一格式，過濾非圖片結果
+                # 使用 URL 驗證工具過濾結果
+                from app.utils.url_validator import filter_image_results
+                filtered_items = filter_image_results(items)
+                
+                logger.info(f"[{trace_id}] URL 過濾: 原始結果 {len(items)} 個，過濾後 {len(filtered_items)} 個")
+                
+                # 轉換為統一格式
                 result = []
-                for item in items:
+                for item in filtered_items:
                     link = item.get("link", "")
                     mime = item.get("mime", "")
                     
-                    # 只保留有效的連結
+                    # 只保留有效的連結（過濾後應該都有，但再次檢查）
                     if not link:
                         continue
-                    
-                    # 如果 mime 存在且不是圖片類型，跳過
-                    # 但如果 mime 為空，我們仍然保留（因為 searchType=image 應該確保都是圖片）
-                    if mime and not mime.startswith("image/"):
-                        logger.debug(f"[{trace_id}] 跳過非圖片結果: {link} (mime={mime})")
-                        continue
-                    
-                    # 檢查連結是否看起來像圖片 URL
-                    image_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.svg']
-                    is_image_url = any(link.lower().endswith(ext) for ext in image_extensions)
-                    
-                    # 如果 mime 為空且 URL 也不像圖片，跳過
-                    if not mime and not is_image_url:
-                        # 但對於 Google Custom Search，如果 searchType=image，我們應該信任結果
-                        # 所以這裡我們仍然保留
-                        pass
                     
                     result.append({
                         "id": f"google_{hash(link) % 1000000}",

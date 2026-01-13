@@ -2,7 +2,20 @@
  * 圖片預覽元件
  */
 
+import { useMemo, useState } from 'react'
+import { API_BASE_URL } from '@/api/client'
 import type { Image } from '@/types'
+
+/**
+ * 生成圖片代理 URL
+ */
+function getProxyImageUrl(imageUrl: string): string {
+  if (!imageUrl) return ''
+  // 如果 URL 已經是代理 URL，直接返回
+  if (imageUrl.includes('/images/proxy')) return imageUrl
+  // 構建代理 URL
+  return `${API_BASE_URL}/images/proxy?url=${encodeURIComponent(imageUrl)}`
+}
 
 interface ImagePreviewProps {
   image: Image
@@ -13,6 +26,10 @@ export default function ImagePreview({
   image,
   onClose,
 }: ImagePreviewProps) {
+  const proxyUrl = useMemo(() => getProxyImageUrl(image.url), [image.url])
+  const [imageError, setImageError] = useState(false)
+  const [imageLoading, setImageLoading] = useState(true)
+
   return (
     <div
       className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4"
@@ -32,15 +49,39 @@ export default function ImagePreview({
 
         {/* 圖片 */}
         <div className="bg-white rounded-lg overflow-hidden">
-          <img
-            src={image.url}
-            alt={`Preview ${image.id}`}
-            className="max-w-full max-h-[80vh] object-contain"
-            onError={(e) => {
-              e.currentTarget.src =
-                'https://via.placeholder.com/800x600?text=Image+Not+Found'
-            }}
-          />
+          {imageLoading && !imageError && (
+            <div className="flex items-center justify-center h-[80vh] bg-gray-100">
+              <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          )}
+          {imageError && (
+            <div className="flex flex-col items-center justify-center h-[80vh] bg-gray-100 p-8">
+              <div className="text-gray-500 text-lg mb-2">⚠️ 圖片無法載入</div>
+              <div className="text-gray-400 text-sm text-center max-w-md">
+                無法載入圖片預覽。可能是網路問題或圖片 URL 無效。
+              </div>
+            </div>
+          )}
+          {!imageError && (
+            <img
+              src={proxyUrl}
+              alt={`Preview ${image.id}`}
+              className="max-w-full max-h-[80vh] object-contain"
+              onLoad={() => {
+                setImageLoading(false)
+                setImageError(false)
+              }}
+              onError={(e) => {
+                setImageLoading(false)
+                setImageError(true)
+                console.warn('圖片預覽載入失敗:', {
+                  id: image.id,
+                  url: image.url,
+                  proxyUrl: proxyUrl
+                })
+              }}
+            />
+          )}
 
           {/* 圖片資訊 */}
           <div className="bg-white p-6">
