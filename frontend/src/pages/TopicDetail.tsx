@@ -124,8 +124,19 @@ export default function TopicDetail() {
       showSuccess(`已成功匹配 ${data.length} 張照片`)
     },
     onError: (error: any) => {
-      const errorMessage = error?.response?.data?.detail || error?.message || '匹配照片失敗'
-      showError(errorMessage)
+      // 檢查是否為 404 錯誤（內容不存在）
+      const status = error?.status || error?.response?.status
+      if (status === 404) {
+        const errorDetail = error?.response?.data?.detail || error?.message || ''
+        if (errorDetail.includes('主題內容不存在') || errorDetail.includes('內容不存在')) {
+          showError('請先生成內容才能匹配照片。請先點擊「生成內容」按鈕。')
+        } else {
+          showError('主題內容不存在，請先生成內容')
+        }
+      } else {
+        const errorMessage = error?.response?.data?.detail || error?.message || '匹配照片失敗'
+        showError(errorMessage)
+      }
       console.error('匹配照片失敗:', error)
     },
   })
@@ -317,9 +328,9 @@ export default function TopicDetail() {
                 <div className="flex gap-2">
                   <button
                     onClick={() => matchPhotosMutation.mutate(8)}
-                    disabled={matchPhotosMutation.isPending || !content}
+                    disabled={matchPhotosMutation.isPending || !content || !content?.article}
                     className="flex-1 px-3 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
-                    title={!content ? '請先生成內容才能匹配照片' : ''}
+                    title={!content || !content?.article ? '請先生成內容才能匹配照片。智能匹配需要根據文章內容來匹配相關圖片。' : '根據文章內容智能匹配相關照片'}
                   >
                     {matchPhotosMutation.isPending ? '匹配中...' : '智能匹配照片（8張）'}
                   </button>

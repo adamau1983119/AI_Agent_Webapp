@@ -551,10 +551,15 @@ async def match_photos_for_topic(
         if not content:
             raise HTTPException(
                 status_code=404,
-                detail=f"主題內容不存在: {topic_id}"
+                detail=f"主題內容不存在，請先生成內容才能匹配照片。主題 ID: {topic_id}"
             )
         
         article_text = content.get("article", "")
+        if not article_text or not article_text.strip():
+            raise HTTPException(
+                status_code=400,
+                detail="文章內容為空，無法進行智能匹配。請先生成完整的文章內容。"
+            )
         
         # 匹配照片
         match_result = await photo_matcher.match_photos_with_layers(
