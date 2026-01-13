@@ -232,7 +232,7 @@ export default function Dashboard() {
             <button
               onClick={handleGenerateToday}
               disabled={isGenerating}
-              className="absolute top-2 right-2 px-3 py-1 text-xs bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="absolute top-1 right-1 px-1.5 py-0.5 text-[10px] bg-purple-600 text-white rounded hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isGenerating ? '生成中...' : '立即生成'}
             </button>
