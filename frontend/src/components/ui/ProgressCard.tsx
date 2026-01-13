@@ -20,42 +20,45 @@ export default function ProgressCard({
   message,
   color = 'primary',
 }: ProgressCardProps) {
-  const circumference = 2 * Math.PI * 28
+  // 縮小 50%：半徑從 28 改為 14
+  const radius = 14
+  const circumference = 2 * Math.PI * radius
   const offset = circumference - (percentage / 100) * circumference
+  const center = 16 // SVG 中心點：半徑 14 + strokeWidth 2 = 16
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="font-semibold text-gray-700">{title}</h3>
-        <div className="relative w-16 h-16">
-          <svg className="progress-ring w-16 h-16 transform -rotate-90">
+    <div className="bg-white rounded-lg shadow p-3">
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="font-semibold text-gray-700 text-sm">{title}</h3>
+        <div className="relative w-8 h-8">
+          <svg className="progress-ring w-8 h-8 transform -rotate-90">
             <circle
-              cx="32"
-              cy="32"
-              r="28"
+              cx={center}
+              cy={center}
+              r={radius}
               stroke="#E5E7EB"
-              strokeWidth="4"
+              strokeWidth="2"
               fill="transparent"
             />
             <circle
               className={`progress-ring-circle ${colorClasses[color]}`}
-              cx="32"
-              cy="32"
-              r="28"
+              cx={center}
+              cy={center}
+              r={radius}
               stroke="currentColor"
-              strokeWidth="4"
+              strokeWidth="2"
               fill="transparent"
               strokeDasharray={circumference}
               strokeDashoffset={offset}
             />
           </svg>
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className={`text-sm font-bold ${colorClasses[color]}`}>{percentage}%</span>
+            <span className={`text-xs font-bold ${colorClasses[color]}`}>{percentage}%</span>
           </div>
         </div>
       </div>
-      <p className="text-2xl font-bold text-gray-800">{value}</p>
-      <p className="text-sm text-gray-500 mt-2">{message}</p>
+      <p className="text-xl font-bold text-gray-800">{value}</p>
+      <p className="text-xs text-gray-500 mt-1">{message}</p>
     </div>
   )
 }
