@@ -199,6 +199,24 @@ export default function Dashboard() {
       
       {/* 進度卡片區 - 六個功能並列 */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 mb-6">
+        <div className="relative">
+          <ProgressCard
+            title="今日主題"
+            value={`${todayTopics}/9`}
+            percentage={Math.round((todayTopics / 9) * 100)}
+            message={todayTopics >= 9 ? "已完成！" : "好的開始！"}
+            color="orange"
+          />
+          {todayTopics < 9 && (
+            <button
+              onClick={handleGenerateToday}
+              disabled={isGenerating}
+              className="absolute bottom-1 right-1 px-1.5 py-0.5 text-[10px] bg-purple-600 text-white rounded hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {isGenerating ? '生成中...' : '立即生成'}
+            </button>
+          )}
+        </div>
         <ProgressCard
           title="待審核"
           value={`${pendingCount}/${totalTopics}`}
@@ -220,24 +238,6 @@ export default function Dashboard() {
           message={topics.length > 0 ? "不錯的進展！" : "等待數據..."}
           color="green"
         />
-        <div className="relative">
-          <ProgressCard
-            title="今日主題"
-            value={`${todayTopics}/9`}
-            percentage={Math.round((todayTopics / 9) * 100)}
-            message={todayTopics >= 9 ? "已完成！" : "好的開始！"}
-            color="orange"
-          />
-          {todayTopics < 9 && (
-            <button
-              onClick={handleGenerateToday}
-              disabled={isGenerating}
-              className="absolute bottom-1 right-1 px-1.5 py-0.5 text-[10px] bg-purple-600 text-white rounded hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {isGenerating ? '生成中...' : '立即生成'}
-            </button>
-          )}
-        </div>
         <UpcomingEvents />
         <RecentActivities />
       </div>
