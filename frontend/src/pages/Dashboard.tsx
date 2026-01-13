@@ -197,8 +197,8 @@ export default function Dashboard() {
         </div>
       )}
       
-      {/* 進度卡片區 */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 mb-6">
+      {/* 進度卡片區 - 六個功能並列 */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 mb-6">
         <ProgressCard
           title="待審核"
           value={`${pendingCount}/${totalTopics}`}
@@ -238,6 +238,8 @@ export default function Dashboard() {
             </button>
           )}
         </div>
+        <UpcomingEvents />
+        <RecentActivities />
       </div>
 
       {/* 中間區域：日曆 + 主題列表 */}
@@ -295,8 +297,6 @@ export default function Dashboard() {
               </div>
             </div>
           )}
-          <UpcomingEvents />
-          <RecentActivities />
         </div>
       </div>
     </div>
