@@ -1,0 +1,30 @@
+# Cursor AI 行為規則
+
+## 核心原則
+- 永遠不要直接修改 main 分支
+- 所有更改必須在 feature 分支進行
+- 修改核心 API 前必須先創建備份分支
+- 修改後端結構前必須先諮詢用戶
+
+## 受保護的核心文件
+以下文件修改前必須先備份：
+- backend/app/main.py
+- backend/app/config.py
+- backend/app/database.py
+- backend/app/api/v1/*.py
+- frontend/src/api/*.ts
+- frontend/src/router/*.tsx
+
+## 禁止操作
+- 禁止刪除核心目錄結構
+- 禁止清空關鍵文件內容
+- 禁止修改資料庫連接邏輯
+- 禁止修改 API 路由結構
+
+## 建議工作流
+1. 創建 feature 分支
+2. 進行修改
+3. 創建 PR
+4. 等待審查和測試通過
+5. 合併到 main
+
