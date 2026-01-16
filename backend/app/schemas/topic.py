@@ -2,7 +2,7 @@
 Topic Schemas
 用於 Topic API 的請求和回應模型
 """
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from datetime import datetime
 from pydantic import BaseModel, Field
 from app.models.topic import Category, Status, SourceInfo
@@ -48,6 +48,9 @@ class TopicResponse(BaseModel):
     updated_at: datetime = Field(..., description="更新時間")
     image_count: Optional[int] = Field(None, description="圖片數量")
     word_count: Optional[int] = Field(None, description="字數")
+    # 階段 1 新增欄位
+    preview_images: Optional[List[str]] = Field(None, description="預覽圖片 URL 列表")
+    is_expanded: bool = Field(default=False, description="是否已展開")
 
     class Config:
         from_attributes = True
@@ -69,6 +72,10 @@ class TopicDetailResponse(BaseModel):
     created_at: datetime = Field(..., description="建立時間")
     content: Optional[ContentResponse] = Field(None, description="內容資訊")
     images: List[ImageResponse] = Field(default_factory=list, description="圖片列表")
+    # 階段 1 新增欄位
+    preview_images: Optional[List[str]] = Field(None, description="預覽圖片 URL 列表")
+    is_expanded: bool = Field(default=False, description="是否已展開")
+    generation_config: Optional[Dict[str, Any]] = Field(None, description="生成配置")
 
     class Config:
         from_attributes = True

@@ -62,6 +62,11 @@ class Topic(BaseModel):
     generated_at: datetime = Field(default_factory=datetime.utcnow, description="生成時間")
     updated_at: datetime = Field(default_factory=datetime.utcnow, description="更新時間")
     created_at: datetime = Field(default_factory=datetime.utcnow, description="建立時間")
+    
+    # 階段 1 新增欄位（向後兼容，所有欄位都是可選的）
+    preview_images: Optional[List[str]] = Field(default_factory=list, description="預覽圖片 URL 列表（階段 1：只生成 1 張）")
+    is_expanded: bool = Field(default=False, description="是否已展開（用戶是否已點擊生成完整內容）")
+    generation_config: Optional[Dict[str, Any]] = Field(default=None, description="生成配置（用於記錄生成時的參數）")
 
     class Config:
         """Pydantic 配置"""
