@@ -28,7 +28,8 @@ REQUIRED_DIRS = [
 # 關鍵文件（必須存在且非空）
 REQUIRED_FILES = [
     "backend/app/main.py",
-    "backend/app/config.py",
+    "backend/app/config_module.py",  # 已重命名為 config_module.py
+    "backend/app/config/__init__.py",  # config 現在是包
     "backend/app/database.py",
     "frontend/src/api/client.ts",
 ]
