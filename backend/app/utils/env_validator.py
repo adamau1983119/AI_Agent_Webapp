@@ -57,22 +57,40 @@ class EnvironmentValidator:
             errors.append("AI_SERVICE 未設定")
         else:
             # 檢查對應的 API Key
+            # 在開發環境中，缺少 API Key 只發出警告，不阻止啟動
+            is_development = settings.ENVIRONMENT == "development"
+            
             if ai_service == "qwen":
                 if not settings.QWEN_API_KEY:
-                    errors.append("AI_SERVICE=qwen 但 QWEN_API_KEY 未設定")
+                    if is_development:
+                        warnings.append("AI_SERVICE=qwen 但 QWEN_API_KEY 未設定（開發環境允許，但 AI 功能將無法使用）")
+                    else:
+                        errors.append("AI_SERVICE=qwen 但 QWEN_API_KEY 未設定")
             elif ai_service == "openai":
                 if not settings.OPENAI_API_KEY:
-                    errors.append("AI_SERVICE=openai 但 OPENAI_API_KEY 未設定")
+                    if is_development:
+                        warnings.append("AI_SERVICE=openai 但 OPENAI_API_KEY 未設定（開發環境允許，但 AI 功能將無法使用）")
+                    else:
+                        errors.append("AI_SERVICE=openai 但 OPENAI_API_KEY 未設定")
             elif ai_service == "gemini":
                 if not settings.GEMINI_API_KEY:
-                    errors.append("AI_SERVICE=gemini 但 GEMINI_API_KEY 未設定")
+                    if is_development:
+                        warnings.append("AI_SERVICE=gemini 但 GEMINI_API_KEY 未設定（開發環境允許，但 AI 功能將無法使用）")
+                    else:
+                        errors.append("AI_SERVICE=gemini 但 GEMINI_API_KEY 未設定")
             elif ai_service == "deepseek":
                 deepseek_key = getattr(settings, 'DEEPSEEK_API_KEY', '')
                 if not deepseek_key:
-                    errors.append("AI_SERVICE=deepseek 但 DEEPSEEK_API_KEY 未設定")
+                    if is_development:
+                        warnings.append("AI_SERVICE=deepseek 但 DEEPSEEK_API_KEY 未設定（開發環境允許，但 AI 功能將無法使用）")
+                    else:
+                        errors.append("AI_SERVICE=deepseek 但 DEEPSEEK_API_KEY 未設定")
             elif ai_service in ["ollama", "ollama_cloud"]:
                 if ai_service == "ollama_cloud" and not settings.OLLAMA_API_KEY:
-                    warnings.append("OLLAMA_API_KEY 未設定，ollama_cloud 服務可能無法使用")
+                    if is_development:
+                        warnings.append("OLLAMA_API_KEY 未設定，ollama_cloud 服務可能無法使用")
+                    else:
+                        warnings.append("OLLAMA_API_KEY 未設定，ollama_cloud 服務可能無法使用")
                 # ollama 本地服務不需要 API Key
         
         # 5. 檢查圖片服務配置（改為警告，不阻止啟動）
