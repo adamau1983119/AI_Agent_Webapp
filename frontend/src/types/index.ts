@@ -9,6 +9,9 @@ export interface Topic {
   updatedAt: string
   imageCount: number
   wordCount: number
+  // 階段 1 新增欄位
+  previewImages?: string[]  // 預覽圖片 URL 列表
+  isExpanded?: boolean      // 是否已展開
 }
 
 // 內容類型

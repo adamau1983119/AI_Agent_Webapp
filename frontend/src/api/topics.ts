@@ -20,6 +20,9 @@ function convertTopic(apiTopic: any): Topic {
     updatedAt: apiTopic.updated_at || apiTopic.updatedAt,
     imageCount: apiTopic.image_count || 0,
     wordCount: apiTopic.word_count || 0,
+    // 階段 1 新增欄位
+    previewImages: apiTopic.preview_images || [],
+    isExpanded: apiTopic.is_expanded || false,
   }
 }
 
