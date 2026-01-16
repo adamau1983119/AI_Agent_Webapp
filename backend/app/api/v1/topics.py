@@ -16,6 +16,11 @@ from app.services.repositories.topic_repository import TopicRepository
 from app.services.repositories.content_repository import ContentRepository
 from app.services.repositories.image_repository import ImageRepository
 from app.models.topic import Category, Status
+from app.database import check_connection_from_request, get_database_from_request
+from fastapi import Request
+from app.config import settings
+# 使用統一的 exceptions 模組，避免循環導入問題
+from app.exceptions import ConnectionFailure
 from bson import ObjectId
 from datetime import datetime
 import logging
@@ -39,6 +44,7 @@ def _convert_to_response(topic_doc: dict) -> TopicResponse:
 
 @router.get("", response_model=TopicListResponse)
 async def list_topics(
+    request: Request,
     category: Optional[Category] = Query(None, description="分類篩選"),
     status: Optional[Status] = Query(None, description="狀態篩選"),
     date: Optional[str] = Query(None, description="日期篩選（YYYY-MM-DD）"),
@@ -54,6 +60,29 @@ async def list_topics(
     支援篩選、搜尋、分頁和排序
     """
     try:
+        # 檢查資料庫連接狀態（從 app.state）
+        is_connected, reason = await check_connection_from_request(request)
+        if not is_connected:
+            # 在開發環境中，資料庫未連接時返回空列表
+            if settings.ENVIRONMENT == "development":
+                logger.warning(f"資料庫未連接 ({reason})，返回空主題列表（開發環境）")
+                pagination = PaginationResponse.create(page, limit, 0)
+                return TopicListResponse(
+                    data=[],
+                    pagination=pagination
+                )
+            else:
+                # 生產環境必須有資料庫連接
+                raise HTTPException(
+                    status_code=503,
+                    detail=f"資料庫服務暫時不可用: {reason}"
+                )
+        
+        # 從 app.state 獲取資料庫實例並傳遞給 repository
+        db = get_database_from_request(request)
+        if db:
+            topic_repo = TopicRepository(db=db)
+        
         topics, total = await topic_repo.list_topics(
             category=category,
             status=status,
@@ -104,6 +133,20 @@ async def list_topics(
             data=topic_responses,
             pagination=pagination
         )
+    except ConnectionFailure as e:
+        logger.error(f"資料庫連接失敗: {e}")
+        if settings.ENVIRONMENT == "development":
+            # 開發環境返回空列表
+            pagination = PaginationResponse.create(page, limit, 0)
+            return TopicListResponse(
+                data=[],
+                pagination=pagination
+            )
+        else:
+            raise HTTPException(
+                status_code=503,
+                detail="資料庫服務暫時不可用，請稍後再試"
+            )
     except Exception as e:
         logger.error(f"取得主題列表失敗: {e}")
         raise HTTPException(status_code=500, detail=str(e))

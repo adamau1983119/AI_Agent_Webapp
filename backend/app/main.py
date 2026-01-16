@@ -10,6 +10,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from app.config import settings
 from app.database import connect_to_mongo, close_mongo_connection, check_connection
 from app.middleware.auth import APIKeyMiddleware
+from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 from app.middleware.rate_limit import RateLimitMiddleware
 from app.utils.logger import setup_logging
 
@@ -112,53 +113,109 @@ async def lifespan(app: FastAPI):
         logger.error("應用程式啟動被阻止，請檢查環境變數配置")
         raise
     
-    # 2. 詳細環境變數狀態日誌（用於排查配置問題）
-    logger.info("=== 啟動環境變數驗證 ===")
-    logger.info(f"AI_SERVICE: {settings.AI_SERVICE}")
-    
-    # DeepSeek 配置
-    deepseek_key = getattr(settings, 'DEEPSEEK_API_KEY', '')
-    if deepseek_key:
-        logger.info("✅ DEEPSEEK_API_KEY 存在")
+    # 2. 詳細環境變數狀態日誌（僅在開發環境或 DEBUG 模式下顯示詳細資訊）
+    # 在開發環境中，這些可選配置的缺失是正常的，使用 DEBUG 級別減少日誌噪音
+    if settings.DEBUG or settings.ENVIRONMENT == "development":
+        logger.debug("=== 啟動環境變數驗證（詳細） ===")
+        logger.debug(f"AI_SERVICE: {settings.AI_SERVICE}")
+        
+        # DeepSeek 配置
+        deepseek_key = getattr(settings, 'DEEPSEEK_API_KEY', '')
+        if deepseek_key:
+            logger.debug("✅ DEEPSEEK_API_KEY 存在")
+        else:
+            logger.debug("ℹ️ DEEPSEEK_API_KEY 未設定（可選，AI 功能將使用後備方案）")
+        
+        # Google Custom Search 配置
+        google_key = getattr(settings, 'GOOGLE_API_KEY', '')
+        if google_key:
+            logger.debug("✅ GOOGLE_API_KEY 存在")
+        else:
+            logger.debug("ℹ️ GOOGLE_API_KEY 未設定（可選）")
+        
+        google_search_id = getattr(settings, 'GOOGLE_SEARCH_ENGINE_ID', '')
+        if google_search_id:
+            logger.debug("✅ GOOGLE_SEARCH_ENGINE_ID 存在")
+        else:
+            logger.debug("ℹ️ GOOGLE_SEARCH_ENGINE_ID 未設定（可選）")
+        
+        # 其他圖片服務配置
+        unsplash_key = getattr(settings, 'UNSPLASH_ACCESS_KEY', '')
+        if unsplash_key:
+            logger.debug("✅ UNSPLASH_ACCESS_KEY 存在")
+        else:
+            logger.debug("ℹ️ UNSPLASH_ACCESS_KEY 未設定（可選，將使用 DuckDuckGo）")
+        
+        pexels_key = getattr(settings, 'PEXELS_API_KEY', '')
+        if pexels_key:
+            logger.debug("✅ PEXELS_API_KEY 存在")
+        else:
+            logger.debug("ℹ️ PEXELS_API_KEY 未設定（可選）")
+        
+        pixabay_key = getattr(settings, 'PIXABAY_API_KEY', '')
+        if pixabay_key:
+            logger.debug("✅ PIXABAY_API_KEY 存在")
+        else:
+            logger.debug("ℹ️ PIXABAY_API_KEY 未設定（可選）")
+        
+        logger.debug("=== 環境變數驗證完成 ===")
     else:
-        logger.warning("⚠️ DEEPSEEK_API_KEY 不存在")
+        # 生產環境：只記錄已配置的服務
+        configured_services = []
+        if getattr(settings, 'DEEPSEEK_API_KEY', ''):
+            configured_services.append("DeepSeek")
+        if getattr(settings, 'GOOGLE_API_KEY', ''):
+            configured_services.append("Google Search")
+        if getattr(settings, 'UNSPLASH_ACCESS_KEY', '') or getattr(settings, 'PEXELS_API_KEY', '') or getattr(settings, 'PIXABAY_API_KEY', ''):
+            configured_services.append("Image Services")
+        
+        if configured_services:
+            logger.info(f"已配置的服務: {', '.join(configured_services)}")
     
-    # Google Custom Search 配置
-    google_key = getattr(settings, 'GOOGLE_API_KEY', '')
-    if google_key:
-        logger.info("✅ GOOGLE_API_KEY 存在")
-    else:
-        logger.warning("⚠️ GOOGLE_API_KEY 不存在")
-    
-    google_search_id = getattr(settings, 'GOOGLE_SEARCH_ENGINE_ID', '')
-    if google_search_id:
-        logger.info("✅ GOOGLE_SEARCH_ENGINE_ID 存在")
-    else:
-        logger.warning("⚠️ GOOGLE_SEARCH_ENGINE_ID 不存在")
-    
-    # 其他圖片服務配置
-    unsplash_key = getattr(settings, 'UNSPLASH_ACCESS_KEY', '')
-    if unsplash_key:
-        logger.info("✅ UNSPLASH_ACCESS_KEY 存在")
-    else:
-        logger.warning("⚠️ UNSPLASH_ACCESS_KEY 不存在")
-    
-    pexels_key = getattr(settings, 'PEXELS_API_KEY', '')
-    if pexels_key:
-        logger.info("✅ PEXELS_API_KEY 存在")
-    else:
-        logger.warning("⚠️ PEXELS_API_KEY 不存在")
-    
-    pixabay_key = getattr(settings, 'PIXABAY_API_KEY', '')
-    if pixabay_key:
-        logger.info("✅ PIXABAY_API_KEY 存在")
-    else:
-        logger.warning("⚠️ PIXABAY_API_KEY 不存在")
-    
-    logger.info("=== 環境變數驗證完成 ===")
-    
-    # 連接 MongoDB
-    await connect_to_mongo()
+    # 連接 MongoDB（使用 app.state 存儲，避免全局變數不同步問題）
+    try:
+        logger.info("正在建立 MongoDB 連接...")
+        sanitized_url = settings.MONGODB_URL[:50] + "..." if len(settings.MONGODB_URL) > 50 else settings.MONGODB_URL
+        
+        # 建立 MongoDB 客戶端
+        mongo_client = AsyncIOMotorClient(
+            settings.MONGODB_URL,
+            serverSelectionTimeoutMS=5000,
+            connectTimeoutMS=5000,
+            socketTimeoutMS=5000,
+            maxPoolSize=50,
+            minPoolSize=10,
+        )
+        
+        # 測試連接
+        await mongo_client.admin.command("ping")
+        
+        # 取得資料庫實例
+        mongo_db = mongo_client[settings.MONGODB_DB_NAME]
+        
+        # 存儲到 app.state（這是 FastAPI 推薦的方式，避免全局變數不同步）
+        # 使用 db 作為簡短別名，方便使用
+        app.state.mongo_client = mongo_client
+        app.state.mongo_db = mongo_db
+        app.state.db = mongo_db  # 簡短別名，方便直接使用
+        
+        logger.info(f"✅ MongoDB 連接成功: {settings.MONGODB_DB_NAME}")
+        logger.info(f"連接字串: {sanitized_url}")
+        logger.info(f"資料庫實例 ID: {id(mongo_db)}")
+        logger.info(f"app.state.db ID: {id(app.state.db)}")
+        logger.info("✅ MongoDB 連接已存儲到 app.state.db，所有端點將使用同一個實例")
+        
+    except Exception as e:
+        # 在開發環境中，連接失敗不會阻止啟動
+        if settings.ENVIRONMENT == "development":
+            logger.warning(f"⚠️ MongoDB 連接失敗（開發環境允許繼續）: {e}")
+            logger.warning("⚠️ 注意：資料庫相關功能將無法使用")
+            app.state.mongo_client = None
+            app.state.mongo_db = None
+        else:
+            # 生產環境必須有資料庫連接
+            logger.critical(f"🚨 MongoDB 連接失敗，阻止系統啟動: {e}")
+            raise
     
     # 調試：輸出 CORS 設定
     logger.info(f"CORS_ORIGINS 設定值: {settings.CORS_ORIGINS}")
@@ -204,6 +261,14 @@ async def lifespan(app: FastAPI):
     yield
     
     # 關閉時執行
+    # 關閉 MongoDB 連接
+    if hasattr(app.state, 'mongo_client') and app.state.mongo_client:
+        try:
+            app.state.mongo_client.close()
+            logger.info("✅ MongoDB 連接已關閉")
+        except Exception as e:
+            logger.error(f"關閉 MongoDB 連接時發生錯誤: {e}")
+    
     # 停止監控服務
     if scheduler_monitor:
         try:
@@ -285,18 +350,22 @@ async def root():
 @app.get("/health")
 async def health_check():
     """健康檢查"""
-    db_status = await check_connection()
+    db_status, reason = await check_connection()
     return {
         "status": "healthy" if db_status else "unhealthy",
         "environment": settings.ENVIRONMENT,
-        "database": "connected" if db_status else "disconnected",
+        "database": {
+            "status": "connected" if db_status else "disconnected",
+            "reason": reason if not db_status else None
+        },
     }
 
 
 # 註冊 API 路由
-from app.api.v1 import topics, contents, images, user, health, schedules, interactions, recommendations, discover, validate
+from app.api.v1 import topics, contents, images, user, health, schedules, interactions, recommendations, discover, validate, test_db
 
 app.include_router(health.router, prefix="/api/v1")
+app.include_router(test_db.router, prefix="/api/v1")  # 測試端點，用於驗證資料庫連接
 app.include_router(topics.router, prefix="/api/v1")
 app.include_router(contents.router, prefix="/api/v1")
 app.include_router(images.router, prefix="/api/v1")  # 包含圖片代理端點 /api/v1/images/proxy

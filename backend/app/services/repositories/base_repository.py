@@ -7,7 +7,13 @@ from datetime import datetime
 from motor.motor_asyncio import AsyncIOMotorDatabase, AsyncIOMotorCollection
 from pydantic import BaseModel
 from bson import ObjectId
+# 使用統一的 exceptions 模組，避免循環導入問題
+from app.exceptions import ConnectionFailure
 from app.database import get_database
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from fastapi import Request
 import logging
 
 logger = logging.getLogger(__name__)
@@ -16,22 +22,34 @@ logger = logging.getLogger(__name__)
 class BaseRepository:
     """基礎 Repository 類別"""
     
-    def __init__(self, collection_name: str):
+    def __init__(self, collection_name: str, db: Optional[AsyncIOMotorDatabase] = None):
         """
         初始化 Repository
         
         Args:
             collection_name: 集合名稱
+            db: 可選的資料庫實例（如果提供，將使用此實例而不是全局變數）
         """
         self.collection_name = collection_name
-        self._db: Optional[AsyncIOMotorDatabase] = None
+        self._db: Optional[AsyncIOMotorDatabase] = db
         self._collection: Optional[AsyncIOMotorCollection] = None
     
     async def _get_collection(self) -> AsyncIOMotorCollection:
-        """取得集合實例"""
+        """
+        取得集合實例
+        
+        Raises:
+            ConnectionFailure: 如果資料庫未連接
+        """
         if self._collection is None:
-            self._db = await get_database()
-            self._collection = self._db[self.collection_name]
+            try:
+                # 如果沒有提供資料庫實例，嘗試從全局獲取（向後兼容）
+                if self._db is None:
+                    self._db = await get_database()
+                self._collection = self._db[self.collection_name]
+            except ConnectionFailure as e:
+                logger.error(f"資料庫未連接，無法取得集合 {self.collection_name}: {e}")
+                raise
         return self._collection
     
     async def create(self, document: Dict[str, Any]) -> Dict[str, Any]:

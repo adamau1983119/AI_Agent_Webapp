@@ -1,35 +1,35 @@
 """
 健康檢查 API
 """
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from datetime import datetime
 from app.config import settings
-from app.database import check_connection
+from app.database import check_connection_from_request
 from app.utils.env_validator import EnvironmentValidator
 
 router = APIRouter()
 
 
 @router.get("/health")
-async def health_check():
+async def health_check(request: Request):
     """健康檢查端點"""
-    # 檢查資料庫連接
-    db_status = await check_connection()
+    # 從 app.state 檢查資料庫連接（避免全局變數不同步問題）
+    is_connected, reason = await check_connection_from_request(request)
     
     # 判斷整體狀態
-    overall_status = "healthy" if db_status else "degraded"
+    overall_status = "healthy" if is_connected else "degraded"
     
     return {
         "status": overall_status,
         "environment": settings.ENVIRONMENT,
         "version": settings.APP_VERSION,
-        "database": "connected" if db_status else "disconnected",
+        "database": "connected" if is_connected else "disconnected",
         "timestamp": datetime.utcnow().isoformat() + "Z",
     }
 
 
 @router.get("/health/detailed")
-async def detailed_health_check():
+async def detailed_health_check(request: Request):
     """
     詳細健康檢查端點
     檢查資料庫、排程、AI 服務、圖片服務狀態
@@ -45,13 +45,15 @@ async def detailed_health_check():
     
     # 1. 檢查資料庫
     try:
-        db_status = await check_connection()
+        db_status, reason = await check_connection_from_request(request)
         checks["database"] = db_status
         details["database"] = {
             "status": "connected" if db_status else "disconnected",
+            "reason": reason if not db_status else None,
             "url": settings.MONGODB_URL[:20] + "..." if settings.MONGODB_URL else None
         }
     except Exception as e:
+        checks["database"] = False
         details["database"] = {
             "status": "error",
             "error": str(e)
