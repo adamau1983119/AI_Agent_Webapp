@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useState, useEffect, useRef } from 'react'
+import { useQuery, useMutation } from '@tanstack/react-query'
 import { topicsAPI, api, schedulesAPI, recommendationsAPI } from '@/api/client'
 import ProgressCard from '@/components/ui/ProgressCard'
 import TopicCard from '@/components/ui/TopicCard'
@@ -13,7 +13,6 @@ import { usePageTitle } from '@/hooks/usePageTitle'
 
 export default function Dashboard() {
   usePageTitle()
-  const queryClient = useQueryClient()
   const [isGenerating, setIsGenerating] = useState(false)
   
   // 調試：檢查環境變數是否正確讀取（僅在首次掛載時執行）
@@ -33,51 +32,28 @@ export default function Dashboard() {
     refetch: refetchTopics,
   } = useQuery({
     queryKey: ['topics'],
-    queryFn: () => topicsAPI.getTopics(),
-    retry: (failureCount, error: any) => {
-      // 429 錯誤不重試，等待用戶手動重試
-      if (error?.status === 429) {
-        return false
-      }
-      // 其他錯誤最多重試 1 次
-      return failureCount < 1
-    },
-    retryDelay: (attemptIndex) => {
-      // 指數退避：2秒、4秒
-      return Math.min(1000 * 2 ** attemptIndex, 4000)
-    },
+    queryFn: () => topicsAPI.getTopics({ limit: 30 }),
+    retry: false, // 完全關閉自動重試，避免 429 錯誤循環
     staleTime: 30000, // 30 秒內認為數據新鮮
     gcTime: 5 * 60 * 1000, // 5 分鐘緩存
-    enabled: true,
+    refetchInterval: 5000, // 每 5 秒自動輪詢一次（降低頻率，避免觸發速率限制）
     refetchOnWindowFocus: false, // 避免視窗聚焦時自動重試
-    refetchOnMount: false, // 避免組件掛載時自動重試
+    refetchOnMount: true, // 組件掛載時獲取數據
   })
 
   const {
-    data: schedules = [],
     isLoading: schedulesLoading,
     error: schedulesError,
     refetch: refetchSchedules,
   } = useQuery({
     queryKey: ['schedules'],
     queryFn: () => api.getSchedules(),
-    retry: (failureCount, error: any) => {
-      // 429 錯誤不重試，等待用戶手動重試
-      if (error?.status === 429) {
-        return false
-      }
-      // 其他錯誤最多重試 1 次
-      return failureCount < 1
-    },
-    retryDelay: (attemptIndex) => {
-      // 指數退避：2秒、4秒
-      return Math.min(1000 * 2 ** attemptIndex, 4000)
-    },
+    retry: false, // 完全關閉自動重試，避免 429 錯誤循環
     staleTime: 30000, // 30 秒內認為數據新鮮
     gcTime: 5 * 60 * 1000, // 5 分鐘緩存
-    enabled: true,
+    refetchInterval: 5000, // 每 5 秒自動輪詢一次（降低頻率，避免觸發速率限制）
     refetchOnWindowFocus: false, // 避免視窗聚焦時自動重試
-    refetchOnMount: false, // 避免組件掛載時自動重試
+    refetchOnMount: true, // 組件掛載時獲取數據
   })
 
   // 取得推薦列表（暫時禁用，等待後端修復）
@@ -103,25 +79,90 @@ export default function Dashboard() {
   // 或者如果載入時間過長（超過 10 秒），也顯示錯誤提示
   const shouldShowError = hasError || (isLoading && (topicsError || schedulesError))
 
+  // 從分頁響應中提取 topics 數組
+  // 重要：如果有錯誤，不使用緩存數據，返回空數組
+  const topics = (topicsError || schedulesError) ? [] : (topicsResponse?.data || [])
+  
+  // 計算今日主題數量（統一使用 UTC 日期比較）
+  const getTodayTopicsCount = () => {
+    const now = new Date()
+    const todayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()))
+    const today = todayUTC.toISOString().split('T')[0]
+    
+    return topics.filter((t) => {
+      try {
+        const dateValue = (t as any).generated_at || (t as any).generatedAt || 
+                         (t as any).created_at || (t as any).createdAt
+        if (!dateValue) return false
+        
+        let date: Date
+        if (typeof dateValue === 'string') {
+          date = new Date(dateValue)
+        } else if (dateValue instanceof Date) {
+          date = dateValue
+        } else {
+          date = new Date(dateValue)
+        }
+        
+        if (isNaN(date.getTime())) return false
+        
+        const topicDateUTC = new Date(Date.UTC(
+          date.getUTCFullYear(),
+          date.getUTCMonth(),
+          date.getUTCDate()
+        ))
+        const topicDate = topicDateUTC.toISOString().split('T')[0]
+        return topicDate === today
+      } catch {
+        return false
+      }
+    }).length
+  }
+  
+  const todayTopics = getTodayTopicsCount()
+
   // 生成今日主題的 mutation
   const generateTodayMutation = useMutation({
     mutationFn: (force: boolean) => schedulesAPI.generateTodayAllTopics(force),
     onMutate: () => {
       setIsGenerating(true)
+      // 初始化進度狀態
+      const currentCount = getTodayTopicsCount()
+      setGenerationProgress({
+        isGenerating: true,
+        current: currentCount,
+        total: 30,
+        percentage: Math.round((currentCount / 30) * 100)
+      })
       toast.loading('正在生成今日主題...', { id: 'generate-today' })
     },
-    onSuccess: (data) => {
-      setIsGenerating(false)
+    onSuccess: async (data) => {
+      // 不立即設置 isGenerating 為 false，讓進度顯示繼續運行
+      // setIsGenerating(false) 將在 useEffect 中根據主題數量自動更新
       toast.success(data.message || '今日主題生成任務已啟動', { id: 'generate-today' })
-      // 重新獲取數據
-      setTimeout(() => {
-        queryClient.invalidateQueries({ queryKey: ['topics'] })
-        queryClient.invalidateQueries({ queryKey: ['schedules'] })
-      }, 3000) // 3秒後刷新，給後端時間生成
+      
+      // 立即刷新數據
+      // React Query 的 refetchInterval 會自動處理後續的輪詢
+      refetchTopics()
+      refetchSchedules()
     },
     onError: (error: any) => {
       setIsGenerating(false)
-      toast.error(error?.message || '生成今日主題失敗', { id: 'generate-today' })
+      // 根據錯誤狀態碼顯示不同的錯誤訊息
+      let errorMessage = '生成今日主題失敗'
+      if (error?.status === 400) {
+        // 400 錯誤：通常是資料庫未連接
+        errorMessage = error?.message || '資料庫未連接，無法生成主題'
+        if (error?.details?.suggestion) {
+          errorMessage = `${errorMessage}\n${error.details.suggestion}`
+        }
+      } else if (error?.status === 500) {
+        // 500 錯誤：系統內部錯誤
+        errorMessage = error?.message || '伺服器內部錯誤，請查看後端日誌'
+      } else {
+        errorMessage = error?.message || '生成今日主題失敗'
+      }
+      toast.error(errorMessage, { id: 'generate-today', duration: 5000 })
     },
   })
 
@@ -130,18 +171,195 @@ export default function Dashboard() {
     generateTodayMutation.mutate(false)
   }
 
-  // 從分頁響應中提取 topics 數組
-  // 重要：如果有錯誤，不使用緩存數據，返回空數組
-  const topics = (topicsError || schedulesError) ? [] : (topicsResponse?.data || [])
+  // 刪除今日主題的 mutation
+  const deleteTodayMutation = useMutation({
+    mutationFn: () => topicsAPI.deleteTodayTopics(),
+    onSuccess: async (data) => {
+      toast.success(`已刪除 ${data.deleted_count} 個今日主題`, { id: 'delete-today' })
+      // 立即刷新數據
+      refetchTopics()
+      refetchSchedules()
+    },
+    onError: (error: any) => {
+      const errorMessage = error?.message || '刪除今日主題失敗'
+      toast.error(errorMessage, { id: 'delete-today', duration: 5000 })
+    },
+  })
+
+  const handleDeleteToday = () => {
+    if (!confirm('確定要刪除所有今日生成的主題嗎？此操作無法復原。')) {
+      return
+    }
+    deleteTodayMutation.mutate()
+  }
+  
+  // Debug: Log topic data (development only)
+  useEffect(() => {
+    if (!import.meta.env.PROD && topics.length > 0) {
+      const today = new Date().toISOString().split('T')[0]
+      console.log('📊 Topic Data Debug:')
+      console.log(`  Total topics: ${topics.length}`)
+      console.log(`  Today's date: ${today}`)
+      console.log('  First 3 topics date info:', topics.slice(0, 3).map(t => {
+        const dateValue = (t as any).generated_at || (t as any).generatedAt || 
+                         (t as any).created_at || (t as any).createdAt
+        let parsedDate = null
+        let topicDate = null
+        if (dateValue) {
+          try {
+            parsedDate = new Date(dateValue)
+            topicDate = parsedDate.toISOString().split('T')[0]
+          } catch (e) {
+            // ignore
+          }
+        }
+        return {
+          id: t.id,
+          title: t.title,
+          generated_at: (t as any).generated_at,
+          generatedAt: (t as any).generatedAt,
+          created_at: (t as any).created_at,
+          createdAt: (t as any).createdAt,
+          parsedDate: parsedDate?.toISOString(),
+          topicDate: topicDate,
+          isToday: topicDate === today
+        }
+      }))
+    }
+  }, [topics])
+
+  // 監聽今日主題數量，顯示進度和完成提示
+  // 使用 useRef 避免重複顯示 toast
+  const hasShownCompleteToast = useRef(false)
+  const [generationProgress, setGenerationProgress] = useState<{
+    isGenerating: boolean
+    current: number
+    total: number
+    percentage: number
+  }>({
+    isGenerating: false,
+    current: 0,
+    total: 30,
+    percentage: 0
+  })
+  
+  useEffect(() => {
+    // 使用統一的計算函數獲取今日主題數量
+    const todayTopicsCount = getTodayTopicsCount()
+    
+    // Debug: Log detailed date comparison (development only)
+    if (!import.meta.env.PROD && topics.length > 0) {
+      const now = new Date()
+      const todayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()))
+      const today = todayUTC.toISOString().split('T')[0]
+      
+      console.log('='.repeat(60))
+      console.log('📊 Date Filtering Debug:')
+      console.log(`  Total topics: ${topics.length}`)
+      console.log(`  Today's date (UTC): ${today}`)
+      console.log(`  Today's topics count: ${todayTopicsCount}`)
+      console.log('='.repeat(60))
+      
+      // 詳細調試信息（所有主題，但只顯示前5個）
+      topics.slice(0, 5).forEach((t, index) => {
+        try {
+          const dateValue = (t as any).generated_at || (t as any).generatedAt || 
+                           (t as any).created_at || (t as any).createdAt
+          if (!dateValue) {
+            console.warn(`❌ Topic ${index + 1} missing date field:`, t.id, t.title)
+            return
+          }
+          
+          let date: Date
+          if (typeof dateValue === 'string') {
+            date = new Date(dateValue)
+          } else if (dateValue instanceof Date) {
+            date = dateValue
+          } else {
+            date = new Date(dateValue)
+          }
+          
+          if (isNaN(date.getTime())) {
+            console.warn(`❌ Topic ${index + 1} date invalid:`, t.id, dateValue)
+            return
+          }
+          
+          const topicDateUTC = new Date(Date.UTC(
+            date.getUTCFullYear(),
+            date.getUTCMonth(),
+            date.getUTCDate()
+          ))
+          const topicDate = topicDateUTC.toISOString().split('T')[0]
+          const isToday = topicDate === today
+          
+          console.log(`🔍 Topic ${index + 1} (${t.id.substring(0, 20)}...):`, {
+            title: t.title,
+            dateValue,
+            parsedDate: date.toISOString(),
+            topicDateUTC: topicDateUTC.toISOString(),
+            topicDate,
+            today,
+            isToday: isToday ? '✅ YES' : '❌ NO'
+          })
+        } catch (error) {
+          console.warn(`❌ Error processing topic ${index + 1}:`, error, t)
+        }
+      })
+      
+      console.log('='.repeat(60))
+      console.log(`✅ Final result: ${todayTopicsCount} today's topics out of ${topics.length} total`)
+      console.log('='.repeat(60))
+    }
+
+    // 更新進度狀態
+    const percentage = Math.round((todayTopicsCount / 30) * 100)
+    const previousCount = generationProgress.current
+    
+    // 判斷是否應該顯示「正在生成中」：
+    // 1. 如果用戶點擊了「立即生成」按鈕（isGenerating = true）
+    // 2. 或者主題數量在增加但未達到30個（說明正在生成中）
+    // 3. 但如果主題數量為0且沒有點擊生成按鈕，則不顯示「正在生成中」
+    const shouldShowGenerating = isGenerating || 
+      (todayTopicsCount > 0 && todayTopicsCount < 30 && todayTopicsCount >= previousCount)
+    
+    // 如果主題數量為0且沒有點擊生成按鈕，確保不顯示「正在生成中」
+    if (todayTopicsCount === 0 && !isGenerating) {
+      setGenerationProgress({
+        isGenerating: false,
+        current: 0,
+        total: 30,
+        percentage: 0
+      })
+    } else {
+      setGenerationProgress({
+        isGenerating: shouldShowGenerating,
+        current: todayTopicsCount,
+        total: 30,
+        percentage
+      })
+    }
+
+    // 如果達到30個主題，顯示完成提示（只顯示一次）
+    if (todayTopicsCount >= 30 && !hasShownCompleteToast.current) {
+      hasShownCompleteToast.current = true
+      setIsGenerating(false) // 確保重置 isGenerating 狀態
+      setGenerationProgress(prev => ({ ...prev, isGenerating: false }))
+      toast.success('今日主題生成完成！', { id: 'generate-today-complete' })
+    } else if (todayTopicsCount < 30) {
+      // 重置標記，如果主題數量減少
+      hasShownCompleteToast.current = false
+      // 如果主題數量為0且沒有點擊生成，確保重置 isGenerating
+      if (todayTopicsCount === 0 && !isGenerating) {
+        setIsGenerating(false)
+      }
+    }
+  }, [topics, isGenerating])
 
   // 計算統計資料
   const pendingCount = topics.filter((t) => t.status === 'pending').length
   const confirmedCount = topics.filter((t) => t.status === 'confirmed').length
   const totalTopics = topics.length
-  const todayTopics = topics.filter((t) => {
-    const today = new Date().toISOString().split('T')[0]
-    return t.generatedAt?.startsWith(today) || false
-  }).length
+  // todayTopics 已在上面定義，使用統一的計算邏輯
 
   return (
     <div className="p-4 sm:p-6">
@@ -197,25 +415,75 @@ export default function Dashboard() {
         </div>
       )}
       
+      {/* 生成進度提示 */}
+      {generationProgress.isGenerating && (
+        <div className="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+              <h3 className="font-semibold text-blue-800">
+                正在生成今日主題...
+              </h3>
+            </div>
+            <span className="text-sm text-blue-600 font-medium">
+              {generationProgress.current}/{generationProgress.total}
+            </span>
+          </div>
+          <div className="w-full bg-blue-100 rounded-full h-2.5 mb-2">
+            <div 
+              className="bg-blue-600 h-2.5 rounded-full transition-all duration-500"
+              style={{ width: `${generationProgress.percentage}%` }}
+            ></div>
+          </div>
+          <p className="text-xs text-blue-600">
+            {generationProgress.percentage < 33 
+              ? '🔄 正在生成時尚趨勢主題（0-10個）...' 
+              : generationProgress.percentage < 66
+              ? '🔄 正在生成美食推薦主題（10-20個）...'
+              : '🔄 正在生成社會趨勢主題（20-30個）...'}
+          </p>
+        </div>
+      )}
+      
       {/* 進度卡片區 - 六個功能並列 */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 mb-6">
         <div className="relative">
           <ProgressCard
             title="今日主題"
-            value={`${todayTopics}/9`}
-            percentage={Math.round((todayTopics / 9) * 100)}
-            message={todayTopics >= 9 ? "已完成！" : "好的開始！"}
+            value={`${todayTopics}/30`}
+            percentage={Math.round((todayTopics / 30) * 100)}
+            message={todayTopics >= 30 ? "已完成！" : "好的開始！"}
             color="orange"
           />
-          {todayTopics < 9 && (
-            <button
-              onClick={handleGenerateToday}
-              disabled={isGenerating}
-              className="absolute bottom-1 right-1 px-1.5 py-0.5 text-[10px] bg-purple-600 text-white rounded hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {isGenerating ? '生成中...' : '立即生成'}
-            </button>
-          )}
+          <div className="absolute bottom-1 right-1 flex gap-1 z-10">
+            {/* 調試：顯示 todayTopics 值（開發環境） */}
+            {!import.meta.env.PROD && (
+              <span className="text-[8px] text-gray-400 px-1">
+                {todayTopics}
+              </span>
+            )}
+            {/* 如果有主題數據，顯示刪除按鈕（不依賴 todayTopics，因為日期過濾可能有問題） */}
+            {topics.length > 0 && (
+              <button
+                onClick={handleDeleteToday}
+                disabled={deleteTodayMutation.isPending}
+                className="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+                title={`刪除今日主題（當前：${todayTopics}個）`}
+              >
+                {deleteTodayMutation.isPending ? '刪除中...' : '🗑️ 刪除'}
+              </button>
+            )}
+            {todayTopics < 30 && (
+              <button
+                onClick={handleGenerateToday}
+                disabled={isGenerating}
+                className="px-2 py-1 text-xs bg-purple-600 text-white rounded hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+                title="立即生成"
+              >
+                {isGenerating ? '生成中...' : '立即生成'}
+              </button>
+            )}
+          </div>
         </div>
         <ProgressCard
           title="待審核"
@@ -245,12 +513,12 @@ export default function Dashboard() {
       {/* 中間區域：日曆 + 主題列表 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <Calendar />
-        <TodayTopics schedules={schedules} />
+        <TodayTopics topics={topics} />
       </div>
 
       {/* 底部區域：主題卡片 + 右側資訊欄 */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* 主題卡片網格 */}
+        {/* 主題卡片網格 - 顯示所有今日主題 */}
         <div className="lg:col-span-8">
           {isLoading ? (
             <div className="text-center py-12">
@@ -258,11 +526,145 @@ export default function Dashboard() {
               <p className="mt-4 text-gray-500">載入中...</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {topics.slice(0, 3).map((topic) => (
-                <TopicCard key={topic.id} topic={topic} />
-              ))}
-            </div>
+            <>
+              <h3 className="text-lg font-bold text-gray-800 mb-4">主題卡片</h3>
+              {(() => {
+                // 顯示最近7天生成的主題（如果沒有今日主題，則顯示最近的主題）
+                const now = new Date()
+                const todayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()))
+                const today = todayUTC.toISOString().split('T')[0]
+                
+                // 先嘗試獲取今日主題
+                const todayTopicsList = topics.filter((t) => {
+                  try {
+                    const dateValue = (t as any).generated_at || (t as any).generatedAt || 
+                                     (t as any).created_at || (t as any).createdAt
+                    if (!dateValue) return false
+                    
+                    let date: Date
+                    if (typeof dateValue === 'string') {
+                      date = new Date(dateValue)
+                    } else if (dateValue instanceof Date) {
+                      date = dateValue
+                    } else {
+                      date = new Date(dateValue)
+                    }
+                    
+                    if (isNaN(date.getTime())) return false
+                    
+                    const topicDateUTC = new Date(Date.UTC(
+                      date.getUTCFullYear(),
+                      date.getUTCMonth(),
+                      date.getUTCDate()
+                    ))
+                    const topicDate = topicDateUTC.toISOString().split('T')[0]
+                    return topicDate === today
+                  } catch {
+                    return false
+                  }
+                })
+                
+                // 如果沒有今日主題，顯示最近7天的主題
+                let displayTopics = todayTopicsList
+                let displayTitle = '今日主題卡片'
+                
+                if (todayTopicsList.length === 0) {
+                  const sevenDaysAgo = new Date(todayUTC)
+                  sevenDaysAgo.setUTCDate(sevenDaysAgo.getUTCDate() - 7)
+                  
+                  displayTopics = topics.filter((t) => {
+                    try {
+                      const dateValue = (t as any).generated_at || (t as any).generatedAt || 
+                                       (t as any).created_at || (t as any).createdAt
+                      if (!dateValue) return false
+                      
+                      let date: Date
+                      if (typeof dateValue === 'string') {
+                        date = new Date(dateValue)
+                      } else if (dateValue instanceof Date) {
+                        date = dateValue
+                      } else {
+                        date = new Date(dateValue)
+                      }
+                      
+                      if (isNaN(date.getTime())) return false
+                      
+                      const topicDateUTC = new Date(Date.UTC(
+                        date.getUTCFullYear(),
+                        date.getUTCMonth(),
+                        date.getUTCDate()
+                      ))
+                      return topicDateUTC >= sevenDaysAgo
+                    } catch {
+                      return false
+                    }
+                  }).sort((a, b) => {
+                    // 按日期降序排列（最新的在前）
+                    const dateA = (a as any).generated_at || (a as any).generatedAt || 
+                                 (a as any).created_at || (a as any).createdAt
+                    const dateB = (b as any).generated_at || (b as any).generatedAt || 
+                                 (b as any).created_at || (b as any).createdAt
+                    if (!dateA || !dateB) return 0
+                    return new Date(dateB).getTime() - new Date(dateA).getTime()
+                  })
+                  
+                  displayTitle = '最近主題卡片'
+                }
+                
+                if (displayTopics.length === 0) {
+                  return (
+                    <div className="text-center py-8 text-gray-400">
+                      <p className="text-sm">尚未生成主題</p>
+                    </div>
+                  )
+                }
+                
+                // 按分類分組
+                const categories = [
+                  { key: 'fashion', label: '時尚趨勢', color: 'purple' },
+                  { key: 'food', label: '美食推薦', color: 'orange' },
+                  { key: 'trend', label: '社會趨勢', color: 'green' }
+                ]
+                
+                const topicsByCategory = categories.map(cat => ({
+                  ...cat,
+                  topics: displayTopics.filter(t => t.category === cat.key)
+                }))
+                
+                return (
+                  <>
+                    <p className="text-sm text-gray-600 mb-4">{displayTitle}（共 {displayTopics.length} 個）</p>
+                    <div className="space-y-6">
+                      {topicsByCategory.map((category) => (
+                        <div key={category.key}>
+                          <div className="flex items-center justify-between mb-3">
+                            <h4 className="text-base font-semibold text-gray-800">
+                              {category.label}
+                            </h4>
+                            <span className="text-sm text-gray-500">
+                              {category.topics.length} 個主題
+                            </span>
+                          </div>
+                          {category.topics.length > 0 ? (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                              {category.topics.map((topic) => (
+                                <div key={topic.id} className="h-full">
+                                  <TopicCard topic={topic} />
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="text-center py-4 text-gray-400 text-sm">
+                              尚未生成 {category.label} 主題
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )
+              })()}
+            </>
           )}
         </div>
 

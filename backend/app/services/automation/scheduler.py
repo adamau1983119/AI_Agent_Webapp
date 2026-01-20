@@ -20,12 +20,27 @@ class SchedulerService:
     """排程服務"""
     
     def __init__(self):
-        self.scheduler = AsyncIOScheduler()
-        self.topic_collector = TopicCollector()
-        self.workflow = AutomationWorkflow()
-        self.topic_repo = TopicRepository()
-        self.is_running = False
-        self.config = get_topic_config()  # 載入配置檔
+        logger.info("開始初始化 SchedulerService...")
+        try:
+            logger.info("初始化 AsyncIOScheduler...")
+            self.scheduler = AsyncIOScheduler()
+            logger.info("初始化 TopicCollector...")
+            self.topic_collector = TopicCollector()
+            logger.info("初始化 AutomationWorkflow...")
+            self.workflow = AutomationWorkflow()
+            logger.info("初始化 TopicRepository...")
+            self.topic_repo = TopicRepository()
+            logger.info("設置運行狀態...")
+            self.is_running = False
+            logger.info("載入配置檔...")
+            self.config = get_topic_config()  # 載入配置檔
+            logger.info("SchedulerService 初始化完成")
+        except Exception as e:
+            import traceback
+            logger.error(f"SchedulerService 初始化過程中發生錯誤: {e}")
+            logger.error(f"錯誤類型: {type(e).__name__}")
+            logger.error(f"完整錯誤堆疊:\n{traceback.format_exc()}")
+            raise
     
     def start(self):
         """啟動排程服務"""

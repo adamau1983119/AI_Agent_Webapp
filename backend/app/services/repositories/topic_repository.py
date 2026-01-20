@@ -14,8 +14,8 @@ logger = logging.getLogger(__name__)
 class TopicRepository(BaseRepository):
     """Topic Repository"""
     
-    def __init__(self):
-        super().__init__("topics")
+    def __init__(self, db=None):
+        super().__init__("topics", db=db)
     
     async def create_topic(self, topic_data: Dict[str, Any]) -> Dict[str, Any]:
         """

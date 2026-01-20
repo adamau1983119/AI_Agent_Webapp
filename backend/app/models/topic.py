@@ -67,6 +67,7 @@ class Topic(BaseModel):
     preview_images: Optional[List[str]] = Field(default_factory=list, description="預覽圖片 URL 列表（階段 1：只生成 1 張）")
     is_expanded: bool = Field(default=False, description="是否已展開（用戶是否已點擊生成完整內容）")
     generation_config: Optional[Dict[str, Any]] = Field(default=None, description="生成配置（用於記錄生成時的參數）")
+    description: Optional[str] = Field(None, max_length=200, description="主題內容摘要（約30字）")
 
     class Config:
         """Pydantic 配置"""

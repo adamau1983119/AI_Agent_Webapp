@@ -22,11 +22,24 @@ class AutomationWorkflow:
     """自動化工作流"""
     
     def __init__(self):
-        self.topic_repo = TopicRepository()
-        self.content_repo = ContentRepository()
-        self.image_repo = ImageRepository()
-        # 不再在初始化時固定 AI Service，改為動態獲取
-        self.image_service = ImageService()
+        try:
+            logger.info("開始初始化 AutomationWorkflow...")
+            logger.info("初始化 TopicRepository...")
+            self.topic_repo = TopicRepository()
+            logger.info("初始化 ContentRepository...")
+            self.content_repo = ContentRepository()
+            logger.info("初始化 ImageRepository...")
+            self.image_repo = ImageRepository()
+            # 不再在初始化時固定 AI Service，改為動態獲取
+            logger.info("初始化 ImageService...")
+            self.image_service = ImageService()
+            logger.info("AutomationWorkflow 初始化完成")
+        except Exception as e:
+            import traceback
+            logger.error(f"AutomationWorkflow 初始化過程中發生錯誤: {e}")
+            logger.error(f"錯誤類型: {type(e).__name__}")
+            logger.error(f"完整錯誤堆疊:\n{traceback.format_exc()}")
+            raise
     
     def _get_ai_service(self):
         """
@@ -296,6 +309,25 @@ class AutomationWorkflow:
                     continue
             
             logger.info(f"主題 {topic_id} 添加了 {added_count} 張圖片")
+            
+            # ✅ 更新主題文檔的 preview_images 字段
+            if added_count > 0:
+                try:
+                    # 獲取所有已添加的圖片 URL
+                    added_images = await self.image_repo.get_images_by_topic_id(topic_id)
+                    image_urls = [img.get("url") for img in added_images if img.get("url")]
+                    
+                    if image_urls:
+                        # 更新主題文檔的 preview_images 字段
+                        await self.topic_repo.update_topic(
+                            topic_id,
+                            {"$set": {"preview_images": image_urls}}
+                        )
+                        logger.info(f"✅ 已更新主題 {topic_id} 的 preview_images 字段，共 {len(image_urls)} 張圖片")
+                except Exception as e:
+                    logger.error(f"❌ 更新主題 preview_images 失敗: {e}", exc_info=True)
+                    # 不影響主流程，只記錄錯誤
+            
             return added_count
             
         except Exception as e:

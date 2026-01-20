@@ -23,6 +23,7 @@ function convertTopic(apiTopic: any): Topic {
     // 階段 1 新增欄位
     previewImages: apiTopic.preview_images || [],
     isExpanded: apiTopic.is_expanded || false,
+    description: apiTopic.description || undefined,
   }
 }
 
@@ -86,7 +87,7 @@ export const topicsAPI = {
     if (filters?.date) params.append('date', filters.date)
     if (filters?.search && filters.search.trim()) params.append('search', filters.search.trim())
     params.append('page', (filters?.page || 1).toString())
-    params.append('limit', (filters?.limit || 12).toString())
+    params.append('limit', (filters?.limit || 30).toString())
     if (filters?.sort) params.append('sort', filters.sort)
     if (filters?.order) params.append('order', filters.order)
 
@@ -96,7 +97,7 @@ export const topicsAPI = {
 
     // 從後端分頁資訊或計算分頁資訊
     const page = filters?.page || 1
-    const limit = filters?.limit || 12
+    const limit = filters?.limit || 30
     const pagination = response.pagination || {
       page,
       limit,
@@ -163,5 +164,18 @@ export const topicsAPI = {
     await fetchAPI(`/topics/${id}`, {
       method: 'DELETE',
     })
+  },
+
+  /**
+   * 批量刪除今日主題
+   */
+  deleteTodayTopics: async (): Promise<{ deleted_count: number; topic_ids: string[] }> => {
+    const response = await fetchAPI<{ deleted_count: number; topic_ids: string[] }>(
+      `/topics/today`,
+      {
+        method: 'DELETE',
+      }
+    )
+    return response
   },
 }

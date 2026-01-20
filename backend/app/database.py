@@ -35,8 +35,9 @@ def get_database_from_request(request: Request) -> Optional[AsyncIOMotorDatabase
     Returns:
         AsyncIOMotorDatabase: 資料庫實例，如果未連接則返回 None
     """
-    if hasattr(request.app.state, 'mongo_db') and request.app.state.mongo_db:
-        return request.app.state.mongo_db
+    # 使用 app.state.db（與 main.py 中存儲的名稱一致）
+    if hasattr(request.app.state, 'db') and request.app.state.db is not None:
+        return request.app.state.db
     return None
 
 
@@ -80,7 +81,8 @@ def get_client_from_request(request: Request) -> Optional[AsyncIOMotorClient]:
     Returns:
         AsyncIOMotorClient: 客戶端實例，如果未連接則返回 None
     """
-    if hasattr(request.app.state, 'mongo_client') and request.app.state.mongo_client:
+    # 使用 is not None 避免真值測試錯誤
+    if hasattr(request.app.state, 'mongo_client') and request.app.state.mongo_client is not None:
         return request.app.state.mongo_client
     return None
 

@@ -2,7 +2,7 @@
 應用配置管理
 """
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import field_validator
+from pydantic import field_validator, model_validator
 from typing import List, Union
 import json
 
@@ -73,8 +73,21 @@ class Settings(BaseSettings):
     API_KEY: str = ""
     
     # 請求限流配置
-    RATE_LIMIT_PER_MINUTE: int = 60
-    RATE_LIMIT_PER_HOUR: int = 1000
+    # 開發環境使用更寬鬆的限制，避免前端輪詢觸發速率限制
+    RATE_LIMIT_PER_MINUTE: int = 60  # 預設值（生產環境）
+    RATE_LIMIT_PER_HOUR: int = 1000  # 預設值（生產環境）
+    
+    @model_validator(mode='after')
+    def adjust_rate_limit_for_environment(self):
+        """根據環境調整速率限制"""
+        # 開發環境使用更寬鬆的限制
+        if self.ENVIRONMENT == 'development':
+            # 只有在使用預設值時才調整（允許環境變數覆蓋）
+            if self.RATE_LIMIT_PER_MINUTE == 60:
+                object.__setattr__(self, 'RATE_LIMIT_PER_MINUTE', 300)
+            if self.RATE_LIMIT_PER_HOUR == 1000:
+                object.__setattr__(self, 'RATE_LIMIT_PER_HOUR', 5000)
+        return self
     
     # CORS 配置
     # 支援格式：

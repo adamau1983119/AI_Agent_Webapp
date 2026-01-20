@@ -311,30 +311,33 @@ elif not isinstance(cors_origins_list, list):
 
 logger.info(f"解析後的 CORS_ORIGINS: {cors_origins_list}")
 
-# 添加標準 CORS 中間件（FastAPI 內建）
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=cors_origins_list if cors_origins_list else ["*"],  # 如果為空，允許所有來源
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allow_headers=["Content-Type", "Authorization", "X-API-Key", "Accept"],
-    expose_headers=["X-RateLimit-Limit", "X-RateLimit-Remaining", "X-RateLimit-Reset"],
-)
+# ⚠️ 重要：中間件執行順序（FastAPI 是後加先執行）
+# 為了確保 CORS header 正確設定，CORSMiddleware 必須在 RateLimitMiddleware 之後添加
+# 這樣當 RateLimitMiddleware 返回 429 時，CORSMiddleware 已經處理過請求
 
-# 添加自定義 CORS 中間件（作為備份，確保 header 不被覆蓋）
-# 注意：中間件的順序很重要，後添加的中間件會先執行
-app.add_middleware(CustomCORSMiddleware)
+# 1. 先添加 API Key 認證中間件（最先執行）
+if settings.API_KEY:
+    app.add_middleware(APIKeyMiddleware)
 
-# 添加請求限流中間件（在 CORS 之後）
+# 2. 添加請求限流中間件（第二個執行）
 app.add_middleware(
     RateLimitMiddleware,
     requests_per_minute=settings.RATE_LIMIT_PER_MINUTE,
     requests_per_hour=settings.RATE_LIMIT_PER_HOUR,
 )
 
-# 添加 API Key 認證中間件（在限流之後）
-if settings.API_KEY:
-    app.add_middleware(APIKeyMiddleware)
+# 3. 添加標準 CORS 中間件（FastAPI 內建，最後執行，確保所有響應都有 CORS header）
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=cors_origins_list if cors_origins_list else ["*"],  # 如果為空，允許所有來源
+    allow_credentials=True,
+    allow_methods=["*"],  # 允許所有方法（簡化配置）
+    allow_headers=["*"],  # 允許所有 header（簡化配置）
+    expose_headers=["X-RateLimit-Limit", "X-RateLimit-Remaining", "X-RateLimit-Reset"],
+)
+
+# 注意：移除 CustomCORSMiddleware，避免與 FastAPI CORSMiddleware 衝突
+# FastAPI 的 CORSMiddleware 已經足夠處理所有 CORS 需求
 
 
 @app.get("/")

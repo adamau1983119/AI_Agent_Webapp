@@ -206,6 +206,22 @@ async def generate_content(
     except ValueError as e:
         error_msg = str(e)
         logger.error(f"生成內容失敗 (ValueError): {error_msg}")
+        
+        # 如果是 API Key 未設定的錯誤，提供更詳細的錯誤訊息和建議
+        if "API Key 未設定" in error_msg or "未設定" in error_msg:
+            from fastapi.responses import JSONResponse
+            return JSONResponse(
+                status_code=400,
+                content={
+                    "detail": error_msg,
+                    "message": error_msg,
+                    "suggestion": f"請在後端環境變數中設置 {settings.AI_SERVICE.upper()}_API_KEY。\n"
+                                 f"1. 如果使用 DeepSeek，請設置 DEEPSEEK_API_KEY\n"
+                                 f"2. 訪問 https://platform.deepseek.com/api_keys 獲取 API Key\n"
+                                 f"3. 在 Railway/Docker 環境變數中添加 DEEPSEEK_API_KEY=sk-你的API Key"
+                }
+            )
+        
         raise HTTPException(status_code=400, detail=error_msg)
     except HTTPException:
         raise

@@ -45,7 +45,12 @@ export function handleHTTPError(status: number, errorData?: any): APIError {
 
   switch (status) {
     case 400:
-      message = errorData?.detail || '請求參數錯誤'
+      // 優先使用後端返回的 message，如果沒有則使用 detail
+      message = errorData?.message || errorData?.detail || '請求參數錯誤'
+      // 如果有 suggestion，添加到訊息中
+      if (errorData?.suggestion) {
+        message = `${message}\n${errorData.suggestion}`
+      }
       code = 'BAD_REQUEST'
       break
     case 401:

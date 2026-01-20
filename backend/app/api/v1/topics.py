@@ -80,8 +80,7 @@ async def list_topics(
         
         # 從 app.state 獲取資料庫實例並傳遞給 repository
         db = get_database_from_request(request)
-        if db:
-            topic_repo = TopicRepository(db=db)
+        topic_repo = TopicRepository(db=db) if db is not None else TopicRepository()
         
         topics, total = await topic_repo.list_topics(
             category=category,
@@ -353,6 +352,57 @@ async def update_topic_status(
         raise
     except Exception as e:
         logger.error(f"更新主題狀態失敗: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete("/today")
+async def delete_today_topics(request: Request):
+    """
+    批量刪除今日生成的主題（硬刪除）
+    """
+    try:
+        db = get_database_from_request(request)
+        if db is None:
+            raise HTTPException(
+                status_code=400,
+                detail="資料庫未連接，無法刪除主題"
+            )
+        
+        # 獲取今日日期（UTC）
+        today = datetime.utcnow().date()
+        today_start = datetime.combine(today, datetime.min.time())
+        today_end = datetime.combine(today, datetime.max.time())
+        
+        # 查詢今日主題
+        collection = db["topics"]
+        filter_query = {
+            "generated_at": {
+                "$gte": today_start,
+                "$lte": today_end
+            }
+        }
+        
+        # 獲取要刪除的主題 ID 列表（用於日誌）
+        today_topics = await collection.find(filter_query).to_list(length=None)
+        topic_ids = [t.get("id") for t in today_topics if t.get("id")]
+        
+        # 硬刪除今日主題
+        result = await collection.delete_many(filter_query)
+        deleted_count = result.deleted_count
+        
+        logger.info(f"✅ 已刪除 {deleted_count} 個今日主題")
+        if topic_ids:
+            logger.info(f"   刪除的主題 ID: {topic_ids[:10]}...")  # 只顯示前10個
+        
+        return {
+            "message": f"已刪除 {deleted_count} 個今日主題",
+            "deleted_count": deleted_count,
+            "topic_ids": topic_ids
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"刪除今日主題失敗: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 

@@ -51,6 +51,7 @@ class TopicResponse(BaseModel):
     # 階段 1 新增欄位
     preview_images: Optional[List[str]] = Field(None, description="預覽圖片 URL 列表")
     is_expanded: bool = Field(default=False, description="是否已展開")
+    description: Optional[str] = Field(None, description="主題內容摘要（約30字）")
 
     class Config:
         from_attributes = True
@@ -76,6 +77,7 @@ class TopicDetailResponse(BaseModel):
     preview_images: Optional[List[str]] = Field(None, description="預覽圖片 URL 列表")
     is_expanded: bool = Field(default=False, description="是否已展開")
     generation_config: Optional[Dict[str, Any]] = Field(None, description="生成配置")
+    description: Optional[str] = Field(None, description="主題內容摘要（約30字）")
 
     class Config:
         from_attributes = True

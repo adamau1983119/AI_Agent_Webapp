@@ -3,7 +3,7 @@
  * 只使用真實後端 API，不使用 Mock 數據
  */
 
-import { fetchAPI, fetchAPIWithPagination } from './client'
+import { fetchAPI } from './client'
 import type { Image, ImageSource } from '@/types'
 
 /**
@@ -242,17 +242,56 @@ export const imagesAPI = {
     topicId: string,
     minCount: number = 8
   ): Promise<Image[]> => {
-    const response = await fetchAPI<any>(`/images/${topicId}/match?min_count=${minCount}`, {
-      method: 'POST',
-    })
-    // responseInterceptor 已經提取了 data 欄位，所以 response 應該是數組
-    // 但為了兼容性，仍然檢查兩種格式
-    const images = Array.isArray(response) ? response : (response?.data || [])
-    if (!Array.isArray(images) || images.length === 0) {
-      console.warn('匹配照片返回的數據格式異常:', { response, images })
-      return []
+    try {
+      // 構建 URL，確保正確使用 ? 而不是 @
+      const endpoint = `/images/${topicId}/match?min_count=${minCount}`
+      const response = await fetchAPI<any>(endpoint, {
+        method: 'POST',
+        timeout: 60000, // 智能匹配照片需要更長時間（60秒）
+      })
+      
+      // responseInterceptor 已經提取了 data 欄位，所以 response 應該是數組
+      // 但為了兼容性，仍然檢查多種格式
+      let images: any[] = []
+      
+      if (Array.isArray(response)) {
+        // 情況 1: response 已經是數組（最常見）
+        images = response
+      } else if (response && typeof response === 'object') {
+        // 情況 2: response 是對象，嘗試提取 data 欄位
+        if (Array.isArray(response.data)) {
+          images = response.data
+        } else if (Array.isArray(response.matched_photos)) {
+          // 情況 3: 後端直接返回 matched_photos（如果 responseInterceptor 沒有提取）
+          images = response.matched_photos
+        } else if (response.data && typeof response.data === 'object' && Array.isArray(response.data.data)) {
+          // 情況 4: 嵌套的 data 結構
+          images = response.data.data
+        } else {
+          console.warn('匹配照片返回的數據格式異常:', { 
+            response, 
+            responseType: typeof response,
+            hasData: !!response.data,
+            hasMatchedPhotos: !!response.matched_photos,
+            keys: Object.keys(response || {})
+          })
+          return []
+        }
+      } else {
+        console.warn('匹配照片返回的數據格式異常: 不是數組也不是對象', { response })
+        return []
+      }
+      
+      if (!Array.isArray(images) || images.length === 0) {
+        console.warn('匹配照片返回空數組或格式錯誤:', { response, images })
+        return []
+      }
+      
+      return images.map(convertImage)
+    } catch (error: any) {
+      console.error('匹配照片 API 調用失敗:', error)
+      throw error
     }
-    return images.map(convertImage)
   },
 
   /**

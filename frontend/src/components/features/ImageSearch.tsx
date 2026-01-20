@@ -194,31 +194,84 @@ function ImageItem({
 }
 
 /**
- * 從內容中提取關鍵字
+ * 從內容中提取關鍵字（改進版：提取簡潔、適合搜尋的關鍵字）
  */
 function extractKeywords(topic: Topic | null | undefined, content: Content | null | undefined): string[] {
   const keywords: Set<string> = new Set()
   
+  // 停用詞列表（移除這些詞以獲得更好的搜尋結果）
+  const stopWords = new Set([
+    '對我而言', '他', '她', '它', '的', '是', '在', '有', '和', '與', '及', '或',
+    '近乎', '傳奇', '回憶', '巨匠', '大師', '設計師', '時尚', '品牌',
+    '大', '必', '吃', '平民', '美食', '推薦', '介紹', '分享', '體驗',
+    '一個', '一種', '這個', '那個', '這些', '那些'
+  ])
+  
   // 從主題標題提取關鍵字
   if (topic?.title) {
-    // 移除常見的停用詞和數字
-    const titleWords = topic.title
-      .replace(/[0-9]/g, '') // 移除數字
-      .replace(/[大必吃平民美食推薦]/g, '') // 移除常見詞
-      .split(/[、，,]/)
-      .map(w => w.trim())
-      .filter(w => w.length > 1)
+    const title = topic.title.trim()
     
-    titleWords.forEach(word => {
-      if (word.length > 1) {
+    // 1. 提取英文專有名詞（大寫字母開頭的單詞）
+    const englishNames = title.match(/\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*\b/g)
+    if (englishNames) {
+      englishNames.forEach(name => {
+        const cleanName = name.trim()
+        // 只保留長度適中的專有名詞（2-50字符）
+        if (cleanName.length >= 2 && cleanName.length <= 50) {
+          keywords.add(cleanName)
+        }
+      })
+    }
+    
+    // 2. 提取簡潔的中文關鍵字（移除停用詞）
+    let chineseText = title
+      .replace(/[A-Za-z0-9]/g, ' ') // 移除英文和數字
+      .replace(/[、，,。！？：；]/g, ' ') // 移除標點
+      .split(/\s+/)
+      .filter(w => w.length > 0)
+    
+    // 提取2-4字的中文詞組（適合圖片搜尋）
+    chineseText.forEach((word, index) => {
+      // 單個詞（2-4字）
+      if (word.length >= 2 && word.length <= 4 && !stopWords.has(word)) {
         keywords.add(word)
       }
+      // 兩個詞的組合（2+2字或2+3字）
+      if (index < chineseText.length - 1) {
+        const nextWord = chineseText[index + 1]
+        if (word.length >= 2 && nextWord.length >= 2 && 
+            word.length + nextWord.length <= 6 &&
+            !stopWords.has(word) && !stopWords.has(nextWord)) {
+          keywords.add(word + ' ' + nextWord)
+        }
+      }
     })
+    
+    // 3. 如果標題較短，直接使用簡化版本
+    if (title.length <= 30 && keywords.size === 0) {
+      const simplified = title
+        .replace(/[對我而言他近乎傳奇回憶巨匠大師設計師時尚品牌]/g, '')
+        .trim()
+      if (simplified.length >= 2 && simplified.length <= 30) {
+        keywords.add(simplified)
+      }
+    }
   }
   
   // 從文章內容提取關鍵字
   if (content?.article) {
     const article = content.article
+    
+    // 提取英文專有名詞
+    const articleEnglishNames = article.match(/\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*\b/g)
+    if (articleEnglishNames) {
+      articleEnglishNames.forEach(name => {
+        const cleanName = name.trim()
+        if (cleanName.length >= 2 && cleanName.length <= 50) {
+          keywords.add(cleanName)
+        }
+      })
+    }
     
     // 提取常見的食物名稱（中文）
     const foodKeywords = [
@@ -250,7 +303,7 @@ function extractKeywords(topic: Topic | null | undefined, content: Content | nul
       if (matches) {
         matches.forEach(match => {
           const keyword = match.replace(/傳統|街頭|經典|特色|招牌/g, '').trim()
-          if (keyword.length > 1) {
+          if (keyword.length >= 2 && keyword.length <= 10) {
             keywords.add(keyword)
           }
         })
@@ -277,7 +330,7 @@ function extractKeywords(topic: Topic | null | undefined, content: Content | nul
           const keyword = match
             .replace(/\[|\]|鏡頭|特寫|近景|遠景/g, '')
             .trim()
-          if (keyword.length > 1) {
+          if (keyword.length >= 2 && keyword.length <= 20) {
             keywords.add(keyword)
           }
         })
@@ -285,7 +338,20 @@ function extractKeywords(topic: Topic | null | undefined, content: Content | nul
     })
   }
   
-  return Array.from(keywords).slice(0, 10) // 最多返回 10 個關鍵字
+  // 按長度排序，優先返回簡潔的關鍵字（更適合圖片搜尋）
+  const sortedKeywords = Array.from(keywords)
+    .filter(k => k.length >= 2 && k.length <= 50) // 過濾太長或太短的關鍵字
+    .sort((a, b) => {
+      // 優先返回：1. 英文專有名詞 2. 較短的關鍵字
+      const aIsEnglish = /^[A-Z]/.test(a)
+      const bIsEnglish = /^[A-Z]/.test(b)
+      if (aIsEnglish && !bIsEnglish) return -1
+      if (!aIsEnglish && bIsEnglish) return 1
+      return a.length - b.length
+    })
+    .slice(0, 8) // 最多返回 8 個關鍵字
+  
+  return sortedKeywords
 }
 
 export default function ImageSearch({

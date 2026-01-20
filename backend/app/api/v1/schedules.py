@@ -273,55 +273,38 @@ async def generate_today_all_topics(
         
         scheduler_service = get_scheduler_service()
         
-        # 1. 直接從 app.state 獲取資料庫實例（最簡單直接的方式）
-        if not hasattr(request.app.state, 'db') or request.app.state.db is None:
-            logger.error("無法從 app.state.db 獲取資料庫實例")
+        # 1. 取得資料庫連接（簡化版檢查，統一使用 request.app.state.db）
+        db = request.app.state.db
+        if db is None:
+            logger.error("❌ 資料庫未連接，無法生成主題")
             return JSONResponse(
                 status_code=400,
                 content={
                     "status": "failed",
                     "message": "資料庫未連接，無法生成主題",
-                    "detail": "app.state.db 未初始化",
+                    "detail": "資料庫客戶端未初始化",
                     "categories": ["fashion", "food", "trend"],
-                    "expected_count": 9,
+                    "expected_count": 30,
                     "existing_count": 0,
-                    "suggestion": "請檢查 MongoDB 連接配置"
+                    "suggestion": "請檢查 MONGODB_URL 並確保 MongoDB 服務正在運行"
                 }
             )
         
-        db = request.app.state.db
         logger.info(f"✅ 從 app.state.db 獲取資料庫實例，ID: {id(db)}")
         
-        # 2. 測試連接（可選，用於確認連接有效）
-        try:
-            await request.app.state.mongo_client.admin.command("ping")
-            logger.debug("MongoDB 連接測試通過")
-        except Exception as e:
-            logger.error(f"MongoDB 連接測試失敗: {e}")
-            return JSONResponse(
-                status_code=400,
-                content={
-                    "status": "failed",
-                    "message": "資料庫連接測試失敗",
-                    "detail": str(e),
-                    "categories": ["fashion", "food", "trend"],
-                    "expected_count": 9,
-                    "existing_count": 0,
-                    "suggestion": "請檢查 MongoDB 服務狀態"
-                }
-            )
-        
-        # 3. 檢查今日是否已有主題
-        # 將資料庫實例傳遞給 repository
-        topic_repo = TopicRepository(db=db)
+        # 2. 查詢現有主題（直接使用 Motor 集合，避免 Repository 層的複雜性）
         today = datetime.now().strftime("%Y-%m-%d")
         existing_topics = []
         
         try:
-            existing_topics, _ = await topic_repo.list_topics(date=today, limit=100)
-            logger.info(f"現有主題數量: {len(existing_topics)}")
+            # 直接使用 Motor 集合查詢，更簡單直接
+            existing_topics_cursor = db["topics"].find({
+                "created_at": {"$gte": f"{today}T00:00:00", "$lt": f"{today}T23:59:59"}
+            })
+            existing_topics = await existing_topics_cursor.to_list(length=100)
+            logger.info(f"📊 現有主題數量: {len(existing_topics)}")
         except ConnectionFailure as e:
-            logger.error(f"查詢現有主題時資料庫連接失敗: {e}")
+            logger.error(f"❌ 查詢現有主題時資料庫連接失敗: {e}")
             return JSONResponse(
                 status_code=400,
                 content={
@@ -329,23 +312,23 @@ async def generate_today_all_topics(
                     "message": "資料庫連接失敗，無法查詢現有主題",
                     "detail": str(e),
                     "categories": ["fashion", "food", "trend"],
-                    "expected_count": 9,
+                    "expected_count": 30,
                     "existing_count": 0,
                     "suggestion": "請檢查 MONGODB_URL 配置和 MongoDB 服務狀態"
                 }
             )
         except Exception as e:
-            logger.warning(f"取得現有主題失敗: {e}")
+            logger.warning(f"⚠️ 取得現有主題失敗: {e}")
             existing_topics = []
         
         # 4. 檢查是否已達到上限
-        if not request_body.force and len(existing_topics) >= 9:
+        if not request_body.force and len(existing_topics) >= 30:
             logger.info("今日主題已完整，無需重新生成")
             return {
                 "status": "skipped",
                 "message": "今日主題已完整，無需重新生成",
                 "categories": ["fashion", "food", "trend"],
-                "expected_count": 9,
+                "expected_count": 30,
                 "existing_count": len(existing_topics)
             }
         
@@ -353,21 +336,28 @@ async def generate_today_all_topics(
         async def generate_all_task():
             """背景任務：生成所有主題"""
             try:
-                logger.info("背景任務開始：生成今日所有主題")
+                logger.info("=" * 60)
+                logger.info("🚀 背景任務開始：生成今日所有主題")
+                logger.info("=" * 60)
                 results = {}
+                total_generated = 0
                 
                 for category in [Category.FASHION, Category.FOOD, Category.TREND]:
                     try:
-                        logger.info(f"開始生成 {category.value} 主題...")
+                        logger.info(f"📝 開始生成 {category.value} 主題（目標：10 個）...")
                         topics = await scheduler_service.trigger_manual_generation(
                             category=category,
-                            count=3
+                            count=10
                         )
+                        generated_count = len(topics) if topics else 0
+                        total_generated += generated_count
                         results[category.value] = {
-                            "count": len(topics),
+                            "count": generated_count,
                             "topics": [t.get("id") for t in topics] if topics else []
                         }
-                        logger.info(f"✅ 生成 {category.value} 主題完成，共 {len(topics)} 個")
+                        logger.info(f"✅ 生成 {category.value} 主題完成，共 {generated_count} 個")
+                        if topics:
+                            logger.info(f"   主題 ID: {[t.get('id') for t in topics]}")
                     except ConnectionFailure as e:
                         logger.error(f"❌ 生成 {category.value} 主題時資料庫連接失敗: {e}")
                         results[category.value] = {
@@ -379,7 +369,11 @@ async def generate_today_all_topics(
                             "error": str(e)
                         }
                 
-                logger.info(f"📊 今日主題生成完成: {results}")
+                logger.info("=" * 60)
+                logger.info(f"📊 今日主題生成完成！")
+                logger.info(f"   總計生成：{total_generated}/30 個主題")
+                logger.info(f"   詳細結果：{results}")
+                logger.info("=" * 60)
             except Exception as e:
                 logger.error(f"❌ 背景任務執行失敗: {e}", exc_info=True)
         
@@ -392,7 +386,7 @@ async def generate_today_all_topics(
             "status": "accepted",
             "message": "生成任務已提交，請稍後查看結果",
             "categories": ["fashion", "food", "trend"],
-            "expected_count": 9,
+            "expected_count": 30,
             "existing_count": len(existing_topics)
         }
         

@@ -127,13 +127,14 @@ class TopicCollector:
                             # 提取關鍵字
                             keywords = self._extract_keywords(title, category)
                             
-                            # 如果標題是英文，嘗試翻譯成中文
-                            chinese_title = await self._translate_title_to_chinese(title, category)
+                            # 如果標題是英文，嘗試翻譯成中文並生成30字撮要
+                            chinese_title, description = await self._translate_title_to_chinese(title, category)
                             
                             topic = {
                                 "title": chinese_title,
                                 "category": category.value,
                                 "source": feed.feed.get("title", "RSS Feed"),
+                                "description": description,  # 添加30字撮要
                                 "sources": [
                                     {
                                         "type": "rss",
@@ -177,25 +178,49 @@ class TopicCollector:
             
             for keyword in keywords[:count]:
                 try:
-                    # 使用 AI 生成中文標題
+                    # 使用 AI 生成中文標題和摘要
                     prompt = build_title_prompt(category, keyword=keyword)
-                    chinese_title = await ai_service._call_api(prompt)
+                    ai_response = await ai_service._call_api(prompt)
                     
-                    # 清理標題（移除可能的引號、換行等）
-                    chinese_title = chinese_title.strip().strip('"').strip("'").strip()
-                    # 只取第一行（避免 AI 返回多行）
-                    chinese_title = chinese_title.split('\n')[0].strip()
+                    # 解析 AI 返回的標題和摘要
+                    title = None
+                    description = None
+                    
+                    # 嘗試解析格式：標題：[標題]\n摘要：[摘要]
+                    lines = ai_response.strip().split('\n')
+                    for line in lines:
+                        line = line.strip()
+                        if line.startswith('標題：') or line.startswith('标题：'):
+                            title = line.replace('標題：', '').replace('标题：', '').strip().strip('"').strip("'")
+                        elif line.startswith('摘要：') or line.startswith('摘要：'):
+                            description = line.replace('摘要：', '').replace('摘要：', '').strip().strip('"').strip("'")
+                    
+                    # 如果解析失敗，嘗試其他格式
+                    if not title:
+                        # 嘗試第一行作為標題
+                        title = lines[0].strip().strip('"').strip("'")
+                        if len(lines) > 1:
+                            description = lines[1].strip().strip('"').strip("'")
+                    
+                    # 如果還是沒有標題，使用整個響應作為標題
+                    if not title:
+                        title = ai_response.strip().strip('"').strip("'").split('\n')[0]
+                    
+                    # 確保標題不為空
+                    if not title or len(title) < 3:
+                        title = keyword
                     
                     topic = {
-                        "title": chinese_title,
+                        "title": title,
                         "category": category.value,
                         "source": "AI Generated",
+                        "description": description,  # 添加摘要字段
                         "sources": [
                             {
                                 "type": "ai",
                                 "name": "AI Generated Topic",
                                 "url": "",
-                                "title": chinese_title,
+                                "title": title,
                                 "fetched_at": datetime.utcnow(),
                                 "verified": False,
                                 "keywords": [keyword],
@@ -205,11 +230,12 @@ class TopicCollector:
                     topics.append(topic)
                 except Exception as e:
                     logger.warning(f"使用 AI 生成標題失敗，使用關鍵字作為標題: {e}")
-                    # 如果 AI 生成失敗，使用關鍵字作為標題
+                    # 如果 AI 生成失敗，使用關鍵字作為標題（沒有摘要）
                     topic = {
                         "title": keyword,
                         "category": category.value,
                         "source": "AI Generated",
+                        "description": None,  # AI 失敗時沒有摘要
                         "sources": [
                             {
                                 "type": "ai",
@@ -225,12 +251,13 @@ class TopicCollector:
                     topics.append(topic)
         except Exception as e:
             logger.warning(f"無法使用 AI 生成標題，使用關鍵字作為標題: {e}")
-            # 如果完全無法使用 AI，直接使用關鍵字
+            # 如果完全無法使用 AI，直接使用關鍵字（沒有摘要）
             for keyword in keywords[:count]:
                 topic = {
                     "title": keyword,
                     "category": category.value,
                     "source": "AI Generated",
+                    "description": None,  # AI 不可用時沒有摘要
                     "sources": [
                         {
                             "type": "ai",
@@ -251,16 +278,21 @@ class TopicCollector:
         self,
         english_title: str,
         category: Category
-    ) -> str:
-        """將英文標題翻譯成中文"""
+    ) -> tuple[str, Optional[str]]:
+        """
+        將英文標題翻譯成中文，並生成30字撮要
+        
+        Returns:
+            (chinese_title, description) 元組
+        """
         # 簡單判斷是否為英文（包含英文字母）
         has_english = any(c.isalpha() and ord(c) < 128 for c in english_title)
         
         if not has_english:
-            # 如果已經是中文，直接返回
-            return english_title
+            # 如果已經是中文，直接返回（沒有撮要）
+            return english_title, None
         
-        # 嘗試使用 AI 翻譯
+        # 嘗試使用 AI 翻譯並生成撮要
         try:
             from app.services.ai.ai_service_factory import AIServiceFactory
             from app.config import settings
@@ -268,19 +300,44 @@ class TopicCollector:
             
             ai_service = AIServiceFactory.get_service(settings.AI_SERVICE)
             prompt = build_title_prompt(category, english_title=english_title)
-            chinese_title = await ai_service._call_api(prompt)
+            ai_response = await ai_service._call_api(prompt)
+            
+            # 解析 AI 返回的標題和摘要
+            title = None
+            description = None
+            
+            # 嘗試解析格式：標題：[標題]\n摘要：[摘要]
+            lines = ai_response.strip().split('\n')
+            for line in lines:
+                line = line.strip()
+                if line.startswith('標題：') or line.startswith('标题：'):
+                    title = line.replace('標題：', '').replace('标题：', '').strip().strip('"').strip("'")
+                elif line.startswith('摘要：') or line.startswith('摘要：'):
+                    description = line.replace('摘要：', '').replace('摘要：', '').strip().strip('"').strip("'")
+            
+            # 如果解析失敗，嘗試其他格式
+            if not title:
+                # 嘗試第一行作為標題
+                title = lines[0].strip().strip('"').strip("'")
+                if len(lines) > 1:
+                    description = lines[1].strip().strip('"').strip("'")
+            
+            # 如果還是沒有標題，使用整個響應的第一行作為標題
+            if not title:
+                title = ai_response.strip().strip('"').strip("'").split('\n')[0]
             
             # 清理標題
-            chinese_title = chinese_title.strip().strip('"').strip("'").strip()
-            chinese_title = chinese_title.split('\n')[0].strip()
+            title = title.strip().strip('"').strip("'").strip()
+            if description:
+                description = description.strip().strip('"').strip("'").strip()
             
-            if chinese_title and len(chinese_title) > 5:  # 確保翻譯成功
-                return chinese_title
+            if title and len(title) > 5:  # 確保翻譯成功
+                return title, description
         except Exception as e:
             logger.warning(f"翻譯標題失敗: {e}，使用原始標題")
         
-        # 如果翻譯失敗，返回原始標題
-        return english_title
+        # 如果翻譯失敗，返回原始標題（沒有撮要）
+        return english_title, None
     
     def _extract_keywords(
         self,

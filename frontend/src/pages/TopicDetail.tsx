@@ -72,33 +72,104 @@ export default function TopicDetail() {
 
   // 生成內容的 mutation
   const generateContentMutation = useMutation({
-    mutationFn: () => contentsAPI.generateContent(id!, {
-      type: 'both',
-      article_length: 500,
-      script_duration: 30,
-    }),
-    onSuccess: () => {
+    mutationFn: () => {
+      console.log('🚀 開始生成內容，主題 ID:', id)
+      return contentsAPI.generateContent(id!, {
+        type: 'both',
+        article_length: 500,
+        script_duration: 30,
+      })
+    },
+    onSuccess: (data) => {
+      console.log('✅ 內容生成成功:', data)
       queryClient.invalidateQueries({ queryKey: ['content', id] })
+      queryClient.invalidateQueries({ queryKey: ['topic', id] })
       showSuccess('內容生成成功')
     },
     onError: (error: any) => {
-      showError(error?.message || '生成內容失敗')
+      console.error('❌ 生成內容失敗:', error)
+      console.error('錯誤詳情:', {
+        message: error?.message,
+        status: error?.status,
+        code: error?.code,
+        details: error?.details,
+      })
+      
+      // 根據錯誤類型顯示不同的錯誤訊息
+      let errorMessage = '生成內容失敗'
+      
+      if (error?.status === 400) {
+        // 處理 API Key 未設定的錯誤
+        const errorDetail = error?.details?.detail || error?.message || ''
+        if (typeof errorDetail === 'string' && (errorDetail.includes('API Key 未設定') || errorDetail.includes('未設定'))) {
+          errorMessage = 'DeepSeek API Key 未設定\n\n'
+          errorMessage += '請在後端環境變數中設置 DEEPSEEK_API_KEY：\n'
+          errorMessage += '1. 訪問 https://platform.deepseek.com/api_keys 獲取 API Key\n'
+          errorMessage += '2. 在 Railway/Docker 環境變數中添加：DEEPSEEK_API_KEY=sk-你的API Key\n'
+          errorMessage += '3. 重新部署後端服務'
+        } else if (error?.details?.suggestion) {
+          errorMessage = error?.message || error?.details?.detail || '請求參數錯誤'
+          if (typeof error?.details?.suggestion === 'string') {
+            errorMessage = `${errorMessage}\n\n${error.details.suggestion}`
+          }
+        } else {
+          errorMessage = error?.message || error?.details?.detail || '請求參數錯誤，請檢查後端配置'
+        }
+      } else if (error?.status === 404) {
+        errorMessage = '主題不存在，請重新載入頁面'
+      } else if (error?.status === 500) {
+        errorMessage = error?.message || '伺服器內部錯誤，請查看後端日誌'
+      } else if (error?.message) {
+        errorMessage = error.message
+      } else if (error?.details?.detail) {
+        errorMessage = error.details.detail
+      }
+      
+      showError(errorMessage)
     },
   })
 
   // 重新生成內容的 mutation
   const regenerateContentMutation = useMutation({
-    mutationFn: () => contentsAPI.regenerateContent(id!, {
-      type: 'both',
-      article_length: 500,
-      script_duration: 30,
-    }),
-    onSuccess: () => {
+    mutationFn: () => {
+      console.log('🔄 開始重新生成內容，主題 ID:', id)
+      return contentsAPI.regenerateContent(id!, {
+        type: 'both',
+        article_length: 500,
+        script_duration: 30,
+      })
+    },
+    onSuccess: (data) => {
+      console.log('✅ 內容重新生成成功:', data)
       queryClient.invalidateQueries({ queryKey: ['content', id] })
+      queryClient.invalidateQueries({ queryKey: ['topic', id] })
       showSuccess('內容重新生成成功')
     },
     onError: (error: any) => {
-      showError(error?.message || '重新生成內容失敗')
+      console.error('❌ 重新生成內容失敗:', error)
+      console.error('錯誤詳情:', {
+        message: error?.message,
+        status: error?.status,
+        code: error?.code,
+        details: error?.details,
+      })
+      
+      // 根據錯誤類型顯示不同的錯誤訊息
+      let errorMessage = '重新生成內容失敗'
+      
+      if (error?.status === 400) {
+        errorMessage = error?.message || error?.details?.detail || '請求參數錯誤，請檢查後端配置'
+      } else if (error?.status === 404) {
+        errorMessage = '主題不存在，請重新載入頁面'
+      } else if (error?.status === 500) {
+        errorMessage = error?.message || '伺服器內部錯誤，請查看後端日誌'
+      } else if (error?.message) {
+        errorMessage = error.message
+      } else if (error?.details?.detail) {
+        errorMessage = error.details.detail
+      }
+      
+      showError(errorMessage)
     },
   })
 
