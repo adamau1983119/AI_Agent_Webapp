@@ -98,6 +98,40 @@ def _convert_to_response(image_doc: dict) -> ImageResponse:
     return ImageResponse(**image_doc)
 
 
+async def _update_topic_preview_images(topic_id: str):
+    """
+    更新主題的 preview_images 字段
+    
+    從資料庫中獲取該主題的所有圖片，取前 8 張的 URL 更新到主題的 preview_images 字段
+    如果沒有圖片，則將 preview_images 設為空數組
+    """
+    try:
+        # 獲取該主題的所有圖片
+        images = await image_repo.get_images_by_topic_id(topic_id)
+        
+        if images:
+            # 按 order 排序，取前 8 張圖片的 URL
+            sorted_images = sorted(images, key=lambda x: x.get("order", 0))
+            image_urls = [img.get("url") for img in sorted_images[:8] if img.get("url")]
+            
+            # 更新主題的 preview_images 字段（即使為空數組也要更新）
+            await topic_repo.update_topic(
+                topic_id,
+                {"preview_images": image_urls}
+            )
+            logger.info(f"✅ 已更新主題 {topic_id} 的 preview_images 字段，共 {len(image_urls)} 張圖片")
+        else:
+            # 如果沒有圖片，將 preview_images 設為空數組
+            await topic_repo.update_topic(
+                topic_id,
+                {"preview_images": []}
+            )
+            logger.info(f"✅ 已更新主題 {topic_id} 的 preview_images 字段為空數組")
+    except Exception as e:
+        logger.error(f"❌ 更新主題 {topic_id} 的 preview_images 失敗: {e}", exc_info=True)
+        # 不影響主流程，只記錄錯誤
+
+
 @router.get("/proxy")
 async def proxy_image(
     url: str = Query(..., description="圖片 URL"),
@@ -409,6 +443,9 @@ async def create_image(
         # 建立圖片
         created = await image_repo.create_image(image_dict)
         
+        # ✅ 更新主題的 preview_images 字段
+        await _update_topic_preview_images(topic_id)
+        
         return _convert_to_response(created)
     except HTTPException:
         raise
@@ -477,6 +514,9 @@ async def delete_image(
                 status_code=500,
                 detail="刪除圖片失敗"
             )
+        
+        # ✅ 更新主題的 preview_images 字段（刪除圖片後也需要更新）
+        await _update_topic_preview_images(topic_id)
         
         return {
             "message": "圖片已刪除",
@@ -599,6 +639,10 @@ async def match_photos_for_topic(
             except Exception as e:
                 logger.warning(f"保存照片失敗: {e}")
                 continue
+        
+        # ✅ 更新主題的 preview_images 字段
+        if saved_images:
+            await _update_topic_preview_images(topic_id)
         
         return ImageListResponse(data=saved_images)
     except HTTPException:

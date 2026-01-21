@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { topicsAPI } from '@/api/client'
-import type { TopicFilters as TopicFiltersType } from '@/api/topics'
+import type { TopicFilters as TopicFiltersType, SearchResponse } from '@/api/topics'
 import TopicCard from '@/components/ui/TopicCard'
 import TopicFilters from '@/components/features/TopicFilters'
 import Pagination from '@/components/ui/Pagination'
@@ -33,18 +33,60 @@ export default function Topics() {
     }
   }, [searchParams])
 
+  // 判斷是否使用新的搜尋端點（當有搜尋關鍵字時）
+  const useSearchEndpoint = Boolean(filters.search && filters.search.trim().length >= 2)
+
+  // 使用新的搜尋端點
   const {
-    data: topicsResponse,
-    isLoading,
-    error,
-    refetch,
-  } = useQuery({
-    queryKey: ['topics', filters],
-    queryFn: () => topicsAPI.getTopics(filters),
+    data: searchResponse,
+    isLoading: isSearchLoading,
+    error: searchError,
+    refetch: refetchSearch,
+  } = useQuery<SearchResponse>({
+    queryKey: ['topics', 'search', filters.search, filters.category, filters.page, filters.limit],
+    queryFn: () =>
+      topicsAPI.searchTopics({
+        query: filters.search!,
+        category: filters.category,
+        page: filters.page || 1,
+        limit: filters.limit || 12,
+        role: 'user', // 可以從用戶狀態獲取
+      }),
+    enabled: useSearchEndpoint,
   })
 
-  const topics = topicsResponse?.data || []
-  const pagination = topicsResponse?.pagination
+  // 使用原有的列表端點（當沒有搜尋關鍵字時）
+  const {
+    data: topicsResponse,
+    isLoading: isListLoading,
+    error: listError,
+    refetch: refetchList,
+  } = useQuery({
+    queryKey: ['topics', 'list', filters],
+    queryFn: () => topicsAPI.getTopics(filters),
+    enabled: !useSearchEndpoint,
+  })
+
+  // 統一處理響應
+  const isLoading = useSearchEndpoint ? isSearchLoading : isListLoading
+  const error = useSearchEndpoint ? searchError : listError
+  const refetch = useSearchEndpoint ? refetchSearch : refetchList
+
+  // 統一處理結果
+  const topics = useSearchEndpoint
+    ? searchResponse?.results || []
+    : topicsResponse?.data || []
+
+  const pagination = useSearchEndpoint
+    ? searchResponse?.pagination
+      ? {
+          page: searchResponse.pagination.page,
+          limit: searchResponse.pagination.limit,
+          total: searchResponse.pagination.total,
+          totalPages: searchResponse.pagination.pages,
+        }
+      : undefined
+    : topicsResponse?.pagination
 
   const handleFilterChange = (newFilters: TopicFiltersType) => {
     setFilters(newFilters)
@@ -68,13 +110,20 @@ export default function Topics() {
 
         {/* 右側：主題列表 */}
         <div className="col-span-12 lg:col-span-9">
+          {/* 顯示搜尋來源（如果使用新的搜尋端點） */}
+          {useSearchEndpoint && searchResponse?.source && (
+            <div className="mb-4 text-sm text-gray-600">
+              搜尋來源: {searchResponse.source === 'es' ? 'Elasticsearch' : searchResponse.source === 'cache' ? '快取' : 'MongoDB'}
+            </div>
+          )}
+
           {isLoading ? (
             <LoadingSpinner />
           ) : error ? (
             <ErrorDisplay error={error} onRetry={() => refetch()} />
           ) : topics.length === 0 ? (
             <EmptyState
-              message="沒有找到主題"
+              message={useSearchEndpoint ? '沒有找到符合搜尋條件的主題' : '沒有找到主題'}
               description="嘗試調整篩選條件或稍後再試"
             />
           ) : (

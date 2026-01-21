@@ -1,8 +1,8 @@
 """
 Topics API 端點
 """
-from typing import Optional
-from fastapi import APIRouter, HTTPException, Query, Path
+from typing import Optional, Dict, Any, List
+from fastapi import APIRouter, HTTPException, Query, Path, Header
 from app.schemas.topic import (
     TopicCreate,
     TopicUpdate,
@@ -15,6 +15,7 @@ from app.schemas.common import PaginationResponse, ErrorResponse
 from app.services.repositories.topic_repository import TopicRepository
 from app.services.repositories.content_repository import ContentRepository
 from app.services.repositories.image_repository import ImageRepository
+from app.services.search_service import SearchService, UserRole
 from app.models.topic import Category, Status
 from app.database import check_connection_from_request, get_database_from_request
 from fastapi import Request
@@ -33,6 +34,27 @@ router = APIRouter(prefix="/topics", tags=["topics"])
 topic_repo = TopicRepository()
 content_repo = ContentRepository()
 image_repo = ImageRepository()
+
+
+def get_user_role_from_request(request: Request) -> UserRole:
+    """
+    從請求中獲取用戶角色
+    
+    Args:
+        request: FastAPI 請求對象
+        
+    Returns:
+        用戶角色（預設為 guest）
+    """
+    # 嘗試從 header 中獲取角色
+    role_header = request.headers.get("X-User-Role", "").lower()
+    
+    # 驗證角色是否有效
+    try:
+        return UserRole(role_header) if role_header else UserRole.GUEST
+    except ValueError:
+        # 如果角色無效，預設為 guest
+        return UserRole.GUEST
 
 
 def _convert_to_response(topic_doc: dict) -> TopicResponse:
@@ -428,3 +450,257 @@ async def delete_topic(topic_id: str = Path(..., description="主題 ID")):
     except Exception as e:
         logger.error(f"刪除主題失敗: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ==================== 搜尋 API 端點 ====================
+
+@router.get("/search")
+async def search_topics(
+    request: Request,
+    query: str = Query(..., min_length=2, max_length=100, description="搜尋關鍵字（2-100字元）"),
+    category: Optional[Category] = Query(None, description="分類篩選（fashion/food/trend）"),
+    page: int = Query(1, ge=1, le=100, description="頁碼（1-100）"),
+    limit: int = Query(10, ge=1, le=50, description="每頁數量（1-50）"),
+    x_user_role: Optional[str] = Header(None, alias="X-User-Role", description="用戶角色（guest/user/premium/admin）")
+):
+    """
+    搜尋主題（中文全文搜尋）
+    
+    支援中文關鍵字搜尋主題標題、摘要、內容。
+    根據用戶角色過濾結果欄位。
+    
+    - **guest**: 只能查看標題和摘要
+    - **user**: 可查看標題、摘要、來源 URL、預覽圖片
+    - **premium**: 可查看所有欄位
+    - **admin**: 可查看所有欄位（包括 metadata）
+    """
+    try:
+        # 檢查資料庫連接狀態
+        is_connected, reason = await check_connection_from_request(request)
+        if not is_connected:
+            if settings.ENVIRONMENT == "development":
+                logger.warning(f"資料庫未連接 ({reason})，返回空搜尋結果（開發環境）")
+                return {
+                    "source": "db",
+                    "results": [],
+                    "pagination": {
+                        "page": page,
+                        "limit": limit,
+                        "total": 0,
+                        "pages": 0
+                    }
+                }
+            else:
+                raise HTTPException(
+                    status_code=503,
+                    detail=f"資料庫服務暫時不可用: {reason}"
+                )
+        
+        # 獲取用戶角色
+        role = UserRole.GUEST
+        if x_user_role:
+            try:
+                role = UserRole(x_user_role.lower())
+            except ValueError:
+                logger.warning(f"無效的用戶角色: {x_user_role}，使用預設角色 guest")
+        else:
+            # 嘗試從請求中獲取角色
+            role = get_user_role_from_request(request)
+        
+        # 從 app.state 獲取資料庫實例
+        db = get_database_from_request(request)
+        search_service = SearchService(db=db)
+        
+        # 執行搜尋
+        result = await search_service.search_topics(
+            query=query,
+            category=category,
+            page=page,
+            limit=limit,
+            role=role
+        )
+        
+        logger.info(f"搜尋: '{query}' by role {role.value}, found {result['pagination']['total']} results")
+        
+        return result
+        
+    except ValueError as e:
+        # 輸入驗證錯誤
+        logger.warning(f"搜尋請求驗證失敗: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
+    except ConnectionFailure as e:
+        logger.error(f"資料庫連接失敗: {e}")
+        if settings.ENVIRONMENT == "development":
+            return {
+                "source": "db",
+                "results": [],
+                "pagination": {
+                    "page": page,
+                    "limit": limit,
+                    "total": 0,
+                    "pages": 0
+                }
+            }
+        else:
+            raise HTTPException(
+                status_code=503,
+                detail="資料庫服務暫時不可用，請稍後再試"
+            )
+    except Exception as e:
+        logger.error(f"搜尋主題失敗: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"搜尋失敗: {str(e)}")
+
+
+@router.get("/search/check")
+async def check_url_exists(
+    request: Request,
+    url: str = Query(..., description="原文 URL")
+):
+    """
+    檢查原文 URL 是否已收錄
+    
+    用於檢查某篇原文是否已經被系統收錄。
+    """
+    try:
+        # 檢查資料庫連接狀態
+        is_connected, reason = await check_connection_from_request(request)
+        if not is_connected:
+            if settings.ENVIRONMENT == "development":
+                return {"exists": False, "topic": None}
+            else:
+                raise HTTPException(
+                    status_code=503,
+                    detail=f"資料庫服務暫時不可用: {reason}"
+                )
+        
+        # 從 app.state 獲取資料庫實例
+        db = get_database_from_request(request)
+        search_service = SearchService(db=db)
+        
+        # 檢查 URL
+        result = await search_service.check_url_exists(url)
+        
+        return result
+        
+    except ConnectionFailure as e:
+        logger.error(f"資料庫連接失敗: {e}")
+        if settings.ENVIRONMENT == "development":
+            return {"exists": False, "topic": None}
+        else:
+            raise HTTPException(
+                status_code=503,
+                detail="資料庫服務暫時不可用，請稍後再試"
+            )
+    except Exception as e:
+        logger.error(f"檢查 URL 是否存在失敗: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"檢查失敗: {str(e)}")
+
+
+@router.get("/search/hot-queries")
+async def get_hot_queries(
+    limit: int = Query(10, ge=1, le=50, description="返回數量（1-50）")
+):
+    """
+    取得熱門查詢列表
+    
+    返回最熱門的搜尋關鍵字及其查詢次數。
+    """
+    try:
+        from app.services.cache_service import cache_service
+        
+        queries = await cache_service.get_hot_queries(limit=limit)
+        
+        return {
+            "queries": queries
+        }
+    except Exception as e:
+        logger.error(f"獲取熱門查詢失敗: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"獲取熱門查詢失敗: {str(e)}")
+
+
+@router.delete("/search/cache")
+async def clear_search_cache(
+    pattern: str = Query("search:*", description="快取 key 模式（預設清除所有搜尋快取）"),
+    x_user_role: Optional[str] = Header(None, alias="X-User-Role", description="用戶角色（必須為 admin）")
+):
+    """
+    清除搜尋快取（僅管理員）
+    
+    用於手動清除快取，支援模式匹配。
+    預設清除所有搜尋快取（search:*）。
+    """
+    try:
+        # 檢查權限（必須是管理員）
+        role = UserRole.GUEST
+        if x_user_role:
+            try:
+                role = UserRole(x_user_role.lower())
+            except ValueError:
+                pass
+        
+        if role != UserRole.ADMIN:
+            raise HTTPException(
+                status_code=403,
+                detail="無權限清除快取（需要管理員權限）"
+            )
+        
+        from app.services.cache_service import cache_service
+        
+        deleted_count = await cache_service.clear_cache(pattern=pattern)
+        
+        return {
+            "deleted": deleted_count,
+            "message": f"已清除 {deleted_count} 個快取項目"
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"清除快取失敗: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"清除快取失敗: {str(e)}")
+
+
+@router.get("/search/health")
+async def search_health_check():
+    """
+    檢查搜尋服務健康狀態
+    
+    返回 Redis、Elasticsearch、MongoDB 的連接狀態。
+    """
+    try:
+        from app.services.cache_service import cache_service
+        from app.services.elasticsearch_service import es_service
+        from app.database import check_connection
+        
+        health_status = {}
+        
+        # 檢查 Redis
+        if cache_service.enabled and cache_service.redis_client:
+            try:
+                await cache_service.redis_client.ping()
+                health_status["redis"] = "ok"
+            except Exception as e:
+                health_status["redis"] = f"error: {str(e)}"
+        else:
+            health_status["redis"] = "disabled"
+        
+        # 檢查 Elasticsearch
+        if es_service.enabled:
+            es_health = await es_service.health_check()
+            health_status["elasticsearch"] = es_health.get("status", "unknown")
+        else:
+            health_status["elasticsearch"] = "disabled"
+        
+        # 檢查 MongoDB
+        try:
+            is_connected, reason = await check_connection()
+            if is_connected:
+                health_status["mongodb"] = "ok"
+            else:
+                health_status["mongodb"] = f"error: {reason}"
+        except Exception as e:
+            health_status["mongodb"] = f"error: {str(e)}"
+        
+        return health_status
+    except Exception as e:
+        logger.error(f"健康檢查失敗: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"健康檢查失敗: {str(e)}")

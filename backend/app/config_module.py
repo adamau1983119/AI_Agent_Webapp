@@ -119,6 +119,25 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = "INFO"
     LOG_FILE: str = "logs/app.log"
     
+    # Redis 配置（快取）
+    REDIS_HOST: str = "localhost"
+    REDIS_PORT: int = 6379
+    REDIS_DB: int = 0
+    REDIS_PASSWORD: str = ""  # 可選
+    REDIS_MAX_CONNECTIONS: int = 10
+    REDIS_DECODE_RESPONSES: bool = True
+    REDIS_ENABLED: bool = True  # 是否啟用 Redis（如果 False，則跳過快取）
+    
+    # Elasticsearch 配置
+    ELASTICSEARCH_HOSTS: str = "https://localhost:9200"  # 逗號分隔的多個主機（支援 http:// 或 https://）
+    ELASTICSEARCH_INDEX: str = "topics"
+    ELASTICSEARCH_TIMEOUT: int = 30  # 增加超時時間以適應 HTTPS
+    ELASTICSEARCH_MAX_RETRIES: int = 3
+    ELASTICSEARCH_ENABLED: bool = False  # 是否啟用 Elasticsearch（預設 False，使用 MongoDB）
+    ELASTICSEARCH_USERNAME: str = "elastic"  # Elasticsearch 用戶名（8.x+ 版本需要）
+    ELASTICSEARCH_PASSWORD: str = ""  # Elasticsearch 密碼（8.x+ 版本需要）
+    ELASTICSEARCH_USE_SSL: bool = True  # 是否使用 SSL（如果 URL 是 https:// 會自動啟用）
+    
     model_config = SettingsConfigDict(
         env_file=".env",
         case_sensitive=True,

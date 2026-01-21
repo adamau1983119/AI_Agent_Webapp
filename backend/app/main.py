@@ -221,6 +221,24 @@ async def lifespan(app: FastAPI):
     logger.info(f"CORS_ORIGINS 設定值: {settings.CORS_ORIGINS}")
     logger.info(f"CORS_ORIGINS 類型: {type(settings.CORS_ORIGINS)}")
     
+    # 連接 Redis（快取服務）
+    try:
+        from app.services.cache_service import cache_service
+        await cache_service.connect()
+        app.state.cache_service = cache_service
+    except Exception as e:
+        logger.warning(f"⚠️ Redis 連接失敗（將跳過快取功能）: {e}")
+        app.state.cache_service = None
+    
+    # 連接 Elasticsearch（搜尋服務）
+    try:
+        from app.services.elasticsearch_service import es_service
+        await es_service.connect()
+        app.state.es_service = es_service
+    except Exception as e:
+        logger.warning(f"⚠️ Elasticsearch 連接失敗（將使用 MongoDB 搜尋）: {e}")
+        app.state.es_service = None
+    
     # 啟動排程服務（生產環境自動啟動，開發環境可手動啟動）
     scheduler_service = None
     scheduler_monitor = None
@@ -261,6 +279,22 @@ async def lifespan(app: FastAPI):
     yield
     
     # 關閉時執行
+    # 關閉 Redis 連接
+    if hasattr(app.state, 'cache_service') and app.state.cache_service:
+        try:
+            await app.state.cache_service.disconnect()
+            logger.info("✅ Redis 連接已關閉")
+        except Exception as e:
+            logger.error(f"關閉 Redis 連接時發生錯誤: {e}")
+    
+    # 關閉 Elasticsearch 連接
+    if hasattr(app.state, 'es_service') and app.state.es_service:
+        try:
+            await app.state.es_service.disconnect()
+            logger.info("✅ Elasticsearch 連接已關閉")
+        except Exception as e:
+            logger.error(f"關閉 Elasticsearch 連接時發生錯誤: {e}")
+    
     # 關閉 MongoDB 連接
     if hasattr(app.state, 'mongo_client') and app.state.mongo_client:
         try:

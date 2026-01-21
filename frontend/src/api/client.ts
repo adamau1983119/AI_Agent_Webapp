@@ -144,6 +144,10 @@ export const api = {
   updateTopic: topicsAPI.updateTopic,
   updateTopicStatus: topicsAPI.updateTopicStatus,
   deleteTopic: topicsAPI.deleteTopic,
+  // 搜尋相關（新的搜尋端點）
+  searchTopics: topicsAPI.searchTopics,
+  checkUrlExists: topicsAPI.checkUrlExists,
+  getHotQueries: topicsAPI.getHotQueries,
 
   // 內容相關（使用專用 API）
   getContent: contentsAPI.getContent,

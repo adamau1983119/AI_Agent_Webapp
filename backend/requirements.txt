@@ -48,3 +48,9 @@ beautifulsoup4>=4.12.0
 PyYAML>=6.0.1
 pytz>=2024.1
 
+# Redis 快取
+redis>=5.0.0
+
+# Elasticsearch（可選）
+elasticsearch>=8.11.0
+
