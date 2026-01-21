@@ -21,6 +21,13 @@ class Status(str, Enum):
     DELETED = "deleted"
 
 
+class SourceStyle(BaseModel):
+    """來源風格資訊"""
+    tone: Optional[str] = Field(None, description="語調（如：新聞報導、輕鬆分享等）")
+    structure: Optional[str] = Field(None, description="結構（如：短段落、長段落等）")
+    vocabulary: Optional[str] = Field(None, description="詞彙風格（如：專業術語、通俗易懂等）")
+
+
 class SourceInfo(BaseModel):
     """資料來源資訊"""
     type: str = Field(..., description="來源類型（news/youtube/rss）")
@@ -32,6 +39,12 @@ class SourceInfo(BaseModel):
     verified_at: Optional[str] = Field(None, description="驗證時間（可選）")
     reliability: Optional[str] = Field(None, description="可靠性（可選）")
     keywords: Optional[List[str]] = Field(None, description="關鍵字列表（可選）")
+    # 新增欄位
+    images: Optional[List[str]] = Field(default_factory=list, description="原文圖片 URL 列表（og:image 或 <img> 標籤）")
+    language: Optional[str] = Field(None, description="原文語言（如：en、zh等）")
+    style: Optional[SourceStyle] = Field(None, description="原文風格分析")
+    original_content: Optional[str] = Field(None, description="原文完整內容（用於 AI 改寫）")
+    original_title: Optional[str] = Field(None, description="原始標題（如果是翻譯的話）")
     
     def __init__(self, **data):
         # 如果沒有 title，使用 name

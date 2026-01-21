@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { topicsAPI, api, schedulesAPI, recommendationsAPI } from '@/api/client'
 import ProgressCard from '@/components/ui/ProgressCard'
@@ -51,9 +51,13 @@ export default function Dashboard() {
     retry: false, // 完全關閉自動重試，避免 429 錯誤循環
     staleTime: 30000, // 30 秒內認為數據新鮮
     gcTime: 5 * 60 * 1000, // 5 分鐘緩存
-    refetchInterval: 5000, // 每 5 秒自動輪詢一次（降低頻率，避免觸發速率限制）
+    refetchInterval: false, // 關閉自動輪詢，避免超時問題
     refetchOnWindowFocus: false, // 避免視窗聚焦時自動重試
     refetchOnMount: true, // 組件掛載時獲取數據
+    // 增加超時時間到 15 秒
+    meta: {
+      timeout: 15000,
+    },
   })
 
   // 取得推薦列表（暫時禁用，等待後端修復）
@@ -229,8 +233,9 @@ export default function Dashboard() {
   }, [topics])
 
   // 監聽今日主題數量，顯示進度和完成提示
-  // 使用 useRef 避免重複顯示 toast
+  // 使用 useRef 避免重複顯示 toast 和無限循環
   const hasShownCompleteToast = useRef(false)
+  const previousTopicsCountRef = useRef(0)
   const [generationProgress, setGenerationProgress] = useState<{
     isGenerating: boolean
     current: number
@@ -243,11 +248,11 @@ export default function Dashboard() {
     percentage: 0
   })
   
+  // 計算今日主題數量（使用 useMemo 避免重複計算）
+  const todayTopicsCount = useMemo(() => getTodayTopicsCount(), [topics])
+  
+  // Debug: Log detailed date comparison (development only) - 只在 topics 變化時執行
   useEffect(() => {
-    // 使用統一的計算函數獲取今日主題數量
-    const todayTopicsCount = getTodayTopicsCount()
-    
-    // Debug: Log detailed date comparison (development only)
     if (!import.meta.env.PROD && topics.length > 0) {
       const now = new Date()
       const todayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()))
@@ -310,50 +315,69 @@ export default function Dashboard() {
       console.log(`✅ Final result: ${todayTopicsCount} today's topics out of ${topics.length} total`)
       console.log('='.repeat(60))
     }
-
-    // 更新進度狀態
-    const percentage = Math.round((todayTopicsCount / 30) * 100)
-    const previousCount = generationProgress.current
+  }, [topics, todayTopicsCount]) // 只在 topics 或 todayTopicsCount 變化時執行
+  
+  // 更新進度狀態（避免無限循環）
+  useEffect(() => {
+    // 只在主題數量或生成狀態真正變化時更新
+    const currentCount = todayTopicsCount
+    const previousCount = previousTopicsCountRef.current
     
-    // 判斷是否應該顯示「正在生成中」：
-    // 1. 如果用戶點擊了「立即生成」按鈕（isGenerating = true）
-    // 2. 或者主題數量在增加但未達到30個（說明正在生成中）
-    // 3. 但如果主題數量為0且沒有點擊生成按鈕，則不顯示「正在生成中」
+    // 如果數量沒有變化且生成狀態沒有變化，跳過更新
+    if (currentCount === previousCount && 
+        generationProgress.isGenerating === isGenerating &&
+        generationProgress.current === currentCount) {
+      return
+    }
+    
+    // 更新 ref
+    previousTopicsCountRef.current = currentCount
+    
+    // 計算百分比
+    const percentage = Math.round((currentCount / 30) * 100)
+    
+    // 判斷是否應該顯示「正在生成中」
     const shouldShowGenerating = isGenerating || 
-      (todayTopicsCount > 0 && todayTopicsCount < 30 && todayTopicsCount >= previousCount)
+      (currentCount > 0 && currentCount < 30 && currentCount >= previousCount)
     
-    // 如果主題數量為0且沒有點擊生成按鈕，確保不顯示「正在生成中」
-    if (todayTopicsCount === 0 && !isGenerating) {
-      setGenerationProgress({
-        isGenerating: false,
-        current: 0,
-        total: 30,
-        percentage: 0
-      })
+    // 更新進度狀態（只在真正需要時更新）
+    if (currentCount === 0 && !isGenerating) {
+      if (generationProgress.isGenerating || generationProgress.current > 0) {
+        setGenerationProgress({
+          isGenerating: false,
+          current: 0,
+          total: 30,
+          percentage: 0
+        })
+      }
     } else {
-      setGenerationProgress({
-        isGenerating: shouldShowGenerating,
-        current: todayTopicsCount,
-        total: 30,
-        percentage
-      })
+      // 只在狀態真正需要改變時更新
+      if (generationProgress.isGenerating !== shouldShowGenerating ||
+          generationProgress.current !== currentCount ||
+          generationProgress.percentage !== percentage) {
+        setGenerationProgress({
+          isGenerating: shouldShowGenerating,
+          current: currentCount,
+          total: 30,
+          percentage
+        })
+      }
     }
 
     // 如果達到30個主題，顯示完成提示（只顯示一次）
-    if (todayTopicsCount >= 30 && !hasShownCompleteToast.current) {
+    if (currentCount >= 30 && !hasShownCompleteToast.current) {
       hasShownCompleteToast.current = true
-      setIsGenerating(false) // 確保重置 isGenerating 狀態
+      setIsGenerating(false)
       setGenerationProgress(prev => ({ ...prev, isGenerating: false }))
       toast.success('今日主題生成完成！', { id: 'generate-today-complete' })
-    } else if (todayTopicsCount < 30) {
+    } else if (currentCount < 30) {
       // 重置標記，如果主題數量減少
       hasShownCompleteToast.current = false
-      // 如果主題數量為0且沒有點擊生成，確保重置 isGenerating
-      if (todayTopicsCount === 0 && !isGenerating) {
+      if (currentCount === 0 && !isGenerating) {
         setIsGenerating(false)
       }
     }
-  }, [topics, isGenerating])
+  }, [todayTopicsCount, isGenerating]) // 只依賴 todayTopicsCount 和 isGenerating，不依賴 topics
 
   // 計算統計資料
   const pendingCount = topics.filter((t) => t.status === 'pending').length

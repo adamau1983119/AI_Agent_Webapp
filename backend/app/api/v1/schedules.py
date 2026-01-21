@@ -81,12 +81,24 @@ async def get_schedules(
     取得排程列表
     
     如果指定日期，返回該日期的排程；否則返回今天的排程
+    優化：快速響應，避免超時
     """
+    import asyncio
+    
     try:
         target_date = date or datetime.now().strftime("%Y-%m-%d")
         
-        # 檢查資料庫連接狀態（從 app.state）
-        is_connected, reason = await check_connection_from_request(request)
+        # 快速檢查資料庫連接狀態（設置超時）
+        try:
+            is_connected, reason = await asyncio.wait_for(
+                check_connection_from_request(request),
+                timeout=2.0  # 2秒超時
+            )
+        except asyncio.TimeoutError:
+            logger.warning("資料庫連接檢查超時，返回預設排程數據")
+            is_connected = False
+            reason = "連接檢查超時"
+        
         if not is_connected:
             # 在開發環境中，資料庫未連接時返回預設排程數據
             if settings.ENVIRONMENT == "development":
@@ -121,13 +133,19 @@ async def get_schedules(
                     detail=f"資料庫服務暫時不可用: {reason}"
                 )
         
-        # 取得該日期的主題
+        # 取得該日期的主題（設置超時，避免長時間等待）
         topic_repo = TopicRepository()
         try:
-            topics, _ = await topic_repo.list_topics(
-                date=target_date,
-                limit=100
+            topics, _ = await asyncio.wait_for(
+                topic_repo.list_topics(
+                    date=target_date,
+                    limit=100
+                ),
+                timeout=5.0  # 5秒超時
             )
+        except asyncio.TimeoutError:
+            logger.warning(f"取得日期 {target_date} 的主題超時，返回空列表")
+            topics = []
         except ConnectionFailure as e:
             logger.warning(f"資料庫連接失敗: {e}")
             # 在開發環境中，連接失敗時返回預設排程數據

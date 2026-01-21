@@ -586,34 +586,85 @@ async def match_photos_for_topic(
         photo_matcher = EnhancedPhotoMatcher()
         content_repo = ContentRepository()
         
-        # 取得文章內容
-        content = await content_repo.get_content_by_topic_id(topic_id)
-        if not content:
+        # 取得主題資訊
+        from app.services.repositories.topic_repository import TopicRepository
+        topic_repo = TopicRepository()
+        topic = await topic_repo.get_topic_by_id(topic_id)
+        if not topic:
             raise HTTPException(
                 status_code=404,
-                detail=f"主題內容不存在，請先生成內容才能匹配照片。主題 ID: {topic_id}"
+                detail=f"主題不存在: {topic_id}"
             )
         
-        article_text = content.get("article", "")
+        # 1. 先保存原文圖片（如果有的話）
+        from app.models.image import ImageSource, ImageType
+        saved_images = []
+        source_images = []
+        for source in topic.get("sources", []):
+            if "images" in source and source["images"]:
+                source_images.extend(source["images"])
+        
+        existing_images = await image_repo.get_images_by_topic_id(topic_id)
+        max_order = max([img.get("order", 0) for img in existing_images]) if existing_images else -1
+        
+        # 保存原文圖片
+        for idx, img_url in enumerate(source_images[:5]):  # 最多5張
+            try:
+                # 檢查是否已存在
+                existing = [img for img in existing_images if img.get("url") == img_url]
+                if existing:
+                    continue
+                
+                image_data = {
+                    "id": f"{topic_id}_source_{idx}",
+                    "topic_id": topic_id,
+                    "url": img_url,
+                    "source": ImageSource.SOURCE_ARTICLE.value,
+                    "image_type": ImageType.SOURCE.value,
+                    "photographer": "",
+                    "photographer_url": "",
+                    "license": "Source Article",
+                    "keywords": [],
+                    "order": max_order + idx + 1,
+                    "width": None,
+                    "height": None,
+                }
+                created = await image_repo.create_image(image_data)
+                saved_images.append(created)
+                max_order += 1
+            except Exception as e:
+                logger.warning(f"保存原文圖片失敗 {img_url}: {e}")
+                continue
+        
+        # 2. 取得文章內容（優先使用原文內容）
+        content = await content_repo.get_content_by_topic_id(topic_id)
+        article_text = ""
+        
+        # 2.1 優先從原文內容提取
+        for source in topic.get("sources", []):
+            if source.get("original_content"):
+                article_text = source["original_content"][:2000]  # 使用原文內容
+                break
+        
+        # 2.2 如果沒有原文內容，使用生成的中文內容
+        if not article_text and content:
+            article_text = content.get("article", "")
+        
         if not article_text or not article_text.strip():
             raise HTTPException(
                 status_code=400,
-                detail="文章內容為空，無法進行智能匹配。請先生成完整的文章內容。"
+                detail="文章內容為空，無法進行智能匹配。請先生成完整的文章內容或確保主題有原文內容。"
             )
         
-        # 匹配照片
+        # 3. 匹配照片（基於原文內容或生成的中文內容）
         match_result = await photo_matcher.match_photos_with_layers(
             article_text=article_text,
             topic_id=topic_id,
             min_count=min_count
         )
         
-        # 保存匹配的照片到資料庫
+        # 4. 保存匹配的照片到資料庫（image_type=matched）
         matched_photos = match_result.get("matched_photos", [])
-        saved_images = []
-        
-        existing_images = await image_repo.get_images_by_topic_id(topic_id)
-        max_order = max([img.get("order", 0) for img in existing_images]) if existing_images else -1
         
         for idx, photo in enumerate(matched_photos):
             try:
@@ -622,6 +673,7 @@ async def match_photos_for_topic(
                     "topic_id": topic_id,
                     "url": photo.get("url", ""),
                     "source": photo.get("source", ImageSource.UNSPLASH.value),
+                    "image_type": ImageType.MATCHED.value,  # 標記為匹配圖片
                     "photographer": photo.get("photographer"),
                     "photographer_url": photo.get("photographer_url"),
                     "license": photo.get("license", "Unknown"),

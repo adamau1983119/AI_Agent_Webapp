@@ -161,23 +161,65 @@ class AutomationWorkflow:
         topic_title = topic["title"]
         topic_category = topic["category"]
         
-        # 提取關鍵字
+        # 提取關鍵字和原文資訊
         keywords = []
+        source_urls = []
+        original_content = None
+        original_language = None
+        style_info = None
+        
         for source in topic.get("sources", []):
             if "keywords" in source:
                 keywords.extend(source["keywords"])
+            if "url" in source:
+                source_urls.append(source["url"])
+            # 提取原文內容（使用第一個有內容的來源）
+            if not original_content and source.get("original_content"):
+                original_content = source["original_content"]
+                original_language = source.get("language")
+                if source.get("style"):
+                    style_info = source["style"]
+                    if isinstance(style_info, dict):
+                        pass
+                    else:
+                        style_info = {
+                            "tone": getattr(style_info, "tone", None),
+                            "structure": getattr(style_info, "structure", None),
+                            "vocabulary": getattr(style_info, "vocabulary", None)
+                        }
         
         # 動態獲取 AI Service（每次調用時獲取最新配置）
         ai_service = self._get_ai_service()
         
-        # 生成內容（短文和腳本）
-        result = await ai_service.generate_both(
+        # 生成內容（改進版：基於原文內容）
+        from app.prompts.article_prompt import build_article_prompt
+        article_prompt = build_article_prompt(
             topic_title=topic_title,
             topic_category=topic_category,
             keywords=keywords,
-            article_length=500,
-            script_duration=30
+            target_length=500,
+            original_content=original_content,
+            source_urls=source_urls,
+            original_language=original_language,
+            style_info=style_info
         )
+        article = await ai_service._call_api(article_prompt)
+        script = await ai_service.generate_script(
+            topic_title=topic_title,
+            topic_category=topic_category,
+            keywords=keywords,
+            duration=30
+        )
+        result = {
+            "article": article,
+            "script": script
+        }
+        
+        # 提取來源圖片
+        source_images = []
+        for source in topic.get("sources", []):
+            if "images" in source and source["images"]:
+                source_images.extend(source["images"])
         
         # 計算字數和時長
         word_count = len(result["article"] or "") + len(result["script"] or "")
@@ -197,9 +239,11 @@ class AutomationWorkflow:
                 "word_count": word_count,
                 "estimated_duration": estimated_duration,
                 "model_used": getattr(ai_service, 'model_name', 'unknown'),
-                "prompt_version": "v1.0",
+                "prompt_version": "v2.0",
                 "version": existing_content.get("version", 0) + 1,
                 "updated_at": now,
+                "source_urls": source_urls,
+                "source_images": source_images
             }
             await self.content_repo.update_content(content_id, update_data)
         else:
@@ -212,10 +256,12 @@ class AutomationWorkflow:
                 "word_count": word_count,
                 "estimated_duration": estimated_duration,
                 "model_used": getattr(ai_service, 'model_name', 'unknown'),
-                "prompt_version": "v1.0",
+                "prompt_version": "v2.0",
                 "version": 1,
                 "generated_at": now,
                 "updated_at": now,
+                "source_urls": source_urls,
+                "source_images": source_images
             }
             await self.content_repo.create_content(content_data)
         
@@ -226,41 +272,81 @@ class AutomationWorkflow:
         topic: Dict[str, Any],
         count: int
     ) -> int:
-        """搜尋並添加圖片（根據短文和劇本內容）"""
+        """搜尋並添加圖片（改進版：先保存原文圖片，再搜尋匹配圖片）"""
         topic_id = topic["id"]
         topic_title = topic["title"]
+        added_count = 0
         
-        # 1. 優先從已生成的內容中提取關鍵字
-        content = await self.content_repo.get_content_by_topic_id(topic_id)
+        # 1. 先保存原文圖片（image_type=source）
+        from app.models.image import ImageSource, ImageType
+        source_images = []
+        for source in topic.get("sources", []):
+            if "images" in source and source["images"]:
+                source_images.extend(source["images"])
+        
+        if source_images:
+            existing_images = await self.image_repo.get_images_by_topic_id(topic_id)
+            max_order = max([img.get("order", 0) for img in existing_images]) if existing_images else -1
+            
+            for idx, img_url in enumerate(source_images[:5]):  # 最多保存5張原文圖片
+                try:
+                    image_data = {
+                        "id": f"{topic_id}_source_{idx}",
+                        "topic_id": topic_id,
+                        "url": img_url,
+                        "source": ImageSource.SOURCE_ARTICLE.value,
+                        "image_type": ImageType.SOURCE.value,
+                        "photographer": "",
+                        "photographer_url": "",
+                        "license": "Source Article",
+                        "keywords": [],
+                        "order": max_order + idx + 1,
+                        "width": None,
+                        "height": None,
+                    }
+                    await self.image_repo.create_image(image_data)
+                    added_count += 1
+                    logger.info(f"保存原文圖片: {img_url}")
+                except Exception as e:
+                    logger.warning(f"保存原文圖片失敗 {img_url}: {e}")
+                    continue
+        
+        # 2. 基於原文內容搜尋匹配圖片（image_type=matched）
+        # 優先使用原文內容，如果沒有則使用生成的中文內容
+        search_text = ""
         keywords_list = []
         
-        if content:
-            # 從短文和劇本中提取關鍵字
-            article = content.get("article", "")
-            script = content.get("script", "")
-            
-            # 提取關鍵字（簡單的關鍵字提取）
-            if article:
-                # 從短文中提取關鍵字（取前50字中的關鍵詞）
-                article_keywords = self._extract_keywords_from_text(article[:200])
-                keywords_list.extend(article_keywords)
-            
-            if script:
-                # 從劇本中提取關鍵字
-                script_keywords = self._extract_keywords_from_text(script[:200])
-                keywords_list.extend(script_keywords)
+        # 2.1 優先從原文內容提取關鍵字
+        for source in topic.get("sources", []):
+            if source.get("original_content"):
+                search_text = source["original_content"][:1000]  # 使用原文內容
+                keywords_list = self._extract_keywords_from_text(search_text)
+                break
         
-        # 2. 如果沒有從內容中提取到關鍵字，使用主題的關鍵字
+        # 2.2 如果沒有原文內容，從生成的中文內容提取
+        if not search_text:
+            content = await self.content_repo.get_content_by_topic_id(topic_id)
+            if content:
+                article = content.get("article", "")
+                script = content.get("script", "")
+                if article:
+                    search_text = article[:1000]
+                    keywords_list = self._extract_keywords_from_text(search_text)
+                elif script:
+                    search_text = script[:1000]
+                    keywords_list = self._extract_keywords_from_text(search_text)
+        
+        # 2.3 如果還是沒有，使用主題關鍵字
         if not keywords_list:
             for source in topic.get("sources", []):
                 if "keywords" in source:
                     keywords_list.extend(source["keywords"])
         
-        # 3. 如果還是沒有關鍵字，使用標題
+        # 2.4 如果還是沒有關鍵字，使用標題
         if not keywords_list:
             keywords_list = [topic_title]
         
-        # 4. 組合關鍵字用於搜尋（使用前3個關鍵字）
+        # 3. 組合關鍵字用於搜尋（使用前3個關鍵字）
         search_keywords = " ".join(keywords_list[:3]) if keywords_list else topic_title
         
         try:
@@ -270,42 +356,20 @@ class AutomationWorkflow:
                 count
             )
             
-            # 添加圖片到主題
-            added_count = 0
+            # 添加圖片到主題（標記為 matched）
+            from app.models.image import ImageType
             existing_images = await self.image_repo.get_images_by_topic_id(topic_id)
             max_order = max([img.get("order", 0) for img in existing_images]) if existing_images else -1
             
-            for idx, image in enumerate(images[:count]):
+            for idx, img in enumerate(images):
                 try:
-                    # 處理圖片來源
-                    image_source = image.get("source", "unknown")
-                    if hasattr(image_source, 'value'):
-                        image_source = image_source.value
-                    elif isinstance(image_source, str):
-                        image_source = image_source
-                    else:
-                        image_source = str(image_source) if image_source else "unknown"
-                    
-                    image_data = {
-                        "id": image.get("id", f"img_{topic_id}_{idx}"),
-                        "topic_id": topic_id,
-                        "url": image.get("url", ""),
-                        "source": image_source,
-                        "photographer": image.get("photographer"),
-                        "photographer_url": image.get("photographer_url"),
-                        "license": image.get("license", "Unknown"),
-                        "keywords": keywords_list,
-                        "order": max_order + idx + 1,
-                        "width": image.get("width"),
-                        "height": image.get("height"),
-                        "fetched_at": datetime.utcnow(),
-                    }
-                    
-                    await self.image_repo.create_image(image_data)
+                    # 確保圖片類型為 matched
+                    img["image_type"] = ImageType.MATCHED.value
+                    img["order"] = max_order + idx + 1
+                    await self.image_repo.create_image(img)
                     added_count += 1
-                    
                 except Exception as e:
-                    logger.warning(f"添加圖片失敗: {e}")
+                    logger.warning(f"添加匹配圖片失敗: {e}")
                     continue
             
             logger.info(f"主題 {topic_id} 添加了 {added_count} 張圖片")

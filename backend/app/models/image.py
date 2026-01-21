@@ -14,6 +14,13 @@ class ImageSource(str, Enum):
     PIXABAY = "Pixabay"
     DUCKDUCKGO = "DuckDuckGo"  # 無需 API Key 的圖片搜尋
     GOOGLE_CUSTOM_SEARCH = "Google Custom Search"  # Google Custom Search API（需要 API Key）
+    SOURCE_ARTICLE = "Source Article"  # 原文圖片
+
+
+class ImageType(str, Enum):
+    """圖片類型"""
+    SOURCE = "source"  # 原文圖片
+    MATCHED = "matched"  # 匹配的圖片
 
 
 class Image(BaseModel):
@@ -22,6 +29,7 @@ class Image(BaseModel):
     topic_id: str = Field(..., description="主題 ID")
     url: str = Field(..., description="圖片 URL")
     source: ImageSource = Field(..., description="圖片來源")
+    image_type: ImageType = Field(default=ImageType.MATCHED, description="圖片類型（source=原文圖片，matched=匹配圖片）")
     photographer: Optional[str] = Field(None, description="攝影師名稱")
     photographer_url: Optional[str] = Field(None, description="攝影師連結")
     license: str = Field(..., description="授權類型")

@@ -122,20 +122,49 @@ async def generate_content(
         ai_service = AIServiceFactory.get_service(settings.AI_SERVICE)
         logger.info(f"使用 AI 服務: {settings.AI_SERVICE} (請求 ID: {topic_id})")
         
-        # 取得關鍵字（從主題的 sources 中提取）
+        # 取得關鍵字和原文資訊（從主題的 sources 中提取）
         keywords = []
+        source_urls = []
+        original_content = None
+        original_language = None
+        style_info = None
+        
         for source in topic.get("sources", []):
             if "keywords" in source:
                 keywords.extend(source["keywords"])
+            if "url" in source:
+                source_urls.append(source["url"])
+            # 提取原文內容（使用第一個有內容的來源）
+            if not original_content and source.get("original_content"):
+                original_content = source["original_content"]
+                original_language = source.get("language")
+                if source.get("style"):
+                    style_info = source["style"]
+                    if isinstance(style_info, dict):
+                        pass  # 已經是字典
+                    else:
+                        # 如果是 SourceStyle 對象，轉換為字典
+                        style_info = {
+                            "tone": getattr(style_info, "tone", None),
+                            "structure": getattr(style_info, "structure", None),
+                            "vocabulary": getattr(style_info, "vocabulary", None)
+                        }
         
-        # 生成內容
+        # 生成內容（改進版：基於原文內容）
         if request.type == "article":
-            article = await ai_service.generate_article(
+            # 構建改進的 prompt
+            from app.prompts.article_prompt import build_article_prompt
+            prompt = build_article_prompt(
                 topic_title=topic["title"],
                 topic_category=topic["category"],
                 keywords=keywords,
-                length=request.article_length
+                target_length=request.article_length,
+                original_content=original_content,
+                source_urls=source_urls,
+                original_language=original_language,
+                style_info=style_info
             )
+            article = await ai_service._call_api(prompt)
             script = None
         elif request.type == "script":
             script = await ai_service.generate_script(
@@ -146,19 +175,35 @@ async def generate_content(
             )
             article = None
         else:  # both
-            result = await ai_service.generate_both(
+            # 構建改進的 prompt（僅用於文章）
+            from app.prompts.article_prompt import build_article_prompt
+            article_prompt = build_article_prompt(
                 topic_title=topic["title"],
                 topic_category=topic["category"],
                 keywords=keywords,
-                article_length=request.article_length,
-                script_duration=request.script_duration
+                target_length=request.article_length,
+                original_content=original_content,
+                source_urls=source_urls,
+                original_language=original_language,
+                style_info=style_info
             )
-            article = result["article"]
-            script = result["script"]
+            article = await ai_service._call_api(article_prompt)
+            script = await ai_service.generate_script(
+                topic_title=topic["title"],
+                topic_category=topic["category"],
+                keywords=keywords,
+                duration=request.script_duration
+            )
         
         # 計算字數和時長
         word_count = len(article or "") + len(script or "")
         estimated_duration = word_count // 17  # 假設每 17 字 = 1 秒
+        
+        # 提取來源圖片
+        source_images = []
+        for source in topic.get("sources", []):
+            if "images" in source and source["images"]:
+                source_images.extend(source["images"])
         
         # 檢查是否已存在內容
         existing_content = await content_repo.get_content_by_topic_id(topic_id)
@@ -174,7 +219,9 @@ async def generate_content(
                 "word_count": word_count,
                 "estimated_duration": estimated_duration,
                 "model_used": getattr(ai_service, 'model', getattr(ai_service, 'model_name', 'unknown')),
-                "prompt_version": "v1.0"
+                "prompt_version": "v2.0",  # 更新版本號
+                "source_urls": source_urls,
+                "source_images": source_images
             }
             
             updated = await content_repo.update_content(
@@ -194,7 +241,9 @@ async def generate_content(
                 "word_count": word_count,
                 "estimated_duration": estimated_duration,
                 "model_used": getattr(ai_service, 'model', getattr(ai_service, 'model_name', 'unknown')),
-                "prompt_version": "v1.0",
+                "prompt_version": "v2.0",
+                "source_urls": source_urls,
+                "source_images": source_images,
                 "version": 1,
                 "generated_at": now,
                 "updated_at": now
