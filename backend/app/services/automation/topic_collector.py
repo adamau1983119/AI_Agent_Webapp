@@ -238,6 +238,49 @@ class TopicCollector:
         
         return topics[:count]
     
+    def _is_deal_or_coupon_article(self, title: str, link: str) -> bool:
+        """檢查文章是否為優惠券/折扣相關內容 - v3 更精確的過濾"""
+        # 確定是優惠券的關鍵字組合（必須同時出現）
+        coupon_patterns = [
+            ("coupon", "code"),
+            ("promo", "code"),
+            ("discount", "code"),
+            ("% off", ""),  # 百分比折扣
+            ("$", "off"),   # 金額折扣
+        ]
+        
+        # 單獨就足以判斷為優惠券的關鍵字
+        definite_coupon_keywords = [
+            "coupon code", "promo code", "discount code", "voucher",
+            "clearance sale", "flash sale", "black friday", "cyber monday",
+            "prime day", "best price", "lowest price", "price drop",
+        ]
+        
+        # URL 路徑中明確表示優惠的關鍵字
+        url_coupon_paths = [
+            "/deals/", "/coupons/", "/offers/", "/sales/", "/shopping/", "/promo/"
+        ]
+        
+        title_lower = title.lower()
+        link_lower = link.lower()
+        
+        # 檢查 URL 路徑
+        for path in url_coupon_paths:
+            if path in link_lower:
+                return True
+        
+        # 檢查確定的優惠券關鍵字
+        for keyword in definite_coupon_keywords:
+            if keyword in title_lower:
+                return True
+        
+        # 檢查組合模式（標題中同時包含某些關鍵字）
+        for pattern in coupon_patterns:
+            if all(p in title_lower for p in pattern if p):
+                return True
+        
+        return False
+    
     async def _collect_from_rss(
         self,
         category: Category,
@@ -257,9 +300,16 @@ class TopicCollector:
                     response = await client.get(feed_url)
                     feed = feedparser.parse(response.text)
                     
-                    for entry in feed.entries[:count]:
+                    for entry in feed.entries[:count * 3]:  # 取更多條目以便過濾
                         title = entry.get("title", "")
                         link = entry.get("link", "")
+                        
+                        # 過濾掉優惠券/折扣文章（特別是 TREND 類別）
+                        if category == Category.TREND and self._is_deal_or_coupon_article(title, link):
+                            logger.info(f"🚫 跳過優惠券文章: {title}")
+                            continue
+                        else:
+                            logger.info(f"✅ 接受文章: {title}")
                         published = entry.get("published_parsed")
                         
                         if title:
