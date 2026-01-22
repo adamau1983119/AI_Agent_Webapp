@@ -290,11 +290,11 @@ class TopicCollector:
                                 source_info["original_content"] = article_info.get("original_content")
                                 source_info["language"] = article_info.get("language")
                                 
-                                # 添加風格資訊
+                                # 添加風格資訊（轉換為 dict 以便 MongoDB 儲存）
                                 style_info = article_info.get("style")
                                 if style_info:
-                                    from app.models.topic import SourceStyle
-                                    source_info["style"] = SourceStyle(**style_info)
+                                    # 直接使用 dict，不需要轉換為 Pydantic 模型
+                                    source_info["style"] = style_info if isinstance(style_info, dict) else style_info
                             
                             topic = {
                                 "title": chinese_title,
