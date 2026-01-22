@@ -377,6 +377,42 @@ async def update_topic_status(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.delete("/all")
+async def delete_all_topics(request: Request):
+    """
+    批量刪除所有主題（硬刪除）- 僅用於開發/測試環境
+    """
+    try:
+        db = get_database_from_request(request)
+        if db is None:
+            raise HTTPException(
+                status_code=400,
+                detail="資料庫未連接，無法刪除主題"
+            )
+        
+        collection = db["topics"]
+        
+        # 獲取刪除前的數量
+        count_before = await collection.count_documents({})
+        
+        # 硬刪除所有主題
+        result = await collection.delete_many({})
+        deleted_count = result.deleted_count
+        
+        logger.info(f"✅ 已刪除所有主題，共 {deleted_count} 個")
+        
+        return {
+            "message": f"已刪除所有主題",
+            "deleted_count": deleted_count,
+            "count_before": count_before
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"刪除所有主題失敗: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.delete("/today")
 async def delete_today_topics(request: Request):
     """

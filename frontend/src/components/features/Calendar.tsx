@@ -9,8 +9,9 @@ export default function Calendar() {
   const monthEnd = endOfMonth(currentDate)
   const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd })
 
-  // 獲取月份的第一天是星期幾（0 = 星期日）
-  const firstDayOfWeek = monthStart.getDay()
+  // 獲取月份的第一天是星期幾（調整為星期一開始：Mo=0, Tu=1, ..., Su=6）
+  const dayOfWeek = monthStart.getDay()
+  const firstDayOfWeek = dayOfWeek === 0 ? 6 : dayOfWeek - 1  // 將星期日從 0 調整為 6
   const daysBeforeMonth = Array.from({ length: firstDayOfWeek }, (_, i) => {
     const date = new Date(monthStart)
     date.setDate(date.getDate() - (firstDayOfWeek - i))
