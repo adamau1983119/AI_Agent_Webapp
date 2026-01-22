@@ -135,8 +135,13 @@ class SchedulerService:
                     topic_data["updated_at"] = datetime.utcnow()
                     topic_data["created_at"] = datetime.utcnow()
                     
-                    # 階段 1：初始化新欄位
-                    topic_data["preview_images"] = []
+                    # Phase 5A：從 sources[].images 提取預覽圖片
+                    preview_images = []
+                    for source in topic_data.get("sources", []):
+                        source_imgs = source.get("images", [])
+                        preview_images.extend(source_imgs[:3])  # 每個來源最多取 3 張
+                    topic_data["preview_images"] = preview_images[:5] if preview_images else []  # 最多 5 張
+                    
                     topic_data["is_expanded"] = False
                     topic_data["generation_config"] = {
                         "category": category_name,
@@ -244,6 +249,13 @@ class SchedulerService:
                     topic_data["generated_at"] = datetime.utcnow()
                     topic_data["updated_at"] = datetime.utcnow()
                     topic_data["created_at"] = datetime.utcnow()
+                    
+                    # Phase 5A：從 sources[].images 提取預覽圖片
+                    preview_images = []
+                    for source in topic_data.get("sources", []):
+                        source_imgs = source.get("images", [])
+                        preview_images.extend(source_imgs[:3])  # 每個來源最多取 3 張
+                    topic_data["preview_images"] = preview_images[:5] if preview_images else []  # 最多 5 張
                     
                     # 建立主題
                     created_topic = await self.topic_repo.create_topic(topic_data)
