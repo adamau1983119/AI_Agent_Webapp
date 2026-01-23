@@ -399,7 +399,7 @@ async def health_check():
 
 
 # 註冊 API 路由
-from app.api.v1 import topics, contents, images, user, health, schedules, interactions, recommendations, discover, validate, test_db
+from app.api.v1 import topics, contents, images, user, health, schedules, interactions, recommendations, discover, validate, test_db, feeds
 
 app.include_router(health.router, prefix="/api/v1")
 app.include_router(test_db.router, prefix="/api/v1")  # 測試端點，用於驗證資料庫連接
@@ -412,6 +412,7 @@ app.include_router(interactions.router, prefix="/api/v1")
 app.include_router(recommendations.router, prefix="/api/v1")
 app.include_router(discover.router, prefix="/api/v1")
 app.include_router(validate.router, prefix="/api/v1")
+app.include_router(feeds.router, prefix="/api/v1")  # Feed 健康監控 API
 
 
 if __name__ == "__main__":

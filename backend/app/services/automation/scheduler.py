@@ -215,7 +215,7 @@ class SchedulerService:
     async def trigger_manual_generation(
         self,
         category: Category,
-        count: int = 3
+        count: int = 10
     ) -> List[Dict[str, Any]]:
         """
         手動觸發主題生成（用於測試或立即執行）

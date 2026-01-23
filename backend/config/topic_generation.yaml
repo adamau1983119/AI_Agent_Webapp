@@ -1,5 +1,6 @@
-# 主題生成配置檔
+# 主題生成配置檔 v3.0
 # 用於控制每日主題生成的參數
+# 支援角色分配策略確保內容來源多樣性
 
 daily_generation:
   # 生成時間（香港時間）
@@ -15,45 +16,91 @@ daily_generation:
       preview_images: 1
       # 是否生成文字內容（階段1設為false，延遲生成）
       generate_content: false
+      # 角色分配比例
+      role_distribution:
+        authority: 2    # 權威來源 (Vogue, Elle)
+        streetwear: 2   # 街頭潮牌 (Hypebeast, Highsnobiety)
+        asian: 2        # 亞洲時尚 (Popbee, SCMP Style)
+        industry: 2     # 產業分析 (BoF, WWD)
+        practical: 2    # 實用穿搭 (Who What Wear, Fashionista)
       
     food:
       count: 10
       preview_images: 1
       generate_content: false
+      role_distribution:
+        mainstream: 2   # 主流美食 (Eater, Bon Appétit)
+        professional: 2 # 專業料理 (Epicurious, The Kitchn)
+        cultural: 2     # 文化美食 (BBC Good Food, Simply Recipes)
+        healthy: 2      # 健康飲食 (Eat This Not That)
+        casual: 2       # 輕鬆美食 (The Takeout, Mashed)
       
     trend:
       count: 10
       preview_images: 1
       generate_content: false
+      role_distribution:
+        tech: 2         # 科技新聞 (TechCrunch, The Verge)
+        science: 2      # 科學技術 (Ars Technica, IEEE Spectrum)
+        culture: 2      # 文化分析 (Vox, The Atlantic)
+        innovation: 2   # 創新趨勢 (WIRED, MIT Technology Review)
+        lifestyle: 2    # 生活方式 (Fast Company, Rest of World)
 
 # 圖片搜尋設定
 image_search:
   # Preview 模式（主題生成階段）
   preview:
-    # 搜尋數量
     count: 1
-    # 關鍵字優化（加入高級感相關關鍵字）
     keywords_enhancement:
       - "editorial fashion"
       - "luxury"
       - "high-end"
       - "professional photography"
-    # 品質要求
     quality:
       min_resolution: "1920x1080"
       min_saturation: 0.6
       
   # Full 模式（用戶展開階段）
   full:
-    # 搜尋數量
     count: 8
-    # 基於文章內容關鍵字搜尋
     use_content_keywords: true
+    
+  # Phase 5B 智能匹配設定
+  smart_matching:
+    enabled: true
+    target_count: 10
+    # 評分權重
+    weights:
+      keyword: 0.40     # 關鍵字匹配
+      trust: 0.25       # 來源信任度
+      quality: 0.15     # 圖片品質
+      diversity: 0.20   # 來源多樣性
+
+# 評分設定
+scoring:
+  # 文章評分權重
+  article:
+    time: 0.4           # 時效性
+    source: 0.3         # 來源信任度
+    completeness: 0.2   # 完整度
+    relevance: 0.1      # 相關度
+    
+  # 多樣性驗收標準
+  diversity:
+    min_score: 0.6      # 最低多樣性分數
+    warn_on_failure: true
 
 # 每日限制設定
 daily_limit:
-  # 是否啟用每日限制檢查
   enabled: true
-  # 檢查方式：使用日期+分類作為唯一鍵
   unique_key: "date_category"
 
+# 健康監控設定 (Phase 2 已實施)
+health_monitoring:
+  enabled: true
+  # 連續失敗次數觸發暫停
+  failure_threshold: 3
+  # 暫停時長（秒）
+  pause_duration: 3600
+  # TTL：自動刪除 N 天前的記錄
+  record_ttl_days: 30
