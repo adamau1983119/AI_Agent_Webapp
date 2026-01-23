@@ -1,7 +1,12 @@
 """
-主題收集器服務 v3.0
+主題收集器服務 v3.1
 從各種來源（RSS、新聞、社交媒體等）收集熱門話題
 使用角色分配策略確保內容來源多樣性
+
+Phase 6 整合：
+- OriginalImageExtractor: 從 RSS entry 提取原文照片
+- HashtagExtractor: 提取 hashtags（正則 + 品牌匹配）
+- DualWriteService: 雙寫機制（articles + topics）
 """
 import logging
 import httpx
@@ -20,6 +25,18 @@ from app.services.scoring_service import ScoringService, DiversityScorer
 from app.services.repositories.feed_health_repository import FeedHealthRepository
 from app.services.feed_health_service import FeedHealthService
 
+# Phase 6 整合
+from app.services.automation.image_extractor import OriginalImageExtractor
+from app.services.hashtag_extractor import HashtagExtractor
+from app.services.migration.dual_write import DualWriteService
+from app.models.article import (
+    Article,
+    ArticleCategory,
+    ArticleImages,
+    ImagePreview,
+    ArticleSourceInfo,
+)
+
 try:
     import feedparser
 except ImportError:
@@ -34,9 +51,23 @@ logger = logging.getLogger(__name__)
 
 
 class TopicCollector:
-    """主題收集器 v3.0 - 支援角色分配策略 + 健康監控"""
+    """
+    主題收集器 v3.1 - 支援角色分配策略 + 健康監控 + Phase 6 整合
     
-    def __init__(self):
+    Phase 6 新增功能：
+    - 從 RSS entry 提取原文照片（OriginalImageExtractor）
+    - 提取 hashtags（HashtagExtractor）
+    - 雙寫機制（DualWriteService）
+    """
+    
+    def __init__(self, db=None, enable_dual_write: bool = True):
+        """
+        初始化主題收集器
+        
+        Args:
+            db: MongoDB 資料庫實例
+            enable_dual_write: 是否啟用雙寫機制（同時寫入 articles + topics）
+        """
         # 評分服務
         self.scoring_service = ScoringService()
         self.diversity_scorer = DiversityScorer()
@@ -44,6 +75,13 @@ class TopicCollector:
         # 健康監控服務
         self.health_repo = FeedHealthRepository()
         self.health_service = FeedHealthService(self.health_repo)
+        
+        # Phase 6 新增：圖片提取器
+        self.image_extractor = OriginalImageExtractor()
+        
+        # Phase 6 新增：雙寫服務
+        self.enable_dual_write = enable_dual_write
+        self.dual_write_service = DualWriteService(db=db) if enable_dual_write else None
         
         # 備用關鍵字（當 RSS 無法取得時使用）
         self.fallback_keywords = {
@@ -173,7 +211,7 @@ class TopicCollector:
         role_name: str
     ) -> List[Dict[str, Any]]:
         """
-        從單一角色的 Feed 列表收集主題（含健康監控）
+        從單一角色的 Feed 列表收集主題（含健康監控 + Phase 6 整合）
         
         Args:
             client: HTTP 客戶端
@@ -182,8 +220,16 @@ class TopicCollector:
             feeds: [(來源名稱, URL, 權重), ...]
             count: 需要收集的數量
             role_name: 角色名稱
+            
+        Phase 6 整合：
+        - 使用 OriginalImageExtractor 提取原文照片
+        - 使用 HashtagExtractor 提取 hashtags
+        - 使用 DualWriteService 雙寫到 articles + topics
         """
         topics = []
+        
+        # Phase 6: 初始化 HashtagExtractor
+        hashtag_extractor = HashtagExtractor(category=category.value)
         
         for source_name, feed_url, source_weight in feeds:
             if len(topics) >= count:
@@ -221,13 +267,31 @@ class TopicCollector:
                         logger.info(f"🚫 跳過優惠券文章: {title}")
                         continue
                     
-                    # 提取關鍵字
+                    # Phase 6: 從 RSS entry 提取原文照片
+                    preview_images = self.image_extractor.extract_from_entry(entry, source_name)
+                    logger.debug(f"提取到 {len(preview_images)} 張原文照片")
+                    
+                    # 提取關鍵字（舊版）
                     keywords = self._extract_keywords(title, category)
+                    
+                    # Phase 6: 使用 HashtagExtractor 提取更精確的 hashtags
+                    content_text = ""
+                    if entry.get("content"):
+                        content_text = entry["content"][0].get("value", "") if isinstance(entry.get("content"), list) else ""
+                    elif entry.get("summary"):
+                        content_text = entry.get("summary", "")
+                    
+                    hashtags = hashtag_extractor.extract(
+                        title=title,
+                        content=content_text,
+                        existing_keywords=keywords
+                    )
+                    logger.debug(f"提取到 {len(hashtags)} 個 hashtags: {hashtags[:5]}")
                     
                     # 翻譯標題並生成摘要
                     chinese_title, description = await self._translate_title_to_chinese(title, category)
                     
-                    # 提取原文圖片和內容
+                    # 提取原文圖片和內容（使用舊版 extractor 作為補充）
                     article_info = await extractor.extract_article_info(link)
                     
                     # 構建來源資訊
@@ -240,13 +304,17 @@ class TopicCollector:
                         "fetched_at": datetime.utcnow(),
                         "verified": True,
                         "keywords": keywords,
-                        "role": role_name,  # 記錄角色
-                        "source_weight": source_weight,  # 記錄來源權重
+                        "role": role_name,
+                        "source_weight": source_weight,
                     }
                     
-                    # 添加提取的資訊
+                    # 合併圖片來源
+                    all_images = [img["url"] for img in preview_images]
                     if article_info.get("success"):
-                        source_info["images"] = article_info.get("images", [])
+                        article_images = article_info.get("images", [])
+                        for img_url in article_images:
+                            if img_url not in all_images:
+                                all_images.append(img_url)
                         source_info["original_content"] = article_info.get("original_content")
                         source_info["language"] = article_info.get("language")
                         
@@ -254,34 +322,67 @@ class TopicCollector:
                         if style_info:
                             source_info["style"] = style_info if isinstance(style_info, dict) else style_info
                     
+                    source_info["images"] = all_images
+                    
                     # 計算文章評分
                     article_data = {
                         "title": chinese_title,
                         "source": source_name,
                         "source_name": source_name,
-                        "images": source_info.get("images", []),
+                        "images": all_images,
                         "summary": description,
                         "original_content": source_info.get("original_content"),
                         "keywords": keywords,
+                        "hashtags": hashtags,  # Phase 6: 添加 hashtags
                         "published": entry.get("published_parsed"),
                         "fetched_at": datetime.utcnow(),
                     }
                     
                     score_result = self.scoring_service.compute_score(article_data, category)
                     
+                    # 構建 topic（舊格式，向後兼容）
                     topic = {
                         "title": chinese_title,
                         "category": category.value,
                         "source": source_name,
-                        "source_name": source_name,  # 用於多樣性計算
+                        "source_name": source_name,
                         "description": description,
                         "sources": [source_info],
                         "role": role_name,
                         "score": score_result["score"],
                         "score_breakdown": score_result["score_breakdown"],
+                        # Phase 6: 新增欄位
+                        "hashtags": hashtags,
+                        "preview_images_v2": preview_images,  # 帶有 photo_id 的完整結構
                     }
+                    
+                    # Phase 6: 雙寫機制
+                    if self.enable_dual_write and self.dual_write_service:
+                        try:
+                            article = self._build_article_from_topic(
+                                topic=topic,
+                                entry=entry,
+                                preview_images=preview_images,
+                                hashtags=hashtags,
+                                category=category,
+                                link=link,
+                                source_name=source_name,
+                                role_name=role_name
+                            )
+                            
+                            article_doc, topic_doc = await self.dual_write_service.write_article(
+                                article,
+                                write_to_topics=False  # 稍後手動寫入 topic
+                            )
+                            
+                            if article_doc:
+                                topic["article_id"] = article_doc.get("article_id")
+                                logger.debug(f"✅ 雙寫成功: {article_doc.get('article_id')}")
+                        except Exception as e:
+                            logger.warning(f"雙寫失敗，繼續使用舊格式: {e}")
+                    
                     topics.append(topic)
-                    logger.info(f"✅ 收集主題: {chinese_title[:30]}... (score: {score_result['score']:.2f})")
+                    logger.info(f"✅ 收集主題: {chinese_title[:30]}... (score: {score_result['score']:.2f}, hashtags: {len(hashtags)})")
                 
                 # 健康監控：記錄成功
                 try:
@@ -295,7 +396,6 @@ class TopicCollector:
                 
             except httpx.TimeoutException:
                 logger.warning(f"⏱️ {source_name} 請求超時")
-                # 健康監控：記錄失敗
                 try:
                     await self.health_service.record_fetch_result(
                         feed_url=feed_url,
@@ -308,7 +408,6 @@ class TopicCollector:
                 continue
             except Exception as e:
                 logger.warning(f"❌ 無法從 {source_name} 收集主題: {e}")
-                # 健康監控：記錄失敗
                 try:
                     await self.health_service.record_fetch_result(
                         feed_url=feed_url,
@@ -321,6 +420,62 @@ class TopicCollector:
                 continue
         
         return topics
+    
+    def _build_article_from_topic(
+        self,
+        topic: Dict[str, Any],
+        entry: Dict[str, Any],
+        preview_images: List[Dict[str, Any]],
+        hashtags: List[str],
+        category: Category,
+        link: str,
+        source_name: str,
+        role_name: str
+    ) -> Article:
+        """
+        從 topic 數據構建 Article 模型
+        
+        Phase 6: 用於雙寫機制
+        """
+        # 構建 ImagePreview 列表
+        image_previews = []
+        for img in preview_images:
+            image_previews.append(ImagePreview(
+                photo_id=img.get("photo_id", ""),
+                url=img.get("url", ""),
+                caption=img.get("caption"),
+                width=img.get("width"),
+                height=img.get("height")
+            ))
+        
+        # 確定 ArticleCategory
+        article_category = ArticleCategory.FASHION
+        if category == Category.FOOD:
+            article_category = ArticleCategory.FOOD
+        elif category == Category.TREND:
+            article_category = ArticleCategory.TREND
+        
+        # 構建 Article
+        article = Article(
+            title=topic.get("title", ""),
+            original_title=entry.get("title", ""),
+            description=topic.get("description"),
+            link=link,
+            category=article_category,
+            source=source_name,
+            source_info=ArticleSourceInfo(
+                type="rss",
+                name=source_name,
+                url=link,
+                role=role_name,
+                fetched_at=datetime.utcnow()
+            ),
+            hashtags=hashtags,
+            images=ArticleImages(preview=image_previews, matched=[]),
+            score=topic.get("score", 0.0),
+        )
+        
+        return article
     
     async def _collect_from_rss_legacy(
         self,
