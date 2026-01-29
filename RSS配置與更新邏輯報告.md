@@ -677,6 +677,112 @@ Phase 5: 化妝 × 8 地區 = 24-80 個 RSS
 
 ---
 
+## 十、第三方審核回饋與改進方案
+
+### 10.1 問題與回應
+
+| # | 問題 | 回應 | 狀態 |
+|:-:|------|------|:----:|
+| 1 | RSS 來源合法性是否有授權清單？ | 目前沒有，需建立白名單/黑名單/灰名單機制 | 🟢 採納 |
+| 2 | 角色分配固定 2 個是否僵化？ | 同意動態化，但保留最低保障（每角色至少 1 個） | 🟢 採納 |
+| 3 | 健康監控 3 次失敗暫停 1 小時是否足夠？ | 不足夠，需建立分級機制（Level 1-4） | 🟢 採納 |
+| 4 | 多樣性門檻 0.6 是否合適？ | 需按分類細分（Fashion 0.65, Food 0.55, Trend 0.75） | 🟢 採納 |
+| 5 | 自定義頻道 Google 搜尋是否可靠？ | 有風險，需建立三層備用機制 | 🟢 採納 |
+
+### 10.2 改進方案一：白名單/黑名單機制
+
+```python
+# 來源分類
+RSS_WHITELIST = {
+    # 已確認合法且穩定
+    "Vogue": {"status": "approved", "license": "public_rss"},
+    "TechCrunch": {"status": "approved", "license": "public_rss"},
+    "Eater": {"status": "approved", "license": "public_rss"},
+    # ... 其他已確認來源
+}
+
+RSS_BLACKLIST = {
+    # 禁止使用（版權問題/不穩定）
+    # 待建立
+}
+
+RSS_GRAYLIST = {
+    # 需要確認（付費牆/授權不明）
+    "Business of Fashion": {"reason": "partial_paywall"},
+    "MIT Technology Review": {"reason": "partial_paywall"},
+}
+```
+
+### 10.3 改進方案二：角色分配動態化
+
+```python
+def calculate_role_allocation(role_name, base_count=2):
+    """
+    動態計算角色分配數量
+    
+    公式：adjusted = base × (health×0.5 + success×0.3 + 0.2)
+    保底：最少 1 個，最多 4 個
+    """
+    health_factor = get_role_health_score(role_name)
+    success_rate = get_role_success_rate(role_name)
+    
+    adjusted = base_count * (health_factor * 0.5 + success_rate * 0.3 + 0.2)
+    return max(1, min(4, round(adjusted)))
+```
+
+### 10.4 改進方案三：分級健康監控
+
+| Level | 條件 | 動作 | 通知 |
+|:-----:|------|------|:----:|
+| 1 | 連續 3 次失敗 | 暫停 1 小時 | ❌ |
+| 2 | 24h 內失敗 ≥5 次 | 暫停 24 小時 | ❌ |
+| 3 | 7 天失敗率 >50% | 標記待替換 | ✅ |
+| 4 | 30 天無成功 | 自動停用 + 切換備用 | ✅ |
+
+### 10.5 改進方案四：多樣性門檻細分
+
+```yaml
+diversity:
+  thresholds:
+    # 主打分類
+    fashion: 0.65
+    food: 0.55
+    trend: 0.75
+    
+    # 會員頻道
+    finance: 0.70
+    sports: 0.60
+    technology: 0.70
+    entertainment: 0.55
+    custom: 0.50  # 來源有限，放寬
+```
+
+### 10.6 改進方案五：三層備用機制
+
+```
+會員頻道主題收集流程：
+
+Layer 1: 從頻道配置的 RSS 收集
+    ↓ 不足
+Layer 2: 使用相近類別的預設 RSS
+    ↓ 仍不足
+Layer 3: AI 生成主題（DeepSeek）
+
+保證：會員頻道永遠有內容，不會出現「空白」
+```
+
+### 10.7 實施優先級
+
+| 改進項目 | 優先級 | 預估時間 | Phase |
+|----------|:------:|:--------:|:-----:|
+| 白名單/黑名單機制 | 🔴 P0 | 2 天 | Phase 0 |
+| 分級健康監控 | 🔴 P0 | 3 天 | Phase 0 |
+| 多樣性門檻細分 | 🟡 P1 | 1 天 | Phase 2 |
+| 角色分配動態化 | 🟡 P1 | 2 天 | Phase 2 |
+| 三層備用機制 | 🟡 P1 | 2 天 | Phase 2 |
+
+---
+
 ## 📝 文件資訊
 
 | 項目 | 內容 |
