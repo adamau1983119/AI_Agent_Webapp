@@ -343,4 +343,137 @@ class FeedHealthRepository(BaseRepository):
             },
             "generated_at": datetime.utcnow()
         }
+    
+    # ============================================
+    # Phase 1: 新增方法 - 分級健康監控支援
+    # ============================================
+    
+    async def get_feed_stats(
+        self,
+        feed_url: str,
+        since: datetime
+    ) -> Dict[str, Any]:
+        """
+        取得 Feed 在指定時間範圍內的統計
+        
+        Args:
+            feed_url: Feed URL
+            since: 起始時間
+            
+        Returns:
+            統計資料 {total, successes, failures}
+        """
+        await self.ensure_indexes()
+        
+        collection = await self._get_collection()
+        
+        # 計算總數
+        total = await collection.count_documents({
+            "feed_url": feed_url,
+            "timestamp": {"$gte": since}
+        })
+        
+        # 計算成功數
+        successes = await collection.count_documents({
+            "feed_url": feed_url,
+            "status": "success",
+            "timestamp": {"$gte": since}
+        })
+        
+        # 計算失敗數
+        failures = total - successes
+        
+        return {
+            "total": total,
+            "successes": successes,
+            "failures": failures,
+            "since": since
+        }
+    
+    async def get_consecutive_failures(
+        self,
+        feed_url: str,
+        since: datetime
+    ) -> int:
+        """
+        計算指定時間範圍內的連續失敗次數
+        
+        Args:
+            feed_url: Feed URL
+            since: 起始時間
+            
+        Returns:
+            連續失敗次數
+        """
+        await self.ensure_indexes()
+        
+        collection = await self._get_collection()
+        
+        # 取得時間範圍內的記錄，按時間倒序排列
+        cursor = collection.find({
+            "feed_url": feed_url,
+            "timestamp": {"$gte": since}
+        }).sort("timestamp", -1)
+        
+        records = await cursor.to_list(length=100)
+        
+        if not records:
+            return 0
+        
+        # 從最新記錄開始計算連續失敗
+        consecutive = 0
+        for record in records:
+            if record.get("status") == "failure":
+                consecutive += 1
+            else:
+                break  # 遇到成功就停止計算
+        
+        return consecutive
+    
+    async def get_health_level_report(self, feed_url: str) -> Dict[str, Any]:
+        """
+        取得 Feed 的分級健康報告
+        
+        Args:
+            feed_url: Feed URL
+            
+        Returns:
+            分級健康報告
+        """
+        now = datetime.utcnow()
+        
+        # 各時間範圍的統計
+        stats_1h = await self.get_feed_stats(feed_url, since=now - timedelta(hours=1))
+        stats_24h = await self.get_feed_stats(feed_url, since=now - timedelta(hours=24))
+        stats_7d = await self.get_feed_stats(feed_url, since=now - timedelta(days=7))
+        stats_14d = await self.get_feed_stats(feed_url, since=now - timedelta(days=14))
+        
+        # 計算各時間範圍的失敗率
+        def calc_failure_rate(stats):
+            if stats["total"] == 0:
+                return 0.0
+            return stats["failures"] / stats["total"]
+        
+        # 取得連續失敗次數
+        consecutive_failures = await self.get_consecutive_failures(
+            feed_url, since=now - timedelta(hours=1)
+        )
+        
+        return {
+            "feed_url": feed_url,
+            "stats": {
+                "1h": stats_1h,
+                "24h": stats_24h,
+                "7d": stats_7d,
+                "14d": stats_14d
+            },
+            "failure_rates": {
+                "1h": round(calc_failure_rate(stats_1h), 4),
+                "24h": round(calc_failure_rate(stats_24h), 4),
+                "7d": round(calc_failure_rate(stats_7d), 4),
+                "14d": round(calc_failure_rate(stats_14d), 4)
+            },
+            "consecutive_failures_1h": consecutive_failures,
+            "generated_at": now
+        }
 

@@ -219,6 +219,117 @@ class TopicGenerationConfig:
         
         return utc_datetime.time()
     
+    # ============================================
+    # Phase 1: 新增方法 - 收集排程設定
+    # ============================================
+    
+    def get_collection_mode(self) -> str:
+        """
+        取得收集模式
+        
+        Returns:
+            "interval" 或 "daily"
+        """
+        return self._config.get("collection_schedule", {}).get("mode", "daily")
+    
+    def get_collection_hours(self) -> List[int]:
+        """
+        取得收集時間點（每 4 小時模式）
+        
+        Returns:
+            收集時間點列表（UTC 小時）
+        """
+        return self._config.get("collection_schedule", {}).get(
+            "collection_hours", [0, 4, 8, 12, 16, 20]
+        )
+    
+    def get_interval_hours(self) -> int:
+        """取得收集間隔（小時）"""
+        return self._config.get("collection_schedule", {}).get("interval_hours", 4)
+    
+    # ============================================
+    # Phase 1: 新增方法 - 資料清理設定
+    # ============================================
+    
+    def get_data_cleanup_config(self) -> Dict[str, Any]:
+        """
+        取得資料清理配置
+        
+        Returns:
+            資料清理配置字典
+        """
+        default = {
+            "enabled": True,
+            "retention_days": 15,
+            "cleanup_hour": 3,
+            "cleanup_minute": 0,
+            "batch_size": 100
+        }
+        return self._config.get("data_cleanup", default)
+    
+    def get_retention_days(self) -> int:
+        """取得資料保留天數"""
+        return self.get_data_cleanup_config().get("retention_days", 15)
+    
+    # ============================================
+    # Phase 1: 新增方法 - 分級健康監控設定
+    # ============================================
+    
+    def get_health_monitoring_config(self) -> Dict[str, Any]:
+        """取得健康監控配置"""
+        return self._config.get("health_monitoring", {})
+    
+    def get_health_level_config(self, level: int) -> Dict[str, Any]:
+        """
+        取得特定等級的健康監控配置
+        
+        Args:
+            level: 健康等級（1-4）
+            
+        Returns:
+            該等級的配置字典
+        """
+        config = self.get_health_monitoring_config()
+        return config.get(f"level_{level}", {})
+    
+    # ============================================
+    # Phase 1: 新增方法 - RSS 來源名單管理
+    # ============================================
+    
+    def get_rss_source_lists_config(self) -> Dict[str, Any]:
+        """取得 RSS 來源名單配置"""
+        return self._config.get("rss_source_lists", {})
+    
+    def get_whitelist_config(self) -> Dict[str, Any]:
+        """取得白名單配置"""
+        return self.get_rss_source_lists_config().get("whitelist", {"enabled": True})
+    
+    def get_blacklist_config(self) -> Dict[str, Any]:
+        """取得黑名單配置"""
+        return self.get_rss_source_lists_config().get("blacklist", {"enabled": True, "sources": []})
+    
+    def get_greylist_config(self) -> Dict[str, Any]:
+        """取得灰名單配置"""
+        return self.get_rss_source_lists_config().get("greylist", {"enabled": True})
+    
+    # ============================================
+    # Phase 1: 新增方法 - 多樣性門檻
+    # ============================================
+    
+    def get_diversity_threshold(self, category: str) -> Dict[str, Any]:
+        """
+        取得特定分類的多樣性門檻
+        
+        Args:
+            category: 分類名稱
+            
+        Returns:
+            多樣性門檻配置
+        """
+        thresholds = self._config.get("diversity_thresholds", {})
+        default = {"min_score": 0.6, "min_sources": 3}
+        return thresholds.get(category.lower(), default)
+    
     def reload(self):
         """重新載入配置檔"""
         self._load_config()

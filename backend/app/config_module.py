@@ -72,6 +72,48 @@ class Settings(BaseSettings):
     # API Key 認證（可選，如果未設定則不啟用認證）
     API_KEY: str = ""
     
+    # ============================================
+    # Phase 2: JWT 認證配置
+    # ============================================
+    JWT_SECRET: str = ""  # JWT 密鑰（必須設定）
+    JWT_ALGORITHM: str = "HS256"  # JWT 演算法
+    JWT_EXPIRE_MINUTES: int = 10080  # Token 過期時間（分鐘，預設 7 天）
+    
+    # ============================================
+    # Phase 2: Google OAuth 配置
+    # ============================================
+    GOOGLE_OAUTH_CLIENT_ID: str = ""
+    GOOGLE_OAUTH_CLIENT_SECRET: str = ""
+    GOOGLE_OAUTH_REDIRECT_URI: str = "http://localhost:8000/api/v1/auth/google/callback"
+    
+    # ============================================
+    # Phase 2: Gmail SMTP 配置
+    # ============================================
+    GMAIL_USER: str = ""
+    GMAIL_APP_PASSWORD: str = ""
+    
+    # ============================================
+    # Phase 2: 會員系統配置
+    # ============================================
+    MAX_USERS: int = 100  # 測試版最大用戶數（100 人限制）
+    EMAIL_VERIFICATION_EXPIRE_HOURS: int = 24  # Email 驗證連結過期時間（小時）
+    PASSWORD_RESET_EXPIRE_HOURS: int = 24  # 密碼重設連結過期時間（小時）
+    
+    # ============================================
+    # Phase 5: 社交平台配置
+    # ============================================
+    # 後端 URL（用於 OAuth 回調）
+    BACKEND_URL: str = "http://localhost:8000"
+    FRONTEND_URL: str = "http://localhost:5173"
+    
+    # Meta (Instagram + Facebook + Threads)
+    META_APP_ID: str = ""
+    META_APP_SECRET: str = ""
+    
+    # TikTok（可選）
+    TIKTOK_CLIENT_KEY: str = ""
+    TIKTOK_CLIENT_SECRET: str = ""
+    
     # 請求限流配置
     # 開發環境使用更寬鬆的限制，避免前端輪詢觸發速率限制
     RATE_LIMIT_PER_MINUTE: int = 60  # 預設值（生產環境）

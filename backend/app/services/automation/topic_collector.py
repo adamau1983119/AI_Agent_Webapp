@@ -1,5 +1,5 @@
 """
-主題收集器服務 v3.1
+主題收集器服務 v3.2
 從各種來源（RSS、新聞、社交媒體等）收集熱門話題
 使用角色分配策略確保內容來源多樣性
 
@@ -7,6 +7,9 @@ Phase 6 整合：
 - OriginalImageExtractor: 從 RSS entry 提取原文照片
 - HashtagExtractor: 提取 hashtags（正則 + 品牌匹配）
 - DualWriteService: 雙寫機制（articles + topics）
+
+v3.2 更新（2026-01-30）：
+- ContentDeduplicator: 內容去重服務（哈希 + 相似度）
 """
 import logging
 import httpx
@@ -37,6 +40,9 @@ from app.models.article import (
     ArticleSourceInfo,
 )
 
+# v3.2: 內容去重服務
+from app.services.content_deduplication import ContentDeduplicator
+
 try:
     import feedparser
 except ImportError:
@@ -52,22 +58,28 @@ logger = logging.getLogger(__name__)
 
 class TopicCollector:
     """
-    主題收集器 v3.1 - 支援角色分配策略 + 健康監控 + Phase 6 整合
+    主題收集器 v3.2 - 支援角色分配策略 + 健康監控 + Phase 6 整合 + 去重
     
     Phase 6 新增功能：
     - 從 RSS entry 提取原文照片（OriginalImageExtractor）
     - 提取 hashtags（HashtagExtractor）
     - 雙寫機制（DualWriteService）
+    
+    v3.2 新增功能：
+    - 內容去重（ContentDeduplicator）
     """
     
-    def __init__(self, db=None, enable_dual_write: bool = True):
+    def __init__(self, db=None, enable_dual_write: bool = True, enable_dedup: bool = True):
         """
         初始化主題收集器
         
         Args:
             db: MongoDB 資料庫實例
             enable_dual_write: 是否啟用雙寫機制（同時寫入 articles + topics）
+            enable_dedup: 是否啟用內容去重（預設啟用）
         """
+        self.db = db
+        
         # 評分服務
         self.scoring_service = ScoringService()
         self.diversity_scorer = DiversityScorer()
@@ -82,6 +94,10 @@ class TopicCollector:
         # Phase 6 新增：雙寫服務
         self.enable_dual_write = enable_dual_write
         self.dual_write_service = DualWriteService(db=db) if enable_dual_write else None
+        
+        # v3.2 新增：內容去重服務
+        self.enable_dedup = enable_dedup
+        self.deduplicator = ContentDeduplicator(db=db) if enable_dedup else None
         
         # 備用關鍵字（當 RSS 無法取得時使用）
         self.fallback_keywords = {
@@ -109,7 +125,7 @@ class TopicCollector:
         use_fallback: bool = True
     ) -> List[Dict[str, Any]]:
         """
-        收集主題（使用角色分配策略）
+        收集主題（使用角色分配策略 + 去重）
         
         Args:
             category: 主題分類
@@ -117,14 +133,40 @@ class TopicCollector:
             use_fallback: 如果 RSS 失敗，是否使用備用關鍵字
             
         Returns:
-            主題列表
+            主題列表（已去重）
         """
         topics = []
         
+        # v3.2: 初始化去重器
+        if self.enable_dedup and self.deduplicator:
+            await self.deduplicator.initialize()
+        
         try:
-            # 使用角色分配策略收集
-            rss_topics = await self._collect_by_roles(category, count)
-            topics.extend(rss_topics)
+            # 使用角色分配策略收集（多收集一些以補償去重損失）
+            target_count = int(count * 1.5) if self.enable_dedup else count
+            rss_topics = await self._collect_by_roles(category, target_count)
+            
+            # v3.2: 去重過濾
+            if self.enable_dedup and self.deduplicator:
+                unique_topics = []
+                duplicate_count = 0
+                
+                for topic in rss_topics:
+                    title = topic.get("title", "")
+                    is_dup, reason, similar = await self.deduplicator.is_duplicate(title)
+                    
+                    if is_dup:
+                        duplicate_count += 1
+                        logger.debug(f"🔄 跳過重複: {title[:30]}... ({reason})")
+                    else:
+                        unique_topics.append(topic)
+                
+                if duplicate_count > 0:
+                    logger.info(f"🔄 去重: {duplicate_count} 個重複, {len(unique_topics)} 個唯一")
+                
+                topics.extend(unique_topics)
+            else:
+                topics.extend(rss_topics)
             
             # 計算多樣性分數
             diversity_report = self.diversity_scorer.get_diversity_report(topics)
@@ -138,6 +180,10 @@ class TopicCollector:
             
             # 如果收集到足夠的主題，返回
             if len(topics) >= count:
+                # v3.2: 記錄去重統計
+                if self.enable_dedup and self.deduplicator:
+                    stats = self.deduplicator.get_stats()
+                    logger.info(f"📊 去重統計: {stats['duplicate_rate']} 重複率")
                 return topics[:count]
             
             # 如果不足且允許使用備用方案，使用備用關鍵字生成主題

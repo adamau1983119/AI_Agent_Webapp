@@ -184,3 +184,70 @@ class TopicRepository(BaseRepository):
             是否成功
         """
         return await self.delete_by_id(topic_id)
+    
+    # ============================================
+    # Phase 1: 資料清理方法
+    # ============================================
+    
+    async def delete_topics_before_date(
+        self,
+        cutoff_date: datetime,
+        batch_size: int = 100
+    ) -> int:
+        """
+        批次刪除指定日期之前的主題（硬刪除）
+        
+        Args:
+            cutoff_date: 截止日期（刪除此日期之前的主題）
+            batch_size: 每批刪除數量
+            
+        Returns:
+            刪除的主題數量
+        """
+        try:
+            collection = await self._get_collection()
+            
+            # 查詢過期主題
+            filter_query = {
+                "generated_at": {"$lt": cutoff_date}
+            }
+            
+            # 獲取要刪除的主題 ID（限制批次大小）
+            cursor = collection.find(filter_query, {"id": 1}).limit(batch_size)
+            topic_ids = [doc.get("id") for doc in await cursor.to_list(length=batch_size)]
+            
+            if not topic_ids:
+                return 0
+            
+            # 批次刪除
+            result = await collection.delete_many({
+                "id": {"$in": topic_ids}
+            })
+            
+            deleted_count = result.deleted_count
+            logger.info(f"已刪除 {deleted_count} 個過期主題（截止日期: {cutoff_date}）")
+            
+            return deleted_count
+            
+        except Exception as e:
+            logger.error(f"刪除過期主題失敗: {e}")
+            return 0
+    
+    async def count_topics_before_date(self, cutoff_date: datetime) -> int:
+        """
+        計算指定日期之前的主題數量
+        
+        Args:
+            cutoff_date: 截止日期
+            
+        Returns:
+            主題數量
+        """
+        try:
+            filter_query = {
+                "generated_at": {"$lt": cutoff_date}
+            }
+            return await self.count(filter_query)
+        except Exception as e:
+            logger.error(f"計算過期主題數量失敗: {e}")
+            return 0

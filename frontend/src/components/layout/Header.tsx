@@ -1,14 +1,31 @@
 import { format } from 'date-fns'
-import { useState, FormEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, FormEvent, useRef, useEffect } from 'react'
+import { useNavigate, Link } from 'react-router-dom'
 import { useUIStore } from '@/stores/uiStore'
+import { useAuthStore } from '@/stores/authStore'
+import { useTranslation } from '@/i18n'
 
 export default function Header() {
+  const { t } = useTranslation()
   const today = new Date()
   const dateStr = format(today, 'EEEE, MMMM d')
   const { toggleSidebar } = useUIStore()
+  const { user, isAuthenticated, logout } = useAuthStore()
   const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState('')
+  const [showUserMenu, setShowUserMenu] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+
+  // 點擊外部關閉選單
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setShowUserMenu(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   const handleSearch = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -29,6 +46,16 @@ export default function Header() {
     }
   }
 
+  const handleLogout = () => {
+    logout()
+    setShowUserMenu(false)
+    navigate('/login')
+  }
+
+  // 取得顯示名稱
+  const displayName = user?.name || user?.email?.split('@')[0] || 'User'
+  const greeting = isAuthenticated ? `Hello, ${displayName}!` : 'Hello, Guest!'
+
   return (
     <header className="bg-white border-b border-gray-200 px-4 sm:px-6 py-4">
       <div className="flex items-center justify-between">
@@ -45,7 +72,7 @@ export default function Header() {
           </button>
 
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Hello, User!</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-800">{greeting}</h1>
             <p className="text-gray-500 text-xs sm:text-sm">{dateStr}</p>
           </div>
         </div>
@@ -85,17 +112,74 @@ export default function Header() {
             <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
           </button>
 
-          {/* 用戶信息 - 移動端簡化 */}
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-primary to-secondary rounded-full"></div>
-            <span className="hidden sm:inline text-gray-700 font-medium">User</span>
-            <svg className="hidden sm:block w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
-            </svg>
-          </div>
+          {/* 用戶信息 */}
+          {isAuthenticated ? (
+            <div className="relative" ref={menuRef}>
+              <button
+                onClick={() => setShowUserMenu(!showUserMenu)}
+                className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+              >
+                {/* 頭像 */}
+                {user?.avatar_url ? (
+                  <img
+                    src={user.avatar_url}
+                    alt={displayName}
+                    className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-purple-500 to-cyan-500 rounded-full flex items-center justify-center text-white font-bold">
+                    {displayName.charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <span className="hidden sm:inline text-gray-700 font-medium max-w-[120px] truncate">
+                  {displayName}
+                </span>
+                <svg className="hidden sm:block w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+              </button>
+
+              {/* 下拉選單 */}
+              {showUserMenu && (
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                  <div className="px-4 py-2 border-b border-gray-100">
+                    <p className="text-sm font-medium text-gray-800 truncate">{displayName}</p>
+                    <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+                  </div>
+                  <Link
+                    to="/settings"
+                    onClick={() => setShowUserMenu(false)}
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    {t('nav.settings')}
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                  >
+                    {t('nav.logout')}
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Link
+                to="/login"
+                className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
+              >
+                {t('nav.login')}
+              </Link>
+              <Link
+                to="/register"
+                className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-purple-500 to-cyan-500 rounded-lg hover:opacity-90"
+              >
+                {t('nav.register')}
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     </header>
   )
 }
-

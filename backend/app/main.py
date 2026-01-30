@@ -399,10 +399,11 @@ async def health_check():
 
 
 # 註冊 API 路由
-from app.api.v1 import topics, contents, images, user, health, schedules, interactions, recommendations, discover, validate, test_db, feeds, articles
+from app.api.v1 import topics, contents, images, user, health, schedules, interactions, recommendations, discover, validate, test_db, feeds, articles, auth, feature_flags, channels, inspiration, ratings, style_profile, generate, social
 
 app.include_router(health.router, prefix="/api/v1")
 app.include_router(test_db.router, prefix="/api/v1")  # 測試端點，用於驗證資料庫連接
+app.include_router(auth.router, prefix="/api/v1")  # Phase 2: 認證 API
 app.include_router(topics.router, prefix="/api/v1")
 app.include_router(contents.router, prefix="/api/v1")
 app.include_router(images.router, prefix="/api/v1")  # 包含圖片代理端點 /api/v1/images/proxy
@@ -414,6 +415,13 @@ app.include_router(discover.router, prefix="/api/v1")
 app.include_router(validate.router, prefix="/api/v1")
 app.include_router(feeds.router, prefix="/api/v1")  # Feed 健康監控 API
 app.include_router(articles.router, prefix="/api/v1")  # Phase 6: Articles API
+app.include_router(feature_flags.router, prefix="/api/v1")  # Phase 2: Feature Flags API
+app.include_router(channels.router, prefix="/api/v1")  # Phase 3: Channels API
+app.include_router(inspiration.router, prefix="/api/v1")  # Phase 3: Inspiration API
+app.include_router(ratings.router, prefix="/api/v1")  # Phase 4: Ratings API
+app.include_router(style_profile.router, prefix="/api/v1")  # Phase 4: Style Profile API
+app.include_router(generate.router, prefix="/api/v1")  # Phase 4: Content Generation API
+app.include_router(social.router, prefix="/api/v1")  # Phase 5: Social Distribution API
 
 
 if __name__ == "__main__":

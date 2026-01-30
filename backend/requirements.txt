@@ -46,3 +46,21 @@ redis>=5.0.0
 
 # Elasticsearch (optional)
 elasticsearch>=8.11.0
+
+# ============================================
+# Phase 2: 會員系統依賴
+# ============================================
+# JWT 認證
+python-jose[cryptography]>=3.3.0
+
+# 密碼加密
+passlib[bcrypt]>=1.7.4
+
+# Email 發送（Gmail SMTP）
+aiosmtplib>=3.0.0
+email-validator>=2.1.0
+
+# Google OAuth
+google-auth>=2.23.0
+google-auth-oauthlib>=1.1.0
+google-auth-httplib2>=0.2.0
