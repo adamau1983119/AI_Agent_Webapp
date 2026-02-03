@@ -11,15 +11,29 @@ import ImageGallery from '@/components/features/ImageGallery'
 import ImageSearch from '@/components/features/ImageSearch'
 import InteractionButtons from '@/components/features/InteractionButtons'
 import { usePageTitle } from '@/hooks/usePageTitle'
+import { useAuthStore } from '@/stores/authStore'
+import { useTranslation } from '@/i18n'
 
 export default function TopicDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const { t } = useTranslation()
+  const { isAuthenticated } = useAuthStore()
   const [showEditor, setShowEditor] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [showImageSearch, setShowImageSearch] = useState(false)
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false)
   const [viewStartTime, setViewStartTime] = useState<number | null>(null)
+
+  // 檢查是否需要登入才能執行操作
+  const requireAuth = (action: () => void) => {
+    if (!isAuthenticated) {
+      setShowLoginPrompt(true)
+      return
+    }
+    action()
+  }
 
   const {
     data: topic,
@@ -33,7 +47,7 @@ export default function TopicDetail() {
   })
 
   // 設定頁面標題
-  usePageTitle(topic ? `${topic.title} - AI代理Web應用程式` : '主題詳情 - AI代理Web應用程式')
+  usePageTitle(topic ? topic.title : t('nav.topics'))
 
   const {
     data: content,
@@ -286,14 +300,14 @@ export default function TopicDetail() {
         <h1 className="text-2xl font-bold text-gray-800">{topic.title}</h1>
         <div className="flex gap-2">
           <button
-            onClick={() => setShowEditor(true)}
+            onClick={() => requireAuth(() => setShowEditor(true))}
             className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
           >
             編輯
           </button>
           {topic.status !== 'confirmed' && (
             <button
-              onClick={() => confirmMutation.mutate()}
+              onClick={() => requireAuth(() => confirmMutation.mutate())}
               disabled={confirmMutation.isPending}
               className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -301,7 +315,7 @@ export default function TopicDetail() {
             </button>
           )}
           <button
-            onClick={() => setShowDeleteConfirm(true)}
+            onClick={() => requireAuth(() => setShowDeleteConfirm(true))}
             className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
           >
             刪除
@@ -356,6 +370,47 @@ export default function TopicDetail() {
         </div>
       )}
 
+      {/* 登入提示模態框 */}
+      {showLoginPrompt && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full mx-4">
+            <div className="text-center">
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-primary/10 mb-4">
+                <svg className="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                {t('auth.loginRequired') || '需要登入'}
+              </h3>
+              <p className="text-gray-600 mb-6">
+                {t('auth.loginRequiredMessage') || '此功能需要登入才能使用。請先登入或註冊帳號。'}
+              </p>
+              <div className="flex gap-3 justify-center">
+                <button
+                  onClick={() => setShowLoginPrompt(false)}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                >
+                  {t('common.cancel') || '取消'}
+                </button>
+                <button
+                  onClick={() => navigate('/login')}
+                  className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                >
+                  {t('auth.login.title') || '登入'}
+                </button>
+                <button
+                  onClick={() => navigate('/register')}
+                  className="px-4 py-2 text-sm font-medium text-primary bg-primary/10 rounded-md hover:bg-primary/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                >
+                  {t('auth.register.title') || '註冊'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* 圖片搜尋模態框 */}
       {showImageSearch && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -381,7 +436,7 @@ export default function TopicDetail() {
                 圖片（{images.length} 張）
               </h3>
               <button
-                onClick={() => setShowImageSearch(true)}
+                onClick={() => requireAuth(() => setShowImageSearch(true))}
                 className="px-3 py-1 text-sm font-medium text-primary bg-primary/10 rounded-md hover:bg-primary/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
               >
                 + 新增圖片
@@ -399,7 +454,7 @@ export default function TopicDetail() {
                 />
                 <div className="flex gap-2">
                   <button
-                    onClick={() => matchPhotosMutation.mutate(8)}
+                    onClick={() => requireAuth(() => matchPhotosMutation.mutate(8))}
                     disabled={matchPhotosMutation.isPending || !content || !content?.article}
                     className="flex-1 px-3 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
                     title={!content || !content?.article ? '請先生成內容才能匹配照片。智能匹配需要根據文章內容來匹配相關圖片。' : '根據文章內容智能匹配相關照片'}
@@ -407,7 +462,7 @@ export default function TopicDetail() {
                     {matchPhotosMutation.isPending ? '匹配中...' : '智能匹配照片（8張）'}
                   </button>
                   <button
-                    onClick={() => setShowImageSearch(true)}
+                    onClick={() => requireAuth(() => setShowImageSearch(true))}
                     className="flex-1 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
                   >
                     手動搜尋
@@ -438,7 +493,7 @@ export default function TopicDetail() {
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="font-semibold text-gray-700">內容</h3>
                   <button
-                    onClick={() => regenerateContentMutation.mutate()}
+                    onClick={() => requireAuth(() => regenerateContentMutation.mutate())}
                     disabled={regenerateContentMutation.isPending}
                     className="px-3 py-1 text-xs font-medium text-primary bg-primary/10 rounded-md hover:bg-primary/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
                   >
@@ -472,7 +527,7 @@ export default function TopicDetail() {
               <div className="space-y-3">
                 <EmptyState message="尚未生成內容" size="sm" />
                 <button
-                  onClick={() => generateContentMutation.mutate()}
+                  onClick={() => requireAuth(() => generateContentMutation.mutate())}
                   disabled={generateContentMutation.isPending}
                   className="w-full px-4 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
                 >

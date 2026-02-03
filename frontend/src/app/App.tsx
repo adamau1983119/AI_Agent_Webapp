@@ -26,13 +26,22 @@ import SocialConnect from '@/pages/SocialConnect'
 import Publish from '@/pages/Publish'
 import { initializeAuth } from '@/stores/authStore'
 
-// 根路徑重定向：新用戶 → 語言選擇，已選語言 → 登入
+// 根路徑重定向：已登入 → 主題列表，新用戶 → 語言選擇，已選語言 → 登入
 function RootRedirect() {
   const hasLanguage = localStorage.getItem('preferred-language');
+  const token = localStorage.getItem('auth_token');
   
+  // 已登入用戶直接進入主題列表（與訪客模式相同的內容，但有完整功能）
+  if (token) {
+    return <Navigate to="/topics" replace />;
+  }
+  
+  // 新用戶（未選語言）→ 語言選擇
   if (!hasLanguage) {
     return <Navigate to="/language" replace />;
   }
+  
+  // 已選語言但未登入 → 登入頁
   return <Navigate to="/login" replace />;
 }
 

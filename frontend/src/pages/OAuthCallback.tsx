@@ -27,8 +27,8 @@ export default function OAuthCallback() {
       
       try {
         await handleOAuthCallback(token);
-        // 成功後重定向到首頁
-        navigate('/');
+        // 成功後重定向到主題列表（與訪客模式相同的頁面）
+        navigate('/topics');
       } catch (err) {
         // 失敗後重定向到登入頁面
         navigate('/login?error=oauth_failed');

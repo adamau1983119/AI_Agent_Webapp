@@ -61,28 +61,31 @@ export default function LanguageSelection() {
         <div className="space-y-4 mb-12">
           {languageOptions.map((option) => (
             <button
-              key={option.value}
-              onClick={() => handleLanguageSelect(option.value as Language)}
+              key={option.code}
+              onClick={() => handleLanguageSelect(option.code)}
               className={`w-full px-6 py-4 border-2 rounded-none transition-all duration-200 ${
-                selectedLang === option.value
+                selectedLang === option.code
                   ? 'border-black bg-black text-white'
                   : 'border-black bg-white text-black hover:bg-gray-50'
               }`}
             >
-              <div className="text-left">
-                <div className="text-lg font-medium">
-                  {option.label}
+              <div className="text-left flex items-center gap-3">
+                <span className="text-2xl font-bold">{option.icon}</span>
+                <div>
+                  <div className="text-lg font-medium">
+                    {option.name}
+                  </div>
+                  {option.code === 'zh-TW' && (
+                    <div className="text-sm text-gray-500 mt-0.5">
+                      Traditional Chinese
+                    </div>
+                  )}
+                  {option.code === 'ja' && (
+                    <div className="text-sm text-gray-500 mt-0.5">
+                      Japanese
+                    </div>
+                  )}
                 </div>
-                {option.value === 'zh-TW' && (
-                  <div className="text-sm text-gray-500 mt-1">
-                    Traditional Chinese
-                  </div>
-                )}
-                {option.value === 'ja' && (
-                  <div className="text-sm text-gray-500 mt-1">
-                    Japanese
-                  </div>
-                )}
               </div>
             </button>
           ))}
@@ -126,24 +129,25 @@ export default function LanguageSelection() {
         <div className="flex gap-6 mb-16">
           {languageOptions.map((option) => (
             <button
-              key={option.value}
-              onClick={() => handleLanguageSelect(option.value as Language)}
+              key={option.code}
+              onClick={() => handleLanguageSelect(option.code)}
               className={`px-8 py-6 border-2 rounded-none transition-all duration-200 min-w-[180px] ${
-                selectedLang === option.value
+                selectedLang === option.code
                   ? 'border-black bg-black text-white'
                   : 'border-black bg-white text-black hover:bg-gray-50'
               }`}
             >
               <div className="text-center">
+                <span className="text-3xl font-bold block mb-2">{option.icon}</span>
                 <div className="text-xl font-medium">
-                  {option.label}
+                  {option.name}
                 </div>
-                {option.value === 'zh-TW' && (
+                {option.code === 'zh-TW' && (
                   <div className="text-sm text-gray-500 mt-2">
                     Traditional Chinese
                   </div>
                 )}
-                {option.value === 'ja' && (
+                {option.code === 'ja' && (
                   <div className="text-sm text-gray-500 mt-2">
                     Japanese
                   </div>

@@ -177,8 +177,8 @@ export default function Settings() {
                       className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
                     >
                       {languageOptions.map(option => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
+                        <option key={option.code} value={option.code}>
+                          {option.icon} {option.name}
                         </option>
                       ))}
                     </select>

@@ -79,7 +79,7 @@ class UserRepository(BaseRepository):
     
     async def get_user_by_id(self, user_id: str) -> Optional[Dict[str, Any]]:
         """根據 ID 取得 User"""
-        return await self.find_by_id(user_id, id_field="id")
+        return await self.find_by_id(user_id)
     
     async def get_user_by_email(self, email: str) -> Optional[Dict[str, Any]]:
         """根據 Email 取得 User"""
@@ -98,7 +98,7 @@ class UserRepository(BaseRepository):
     ) -> Optional[Dict[str, Any]]:
         """更新 User"""
         update_data["updated_at"] = datetime.utcnow()
-        return await self.update_by_id(user_id, {"$set": update_data}, id_field="id")
+        return await self.update_by_id(user_id, {"$set": update_data})
     
     async def update_password(
         self,

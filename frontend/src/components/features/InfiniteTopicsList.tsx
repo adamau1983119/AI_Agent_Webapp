@@ -17,6 +17,7 @@ import InfiniteScroll from '@/components/ui/InfiniteScroll'
 import TimeGroupLabel, { type TimeGroup, getTimeGroup } from '@/components/ui/TimeGroupLabel'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import EmptyState from '@/components/ui/EmptyState'
+import { useTranslation } from '@/i18n'
 
 interface InfiniteTopicsListProps {
   /** 篩選條件 */
@@ -39,9 +40,13 @@ export default function InfiniteTopicsList({
   pageSize = 20,
   showTimeGroups = true,
   columns = 3,
-  emptyMessage = '沒有找到主題',
+  emptyMessage,
 }: InfiniteTopicsListProps) {
   const navigate = useNavigate()
+  const { t } = useTranslation()
+  
+  // 使用翻譯的預設訊息
+  const defaultEmptyMessage = emptyMessage || t('topics.noTopics')
   
   const {
     topics,
@@ -89,8 +94,8 @@ export default function InfiniteTopicsList({
   if (!isLoading && topics.length === 0) {
     return (
       <EmptyState
-        message={emptyMessage}
-        description="嘗試調整篩選條件或稍後再試"
+        message={defaultEmptyMessage}
+        description={t('topics.tryAdjustFilters')}
       />
     )
   }
@@ -139,7 +144,7 @@ export default function InfiniteTopicsList({
     <div>
       {/* 統計資訊 */}
       <div className="mb-4 text-sm text-gray-600">
-        共 {total} 個主題，已載入 {topics.length} 個
+        {t('topics.total', { count: String(total) })}，{t('topics.loaded', { count: String(topics.length) })}
       </div>
 
       {/* 無限滾動容器 */}

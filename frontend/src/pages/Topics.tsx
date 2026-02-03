@@ -11,12 +11,14 @@ import ErrorDisplay from '@/components/ui/ErrorDisplay'
 import EmptyState from '@/components/ui/EmptyState'
 import InfiniteTopicsList from '@/components/features/InfiniteTopicsList'
 import { usePageTitle } from '@/hooks/usePageTitle'
+import { useTranslation } from '@/i18n'
 
 // Phase 1: 顯示模式
 type ViewMode = 'infinite' | 'pagination'
 
 export default function Topics() {
   usePageTitle()
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   // Phase 1: 預設使用無限滾動模式
@@ -108,7 +110,7 @@ export default function Topics() {
       {/* 顯示搜尋來源（如果使用新的搜尋端點） */}
       {useSearchEndpoint && searchResponse?.source && (
         <div className="mb-4 text-sm text-gray-600">
-          搜尋來源: {searchResponse.source === 'es' ? 'Elasticsearch' : searchResponse.source === 'cache' ? '快取' : 'MongoDB'}
+          {t('topics.searchSource')}: {searchResponse.source === 'es' ? 'Elasticsearch' : searchResponse.source === 'cache' ? 'Cache' : 'MongoDB'}
         </div>
       )}
 
@@ -118,8 +120,8 @@ export default function Topics() {
         <ErrorDisplay error={error} onRetry={() => refetch()} />
       ) : topics.length === 0 ? (
         <EmptyState
-          message={useSearchEndpoint ? '沒有找到符合搜尋條件的主題' : '沒有找到主題'}
-          description="嘗試調整篩選條件或稍後再試"
+          message={useSearchEndpoint ? t('topics.noSearchResults') : t('topics.noTopics')}
+          description={t('topics.tryAdjustFilters')}
         />
       ) : (
         <>
@@ -167,14 +169,14 @@ export default function Topics() {
       }}
       showTimeGroups={!filters.search} // 搜尋時不顯示時間分組
       pageSize={20}
-      emptyMessage={filters.search ? '沒有找到符合搜尋條件的主題' : '沒有找到主題'}
+      emptyMessage={filters.search ? t('topics.noSearchResults') : t('topics.noTopics')}
     />
   )
 
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">主題總覽</h1>
+        <h1 className="text-2xl font-bold text-gray-800">{t('topics.overview')}</h1>
         
         {/* Phase 1: 顯示模式切換 */}
         <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">
@@ -190,7 +192,7 @@ export default function Topics() {
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
-              無限滾動
+              {t('topics.infiniteScroll')}
             </span>
           </button>
           <button
@@ -205,7 +207,7 @@ export default function Topics() {
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
-              分頁
+              {t('topics.pagination')}
             </span>
           </button>
         </div>

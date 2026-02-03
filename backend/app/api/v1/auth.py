@@ -266,14 +266,14 @@ async def google_callback(
     
     if error:
         # 重定向到前端錯誤頁面
-        frontend_url = "http://localhost:3000"
+        frontend_url = settings.FRONTEND_URL
         return RedirectResponse(
             url=f"{frontend_url}/login?error={error}"
         )
     
     if not code:
         return RedirectResponse(
-            url="http://localhost:3000/login?error=no_code"
+            url=f"{settings.FRONTEND_URL}/login?error=no_code"
         )
     
     try:
@@ -293,7 +293,7 @@ async def google_callback(
             if token_response.status_code != 200:
                 logger.error(f"Google token exchange failed: {token_response.text}")
                 return RedirectResponse(
-                    url="http://localhost:3000/login?error=token_exchange_failed"
+                    url=f"{settings.FRONTEND_URL}/login?error=token_exchange_failed"
                 )
             
             token_data = token_response.json()
@@ -309,7 +309,7 @@ async def google_callback(
             if user_response.status_code != 200:
                 logger.error(f"Google user info failed: {user_response.text}")
                 return RedirectResponse(
-                    url="http://localhost:3000/login?error=user_info_failed"
+                    url=f"{settings.FRONTEND_URL}/login?error=user_info_failed"
                 )
             
             google_user = user_response.json()
@@ -340,7 +340,7 @@ async def google_callback(
                 active_count = await auth_service.user_repo.count_active_users()
                 if active_count >= settings.MAX_USERS:
                     return RedirectResponse(
-                        url="http://localhost:3000/login?error=max_users_reached"
+                        url=f"{settings.FRONTEND_URL}/login?error=max_users_reached"
                     )
                 
                 # 建立新用戶（不需要密碼，因為使用 Google 登入）
@@ -365,9 +365,8 @@ async def google_callback(
                     "updated_at": now,
                 }
                 
-                from app.services.repositories.user_repository import UserRepository
-                user_repo = UserRepository()
-                await user_repo.create(new_user)
+                # 使用 auth_service 的 user_repo（已有資料庫連接）
+                await auth_service.user_repo.create(new_user)
                 user = new_user
                 
                 # 發送歡迎郵件
@@ -384,14 +383,16 @@ async def google_callback(
         jwt_token = await auth_service.create_access_token_for_user(user)
         
         # 5. 重定向到前端並帶上 Token
-        frontend_url = "http://localhost:3000"
         return RedirectResponse(
-            url=f"{frontend_url}/oauth-callback?token={jwt_token}"
+            url=f"{settings.FRONTEND_URL}/oauth-callback?token={jwt_token}"
         )
         
     except Exception as e:
+        import traceback
         logger.error(f"Google OAuth callback error: {e}")
+        logger.error(f"Error type: {type(e).__name__}")
+        logger.error(f"Traceback: {traceback.format_exc()}")
         return RedirectResponse(
-            url=f"http://localhost:3000/login?error=oauth_failed"
+            url=f"{settings.FRONTEND_URL}/login?error=oauth_failed"
         )
 

@@ -30,17 +30,34 @@ const zhTW = {
   'common.search': '搜尋',
   'common.retry': '重試',
   'common.or': '或',
+  'common.show': '顯示',
+  'common.hide': '隱藏',
+  'common.language': '繁中',
   
   // 導航
   'nav.home': '首頁',
-  'nav.dashboard': '儀表板',
+  'nav.dashboard': '控制面板',
   'nav.topics': '主題',
+  'nav.channels': '我的頻道',
+  'nav.inspiration': '靈感策劃',
+  'nav.styleProfile': '風格檔案',
+  'nav.publish': '一鍵發布',
+  'nav.socialConnect': '平台連接',
   'nav.schedule': '排程',
   'nav.settings': '設定',
   'nav.login': '登入',
   'nav.register': '註冊',
   'nav.logout': '登出',
   'nav.profile': '個人資料',
+  
+  // 品牌
+  'brand.name': 'Influencers AI',
+  'brand.tagline': '網紅 AI 助手',
+  
+  // 問候語
+  'greeting.hello': '你好',
+  'greeting.guest': '訪客',
+  'greeting.user': '{name}',
   
   // 認證 - 登入
   'auth.login.title': '登入',
@@ -53,6 +70,8 @@ const zhTW = {
   'auth.login.noAccount': '還沒有帳號？',
   'auth.login.registerLink': '立即註冊',
   'auth.login.googleLogin': '使用 Google 登入',
+  'auth.login.welcome': '歡迎回來',
+  'auth.login.guestMode': '訪客瀏覽',
   'auth.login.success': '登入成功！',
   'auth.login.error': '登入失敗',
   'auth.login.invalidCredentials': 'Email 或密碼錯誤',
@@ -113,6 +132,10 @@ const zhTW = {
   'auth.password.uppercase': '至少 1 個大寫字母',
   'auth.password.match': '密碼不一致',
   
+  // 認證 - 登入提示
+  'auth.loginRequired': '需要登入',
+  'auth.loginRequiredMessage': '此功能需要登入才能使用。請先登入或註冊帳號。',
+  
   // 用戶設定
   'settings.title': '設定',
   'settings.profile': '個人資料',
@@ -161,15 +184,24 @@ const zhTW = {
   
   // 主題相關
   'topics.title': '主題',
+  'topics.overview': '主題總覽',
   'topics.create': '建立主題',
   'topics.edit': '編輯主題',
   'topics.delete': '刪除主題',
   'topics.noTopics': '還沒有主題',
+  'topics.noSearchResults': '沒有找到符合搜尋條件的主題',
+  'topics.tryAdjustFilters': '嘗試調整篩選條件或稍後再試',
   'topics.loadMore': '載入更多',
   'topics.today': '今天',
   'topics.yesterday': '昨天',
   'topics.thisWeek': '本週',
   'topics.older': '更早',
+  'topics.infiniteScroll': '無限滾動',
+  'topics.searchPlaceholder': '搜尋主題...',
+  'topics.pagination': '分頁',
+  'topics.searchSource': '搜尋來源',
+  'topics.total': '共 {count} 個主題',
+  'topics.loaded': '已載入 {count} 個',
   
   // 內容生成
   'content.generate': '生成內容',
@@ -185,6 +217,22 @@ const zhTW = {
   'images.upload': '上傳圖片',
   'images.select': '選擇圖片',
   'images.noResults': '找不到相關圖片',
+  
+  // 篩選器
+  'filters.title': '篩選條件',
+  'filters.search': '搜尋',
+  'filters.searchPlaceholder': '搜尋主題標題或來源...',
+  'filters.category': '分類',
+  'filters.status': '狀態',
+  'filters.date': '日期',
+  'filters.all': '全部',
+  'filters.fashion': '時尚',
+  'filters.food': '美食',
+  'filters.trend': '趨勢',
+  'filters.pending': '待審核',
+  'filters.confirmed': '已確認',
+  'filters.deleted': '已刪除',
+  'filters.reset': '重置',
 };
 
 // 英文翻譯
@@ -205,17 +253,34 @@ const en: typeof zhTW = {
   'common.search': 'Search',
   'common.retry': 'Retry',
   'common.or': 'or',
+  'common.show': 'Show',
+  'common.hide': 'Hide',
+  'common.language': 'EN',
   
   // Navigation
   'nav.home': 'Home',
   'nav.dashboard': 'Dashboard',
   'nav.topics': 'Topics',
+  'nav.channels': 'My Channels',
+  'nav.inspiration': 'Inspiration',
+  'nav.styleProfile': 'Style Profile',
+  'nav.publish': 'One-Click Publish',
+  'nav.socialConnect': 'Connect Platforms',
   'nav.schedule': 'Schedule',
   'nav.settings': 'Settings',
   'nav.login': 'Login',
   'nav.register': 'Sign Up',
   'nav.logout': 'Logout',
   'nav.profile': 'Profile',
+  
+  // Brand
+  'brand.name': 'Influencers AI',
+  'brand.tagline': 'AI Assistant for Influencers',
+  
+  // Greeting
+  'greeting.hello': 'Hello',
+  'greeting.guest': 'Guest',
+  'greeting.user': '{name}',
   
   // Auth - Login
   'auth.login.title': 'Login',
@@ -228,6 +293,8 @@ const en: typeof zhTW = {
   'auth.login.noAccount': "Don't have an account?",
   'auth.login.registerLink': 'Sign up now',
   'auth.login.googleLogin': 'Sign in with Google',
+  'auth.login.welcome': 'Welcome Back',
+  'auth.login.guestMode': 'Guest Mode',
   'auth.login.success': 'Login successful!',
   'auth.login.error': 'Login failed',
   'auth.login.invalidCredentials': 'Invalid email or password',
@@ -288,6 +355,10 @@ const en: typeof zhTW = {
   'auth.password.uppercase': 'At least 1 uppercase letter',
   'auth.password.match': 'Passwords do not match',
   
+  // Auth - Login Required
+  'auth.loginRequired': 'Login Required',
+  'auth.loginRequiredMessage': 'This feature requires login. Please sign in or create an account.',
+  
   // User Settings
   'settings.title': 'Settings',
   'settings.profile': 'Profile',
@@ -336,15 +407,24 @@ const en: typeof zhTW = {
   
   // Topics
   'topics.title': 'Topics',
+  'topics.overview': 'Topics Overview',
   'topics.create': 'Create Topic',
   'topics.edit': 'Edit Topic',
   'topics.delete': 'Delete Topic',
   'topics.noTopics': 'No topics yet',
+  'topics.noSearchResults': 'No topics found matching your search',
+  'topics.tryAdjustFilters': 'Try adjusting filters or try again later',
   'topics.loadMore': 'Load More',
   'topics.today': 'Today',
   'topics.yesterday': 'Yesterday',
   'topics.thisWeek': 'This Week',
   'topics.older': 'Older',
+  'topics.infiniteScroll': 'Infinite Scroll',
+  'topics.searchPlaceholder': 'Search topics...',
+  'topics.pagination': 'Pagination',
+  'topics.searchSource': 'Search source',
+  'topics.total': '{count} topics total',
+  'topics.loaded': '{count} loaded',
   
   // Content Generation
   'content.generate': 'Generate Content',
@@ -360,6 +440,22 @@ const en: typeof zhTW = {
   'images.upload': 'Upload Image',
   'images.select': 'Select Image',
   'images.noResults': 'No images found',
+  
+  // Filters
+  'filters.title': 'Filters',
+  'filters.search': 'Search',
+  'filters.searchPlaceholder': 'Search topic title or source...',
+  'filters.category': 'Category',
+  'filters.status': 'Status',
+  'filters.date': 'Date',
+  'filters.all': 'All',
+  'filters.fashion': 'Fashion',
+  'filters.food': 'Food',
+  'filters.trend': 'Trend',
+  'filters.pending': 'Pending',
+  'filters.confirmed': 'Confirmed',
+  'filters.deleted': 'Deleted',
+  'filters.reset': 'Reset',
 };
 
 // 日文翻譯
@@ -380,17 +476,34 @@ const ja: typeof zhTW = {
   'common.search': '検索',
   'common.retry': '再試行',
   'common.or': 'または',
+  'common.show': '表示',
+  'common.hide': '非表示',
+  'common.language': '日本語',
   
   // ナビゲーション
   'nav.home': 'ホーム',
   'nav.dashboard': 'ダッシュボード',
   'nav.topics': 'トピック',
+  'nav.channels': 'マイチャンネル',
+  'nav.inspiration': 'インスピレーション',
+  'nav.styleProfile': 'スタイルプロフィール',
+  'nav.publish': 'ワンクリック公開',
+  'nav.socialConnect': 'プラットフォーム連携',
   'nav.schedule': 'スケジュール',
   'nav.settings': '設定',
   'nav.login': 'ログイン',
   'nav.register': '新規登録',
   'nav.logout': 'ログアウト',
   'nav.profile': 'プロフィール',
+  
+  // ブランド
+  'brand.name': 'Influencers AI',
+  'brand.tagline': 'インフルエンサーAIアシスタント',
+  
+  // 挨拶
+  'greeting.hello': 'こんにちは',
+  'greeting.guest': 'ゲスト',
+  'greeting.user': '{name}',
   
   // 認証 - ログイン
   'auth.login.title': 'ログイン',
@@ -403,6 +516,8 @@ const ja: typeof zhTW = {
   'auth.login.noAccount': 'アカウントをお持ちでない方',
   'auth.login.registerLink': '新規登録',
   'auth.login.googleLogin': 'Google でログイン',
+  'auth.login.welcome': 'おかえりなさい',
+  'auth.login.guestMode': 'ゲストモード',
   'auth.login.success': 'ログイン成功！',
   'auth.login.error': 'ログイン失敗',
   'auth.login.invalidCredentials': 'メールアドレスまたはパスワードが正しくありません',
@@ -463,6 +578,10 @@ const ja: typeof zhTW = {
   'auth.password.uppercase': '大文字1文字以上',
   'auth.password.match': 'パスワードが一致しません',
   
+  // 認証 - ログイン要求
+  'auth.loginRequired': 'ログインが必要です',
+  'auth.loginRequiredMessage': 'この機能を使用するにはログインが必要です。ログインまたはアカウントを作成してください。',
+  
   // ユーザー設定
   'settings.title': '設定',
   'settings.profile': 'プロフィール',
@@ -511,15 +630,24 @@ const ja: typeof zhTW = {
   
   // トピック
   'topics.title': 'トピック',
+  'topics.overview': 'トピック一覧',
   'topics.create': 'トピック作成',
   'topics.edit': 'トピック編集',
   'topics.delete': 'トピック削除',
   'topics.noTopics': 'トピックがありません',
+  'topics.noSearchResults': '検索条件に一致するトピックが見つかりません',
+  'topics.tryAdjustFilters': 'フィルターを調整するか、後でもう一度お試しください',
   'topics.loadMore': 'もっと読み込む',
   'topics.today': '今日',
   'topics.yesterday': '昨日',
   'topics.thisWeek': '今週',
   'topics.older': 'それ以前',
+  'topics.infiniteScroll': '無限スクロール',
+  'topics.searchPlaceholder': 'トピックを検索...',
+  'topics.pagination': 'ページネーション',
+  'topics.searchSource': '検索ソース',
+  'topics.total': '合計 {count} トピック',
+  'topics.loaded': '{count} 件読み込み済み',
   
   // コンテンツ生成
   'content.generate': 'コンテンツ生成',
@@ -535,6 +663,22 @@ const ja: typeof zhTW = {
   'images.upload': '画像アップロード',
   'images.select': '画像選択',
   'images.noResults': '画像が見つかりません',
+  
+  // フィルター
+  'filters.title': 'フィルター',
+  'filters.search': '検索',
+  'filters.searchPlaceholder': 'トピックタイトルまたはソースを検索...',
+  'filters.category': 'カテゴリ',
+  'filters.status': 'ステータス',
+  'filters.date': '日付',
+  'filters.all': 'すべて',
+  'filters.fashion': 'ファッション',
+  'filters.food': 'グルメ',
+  'filters.trend': 'トレンド',
+  'filters.pending': '審査中',
+  'filters.confirmed': '確認済み',
+  'filters.deleted': '削除済み',
+  'filters.reset': 'リセット',
 };
 
 // 翻譯對照表
@@ -585,10 +729,10 @@ export const useI18n = create<I18nState>()(
 );
 
 // 語言選項
-export const languageOptions = [
-  { value: 'zh-TW', label: '繁體中文' },
-  { value: 'en', label: 'English' },
-  { value: 'ja', label: '日本語' },
+export const languageOptions: { code: Language; name: string; shortName: string; icon: string }[] = [
+  { code: 'zh-TW', name: '繁體中文', shortName: '繁', icon: '文' },
+  { code: 'en', name: 'English', shortName: 'EN', icon: 'A' },
+  { code: 'ja', name: '日本語', shortName: 'JP', icon: 'あ' },
 ];
 
 // 導出翻譯 Hook

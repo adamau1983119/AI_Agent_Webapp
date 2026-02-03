@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from pydantic import BaseModel, Field
 from app.models.style_profile import OutputFormat
 from app.services.style_learning_service import style_learning_service
-from app.services.ai.ai_factory import AIServiceFactory
+from app.services.ai.ai_service_factory import AIServiceFactory
 from app.middleware.jwt_auth import get_current_user, get_current_user_optional
 import logging
 

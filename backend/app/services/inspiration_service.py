@@ -7,7 +7,7 @@ from typing import Optional, Dict, Any, List
 import httpx
 import re
 from app.config_module import settings
-from app.services.ai.ai_factory import AIServiceFactory
+from app.services.ai.ai_service_factory import AIServiceFactory
 import logging
 
 logger = logging.getLogger(__name__)

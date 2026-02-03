@@ -199,6 +199,11 @@ async def lifespan(app: FastAPI):
         app.state.mongo_db = mongo_db
         app.state.db = mongo_db  # 簡短別名，方便直接使用
         
+        # 同時更新全局變數，確保 auth_service 等使用舊方式的服務也能正常工作
+        import app.database as db_module
+        db_module.client = mongo_client
+        db_module.database = mongo_db
+        
         logger.info(f"✅ MongoDB 連接成功: {settings.MONGODB_DB_NAME}")
         logger.info(f"連接字串: {sanitized_url}")
         logger.info(f"資料庫實例 ID: {id(mongo_db)}")

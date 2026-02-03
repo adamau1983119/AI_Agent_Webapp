@@ -14,7 +14,7 @@ from app.models.channel import (
     ChannelCollectionStatus, ChannelCategory, ChannelRegion,
     DEFAULT_RSS_SOURCES, CATEGORY_FALLBACK_MAP
 )
-from app.services.ai.ai_factory import AIServiceFactory
+from app.services.ai.ai_service_factory import AIServiceFactory
 import logging
 
 logger = logging.getLogger(__name__)

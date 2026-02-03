@@ -12,6 +12,7 @@ class UserRole(str, Enum):
     """用戶角色"""
     GUEST = "guest"
     USER = "user"
+    TESTER = "tester"
     PREMIUM = "premium"
     ADMIN = "admin"
 

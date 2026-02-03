@@ -5,9 +5,11 @@
  * 功能：
  * - 顯示「今天」、「昨天」、「本週」、「更早」等時間分組標籤
  * - 智慧判斷日期屬於哪個時間分組
+ * - 支援多語言
  */
 
 import { useMemo } from 'react'
+import { useTranslation } from '@/i18n'
 
 export type TimeGroup = 'today' | 'yesterday' | 'thisWeek' | 'earlier'
 
@@ -21,21 +23,13 @@ interface TimeGroupLabelProps {
 }
 
 /**
- * 取得時間分組的中文標籤
+ * 時間分組對應的翻譯 key
  */
-export function getTimeGroupLabel(group: TimeGroup): string {
-  switch (group) {
-    case 'today':
-      return '今天'
-    case 'yesterday':
-      return '昨天'
-    case 'thisWeek':
-      return '本週'
-    case 'earlier':
-      return '更早'
-    default:
-      return '其他'
-  }
+const timeGroupKeys: Record<TimeGroup, string> = {
+  today: 'topics.today',
+  yesterday: 'topics.yesterday',
+  thisWeek: 'topics.thisWeek',
+  earlier: 'topics.older',
 }
 
 /**
@@ -100,7 +94,8 @@ export default function TimeGroupLabel({
   count,
   className = '',
 }: TimeGroupLabelProps) {
-  const label = useMemo(() => getTimeGroupLabel(group), [group])
+  const { t } = useTranslation()
+  const label = useMemo(() => t(timeGroupKeys[group] as any) || group, [group, t])
   
   // 根據分組選擇不同的樣式
   const groupStyles: Record<TimeGroup, string> = {

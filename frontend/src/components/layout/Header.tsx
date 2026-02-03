@@ -1,20 +1,33 @@
 import { format } from 'date-fns'
+import { zhTW, enUS, ja } from 'date-fns/locale'
 import { useState, FormEvent, useRef, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useUIStore } from '@/stores/uiStore'
 import { useAuthStore } from '@/stores/authStore'
-import { useTranslation } from '@/i18n'
+import { useTranslation, languageOptions, Language } from '@/i18n'
 
 export default function Header() {
-  const { t } = useTranslation()
+  const { t, language, setLanguage } = useTranslation()
   const today = new Date()
-  const dateStr = format(today, 'EEEE, MMMM d')
+  
+  // 根據語言選擇日期格式和地區
+  const dateLocales = { 'zh-TW': zhTW, 'en': enUS, 'ja': ja }
+  const dateFormats = { 
+    'zh-TW': 'yyyy年M月d日 EEEE', 
+    'en': 'EEEE, MMMM d', 
+    'ja': 'yyyy年M月d日(EEEE)' 
+  }
+  const dateStr = format(today, dateFormats[language] || dateFormats['en'], { 
+    locale: dateLocales[language] || dateLocales['en'] 
+  })
   const { toggleSidebar } = useUIStore()
   const { user, isAuthenticated, logout } = useAuthStore()
   const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState('')
   const [showUserMenu, setShowUserMenu] = useState(false)
+  const [showLangMenu, setShowLangMenu] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
+  const langMenuRef = useRef<HTMLDivElement>(null)
 
   // 點擊外部關閉選單
   useEffect(() => {
@@ -22,10 +35,23 @@ export default function Header() {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setShowUserMenu(false)
       }
+      if (langMenuRef.current && !langMenuRef.current.contains(event.target as Node)) {
+        setShowLangMenu(false)
+      }
     }
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
+
+  // 處理語言切換
+  const handleLanguageChange = (lang: Language) => {
+    setLanguage(lang)
+    localStorage.setItem('preferred-language', lang)
+    setShowLangMenu(false)
+  }
+
+  // 當前語言的顯示信息
+  const currentLangOption = languageOptions.find(opt => opt.code === language) || languageOptions[0]
 
   const handleSearch = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -52,9 +78,11 @@ export default function Header() {
     navigate('/login')
   }
 
-  // 取得顯示名稱
-  const displayName = user?.name || user?.email?.split('@')[0] || 'User'
-  const greeting = isAuthenticated ? `Hello, ${displayName}!` : 'Hello, Guest!'
+  // 取得顯示名稱和問候語
+  const displayName = user?.name || user?.email?.split('@')[0] || t('greeting.guest')
+  const greeting = isAuthenticated 
+    ? `${t('greeting.hello')}, ${displayName}!` 
+    : `${t('greeting.hello')}, ${t('greeting.guest')}!`
 
   return (
     <header className="bg-white border-b border-gray-200 px-4 sm:px-6 py-4">
@@ -82,12 +110,12 @@ export default function Header() {
           <form onSubmit={handleSearch} className="hidden md:block relative">
             <input
               type="text"
-              placeholder="搜尋主題..."
+              placeholder={t('topics.searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={handleKeyDown}
               className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary w-48 lg:w-64"
-              aria-label="搜尋主題"
+              aria-label={t('topics.searchPlaceholder')}
               autoComplete="off"
             />
             {searchQuery && (
@@ -111,6 +139,47 @@ export default function Header() {
             </svg>
             <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
           </button>
+
+          {/* 語言選擇器 */}
+          <div className="relative" ref={langMenuRef}>
+            <button
+              onClick={() => setShowLangMenu(!showLangMenu)}
+              className="flex items-center gap-1.5 px-2 py-1.5 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+              title="Change Language"
+            >
+              <span className="text-lg font-medium">{currentLangOption.icon}</span>
+              <span className="hidden sm:inline text-sm font-medium">{currentLangOption.shortName}</span>
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </button>
+
+            {/* 語言下拉選單 */}
+            {showLangMenu && (
+              <div className="absolute right-0 mt-2 w-44 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                <div className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase border-b border-gray-100">
+                  {t('common.language')}
+                </div>
+                {languageOptions.map((option) => (
+                  <button
+                    key={option.code}
+                    onClick={() => handleLanguageChange(option.code)}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm hover:bg-gray-50 transition-colors ${
+                      language === option.code ? 'bg-purple-50 text-purple-700' : 'text-gray-700'
+                    }`}
+                  >
+                    <span className="text-lg font-medium">{option.icon}</span>
+                    <span className="flex-1 text-left">{option.name}</span>
+                    {language === option.code && (
+                      <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                      </svg>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
 
           {/* 用戶信息 */}
           {isAuthenticated ? (

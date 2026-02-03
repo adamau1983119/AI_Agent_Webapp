@@ -1,21 +1,26 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useUIStore } from '@/stores/uiStore'
+import { useAuthStore } from '@/stores/authStore'
+import { useTranslation } from '@/i18n'
 
-const menuItems = [
-  { path: '/', label: '控制面板', icon: 'home' },
-  { path: '/topics', label: '主題', icon: 'document' },
-  { path: '/channels', label: '我的頻道', icon: 'channel' },
-  { path: '/inspiration', label: '靈感策劃', icon: 'lightbulb' },
-  { path: '/style-profile', label: '風格檔案', icon: 'sparkles' },
-  { path: '/publish', label: '一鍵發布', icon: 'rocket' },
-  { path: '/social-connect', label: '平台連接', icon: 'link' },
-  { path: '/preferences', label: '設定', icon: 'settings' },
-  { path: '/schedule', label: '排程', icon: 'calendar' },
+// 選單項目配置（使用翻譯 key）
+const menuItemsConfig = [
+  { path: '/', labelKey: 'nav.dashboard', icon: 'home' },
+  { path: '/topics', labelKey: 'nav.topics', icon: 'document' },
+  { path: '/channels', labelKey: 'nav.channels', icon: 'channel' },
+  { path: '/inspiration', labelKey: 'nav.inspiration', icon: 'lightbulb' },
+  { path: '/style-profile', labelKey: 'nav.styleProfile', icon: 'sparkles' },
+  { path: '/publish', labelKey: 'nav.publish', icon: 'rocket' },
+  { path: '/social-connect', labelKey: 'nav.socialConnect', icon: 'link' },
+  { path: '/preferences', labelKey: 'nav.settings', icon: 'settings' },
+  { path: '/schedule', labelKey: 'nav.schedule', icon: 'calendar' },
 ]
 
 export default function Sidebar() {
   const location = useLocation()
+  const { t } = useTranslation()
   const { setCurrentPage, sidebarOpen, setSidebarOpen } = useUIStore()
+  const { logout, isAuthenticated } = useAuthStore()
 
   const handleClick = (path: string) => {
     setCurrentPage(path === '/' ? 'dashboard' : path.slice(1))
@@ -25,29 +30,38 @@ export default function Sidebar() {
     }
   }
 
+  const handleLogout = () => {
+    logout()
+    window.location.href = '/login'
+  }
+
   return (
     <aside
       className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 flex flex-col transform transition-transform duration-300 ease-in-out ${
         sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
       }`}
     >
-      {/* Logo */}
+      {/* Logo - Influencers AI */}
       <div className="p-6 border-b border-gray-200">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+        <Link to="/" className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg">
+            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
             </svg>
           </div>
-          <span className="text-xl font-bold text-gray-800">Smart</span>
-        </div>
+          <div className="flex flex-col">
+            <span className="text-lg font-bold bg-gradient-to-r from-purple-600 to-cyan-600 bg-clip-text text-transparent">
+              {t('brand.name')}
+            </span>
+            <span className="text-[10px] text-gray-500 -mt-0.5">{t('brand.tagline')}</span>
+          </div>
+        </Link>
       </div>
 
       {/* 導航選單 */}
       <nav className="flex-1 p-4">
         <ul className="space-y-2">
-          {menuItems.map((item) => {
+          {menuItemsConfig.map((item) => {
             const isActive = location.pathname === item.path
             return (
               <li key={item.path}>
@@ -57,7 +71,7 @@ export default function Sidebar() {
                   className={`sidebar-item ${isActive ? 'active' : ''}`}
                 >
                   <Icon name={item.icon} />
-                  <span>{item.label}</span>
+                  <span>{t(item.labelKey as any)}</span>
                 </Link>
               </li>
             )
@@ -66,14 +80,16 @@ export default function Sidebar() {
       </nav>
 
       {/* 登出 */}
-      <div className="p-4 border-t border-gray-200">
-        <button className="sidebar-item w-full">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-          </svg>
-          <span>登出</span>
-        </button>
-      </div>
+      {isAuthenticated && (
+        <div className="p-4 border-t border-gray-200">
+          <button onClick={handleLogout} className="sidebar-item w-full text-red-600 hover:bg-red-50">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+            </svg>
+            <span>{t('nav.logout')}</span>
+          </button>
+        </div>
+      )}
     </aside>
   )
 }

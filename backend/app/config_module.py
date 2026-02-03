@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     """應用設定"""
     
     # 應用配置
-    APP_NAME: str = "AI Agent Webapp"
+    APP_NAME: str = "Influencers AI"
     APP_VERSION: str = "1.0.0"
     DEBUG: bool = True
     ENVIRONMENT: str = "development"
