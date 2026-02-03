@@ -2,12 +2,19 @@
  * 登入頁面
  * Phase 2: 會員系統
  * Style: Lane Crawford 風格 - 高端極簡、黑白為主
+ * Font: Cormorant Garamond (display) + Montserrat (sans)
  */
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from '../i18n';
 import { useAuthStore } from '../stores/authStore';
 import { authApi } from '../api/auth';
+
+// 統一品牌設定
+const BRAND = {
+  name: 'INFLUENCERS',
+  slogan: 'AI-POWERED CONTENT CREATION',
+};
 
 export default function Login() {
   const { t } = useTranslation();
@@ -54,23 +61,21 @@ export default function Login() {
   };
   
   return (
-    <div className="min-h-screen bg-[#FAF9F7] flex">
+    <div className="min-h-screen bg-[#FAF9F7] flex font-sans">
       {/* 左側裝飾區 - 桌面版顯示 */}
       <div className="hidden lg:flex lg:w-1/2 bg-black items-center justify-center relative overflow-hidden">
         {/* 優雅的幾何裝飾 */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-20 left-20 w-40 h-40 border border-white"></div>
-          <div className="absolute bottom-20 right-20 w-60 h-60 border border-white"></div>
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 border border-white rotate-45"></div>
+        <div className="absolute inset-0 opacity-[0.08]">
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] border border-white rotate-45"></div>
         </div>
         
         <div className="relative z-10 text-center px-12">
-          <h1 className="text-white text-5xl font-light tracking-[0.3em] uppercase mb-6">
-            Influencers
+          <h1 className="text-white font-display text-6xl font-light tracking-[0.4em] uppercase mb-8">
+            {BRAND.name}
           </h1>
-          <div className="w-24 h-px bg-white mx-auto mb-6"></div>
-          <p className="text-white/70 text-sm tracking-[0.15em] uppercase font-light">
-            AI-Powered Content Creation
+          <div className="w-24 h-px bg-white/50 mx-auto mb-8"></div>
+          <p className="text-white/60 font-sans text-xs tracking-[0.25em] uppercase font-light">
+            {BRAND.slogan}
           </p>
         </div>
       </div>
@@ -81,13 +86,13 @@ export default function Login() {
         <header className="flex items-center justify-between px-8 py-6">
           <Link 
             to="/language" 
-            className="text-gray-500 hover:text-black transition-colors text-xs tracking-[0.1em] uppercase"
+            className="text-gray-400 hover:text-black transition-colors text-[10px] tracking-[0.15em] uppercase"
           >
             ← {t('common.back')}
           </Link>
           <Link 
             to="/language" 
-            className="text-gray-500 hover:text-black transition-colors text-xs tracking-[0.1em] uppercase"
+            className="text-gray-400 hover:text-black transition-colors text-[10px] tracking-[0.15em] uppercase"
           >
             {t('common.language')}
           </Link>
@@ -98,26 +103,29 @@ export default function Login() {
           <div className="w-full max-w-sm">
             {/* 移動端 Logo */}
             <div className="lg:hidden text-center mb-12">
-              <h1 className="text-3xl font-light tracking-[0.2em] uppercase text-black">
-                Influencers
+              <h1 className="font-display text-3xl font-light tracking-[0.3em] uppercase text-black">
+                {BRAND.name}
               </h1>
-              <div className="w-16 h-px bg-black mx-auto mt-4"></div>
+              <div className="w-16 h-px bg-black mx-auto mt-4 mb-4"></div>
+              <p className="text-gray-400 text-[10px] tracking-[0.2em] uppercase font-light">
+                {BRAND.slogan}
+              </p>
             </div>
 
             {/* 標題 */}
             <div className="text-center mb-10">
-              <h2 className="text-xl tracking-[0.15em] uppercase font-light text-black mb-3">
+              <h2 className="font-display text-2xl tracking-[0.1em] font-light text-black mb-3">
                 {t('auth.login.title')}
               </h2>
-              <p className="text-gray-500 text-sm font-light">
-                {t('auth.login.welcome')}
+              <p className="text-gray-400 text-xs font-light tracking-[0.1em] uppercase">
+                WELCOME BACK
               </p>
             </div>
             
             {/* 錯誤訊息 */}
             {(error || oauthError) && (
-              <div className="mb-8 p-4 border border-red-200 bg-red-50">
-                <p className="text-red-600 text-sm text-center font-light">
+              <div className="mb-8 p-4 border border-red-200 bg-red-50/50">
+                <p className="text-red-500 text-xs text-center font-light tracking-wide">
                   {error || getOAuthErrorMessage(oauthError, t)}
                 </p>
               </div>
@@ -129,9 +137,9 @@ export default function Login() {
               <div>
                 <label 
                   htmlFor="email" 
-                  className="block text-xs tracking-[0.1em] uppercase text-gray-600 mb-3"
+                  className="block text-[10px] tracking-[0.15em] uppercase text-gray-500 mb-3"
                 >
-                  Email
+                  EMAIL
                 </label>
                 <input
                   id="email"
@@ -139,7 +147,7 @@ export default function Login() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full px-0 py-3 bg-transparent border-0 border-b border-gray-300 text-black placeholder-gray-400 focus:outline-none focus:border-black transition-colors duration-300 text-sm"
+                  className="w-full px-0 py-3 bg-transparent border-0 border-b border-gray-200 text-black placeholder-gray-300 focus:outline-none focus:border-black transition-colors duration-300 text-sm tracking-wide"
                   placeholder="example@email.com"
                 />
               </div>
@@ -148,9 +156,9 @@ export default function Login() {
               <div>
                 <label 
                   htmlFor="password" 
-                  className="block text-xs tracking-[0.1em] uppercase text-gray-600 mb-3"
+                  className="block text-[10px] tracking-[0.15em] uppercase text-gray-500 mb-3"
                 >
-                  {t('auth.login.password')}
+                  {t('auth.login.password').toUpperCase()}
                 </label>
                 <div className="relative">
                   <input
@@ -159,15 +167,15 @@ export default function Login() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    className="w-full px-0 py-3 bg-transparent border-0 border-b border-gray-300 text-black placeholder-gray-400 focus:outline-none focus:border-black transition-colors duration-300 pr-16 text-sm"
+                    className="w-full px-0 py-3 bg-transparent border-0 border-b border-gray-200 text-black placeholder-gray-300 focus:outline-none focus:border-black transition-colors duration-300 pr-16 text-sm tracking-wide"
                     placeholder="••••••••"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black text-xs tracking-wide uppercase transition-colors"
+                    className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black text-[10px] tracking-[0.1em] uppercase transition-colors"
                   >
-                    {showPassword ? t('common.hide') : t('common.show')}
+                    {showPassword ? 'HIDE' : 'SHOW'}
                   </button>
                 </div>
               </div>
@@ -176,7 +184,7 @@ export default function Login() {
               <div className="text-right pt-1">
                 <Link
                   to="/forgot-password"
-                  className="text-xs text-gray-500 hover:text-black transition-colors tracking-wide"
+                  className="text-[10px] text-gray-400 hover:text-black transition-colors tracking-[0.1em] uppercase"
                 >
                   {t('auth.login.forgotPassword')}
                 </Link>
@@ -186,7 +194,7 @@ export default function Login() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full py-4 bg-black text-white text-xs tracking-[0.2em] uppercase hover:bg-gray-900 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors duration-300"
+                className="w-full py-4 bg-black text-white text-[11px] tracking-[0.2em] uppercase hover:bg-gray-900 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors duration-300"
               >
                 {isLoading ? (
                   <span className="flex items-center justify-center gap-2">
@@ -194,10 +202,10 @@ export default function Login() {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none" />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                     </svg>
-                    {t('common.loading')}
+                    LOADING...
                   </span>
                 ) : (
-                  t('auth.login.submit')
+                  'SIGN IN'
                 )}
               </button>
             </form>
@@ -208,8 +216,8 @@ export default function Login() {
                 <div className="w-full border-t border-gray-200"></div>
               </div>
               <div className="relative flex justify-center">
-                <span className="px-6 bg-[#FAF9F7] text-gray-400 text-xs tracking-[0.1em] uppercase">
-                  {t('common.or')}
+                <span className="px-6 bg-[#FAF9F7] text-gray-400 text-[10px] tracking-[0.15em] uppercase">
+                  OR
                 </span>
               </div>
             </div>
@@ -218,9 +226,9 @@ export default function Login() {
             <button
               type="button"
               onClick={handleGoogleLogin}
-              className="w-full flex items-center justify-center gap-3 px-6 py-4 border border-gray-300 hover:border-black text-black text-xs tracking-[0.1em] uppercase transition-all duration-300"
+              className="w-full flex items-center justify-center gap-3 px-6 py-4 border border-gray-200 hover:border-black text-black text-[11px] tracking-[0.15em] uppercase transition-all duration-300"
             >
-              <svg className="w-5 h-5" viewBox="0 0 24 24">
+              <svg className="w-4 h-4" viewBox="0 0 24 24">
                 <path
                   fill="#4285F4"
                   d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -238,23 +246,23 @@ export default function Login() {
                   d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                 />
               </svg>
-              {t('auth.login.googleLogin')}
+              CONTINUE WITH GOOGLE
             </button>
 
             {/* 訪客瀏覽 */}
             <button
               type="button"
               onClick={handleGuestMode}
-              className="w-full mt-4 py-3 text-gray-400 hover:text-black text-xs tracking-[0.1em] uppercase transition-colors duration-300"
+              className="w-full mt-4 py-3 text-gray-400 hover:text-black text-[10px] tracking-[0.15em] uppercase transition-colors duration-300"
             >
-              {t('auth.login.guestMode')}
+              BROWSE AS GUEST
             </button>
             
             {/* 分隔線 */}
             <div className="w-full h-px bg-gray-200 my-8"></div>
             
             {/* 註冊連結 */}
-            <p className="text-center text-gray-500 text-sm font-light">
+            <p className="text-center text-gray-400 text-xs font-light tracking-wide">
               {t('auth.login.noAccount')}{' '}
               <Link
                 to="/register"
@@ -266,14 +274,14 @@ export default function Login() {
 
             {/* 底部裝飾線 */}
             <div className="mt-12 flex justify-center">
-              <div className="w-16 h-px bg-gray-300"></div>
+              <div className="w-16 h-px bg-gray-200"></div>
             </div>
           </div>
         </main>
 
         {/* 底部版權 - 僅移動端顯示 */}
         <footer className="lg:hidden py-6 text-center">
-          <p className="text-gray-400 text-xs tracking-wide">© 2026 Influencers AI</p>
+          <p className="text-gray-400 text-[10px] tracking-[0.15em] uppercase">© 2026 {BRAND.name}</p>
         </footer>
       </div>
     </div>
