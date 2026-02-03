@@ -1,5 +1,46 @@
 # Influencers AI Agents（網紅 AI 助手）
 
+> **版本**：v4.0.0  
+> **更新日期**：2026-02-03  
+> **當前分支**：`phase-1-login-register`
+
+---
+
+## 📐 專案架構（必讀）
+
+**⚠️ 開發前請務必閱讀：**
+
+| 文件 | 說明 |
+|------|------|
+| 📋 [專案完整架構表.md](./專案完整架構表.md) | **完整架構圖、路由定義、組件結構** |
+| 📝 [v4.0.0_Checklist_TestList.md](./v4.0.0_Checklist_TestList.md) | 開發檢查清單與測試案例 |
+| 📖 [v4.0.0_完整需求規格書.md](./v4.0.0_完整需求規格書.md) | 完整功能需求規格 |
+
+### 🛣️ 路由快速參考
+
+```
+認證頁面（無 Layout）：
+  /language        → 語言選擇
+  /login           → 登入
+  /register        → 註冊
+  /oauth-callback  → OAuth 回調
+
+主要頁面（有 Layout）：
+  /dashboard       → 控制面板 ⭐
+  /topics          → 主題列表
+  /topics/:id      → 主題詳情
+  /channels        → 我的頻道
+  /inspiration     → 靈感策劃
+  /style-profile   → 風格檔案
+  /publish         → 一鍵發布
+  /social-connect  → 平台連接
+  /settings        → 設定
+
+⚠️ "/" 是重定向，不是頁面！Dashboard 在 /dashboard
+```
+
+---
+
 ## 🔴 核心設計原則（CRITICAL）
 
 ```
@@ -50,12 +91,6 @@
 
 詳細設計要求請參考：[專案設計要求.md](./專案設計要求.md)
 
-> **專案名稱**：Influencers AI Agents（網紅 AI 助手）  
-> **版本**：4.0.0  
-> **狀態**：開發中  
-> **建立日期**：2025-12-19  
-> **當前分支**：`v4.0.0-development`  
-> **最新 Commit**：`e57bacb`
 
 ---
 
@@ -423,6 +458,6 @@ python test_backend_api_comprehensive.py
 
 ---
 
-**最後更新**：2026-01-29  
+**最後更新**：2026-02-03  
 **維護者**：開發團隊
 
