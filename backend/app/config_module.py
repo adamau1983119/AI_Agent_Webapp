@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     APP_VERSION: str = "1.0.0"
     DEBUG: bool = True
     ENVIRONMENT: str = "development"
-    AUTO_START_SCHEDULER: str = "false"  # 是否自動啟動排程服務（true/false）
+    AUTO_START_SCHEDULER: str = "true"  # 是否自動啟動排程服務（Agent 核心功能，預設啟用）
     
     # 伺服器配置
     HOST: str = "0.0.0.0"
