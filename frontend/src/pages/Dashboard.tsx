@@ -553,7 +553,7 @@ export default function Dashboard() {
             <>
               <h3 className="text-lg font-bold text-gray-800 mb-4">主題卡片</h3>
               {(() => {
-                // 顯示最近7天生成的主題（如果沒有今日主題，則顯示最近的主題）
+                // 顯示主題：優先今日 → 最近 → 全部
                 const now = new Date()
                 const todayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()))
                 const today = todayUTC.toISOString().split('T')[0]
@@ -588,42 +588,14 @@ export default function Dashboard() {
                   }
                 })
                 
-                // 如果沒有今日主題，顯示最近7天的主題
+                // 決定顯示哪些主題
                 let displayTopics = todayTopicsList
-                let displayTitle = '今日主題卡片'
+                let displayTitle = '今日熱門主題'
+                let showNotice = false
                 
                 if (todayTopicsList.length === 0) {
-                  const sevenDaysAgo = new Date(todayUTC)
-                  sevenDaysAgo.setUTCDate(sevenDaysAgo.getUTCDate() - 7)
-                  
-                  displayTopics = topics.filter((t) => {
-                    try {
-                      const dateValue = (t as any).generated_at || (t as any).generatedAt || 
-                                       (t as any).created_at || (t as any).createdAt
-                      if (!dateValue) return false
-                      
-                      let date: Date
-                      if (typeof dateValue === 'string') {
-                        date = new Date(dateValue)
-                      } else if (dateValue instanceof Date) {
-                        date = dateValue
-                      } else {
-                        date = new Date(dateValue)
-                      }
-                      
-                      if (isNaN(date.getTime())) return false
-                      
-                      const topicDateUTC = new Date(Date.UTC(
-                        date.getUTCFullYear(),
-                        date.getUTCMonth(),
-                        date.getUTCDate()
-                      ))
-                      return topicDateUTC >= sevenDaysAgo
-                    } catch {
-                      return false
-                    }
-                  }).sort((a, b) => {
-                    // 按日期降序排列（最新的在前）
+                  // 沒有今日主題，顯示所有主題（按日期排序）
+                  displayTopics = [...topics].sort((a, b) => {
                     const dateA = (a as any).generated_at || (a as any).generatedAt || 
                                  (a as any).created_at || (a as any).createdAt
                     const dateB = (b as any).generated_at || (b as any).generatedAt || 
@@ -631,14 +603,27 @@ export default function Dashboard() {
                     if (!dateA || !dateB) return 0
                     return new Date(dateB).getTime() - new Date(dateA).getTime()
                   })
-                  
-                  displayTitle = '最近主題卡片'
+                  displayTitle = '最新熱門主題'
+                  showNotice = true
                 }
                 
+                // 如果完全沒有主題，顯示 Agent 收集中
                 if (displayTopics.length === 0) {
                   return (
-                    <div className="text-center py-8 text-gray-400">
-                      <p className="text-sm">尚未生成主題</p>
+                    <div className="text-center py-16 bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl">
+                      <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-full shadow-lg mb-6">
+                        <svg className="w-10 h-10 text-blue-500 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                        </svg>
+                      </div>
+                      <h4 className="text-xl font-semibold text-gray-800 mb-3">🤖 AI Agent 正在收集熱門話題</h4>
+                      <p className="text-gray-500 mb-2">系統每 6 小時自動更新三大類別主題</p>
+                      <p className="text-gray-400 text-sm">時尚趨勢 · 美食推薦 · 社會趨勢</p>
+                      <div className="mt-6 flex justify-center gap-2">
+                        <span className="inline-block w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                        <span className="inline-block w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                        <span className="inline-block w-2 h-2 bg-pink-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                      </div>
                     </div>
                   )
                 }
@@ -657,7 +642,14 @@ export default function Dashboard() {
                 
                 return (
                   <>
-                    <p className="text-sm text-gray-600 mb-4">{displayTitle}（共 {displayTopics.length} 個）</p>
+                    <div className="flex items-center justify-between mb-4">
+                      <p className="text-sm text-gray-600">{displayTitle}（共 {displayTopics.length} 個）</p>
+                      {showNotice && (
+                        <span className="text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded">
+                          🤖 Agent 將於下次更新時收集今日主題
+                        </span>
+                      )}
+                    </div>
                     <div className="space-y-6">
                       {topicsByCategory.map((category) => (
                         <div key={category.key}>
@@ -678,8 +670,8 @@ export default function Dashboard() {
                               ))}
                             </div>
                           ) : (
-                            <div className="text-center py-4 text-gray-400 text-sm">
-                              尚未生成 {category.label} 主題
+                            <div className="text-center py-6 text-gray-400 text-sm bg-gray-50 rounded-lg">
+                              🤖 Agent 正在收集 {category.label}...
                             </div>
                           )}
                         </div>
