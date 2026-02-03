@@ -5,7 +5,7 @@ import { useTranslation } from '@/i18n'
 
 // 選單項目配置（使用翻譯 key）
 const menuItemsConfig = [
-  { path: '/', labelKey: 'nav.dashboard', icon: 'home' },
+  { path: '/dashboard', labelKey: 'nav.dashboard', icon: 'home' },
   { path: '/topics', labelKey: 'nav.topics', icon: 'document' },
   { path: '/channels', labelKey: 'nav.channels', icon: 'channel' },
   { path: '/inspiration', labelKey: 'nav.inspiration', icon: 'lightbulb' },
@@ -23,7 +23,7 @@ export default function Sidebar() {
   const { logout, isAuthenticated } = useAuthStore()
 
   const handleClick = (path: string) => {
-    setCurrentPage(path === '/' ? 'dashboard' : path.slice(1))
+    setCurrentPage(path === '/dashboard' ? 'dashboard' : path.slice(1))
     // 移動端點擊後關閉側邊欄
     if (window.innerWidth < 1024) {
       setSidebarOpen(false)
