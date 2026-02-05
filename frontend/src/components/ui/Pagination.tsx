@@ -129,7 +129,7 @@ export default function Pagination({
           onClick={() => handlePageChange(currentPage - 1)}
           disabled={currentPage === 1}
           className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white"
-          aria-label="上一頁"
+          aria-label={t('pagination.previous')}
         >
           ‹
         </button>
@@ -172,7 +172,7 @@ export default function Pagination({
           onClick={() => handlePageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
           className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white"
-          aria-label="下一頁"
+          aria-label={t('pagination.next')}
         >
           ›
         </button>
