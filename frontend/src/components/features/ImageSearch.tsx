@@ -160,7 +160,7 @@ function ImageItem({
             disabled={isPending}
             className="mt-3 px-4 py-1.5 bg-primary text-white rounded text-xs font-medium hover:bg-primary-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
           >
-            {isPending ? '新增中...' : '仍可選擇'}
+            {isPending ? t('common.adding') : t('images.canStillSelect')}
           </button>
         </div>
       ) : (
@@ -182,7 +182,7 @@ function ImageItem({
               disabled={isPending}
               className="px-4 py-2 bg-white text-gray-800 rounded text-sm font-medium hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
             >
-              {isPending ? '新增中...' : '選擇'}
+              {isPending ? t('common.adding') : t('common.select')}
             </button>
           </div>
           <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs p-2">

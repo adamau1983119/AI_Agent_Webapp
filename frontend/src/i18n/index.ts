@@ -26,6 +26,11 @@ const zhTW = {
   'common.noContent': '尚未生成內容',
   'common.generating': '生成中...',
   'common.matching': '匹配中...',
+  'common.adding': '新增中...',
+  'common.select': '選擇',
+  'common.deleting': '刪除中...',
+  'common.delete': '刪除',
+  'common.additionalComments': '還有其他想說的嗎？（選填）',
   'common.confirm': '確認',
   'common.save': '儲存',
   'common.delete': '刪除',
@@ -309,6 +314,8 @@ const zhTW = {
   'images.generateContentFirst': '請先生成內容才能匹配照片',
   'images.matchPhotosTitle': '根據文章內容智能匹配相關照片',
   'images.smartMatchPhotos': '智能匹配照片（8張）',
+  'images.canStillSelect': '仍可選擇',
+  'images.confirmDelete': '確定要刪除這張圖片嗎？',
   
   // 篩選器
   'filters.title': '篩選條件',
@@ -510,6 +517,7 @@ const zhTW = {
   'topics.title': '標題',
   'topics.source': '來源',
   'topics.generateContent': '生成內容（500字文章 + 30秒腳本）',
+  'topics.image': '主題圖片',
   
   // 偏好設定
   'preferences.title': '偏好設定',
@@ -588,6 +596,11 @@ const en: typeof zhTW = {
   'common.noContent': 'No content generated yet',
   'common.generating': 'Generating...',
   'common.matching': 'Matching...',
+  'common.adding': 'Adding...',
+  'common.select': 'Select',
+  'common.deleting': 'Deleting...',
+  'common.delete': 'Delete',
+  'common.additionalComments': 'Any other comments? (Optional)',
   'common.confirm': 'Confirm',
   'common.save': 'Save',
   'common.delete': 'Delete',
@@ -871,6 +884,8 @@ const en: typeof zhTW = {
   'images.generateContentFirst': 'Please generate content first to match photos',
   'images.matchPhotosTitle': 'Smart match photos based on article content',
   'images.smartMatchPhotos': 'Smart Match Photos (8)',
+  'images.canStillSelect': 'Can Still Select',
+  'images.confirmDelete': 'Are you sure you want to delete this image?',
   
   // Filters
   'filters.title': 'Filters',
@@ -1072,6 +1087,7 @@ const en: typeof zhTW = {
   'topics.title': 'Title',
   'topics.source': 'Source',
   'topics.generateContent': 'Generate Content (500-word article + 30s script)',
+  'topics.image': 'Topic Image',
   
   // Preferences
   'preferences.title': 'Preferences',
@@ -1150,6 +1166,11 @@ const ja: typeof zhTW = {
   'common.noContent': 'まだコンテンツが生成されていません',
   'common.generating': '生成中...',
   'common.matching': 'マッチング中...',
+  'common.adding': '追加中...',
+  'common.select': '選択',
+  'common.deleting': '削除中...',
+  'common.delete': '削除',
+  'common.additionalComments': '他に何かありますか？（任意）',
   'common.confirm': '確認',
   'common.save': '保存',
   'common.delete': '削除',
@@ -1433,6 +1454,8 @@ const ja: typeof zhTW = {
   'images.generateContentFirst': '写真をマッチするには、まずコンテンツを生成してください',
   'images.matchPhotosTitle': '記事の内容に基づいて写真をスマートマッチ',
   'images.smartMatchPhotos': 'スマートマッチ写真（8枚）',
+  'images.canStillSelect': 'まだ選択可能',
+  'images.confirmDelete': 'この画像を削除してもよろしいですか？',
   
   // フィルター
   'filters.title': 'フィルター',
@@ -1634,6 +1657,7 @@ const ja: typeof zhTW = {
   'topics.title': 'タイトル',
   'topics.source': 'ソース',
   'topics.generateContent': 'コンテンツを生成（500字記事 + 30秒スクリプト）',
+  'topics.image': 'トピック画像',
   
   // 環境設定
   'preferences.title': '環境設定',

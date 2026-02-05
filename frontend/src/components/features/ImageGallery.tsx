@@ -179,7 +179,7 @@ function ImageGalleryItem({
             disabled={deletingId === image.id}
             className="px-3 py-1 bg-red-500/90 text-white rounded text-xs font-medium hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed pointer-events-auto"
           >
-            {deletingId === image.id ? '刪除中...' : '刪除'}
+            {deletingId === image.id ? t('common.deleting') : t('common.delete')}
           </button>
         </div>
       )}
@@ -287,7 +287,7 @@ export default function ImageGallery({
   })
 
   const handleDelete = (imageId: string) => {
-    if (confirm('確定要刪除這張圖片嗎？')) {
+    if (confirm(t('images.confirmDelete'))) {
       setDeletingId(imageId)
       deleteMutation.mutate(imageId)
     }

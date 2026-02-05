@@ -173,7 +173,7 @@ export default function TodayTopics({ topics }: TodayTopicsProps) {
                             <div className="relative w-24 h-16 rounded overflow-hidden bg-gray-200 flex items-center justify-center">
                               <img 
                                 src={imageUrl}
-                                alt={topic.title || '主題圖片'}
+                                alt={topic.title || t('topics.image')}
                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
                                 loading="lazy"
                                 onError={(e) => {

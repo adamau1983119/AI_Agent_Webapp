@@ -175,7 +175,7 @@ export default function RatingPanel({
           <textarea
             value={comment}
             onChange={(e) => setComment(e.target.value)}
-            placeholder="還有其他想說的嗎？（選填）"
+            placeholder={t('common.additionalComments')}
             rows={2}
             maxLength={500}
             className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-sm text-gray-700 dark:text-gray-200 placeholder-gray-400 resize-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
