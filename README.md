@@ -1,7 +1,7 @@
 # Influencers AI Agents（網紅 AI 助手）
 
-> **版本**：v4.0.0  
-> **更新日期**：2026-02-03  
+> **版本**：v4.1.1  
+> **更新日期**：2026-02-05  
 > **當前分支**：`phase-1-login-register`
 
 ---
@@ -14,6 +14,7 @@
 |------|------|
 | 📋 [專案完整架構表.md](./專案完整架構表.md) | **完整架構圖、路由定義、組件結構** |
 | 🔘 [按鈕架構表.md](./按鈕架構表.md) | **按鈕清單、狀態定義、測試檢查** |
+| 🧪 [按鈕測試ID架構表.md](./按鈕測試ID架構表.md) | **自動化測試 ID 規範** |
 | 🎨 [品牌設計規範.md](./品牌設計規範.md) | **字體、標語、色彩、佈局規範** |
 | 📝 [v4.0.0_Checklist_TestList.md](./v4.0.0_Checklist_TestList.md) | 開發檢查清單與測試案例 |
 | 📖 [v4.0.0_完整需求規格書.md](./v4.0.0_完整需求規格書.md) | 完整功能需求規格 |
@@ -409,9 +410,76 @@ cd backend
 python test_backend_api_comprehensive.py
 ```
 
-### 前端測試
+### 前端自動化測試
 
-前端目前使用手動測試，未來可添加自動化測試。
+本專案使用 `data-testid` 屬性標記所有按鈕、連結和輸入框，支援以下測試框架：
+
+- **React Testing Library**
+- **Cypress**
+- **Playwright**
+
+#### 測試 ID 命名規範
+
+```
+data-testid="{類型}-{位置}-{功能}"
+```
+
+| 前綴 | 類型 | 範例 |
+|------|------|------|
+| `btn-` | 按鈕 | `btn-login-submit` |
+| `link-` | 連結 | `link-sidebar-dashboard` |
+| `input-` | 輸入框 | `input-login-email` |
+| `form-` | 表單 | `form-register` |
+| `modal-` | 彈窗 | `modal-delete-confirm` |
+| `menu-` | 選單 | `menu-header-lang` |
+
+#### 已標記的組件
+
+| 組件 | Test ID 數量 |
+|------|:------------:|
+| Sidebar.tsx | 11 |
+| Header.tsx | 15 |
+| Login.tsx | 10 |
+| Register.tsx | 11 |
+| Dashboard.tsx | 6 |
+
+#### 測試範例
+
+**Cypress:**
+```javascript
+// 測試登入流程
+cy.get('[data-testid="input-login-email"]').type('test@example.com');
+cy.get('[data-testid="input-login-password"]').type('password123');
+cy.get('[data-testid="btn-login-submit"]').click();
+cy.url().should('include', '/topics');
+```
+
+**React Testing Library:**
+```javascript
+import { render, screen, fireEvent } from '@testing-library/react';
+
+test('should submit login form', () => {
+  render(<Login />);
+  
+  fireEvent.change(screen.getByTestId('input-login-email'), {
+    target: { value: 'test@example.com' }
+  });
+  fireEvent.click(screen.getByTestId('btn-login-submit'));
+});
+```
+
+**Playwright:**
+```javascript
+test('login flow', async ({ page }) => {
+  await page.goto('/login');
+  await page.getByTestId('input-login-email').fill('test@example.com');
+  await page.getByTestId('input-login-password').fill('password123');
+  await page.getByTestId('btn-login-submit').click();
+  await expect(page).toHaveURL('/topics');
+});
+```
+
+📖 完整測試 ID 清單請參考：[按鈕測試ID架構表.md](./按鈕測試ID架構表.md)
 
 ---
 
@@ -538,6 +606,6 @@ python test_backend_api_comprehensive.py
 
 ---
 
-**最後更新**：2026-02-03  
+**最後更新**：2026-02-05  
 **維護者**：開發團隊
 
