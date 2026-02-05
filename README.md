@@ -14,6 +14,7 @@
 | 2 | **遵循架構文件** | 修改前先閱讀下方「專案架構」區段的所有文件 |
 | 3 | **按鈕必須標記** | 所有新增按鈕必須添加 `data-testid` 屬性，參考 `按鈕測試ID架構表.md` |
 | 4 | **🔴 禁止模擬測試** | 測試必須使用**真正的後台和 API**，禁止使用 Mock 數據、模板輸入輸出。所有測試結果必須來自真實服務回應。 |
+| 5 | **🌐 多語言開發規範** | 所有 UI 介面和新增版面必須支援多語言（zh-TW/en/ja）。使用 `i18n` 系統，禁止硬編碼文字。詳見下方「多語言開發規範」。 |
 
 ---
 
@@ -603,6 +604,67 @@ test('login flow', async ({ page }) => {
 - 使用功能分支開發
 - 提交前執行測試
 - 提交訊息使用中文
+
+### 🌐 多語言開發規範
+
+**本專案支援三種語言**：繁體中文 (zh-TW)、英文 (en)、日文 (ja)
+
+#### 核心原則
+
+| 原則 | 說明 |
+|------|------|
+| **禁止硬編碼** | 所有用戶可見的文字必須使用 `i18n` 系統，禁止直接寫死文字 |
+| **完整覆蓋** | 新增頁面/組件必須同時添加三種語言的翻譯 |
+| **統一管理** | 所有翻譯集中在 `frontend/src/i18n/index.ts` |
+
+#### 開發流程
+
+```
+1. 在 i18n/index.ts 的 zhTW 對象中添加翻譯 key
+2. 在 en 對象中添加對應的英文翻譯
+3. 在 ja 對象中添加對應的日文翻譯
+4. 在組件中使用 const { t } = useTranslation()
+5. 使用 t('your.translation.key') 顯示文字
+```
+
+#### 翻譯 Key 命名規範
+
+```
+{模組}.{頁面/功能}.{元素}
+
+範例：
+- auth.login.title          → 登入頁標題
+- auth.register.submit      → 註冊提交按鈕
+- legal.terms.section1.title → 服務條款第一段標題
+- nav.dashboard             → 導航列 Dashboard
+```
+
+#### 使用範例
+
+```tsx
+// ❌ 錯誤：硬編碼文字
+<h1>登入</h1>
+
+// ✅ 正確：使用 i18n
+import { useTranslation } from '../i18n';
+
+function Login() {
+  const { t } = useTranslation();
+  return <h1>{t('auth.login.title')}</h1>;
+}
+```
+
+#### 已實現的多語言頁面
+
+| 頁面 | 路徑 | 翻譯 Key 前綴 |
+|------|------|--------------|
+| 語言選擇 | `/language` | `language.*` |
+| 登入 | `/login` | `auth.login.*` |
+| 註冊 | `/register` | `auth.register.*` |
+| 服務條款 | `/terms` | `legal.terms.*` |
+| 隱私政策 | `/privacy` | `legal.privacy.*` |
+| Dashboard | `/dashboard` | `dashboard.*` |
+| 主題列表 | `/topics` | `topics.*` |
 
 ### ⚠️ 工作記錄管理規範
 
