@@ -6,6 +6,7 @@ import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { interactionsAPI } from '@/api/client'
 import { ThumbsUp, ThumbsDown, Pencil, Image as ImageIcon, History } from 'lucide-react'
+import { useTranslation } from '@/i18n'
 import toast from 'react-hot-toast'
 
 interface InteractionButtonsProps {
@@ -27,6 +28,7 @@ export default function InteractionButtons({
   onViewHistory,
   userId = 'user_default',
 }: InteractionButtonsProps) {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [isLiked, setIsLiked] = useState(false)
   const [isDisliked, setIsDisliked] = useState(false)
@@ -44,12 +46,12 @@ export default function InteractionButtons({
     onSuccess: () => {
       setIsLiked(true)
       setIsDisliked(false)
-      toast.success('已記錄您的喜好')
+      toast.success(t('common.success'))
       // 更新偏好模型
       queryClient.invalidateQueries({ queryKey: ['user', 'preferences'] })
     },
     onError: (error: any) => {
-      toast.error(error?.message || '記錄互動失敗')
+      toast.error(error?.message || t('common.failed'))
     },
   })
 
@@ -66,12 +68,12 @@ export default function InteractionButtons({
     onSuccess: () => {
       setIsDisliked(true)
       setIsLiked(false)
-      toast.success('已記錄您的反饋')
+      toast.success(t('common.success'))
       // 更新偏好模型
       queryClient.invalidateQueries({ queryKey: ['user', 'preferences'] })
     },
     onError: (error: any) => {
-      toast.error(error?.message || '記錄互動失敗')
+      toast.error(error?.message || t('common.failed'))
     },
   })
 
@@ -99,7 +101,7 @@ export default function InteractionButtons({
           } disabled:opacity-50 disabled:cursor-not-allowed`}
         >
           <ThumbsUp className="w-5 h-5" />
-          <span className="text-sm font-medium">喜歡</span>
+          <span className="text-sm font-medium">{t('style.like')}</span>
         </button>
 
         <button
@@ -112,7 +114,7 @@ export default function InteractionButtons({
           } disabled:opacity-50 disabled:cursor-not-allowed`}
         >
           <ThumbsDown className="w-5 h-5" />
-          <span className="text-sm font-medium">不喜歡</span>
+          <span className="text-sm font-medium">{t('style.dislike')}</span>
         </button>
 
         {onEdit && (
@@ -121,7 +123,7 @@ export default function InteractionButtons({
             className="flex items-center gap-2 px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg transition-colors touch-manipulation min-w-[44px] min-h-[44px]"
           >
             <Pencil className="w-5 h-5" />
-            <span className="text-sm font-medium">編輯</span>
+            <span className="text-sm font-medium">{t('common.edit')}</span>
           </button>
         )}
 
@@ -131,7 +133,7 @@ export default function InteractionButtons({
             className="flex items-center gap-2 px-4 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-lg transition-colors touch-manipulation min-w-[44px] min-h-[44px]"
           >
             <ImageIcon className="w-5 h-5" />
-            <span className="text-sm font-medium">替換照片</span>
+            <span className="text-sm font-medium">{t('images.replacePhoto')}</span>
           </button>
         )}
 
@@ -141,7 +143,7 @@ export default function InteractionButtons({
             className="flex items-center gap-2 px-4 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-lg transition-colors touch-manipulation min-w-[44px] min-h-[44px]"
           >
             <History className="w-5 h-5" />
-            <span className="text-sm font-medium">版本歷史</span>
+            <span className="text-sm font-medium">{t('common.history')}</span>
           </button>
         )}
       </div>
@@ -157,7 +159,7 @@ export default function InteractionButtons({
             } disabled:opacity-50`}
           >
             <ThumbsUp className={`w-6 h-6 ${isLiked ? 'text-green-600' : 'text-green-600'}`} />
-            <span className="text-xs text-gray-600 font-medium">喜歡</span>
+            <span className="text-xs text-gray-600 font-medium">{t('style.like')}</span>
           </button>
 
           <button
@@ -168,7 +170,7 @@ export default function InteractionButtons({
             } disabled:opacity-50`}
           >
             <ThumbsDown className={`w-6 h-6 ${isDisliked ? 'text-red-600' : 'text-red-600'}`} />
-            <span className="text-xs text-gray-600 font-medium">不喜歡</span>
+            <span className="text-xs text-gray-600 font-medium">{t('style.dislike')}</span>
           </button>
 
           {onEdit && (
@@ -177,7 +179,7 @@ export default function InteractionButtons({
               className="flex flex-col items-center gap-1 min-w-[60px] min-h-[60px] p-2 rounded-lg active:bg-blue-50 touch-manipulation"
             >
               <Pencil className="w-6 h-6 text-blue-600" />
-              <span className="text-xs text-gray-600 font-medium">編輯</span>
+              <span className="text-xs text-gray-600 font-medium">{t('common.edit')}</span>
             </button>
           )}
 
@@ -187,7 +189,7 @@ export default function InteractionButtons({
               className="flex flex-col items-center gap-1 min-w-[60px] min-h-[60px] p-2 rounded-lg active:bg-purple-50 touch-manipulation"
             >
               <ImageIcon className="w-6 h-6 text-purple-600" />
-              <span className="text-xs text-gray-600 font-medium">照片</span>
+              <span className="text-xs text-gray-600 font-medium">{t('images.photo')}</span>
             </button>
           )}
         </div>

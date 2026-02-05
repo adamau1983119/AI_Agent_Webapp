@@ -1,7 +1,7 @@
 {
   "name": "ai-agent-webapp",
   "version": "1.0.0",
-  "description": "AI Agent Webapp for Social Media Content Generation",
+  "description": "Influencers AI - AI Assistant for Social Media Content Generation",
   "type": "module",
   "scripts": {
     "dev": "vite",

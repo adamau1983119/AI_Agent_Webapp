@@ -20,6 +20,10 @@ function convertTopic(apiTopic: any): Topic {
     updatedAt: apiTopic.updated_at || apiTopic.updatedAt,
     imageCount: apiTopic.image_count || 0,
     wordCount: apiTopic.word_count || 0,
+    // 階段 1 新增欄位
+    previewImages: apiTopic.preview_images || [],
+    isExpanded: apiTopic.is_expanded || false,
+    description: apiTopic.description || undefined,
   }
 }
 
@@ -35,6 +39,31 @@ export interface TopicFilters {
   limit?: number
   sort?: string
   order?: 'asc' | 'desc'
+}
+
+/**
+ * 搜尋參數（使用新的搜尋端點）
+ */
+export interface SearchParams {
+  query: string // 搜尋關鍵字（2-100字元）
+  category?: 'fashion' | 'food' | 'trend' // 分類篩選
+  page?: number // 頁碼（1-100）
+  limit?: number // 每頁數量（1-50）
+  role?: 'guest' | 'user' | 'premium' | 'admin' // 用戶角色
+}
+
+/**
+ * 搜尋響應
+ */
+export interface SearchResponse {
+  source: 'es' | 'db' | 'cache' // 資料來源
+  results: Topic[] // 搜尋結果
+  pagination: {
+    page: number
+    limit: number
+    total: number
+    pages: number // 注意：後端返回的是 pages，不是 totalPages
+  }
 }
 
 /**
@@ -83,7 +112,7 @@ export const topicsAPI = {
     if (filters?.date) params.append('date', filters.date)
     if (filters?.search && filters.search.trim()) params.append('search', filters.search.trim())
     params.append('page', (filters?.page || 1).toString())
-    params.append('limit', (filters?.limit || 12).toString())
+    params.append('limit', (filters?.limit || 30).toString())
     if (filters?.sort) params.append('sort', filters.sort)
     if (filters?.order) params.append('order', filters.order)
 
@@ -93,7 +122,7 @@ export const topicsAPI = {
 
     // 從後端分頁資訊或計算分頁資訊
     const page = filters?.page || 1
-    const limit = filters?.limit || 12
+    const limit = filters?.limit || 30
     const pagination = response.pagination || {
       page,
       limit,
@@ -160,5 +189,100 @@ export const topicsAPI = {
     await fetchAPI(`/topics/${id}`, {
       method: 'DELETE',
     })
+  },
+
+  /**
+   * 批量刪除今日主題
+   */
+  deleteTodayTopics: async (): Promise<{ deleted_count: number; topic_ids: string[] }> => {
+    const response = await fetchAPI<{ deleted_count: number; topic_ids: string[] }>(
+      `/topics/today`,
+      {
+        method: 'DELETE',
+      }
+    )
+    return response
+  },
+
+  /**
+   * 搜尋主題（使用新的搜尋端點，支援中文全文搜尋）
+   * 
+   * 使用 Elasticsearch（如果可用）或 MongoDB 進行搜尋
+   * 支援 Redis 快取和權限控制
+   */
+  searchTopics: async (params: SearchParams): Promise<SearchResponse> => {
+    const { query, category, page = 1, limit = 10, role = 'user' } = params
+
+    // 驗證查詢字串
+    if (!query || query.trim().length < 2) {
+      throw new Error('搜尋關鍵字至少需要 2 個字元')
+    }
+    if (query.length > 100) {
+      throw new Error('搜尋關鍵字最多 100 個字元')
+    }
+
+    // 構建查詢參數
+    const urlParams = new URLSearchParams({
+      query: query.trim(),
+      page: page.toString(),
+      limit: limit.toString(),
+    })
+
+    if (category) {
+      urlParams.append('category', category)
+    }
+
+    // 使用 fetchAPI 並添加 X-User-Role header
+    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
+    const url = `${API_BASE_URL}/topics/search?${urlParams.toString()}`
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-User-Role': role,
+      },
+    })
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ detail: '搜尋失敗' }))
+      throw new Error(error.detail || `搜尋失敗: ${response.status}`)
+    }
+
+    const data = await response.json()
+
+    // 轉換結果格式
+    return {
+      source: data.source || 'db',
+      results: (data.results || []).map(convertTopic),
+      pagination: {
+        page: data.pagination?.page || page,
+        limit: data.pagination?.limit || limit,
+        total: data.pagination?.total || 0,
+        pages: data.pagination?.pages || data.pagination?.total_pages || 0,
+      },
+    }
+  },
+
+  /**
+   * 檢查 URL 是否已收錄
+   */
+  checkUrlExists: async (url: string): Promise<{ exists: boolean; topic_id?: string }> => {
+    const urlParams = new URLSearchParams({ url })
+    const response = await fetchAPI<{ exists: boolean; topic_id?: string }>(
+      `/topics/search/check?${urlParams.toString()}`
+    )
+    return response
+  },
+
+  /**
+   * 取得熱門搜尋查詢
+   */
+  getHotQueries: async (limit: number = 10): Promise<Array<{ query: string; count: number }>> => {
+    const urlParams = new URLSearchParams({ limit: limit.toString() })
+    const response = await fetchAPI<Array<{ query: string; count: number }>>(
+      `/topics/search/hot-queries?${urlParams.toString()}`
+    )
+    return response
   },
 }

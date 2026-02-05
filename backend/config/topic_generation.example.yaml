@@ -1,0 +1,59 @@
+# 主題生成配置檔範例
+# 複製此檔案為 topic_generation.yaml 並根據需求調整
+
+daily_generation:
+  # 生成時間（香港時間）
+  time: "07:00"
+  timezone: "Asia/Hong_Kong"
+  
+  # 各分類的生成設定
+  categories:
+    fashion:
+      # 每天固定生成 10 個標題
+      count: 10
+      # 每個標題只生成 1 張預覽圖片
+      preview_images: 1
+      # 是否生成文字內容（階段1設為false，延遲生成）
+      generate_content: false
+      
+    food:
+      count: 10
+      preview_images: 1
+      generate_content: false
+      
+    trend:
+      count: 10
+      preview_images: 1
+      generate_content: false
+
+# 圖片搜尋設定
+image_search:
+  # Preview 模式（主題生成階段）
+  preview:
+    # 搜尋數量
+    count: 1
+    # 關鍵字優化（加入高級感相關關鍵字）
+    keywords_enhancement:
+      - "editorial fashion"
+      - "luxury"
+      - "high-end"
+      - "professional photography"
+    # 品質要求
+    quality:
+      min_resolution: "1920x1080"
+      min_saturation: 0.6
+      
+  # Full 模式（用戶展開階段）
+  full:
+    # 搜尋數量
+    count: 8
+    # 基於文章內容關鍵字搜尋
+    use_content_keywords: true
+
+# 每日限制設定
+daily_limit:
+  # 是否啟用每日限制檢查
+  enabled: true
+  # 檢查方式：使用日期+分類作為唯一鍵
+  unique_key: "date_category"
+

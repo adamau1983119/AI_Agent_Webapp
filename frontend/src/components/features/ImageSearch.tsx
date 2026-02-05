@@ -11,6 +11,7 @@ import Pagination from '@/components/ui/Pagination'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import ErrorDisplay from '@/components/ui/ErrorDisplay'
 import EmptyState from '@/components/ui/EmptyState'
+import { useTranslation } from '@/i18n'
 
 /**
  * 生成圖片代理 URL
@@ -159,7 +160,7 @@ function ImageItem({
             disabled={isPending}
             className="mt-3 px-4 py-1.5 bg-primary text-white rounded text-xs font-medium hover:bg-primary-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
           >
-            {isPending ? '新增中...' : '仍可選擇'}
+            {isPending ? t('common.adding') : t('images.canStillSelect')}
           </button>
         </div>
       ) : (
@@ -181,7 +182,7 @@ function ImageItem({
               disabled={isPending}
               className="px-4 py-2 bg-white text-gray-800 rounded text-sm font-medium hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
             >
-              {isPending ? '新增中...' : '選擇'}
+              {isPending ? t('common.adding') : t('common.select')}
             </button>
           </div>
           <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs p-2">
@@ -194,31 +195,84 @@ function ImageItem({
 }
 
 /**
- * 從內容中提取關鍵字
+ * 從內容中提取關鍵字（改進版：提取簡潔、適合搜尋的關鍵字）
  */
 function extractKeywords(topic: Topic | null | undefined, content: Content | null | undefined): string[] {
   const keywords: Set<string> = new Set()
   
+  // 停用詞列表（移除這些詞以獲得更好的搜尋結果）
+  const stopWords = new Set([
+    '對我而言', '他', '她', '它', '的', '是', '在', '有', '和', '與', '及', '或',
+    '近乎', '傳奇', '回憶', '巨匠', '大師', '設計師', '時尚', '品牌',
+    '大', '必', '吃', '平民', '美食', '推薦', '介紹', '分享', '體驗',
+    '一個', '一種', '這個', '那個', '這些', '那些'
+  ])
+  
   // 從主題標題提取關鍵字
   if (topic?.title) {
-    // 移除常見的停用詞和數字
-    const titleWords = topic.title
-      .replace(/[0-9]/g, '') // 移除數字
-      .replace(/[大必吃平民美食推薦]/g, '') // 移除常見詞
-      .split(/[、，,]/)
-      .map(w => w.trim())
-      .filter(w => w.length > 1)
+    const title = topic.title.trim()
     
-    titleWords.forEach(word => {
-      if (word.length > 1) {
+    // 1. 提取英文專有名詞（大寫字母開頭的單詞）
+    const englishNames = title.match(/\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*\b/g)
+    if (englishNames) {
+      englishNames.forEach(name => {
+        const cleanName = name.trim()
+        // 只保留長度適中的專有名詞（2-50字符）
+        if (cleanName.length >= 2 && cleanName.length <= 50) {
+          keywords.add(cleanName)
+        }
+      })
+    }
+    
+    // 2. 提取簡潔的中文關鍵字（移除停用詞）
+    let chineseText = title
+      .replace(/[A-Za-z0-9]/g, ' ') // 移除英文和數字
+      .replace(/[、，,。！？：；]/g, ' ') // 移除標點
+      .split(/\s+/)
+      .filter(w => w.length > 0)
+    
+    // 提取2-4字的中文詞組（適合圖片搜尋）
+    chineseText.forEach((word, index) => {
+      // 單個詞（2-4字）
+      if (word.length >= 2 && word.length <= 4 && !stopWords.has(word)) {
         keywords.add(word)
       }
+      // 兩個詞的組合（2+2字或2+3字）
+      if (index < chineseText.length - 1) {
+        const nextWord = chineseText[index + 1]
+        if (word.length >= 2 && nextWord.length >= 2 && 
+            word.length + nextWord.length <= 6 &&
+            !stopWords.has(word) && !stopWords.has(nextWord)) {
+          keywords.add(word + ' ' + nextWord)
+        }
+      }
     })
+    
+    // 3. 如果標題較短，直接使用簡化版本
+    if (title.length <= 30 && keywords.size === 0) {
+      const simplified = title
+        .replace(/[對我而言他近乎傳奇回憶巨匠大師設計師時尚品牌]/g, '')
+        .trim()
+      if (simplified.length >= 2 && simplified.length <= 30) {
+        keywords.add(simplified)
+      }
+    }
   }
   
   // 從文章內容提取關鍵字
   if (content?.article) {
     const article = content.article
+    
+    // 提取英文專有名詞
+    const articleEnglishNames = article.match(/\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*\b/g)
+    if (articleEnglishNames) {
+      articleEnglishNames.forEach(name => {
+        const cleanName = name.trim()
+        if (cleanName.length >= 2 && cleanName.length <= 50) {
+          keywords.add(cleanName)
+        }
+      })
+    }
     
     // 提取常見的食物名稱（中文）
     const foodKeywords = [
@@ -250,7 +304,7 @@ function extractKeywords(topic: Topic | null | undefined, content: Content | nul
       if (matches) {
         matches.forEach(match => {
           const keyword = match.replace(/傳統|街頭|經典|特色|招牌/g, '').trim()
-          if (keyword.length > 1) {
+          if (keyword.length >= 2 && keyword.length <= 10) {
             keywords.add(keyword)
           }
         })
@@ -277,7 +331,7 @@ function extractKeywords(topic: Topic | null | undefined, content: Content | nul
           const keyword = match
             .replace(/\[|\]|鏡頭|特寫|近景|遠景/g, '')
             .trim()
-          if (keyword.length > 1) {
+          if (keyword.length >= 2 && keyword.length <= 20) {
             keywords.add(keyword)
           }
         })
@@ -285,7 +339,20 @@ function extractKeywords(topic: Topic | null | undefined, content: Content | nul
     })
   }
   
-  return Array.from(keywords).slice(0, 10) // 最多返回 10 個關鍵字
+  // 按長度排序，優先返回簡潔的關鍵字（更適合圖片搜尋）
+  const sortedKeywords = Array.from(keywords)
+    .filter(k => k.length >= 2 && k.length <= 50) // 過濾太長或太短的關鍵字
+    .sort((a, b) => {
+      // 優先返回：1. 英文專有名詞 2. 較短的關鍵字
+      const aIsEnglish = /^[A-Z]/.test(a)
+      const bIsEnglish = /^[A-Z]/.test(b)
+      if (aIsEnglish && !bIsEnglish) return -1
+      if (!aIsEnglish && bIsEnglish) return 1
+      return a.length - b.length
+    })
+    .slice(0, 8) // 最多返回 8 個關鍵字
+  
+  return sortedKeywords
 }
 
 export default function ImageSearch({
@@ -295,6 +362,7 @@ export default function ImageSearch({
   onImageSelect,
   onClose,
 }: ImageSearchProps) {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [keywords, setKeywords] = useState('')
   const [source, setSource] = useState<ImageSource | undefined>()
@@ -355,7 +423,7 @@ export default function ImageSearch({
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['images', topicId] })
-      showSuccess('圖片已成功新增')
+      showSuccess(t('common.success'))
       onImageSelect({
         url: '',
         source: '',
@@ -363,7 +431,7 @@ export default function ImageSearch({
       })
     },
     onError: (error) => {
-      showError('新增圖片失敗，請稍後再試')
+      showError(t('common.failed'))
       console.error('Failed to add image:', error)
     },
   })
@@ -388,7 +456,7 @@ export default function ImageSearch({
   return (
     <div className="bg-white rounded-lg shadow-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-bold text-gray-800">搜尋圖片</h2>
+        <h2 className="text-xl font-bold text-gray-800">{t('images.searchTitle')}</h2>
         <button
           onClick={onClose}
           className="text-gray-400 hover:text-gray-600 text-2xl font-bold"
@@ -400,7 +468,7 @@ export default function ImageSearch({
       {/* 建議關鍵字 */}
       {suggestedKeywords.length > 0 && (
         <div className="mb-4">
-          <p className="text-sm text-gray-600 mb-2">建議關鍵字（從內容中提取）：</p>
+          <p className="text-sm text-gray-600 mb-2">{t('images.suggestedKeywords')}</p>
           <div className="flex flex-wrap gap-2">
             {suggestedKeywords.map((keyword, index) => (
               <button
@@ -430,9 +498,9 @@ export default function ImageSearch({
             type="text"
             value={keywords}
             onChange={(e) => setKeywords(e.target.value)}
-            placeholder="輸入關鍵字搜尋圖片..."
+            placeholder={t('images.searchPlaceholder')}
             className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-            aria-label="圖片搜尋關鍵字"
+            aria-label={t('images.searchTitle')}
             autoComplete="off"
           />
           <select
@@ -443,9 +511,9 @@ export default function ImageSearch({
               )
             }
             className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-            aria-label="圖片來源選擇"
+            aria-label={t('images.sourceLabel')}
           >
-            <option value="">所有來源</option>
+            <option value="">{t('images.allSources')}</option>
             <option value="unsplash">Unsplash</option>
             <option value="pexels">Pexels</option>
             <option value="pixabay">Pixabay</option>
@@ -457,7 +525,7 @@ export default function ImageSearch({
             disabled={!keywords.trim()}
             className="px-6 py-2 bg-primary text-white rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            搜尋
+            {t('common.search')}
           </button>
         </div>
       </form>
@@ -479,7 +547,7 @@ export default function ImageSearch({
             onChange={(e) => setDiagnosticMode(e.target.checked)}
             className="rounded"
           />
-          診斷模式
+          {t('images.diagnosticMode')}
         </label>
       </div>
 
@@ -490,7 +558,7 @@ export default function ImageSearch({
         <ErrorDisplay error={error} onRetry={() => refetch()} />
       ) : searchResults.length === 0 && keywords ? (
         <div>
-          <EmptyState message="沒有找到圖片" description="嘗試使用不同的關鍵字" />
+          <EmptyState message={t('images.noResults')} description={t('images.tryDifferentKeywords')} />
           {/* 顯示 attempts 資訊 */}
           {attempts.length > 0 && (
             <div className="mt-4 p-4 bg-gray-50 rounded-lg">

@@ -5,10 +5,19 @@ export interface Topic {
   category: 'fashion' | 'food' | 'trend'
   status: 'pending' | 'confirmed' | 'deleted'
   source: string
-  generatedAt: string
-  updatedAt: string
-  imageCount: number
-  wordCount: number
+  generatedAt?: string  // 可選，後端可能使用 generated_at
+  generated_at?: string  // 後端格式
+  createdAt?: string  // 可選，後端可能使用 created_at
+  created_at?: string  // 後端格式
+  updatedAt?: string
+  updated_at?: string  // 後端格式
+  imageCount?: number
+  wordCount?: number
+  // 階段 1 新增欄位
+  previewImages?: string[]  // 預覽圖片 URL 列表（前端格式）
+  preview_images?: string[]  // 預覽圖片 URL 列表（後端格式）
+  isExpanded?: boolean      // 是否已展開
+  description?: string      // 主題內容摘要（約30字）
 }
 
 // 內容類型

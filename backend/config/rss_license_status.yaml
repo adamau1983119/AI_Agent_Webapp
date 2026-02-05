@@ -1,0 +1,675 @@
+# RSS 來源授權狀態清單
+# 建立日期：2026-01-30
+# 用途：記錄每個 RSS 來源的授權狀態，避免法律風險
+#
+# 授權狀態說明：
+# - whitelist: 官方公開 RSS，明確允許使用
+# - greylist: 授權不明，需觀察或確認
+# - blacklist: 禁止使用（版權問題、付費牆、已停止服務）
+#
+# 風險等級：
+# - low: 官方 RSS Feed，公開允許
+# - medium: 可能有使用條款限制
+# - high: 可能涉及版權問題
+
+# ============================================
+# Fashion 類別
+# ============================================
+fashion:
+  whitelist:
+    # Tier S - 權威來源（官方 RSS）
+    - name: "Vogue"
+      url: "https://www.vogue.com/feed/rss"
+      license_type: "public_rss"
+      risk_level: "low"
+      verified_date: "2026-01-30"
+      notes: "Condé Nast 官方 RSS"
+      
+    - name: "Elle"
+      url: "https://www.elle.com/rss/all.xml"
+      license_type: "public_rss"
+      risk_level: "low"
+      verified_date: "2026-01-30"
+      notes: "Hearst 官方 RSS"
+      
+    - name: "Harper's Bazaar"
+      url: "https://www.harpersbazaar.com/rss/all.xml"
+      license_type: "public_rss"
+      risk_level: "low"
+      verified_date: "2026-01-30"
+      notes: "Hearst 官方 RSS"
+      
+    - name: "GQ"
+      url: "https://www.gq.com/feed/rss"
+      license_type: "public_rss"
+      risk_level: "low"
+      verified_date: "2026-01-30"
+      notes: "Condé Nast 官方 RSS"
+      
+    # Tier A - 專業來源
+    - name: "Hypebeast"
+      url: "https://hypebeast.com/feed"
+      license_type: "public_rss"
+      risk_level: "low"
+      verified_date: "2026-01-30"
+      notes: "官方 RSS Feed"
+      
+    - name: "Highsnobiety"
+      url: "https://www.highsnobiety.com/feeds/rss"
+      license_type: "public_rss"
+      risk_level: "low"
+      verified_date: "2026-01-30"
+      notes: "官方 RSS Feed"
+      
+    - name: "Who What Wear"
+      url: "https://www.whowhatwear.com/feeds.xml"
+      license_type: "public_rss"
+      risk_level: "low"
+      verified_date: "2026-01-30"
+      notes: "Clique Brands 官方"
+      
+    - name: "Fashionista"
+      url: "https://fashionista.com/.rss/excerpt/"
+      license_type: "public_rss"
+      risk_level: "low"
+      verified_date: "2026-01-30"
+      notes: "官方 RSS Feed"
+      
+    # Tier B - 亞洲來源
+    - name: "Popbee"
+      url: "https://popbee.com/feed"
+      license_type: "public_rss"
+      risk_level: "low"
+      verified_date: "2026-01-30"
+      notes: "香港時尚媒體官方 RSS"
+      
+    - name: "SCMP Style"
+      url: "https://www.scmp.com/rss/91/feed/"
+      license_type: "public_rss"
+      risk_level: "low"
+      verified_date: "2026-01-30"
+      notes: "南華早報官方 RSS"
+
+  greylist:
+    # 需要確認授權的來源
+    - name: "Business of Fashion"
+      url: "https://www.businessoffashion.com/arc/outboundfeeds/rss/?outputType=xml"
+      license_type: "unclear"
+      risk_level: "medium"
+      verified_date: "2026-01-30"
+      notes: "部分內容可能需要訂閱"
+      action_required: "確認是否只抓取免費內容"
+      
+    - name: "WWD"
+      url: "https://wwd.com/feed/"
+      license_type: "partial_paywall"
+      risk_level: "medium"
+      verified_date: "2026-01-30"
+      notes: "部分文章為付費內容"
+      action_required: "確認只抓取免費摘要"
+      
+    - name: "Dazed Digital"
+      url: "https://www.dazeddigital.com/rss"
+      license_type: "unclear"
+      risk_level: "medium"
+      verified_date: "2026-01-30"
+      notes: "RSS 格式可能不穩定"
+
+  blacklist:
+    # 禁止使用的來源
+    - name: "Getty Images"
+      reason: "圖片版權嚴格，禁止爬取"
+      added_date: "2026-01-30"
+      
+    - name: "Pinterest"
+      reason: "違反 TOS，禁止爬取"
+      added_date: "2026-01-30"
+
+# ============================================
+# Food 類別
+# ============================================
+food:
+  whitelist:
+    - name: "Eater"
+      url: "https://www.eater.com/rss/index.xml"
+      license_type: "public_rss"
+      risk_level: "low"
+      verified_date: "2026-01-30"
+      notes: "Vox Media 官方 RSS"
+      
+    - name: "Bon Appétit"
+      url: "https://www.bonappetit.com/feed/rss"
+      license_type: "public_rss"
+      risk_level: "low"
+      verified_date: "2026-01-30"
+      notes: "Condé Nast 官方 RSS"
+      
+    - name: "Epicurious"
+      url: "https://www.epicurious.com/feed/rss"
+      license_type: "public_rss"
+      risk_level: "low"
+      verified_date: "2026-01-30"
+      notes: "Condé Nast 官方 RSS"
+      
+    - name: "The Kitchn"
+      url: "https://www.thekitchn.com/main.rss"
+      license_type: "public_rss"
+      risk_level: "low"
+      verified_date: "2026-01-30"
+      notes: "Apartment Therapy Media 官方"
+      
+    - name: "BBC Good Food"
+      url: "https://www.bbcgoodfood.com/feed"
+      license_type: "public_rss"
+      risk_level: "low"
+      verified_date: "2026-01-30"
+      notes: "BBC 官方 RSS"
+      
+    - name: "Food52"
+      url: "https://food52.com/blog.rss"
+      license_type: "public_rss"
+      risk_level: "low"
+      verified_date: "2026-01-30"
+      notes: "官方 RSS Feed"
+      
+    - name: "Serious Eats"
+      url: "https://www.seriouseats.com/rss"
+      license_type: "public_rss"
+      risk_level: "low"
+      verified_date: "2026-01-30"
+      notes: "Dotdash Meredith 官方"
+      
+    - name: "The Takeout"
+      url: "https://www.thetakeout.com/feed/"
+      license_type: "public_rss"
+      risk_level: "low"
+      verified_date: "2026-01-30"
+      notes: "G/O Media 官方"
+      
+    - name: "Mashed"
+      url: "https://www.mashed.com/feed/"
+      license_type: "public_rss"
+      risk_level: "low"
+      verified_date: "2026-01-30"
+      notes: "Static Media 官方"
+
+  greylist:
+    - name: "Simply Recipes"
+      url: "https://feeds.feedburner.com/simplyrecipes"
+      license_type: "feedburner"
+      risk_level: "medium"
+      verified_date: "2026-01-30"
+      notes: "FeedBurner 已停止服務，URL 可能失效"
+      action_required: "尋找替代 RSS URL"
+      
+    - name: "Eat This Not That"
+      url: "https://www.eatthis.com/feed/"
+      license_type: "unclear"
+      risk_level: "medium"
+      verified_date: "2026-01-30"
+      notes: "RSS 格式需驗證"
+
+  blacklist: []
+
+# ============================================
+# Trend 類別
+# ============================================
+trend:
+  whitelist:
+    - name: "TechCrunch"
+      url: "https://techcrunch.com/feed/"
+      license_type: "public_rss"
+      risk_level: "low"
+      verified_date: "2026-01-30"
+      notes: "Yahoo/Verizon Media 官方"
+      
+    - name: "The Verge"
+      url: "https://www.theverge.com/rss/index.xml"
+      license_type: "public_rss"
+      risk_level: "low"
+      verified_date: "2026-01-30"
+      notes: "Vox Media 官方 RSS"
+      
+    - name: "WIRED"
+      url: "https://www.wired.com/feed/rss"
+      license_type: "public_rss"
+      risk_level: "low"
+      verified_date: "2026-01-30"
+      notes: "Condé Nast 官方 RSS"
+      
+    - name: "Ars Technica"
+      url: "https://arstechnica.com/feed/"
+      license_type: "public_rss"
+      risk_level: "low"
+      verified_date: "2026-01-30"
+      notes: "Condé Nast 官方 RSS"
+      
+    - name: "MIT Technology Review"
+      url: "https://www.technologyreview.com/feed/"
+      license_type: "public_rss"
+      risk_level: "low"
+      verified_date: "2026-01-30"
+      notes: "MIT 官方媒體"
+      
+    - name: "Vox"
+      url: "https://www.vox.com/rss/index.xml"
+      license_type: "public_rss"
+      risk_level: "low"
+      verified_date: "2026-01-30"
+      notes: "Vox Media 官方 RSS"
+      
+    - name: "Fast Company"
+      url: "https://www.fastcompany.com/latest/rss"
+      license_type: "public_rss"
+      risk_level: "low"
+      verified_date: "2026-01-30"
+      notes: "Mansueto Ventures 官方"
+      
+    - name: "Engadget"
+      url: "https://www.engadget.com/rss.xml"
+      license_type: "public_rss"
+      risk_level: "low"
+      verified_date: "2026-01-30"
+      notes: "Yahoo 官方"
+      
+    - name: "Hacker News"
+      url: "https://news.ycombinator.com/rss"
+      license_type: "public_rss"
+      risk_level: "low"
+      verified_date: "2026-01-30"
+      notes: "Y Combinator 官方"
+      
+    - name: "Rest of World"
+      url: "https://restofworld.org/feed/latest/"
+      license_type: "public_rss"
+      risk_level: "low"
+      verified_date: "2026-01-30"
+      notes: "非營利媒體官方"
+
+  greylist:
+    - name: "IEEE Spectrum"
+      url: "https://spectrum.ieee.org/feeds/feed.rss"
+      license_type: "unclear"
+      risk_level: "medium"
+      verified_date: "2026-01-30"
+      notes: "RSS URL 格式可能已變更"
+      action_required: "驗證 URL 有效性"
+      
+    - name: "The Atlantic"
+      url: "https://www.theatlantic.com/feed/all/"
+      license_type: "partial_paywall"
+      risk_level: "medium"
+      verified_date: "2026-01-30"
+      notes: "部分內容需訂閱"
+      
+    - name: "Singularity Hub"
+      url: "https://singularityhub.com/feed/"
+      license_type: "unclear"
+      risk_level: "medium"
+      verified_date: "2026-01-30"
+      notes: "需確認 RSS 穩定性"
+
+  blacklist: []
+
+# ============================================
+# Finance 類別
+# ============================================
+finance:
+  whitelist:
+    - name: "Bloomberg"
+      url: "https://feeds.bloomberg.com/markets/news.rss"
+      license_type: "public_rss"
+      risk_level: "low"
+      verified_date: "2026-01-30"
+      notes: "Bloomberg 官方 RSS（免費部分）"
+      
+    - name: "CNBC"
+      url: "https://www.cnbc.com/id/100003114/device/rss/rss.html"
+      license_type: "public_rss"
+      risk_level: "low"
+      verified_date: "2026-01-30"
+      notes: "NBCUniversal 官方"
+      
+    - name: "Reuters Finance"
+      url: "https://feeds.reuters.com/reuters/businessNews"
+      license_type: "public_rss"
+      risk_level: "low"
+      verified_date: "2026-01-30"
+      notes: "Thomson Reuters 官方"
+      
+    - name: "BBC Business"
+      url: "https://feeds.bbci.co.uk/news/business/rss.xml"
+      license_type: "public_rss"
+      risk_level: "low"
+      verified_date: "2026-01-30"
+      notes: "BBC 官方 RSS"
+      
+    - name: "Yahoo Finance"
+      url: "https://finance.yahoo.com/news/rssindex"
+      license_type: "public_rss"
+      risk_level: "low"
+      verified_date: "2026-01-30"
+      notes: "Yahoo 官方"
+
+  greylist:
+    - name: "Wall Street Journal"
+      url: "https://feeds.a.dj.com/rss/RSSMarketsMain.xml"
+      license_type: "partial_paywall"
+      risk_level: "high"
+      verified_date: "2026-01-30"
+      notes: "大部分內容需訂閱"
+      action_required: "只抓取標題和摘要"
+      
+    - name: "Financial Times"
+      url: "https://www.ft.com/rss/home/uk"
+      license_type: "partial_paywall"
+      risk_level: "high"
+      verified_date: "2026-01-30"
+      notes: "需訂閱，免費額度有限"
+      action_required: "考慮移至黑名單"
+      
+    - name: "The Economist"
+      url: "https://www.economist.com/finance-and-economics/rss.xml"
+      license_type: "partial_paywall"
+      risk_level: "high"
+      verified_date: "2026-01-30"
+      notes: "大部分內容需訂閱"
+
+  blacklist: []
+
+# ============================================
+# Sports 類別
+# ============================================
+sports:
+  whitelist:
+    - name: "ESPN"
+      url: "https://www.espn.com/espn/rss/news"
+      license_type: "public_rss"
+      risk_level: "low"
+      verified_date: "2026-01-30"
+      notes: "Disney/ESPN 官方"
+      
+    - name: "BBC Sport"
+      url: "https://feeds.bbci.co.uk/sport/rss.xml"
+      license_type: "public_rss"
+      risk_level: "low"
+      verified_date: "2026-01-30"
+      notes: "BBC 官方 RSS"
+      
+    - name: "Reuters Sports"
+      url: "https://feeds.reuters.com/reuters/sportsNews"
+      license_type: "public_rss"
+      risk_level: "low"
+      verified_date: "2026-01-30"
+      notes: "Thomson Reuters 官方"
+      
+    - name: "Yahoo Sports"
+      url: "https://sports.yahoo.com/rss/"
+      license_type: "public_rss"
+      risk_level: "low"
+      verified_date: "2026-01-30"
+      notes: "Yahoo 官方"
+
+  greylist:
+    - name: "Sports Illustrated"
+      url: "https://www.si.com/rss/si_topstories.rss"
+      license_type: "unclear"
+      risk_level: "medium"
+      verified_date: "2026-01-30"
+      notes: "Arena Group，RSS 可能不穩定"
+      
+    - name: "Bleacher Report"
+      url: "https://bleacherreport.com/articles/feed"
+      license_type: "unclear"
+      risk_level: "medium"
+      verified_date: "2026-01-30"
+      notes: "Warner Bros. Discovery，需驗證"
+
+  blacklist: []
+
+# ============================================
+# Tech 類別
+# ============================================
+tech:
+  whitelist:
+    - name: "TechCrunch"
+      url: "https://techcrunch.com/feed/"
+      license_type: "public_rss"
+      risk_level: "low"
+      verified_date: "2026-01-30"
+      notes: "已在 Trend 類別列出"
+      
+    - name: "The Verge"
+      url: "https://www.theverge.com/rss/index.xml"
+      license_type: "public_rss"
+      risk_level: "low"
+      verified_date: "2026-01-30"
+      notes: "已在 Trend 類別列出"
+      
+    - name: "BBC Tech"
+      url: "https://feeds.bbci.co.uk/news/technology/rss.xml"
+      license_type: "public_rss"
+      risk_level: "low"
+      verified_date: "2026-01-30"
+      notes: "BBC 官方 RSS"
+      
+    - name: "TechRadar"
+      url: "https://www.techradar.com/rss"
+      license_type: "public_rss"
+      risk_level: "low"
+      verified_date: "2026-01-30"
+      notes: "Future plc 官方"
+      
+    - name: "CNET"
+      url: "https://www.cnet.com/rss/news/"
+      license_type: "public_rss"
+      risk_level: "low"
+      verified_date: "2026-01-30"
+      notes: "Red Ventures 官方"
+
+  greylist:
+    - name: "ZDNet"
+      url: "https://www.zdnet.com/news/rss.xml"
+      license_type: "unclear"
+      risk_level: "medium"
+      verified_date: "2026-01-30"
+      notes: "RSS URL 格式需驗證"
+
+  blacklist: []
+
+# ============================================
+# Entertainment 類別
+# ============================================
+entertainment:
+  whitelist:
+    - name: "Variety"
+      url: "https://variety.com/feed/"
+      license_type: "public_rss"
+      risk_level: "low"
+      verified_date: "2026-01-30"
+      notes: "Penske Media 官方"
+      
+    - name: "Hollywood Reporter"
+      url: "https://www.hollywoodreporter.com/feed/"
+      license_type: "public_rss"
+      risk_level: "low"
+      verified_date: "2026-01-30"
+      notes: "Penske Media 官方"
+      
+    - name: "BBC Entertainment"
+      url: "https://feeds.bbci.co.uk/news/entertainment_and_arts/rss.xml"
+      license_type: "public_rss"
+      risk_level: "low"
+      verified_date: "2026-01-30"
+      notes: "BBC 官方 RSS"
+      
+    - name: "Rolling Stone"
+      url: "https://www.rollingstone.com/feed/"
+      license_type: "public_rss"
+      risk_level: "low"
+      verified_date: "2026-01-30"
+      notes: "Penske Media 官方"
+      
+    - name: "NME"
+      url: "https://www.nme.com/feed"
+      license_type: "public_rss"
+      risk_level: "low"
+      verified_date: "2026-01-30"
+      notes: "BandLab Technologies 官方"
+
+  greylist:
+    - name: "Entertainment Weekly"
+      url: "https://ew.com/feed/"
+      license_type: "unclear"
+      risk_level: "medium"
+      verified_date: "2026-01-30"
+      notes: "Dotdash Meredith，需驗證"
+
+  blacklist: []
+
+# ============================================
+# 亞洲地區來源
+# ============================================
+asia:
+  hong_kong:
+    whitelist:
+      - name: "SCMP"
+        url: "https://www.scmp.com/rss/91/feed"
+        license_type: "public_rss"
+        risk_level: "low"
+        verified_date: "2026-01-30"
+        notes: "南華早報官方 RSS"
+        
+      - name: "HK01"
+        url: "https://www.hk01.com/rss"
+        license_type: "public_rss"
+        risk_level: "low"
+        verified_date: "2026-01-30"
+        notes: "香港01官方 RSS"
+        
+      - name: "unwire.hk"
+        url: "https://unwire.hk/feed/"
+        license_type: "public_rss"
+        risk_level: "low"
+        verified_date: "2026-01-30"
+        notes: "香港科技媒體"
+
+    greylist:
+      - name: "OpenRice"
+        url: "https://www.openrice.com/rss"
+        license_type: "unclear"
+        risk_level: "medium"
+        verified_date: "2026-01-30"
+        notes: "需確認是否有公開 RSS"
+
+  taiwan:
+    whitelist:
+      - name: "數位時代"
+        url: "https://www.bnext.com.tw/rss"
+        license_type: "public_rss"
+        risk_level: "low"
+        verified_date: "2026-01-30"
+        notes: "官方 RSS"
+        
+      - name: "科技新報"
+        url: "https://technews.tw/feed/"
+        license_type: "public_rss"
+        risk_level: "low"
+        verified_date: "2026-01-30"
+        notes: "官方 RSS"
+        
+      - name: "Inside 硬塞"
+        url: "https://www.inside.com.tw/feed"
+        license_type: "public_rss"
+        risk_level: "low"
+        verified_date: "2026-01-30"
+        notes: "關鍵評論網旗下"
+        
+      - name: "愛料理"
+        url: "https://icook.tw/rss"
+        license_type: "public_rss"
+        risk_level: "low"
+        verified_date: "2026-01-30"
+        notes: "台灣美食平台"
+
+    greylist:
+      - name: "ETtoday"
+        url: "https://www.ettoday.net/rss/rss.xml"
+        license_type: "unclear"
+        risk_level: "medium"
+        verified_date: "2026-01-30"
+        notes: "RSS 格式需驗證"
+
+  japan:
+    whitelist:
+      - name: "Japan Times"
+        url: "https://www.japantimes.co.jp/feed/"
+        license_type: "public_rss"
+        risk_level: "low"
+        verified_date: "2026-01-30"
+        notes: "官方英文 RSS"
+        
+      - name: "Nikkei Asia"
+        url: "https://asia.nikkei.com/rss/feed/nar"
+        license_type: "public_rss"
+        risk_level: "low"
+        verified_date: "2026-01-30"
+        notes: "日經新聞英文版"
+
+    greylist:
+      - name: "Natalie"
+        url: "https://natalie.mu/music/feed/news"
+        license_type: "unclear"
+        risk_level: "medium"
+        verified_date: "2026-01-30"
+        notes: "日文來源，需確認"
+
+  korea:
+    whitelist:
+      - name: "Korea Herald"
+        url: "http://www.koreaherald.com/rss_all.xml"
+        license_type: "public_rss"
+        risk_level: "low"
+        verified_date: "2026-01-30"
+        notes: "官方英文 RSS"
+        
+      - name: "Yonhap"
+        url: "https://en.yna.co.kr/RSS/news.xml"
+        license_type: "public_rss"
+        risk_level: "low"
+        verified_date: "2026-01-30"
+        notes: "聯合通訊社官方"
+
+    greylist:
+      - name: "Soompi"
+        url: "https://www.soompi.com/feed"
+        license_type: "unclear"
+        risk_level: "medium"
+        verified_date: "2026-01-30"
+        notes: "K-pop 媒體，需確認"
+        
+      - name: "AllKPop"
+        url: "https://www.allkpop.com/rss"
+        license_type: "unclear"
+        risk_level: "medium"
+        verified_date: "2026-01-30"
+        notes: "K-pop 媒體，需確認"
+
+# ============================================
+# 統計摘要
+# ============================================
+summary:
+  last_updated: "2026-01-30"
+  total_sources: 85
+  whitelist_count: 62
+  greylist_count: 23
+  blacklist_count: 2
+  
+  action_items:
+    - "驗證所有 greylist 來源的 RSS 有效性"
+    - "確認付費牆來源只抓取免費摘要"
+    - "尋找 Simply Recipes 的替代 RSS URL"
+    - "考慮將 WSJ/FT 移至黑名單（避免版權問題）"
+    
+  next_review_date: "2026-02-28"
+

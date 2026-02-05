@@ -1,4 +1,4 @@
-# AI Agent Webapp - Frontend
+# Influencers AI - Frontend
 
 ## 🚀 快速開始
 

@@ -65,6 +65,9 @@ class ContentResponse(BaseModel):
     version: int = Field(..., description="內容版本")
     generated_at: datetime = Field(..., description="生成時間")
     updated_at: datetime = Field(..., description="更新時間")
+    # 新增欄位
+    source_urls: Optional[list[str]] = Field(default_factory=list, description="來源文章 URL 列表")
+    source_images: Optional[list[str]] = Field(default_factory=list, description="來源文章圖片 URL 列表")
 
     class Config:
         from_attributes = True

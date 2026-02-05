@@ -32,6 +32,9 @@ class Content(BaseModel):
     versions: List[ContentVersion] = Field(default_factory=list, description="版本歷史")
     generated_at: datetime = Field(default_factory=datetime.utcnow, description="生成時間")
     updated_at: datetime = Field(default_factory=datetime.utcnow, description="更新時間")
+    # 新增欄位：來源連結和圖片
+    source_urls: Optional[List[str]] = Field(default_factory=list, description="來源文章 URL 列表")
+    source_images: Optional[List[str]] = Field(default_factory=list, description="來源文章圖片 URL 列表（原文圖片）")
 
     class Config:
         """Pydantic 配置"""

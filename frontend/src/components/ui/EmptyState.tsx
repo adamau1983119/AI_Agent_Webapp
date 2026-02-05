@@ -2,6 +2,8 @@
  * 空狀態元件
  */
 
+import { useTranslation } from '@/i18n'
+
 interface EmptyStateProps {
   message?: string
   description?: string
@@ -14,12 +16,14 @@ interface EmptyStateProps {
 }
 
 export default function EmptyState({
-  message = '沒有找到資料',
+  message,
   description,
   action,
   size = 'md',
   className = '',
 }: EmptyStateProps) {
+  const { t } = useTranslation()
+  const displayMessage = message || t('common.noData')
   const sizeClasses = {
     sm: 'py-6',
     md: 'py-12',
@@ -47,7 +51,7 @@ export default function EmptyState({
           d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
         />
       </svg>
-      <h3 className="mt-2 text-sm font-medium text-gray-900">{message}</h3>
+      <h3 className="mt-2 text-sm font-medium text-gray-900">{displayMessage}</h3>
       {description && (
         <p className="mt-1 text-sm text-gray-500">{description}</p>
       )}

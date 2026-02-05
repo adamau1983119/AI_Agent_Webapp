@@ -1,15 +1,289 @@
-# AI Agent Webapp for Social Media Content Generation
+# Influencers AI Agents（網紅 AI 助手）
 
-## ⚠️ 重要設計要求
+> **版本**：v4.2.0  
+> **更新日期**：2026-02-05  
+> **當前分支**：`phase-1-login-register`  
+> **穩定標籤**：`v4.2.0-i18n-complete`
+
+---
+
+## 🎉 v4.2.0 重大更新（2026-02-05）
+
+### 📦 硬編碼文字全面 i18n 化
+
+| 項目 | 數量 | 說明 |
+|------|------|------|
+| **已修復硬編碼** | 220+ | 所有用戶可見的 UI 文字 |
+| **翻譯語言** | 3 種 | zh-TW（繁體中文）、en（英文）、ja（日文） |
+| **修改批次** | 11 批 | 系統性、規範性修改 |
+| **涉及文件** | 30+ | 頁面、組件、工具 |
+
+### 📝 修改記錄
+
+```
+commit 643e9e9 - feat: fix hardcoded text in feature components (batch 11)
+commit 5aeb0da - feat: fix hardcoded text in TopicDetail (batch 10)
+commit eebf687 - feat: fix hardcoded text in StyleProfile/Publish (batch 9)
+commit a6a787a - feat: fix hardcoded text in Inspiration page (batch 8)
+commit 9e96e8b - feat: fix hardcoded text in components (batch 7)
+commit 734b185 - feat: fix hardcoded text in Login/Register (batch 6)
+commit a099ae9 - feat: fix hardcoded text in pages (batch 5)
+commit 2cce11b - feat: fix hardcoded text in components (batch 4)
+commit 55bb375 - feat: fix hardcoded text in UI components (batch 3)
+commit 502394e - feat: fix hardcoded text in components (batch 2)
+commit 6444217 - feat: replace hardcoded text with i18n keys (batch 2)
+commit 1e131c1 - feat: replace hardcoded text with i18n keys (batch 1)
+```
+
+### ✅ 此版本為穩定基線
+
+- **標籤**：`v4.2.0-i18n-complete`
+- **用途**：未來開發的基礎版本
+- **保護狀態**：此標籤不應被刪除或覆蓋
+
+---
+
+## ⚠️ 重要提醒（開發者必讀）
+
+| # | 規則 | 說明 |
+|:-:|------|------|
+| 1 | **查看真實日期** | 每次查看 README 必須確認「更新日期」，判斷文檔是否過時。如果超過 7 天未更新，請先查看 `工作記錄.md` 了解最新狀態。 |
+| 2 | **遵循架構文件** | 修改前先閱讀下方「專案架構」區段的所有文件 |
+| 3 | **按鈕必須標記** | 所有新增按鈕必須添加 `data-testid` 屬性，參考 `按鈕測試ID架構表.md` |
+| 4 | **🔴 禁止模擬測試** | 測試必須使用**真正的後台和 API**，禁止使用 Mock 數據、模板輸入輸出。所有測試結果必須來自真實服務回應。 |
+| 5 | **🔴 禁止硬編碼文字** | 本專案**絕對不允許硬編碼文字**。所有 UI 文字必須使用 `i18n` 系統，支援 zh-TW/en/ja 三種語言。詳見下方「多語言開發規範」。 |
+
+---
+
+## 🤖 AI 助手必讀（每次對話開始）
+
+### 🎯 觸發關鍵字
+
+當用戶輸入以下關鍵字時，AI 必須**自動讀取所有必讀文件**後再回應：
+
+| 關鍵字 | 動作 |
+|--------|------|
+| `開展今天的工作` | 讀取必讀文件 → 報告今日任務 → 開始工作 |
+| `work today` | 同上（英文版） |
+| `開始工作` | 同上 |
+| `今日任務` | 讀取工作記錄 → 報告待辦事項 |
+
+### 💡 產品核心價值
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│   👻 訪客（未登入）= Google News                                │
+│      → 瀏覽 30 個熱門主題，吸引用戶註冊                         │
+│                                                                 │
+│   👤 會員（登入）= 網紅 AI 助手                                 │
+│      → AI 生成專屬內容 + 風格學習 + 一鍵發布                    │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### 📚 必讀文件（按順序）
+
+| 順序 | 文件 | 目的 |
+|:----:|------|------|
+| 1 | **README.md** | 核心價值、規則、禁止操作 |
+| 2 | [專案完整架構表.md](./專案完整架構表.md) | 路由、組件結構、技術架構 |
+| 3 | [Git分支策略與版本管理.md](./Git分支策略與版本管理.md) | 分支規則、合併流程 |
+| 4 | [工作記錄.md](./工作記錄.md) | 當前狀態、今日任務、進度 |
+| 5 | [品牌設計規範.md](./品牌設計規範.md) | Lane Crawford 風格 |
+| 6 | [按鈕測試ID架構表.md](./按鈕測試ID架構表.md) | data-testid 命名 |
+
+### 🔒 Git 分支規則（摘要）
+
+| 規則 | 說明 |
+|------|------|
+| 📍 **當前分支** | 查看 `工作記錄.md` 頂部或本文件頂部 |
+| ❌ **禁止** | 永遠不要直接修改 `main` 或 `develop` |
+| ✅ **開發** | 只在 `phase-X-*` 分支上進行 |
+| 🏷️ **測試** | 測試通過後建立 Tag |
+
+詳細流程請參考：[Git分支策略與版本管理.md](./Git分支策略與版本管理.md)
+
+### ⛔ 啟動檢查
+
+```
+⚠️ 未完成上述讀取，禁止進行任何代碼修改！
+
+檢查清單：
+□ 確認當前分支（不是 main/develop）
+□ 確認文檔更新日期
+□ 了解今日任務（工作記錄.md）
+□ 了解專案架構（專案完整架構表.md）
+```
+
+---
+
+## 📐 專案架構（必讀）
+
+**⚠️ 開發前請務必閱讀：**
+
+| 文件 | 說明 |
+|------|------|
+| 📋 [專案完整架構表.md](./專案完整架構表.md) | **完整架構圖、路由定義、組件結構** |
+| 🔘 [按鈕架構表.md](./按鈕架構表.md) | **按鈕清單、狀態定義、測試檢查** |
+| 🧪 [按鈕測試ID架構表.md](./按鈕測試ID架構表.md) | **自動化測試 ID 規範** |
+| 🎨 [品牌設計規範.md](./品牌設計規範.md) | **字體、標語、色彩、佈局規範** |
+| 📝 [v4.0.0_Checklist_TestList.md](./v4.0.0_Checklist_TestList.md) | 開發檢查清單與測試案例 |
+| 📖 [v4.0.0_完整需求規格書.md](./v4.0.0_完整需求規格書.md) | 完整功能需求規格 |
+
+### 🛣️ 路由快速參考
+
+```
+認證頁面（無 Layout）：
+  /language        → 語言選擇
+  /login           → 登入
+  /register        → 註冊
+  /oauth-callback  → OAuth 回調
+
+主要頁面（有 Layout）：
+  /dashboard       → 控制面板 ⭐
+  /topics          → 主題列表
+  /topics/:id      → 主題詳情
+  /channels        → 我的頻道
+  /inspiration     → 靈感策劃
+  /style-profile   → 風格檔案
+  /publish         → 一鍵發布
+  /social-connect  → 平台連接
+  /settings        → 設定
+
+⚠️ "/" 是重定向，不是頁面！Dashboard 在 /dashboard
+```
+
+---
+
+## 🔴 核心設計原則（CRITICAL）
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│   ⛔ 禁止使用靜態模板 - NO STATIC TEMPLATES                                  │
+│                                                                             │
+│   本專案的核心原則：                                                         │
+│                                                                             │
+│   ❌ 後台不存在任何靜態內容模板                                              │
+│   ❌ 不使用預設文章範本                                                      │
+│   ❌ 不使用固定文案模板                                                      │
+│                                                                             │
+│   ✅ 所有內容必須通過 AI API 即時生成                                        │
+│   ✅ 每次生成都是獨一無二的內容                                              │
+│   ✅ 根據用戶風格檔案動態調整輸出                                            │
+│                                                                             │
+│   原因：避免輸出重複的模板內容，確保每位用戶獲得專屬的個人化內容             │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 即時生成架構
+
+```
+用戶請求 → AI API 即時呼叫 → 個人化參數注入 → 獨特內容輸出
+    │              │                │               │
+    │              │                │               └── 每次都不同
+    │              │                └── 風格檔案/語言/格式偏好
+    │              └── DeepSeek/OpenAI/Gemini
+    └── 主題/靈感/頻道內容
+```
+
+### 禁止的做法
+
+| ❌ 禁止 | ✅ 正確做法 |
+|--------|------------|
+| 儲存文章模板在資料庫 | API 即時生成文章 |
+| 預設 Caption 範本 | AI 根據內容動態生成 Caption |
+| 固定 Hashtag 列表 | AI 分析內容後即時推薦 Hashtag |
+| 靜態風格範本 | 從用戶評分學習動態風格檔案 |
+
+---
+
+## 🤖 AI Agent 核心職責（CRITICAL）
+
+### 產品核心理念
+
+> **Influencers AI 是一個智能 AI Agent 系統。**  
+> **Agent 會自動運行，用戶不需要操心任何事情。**  
+> **打開 App，內容已經準備好，只需審核、編輯、發布。**
+
+### 三大內容類別（公開內容）
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│   📰 時尚趨勢 (Fashion)     - 每日 10 個主題                    │
+│   🍜 美食推薦 (Food)        - 每日 10 個主題                    │
+│   📊 社會趨勢 (Trend)       - 每日 10 個主題                    │
+│                                                                 │
+│   ══════════════════════════════════════════════════════════    │
+│                                                                 │
+│   👤 會員 (Member)  → 可看所有主題 + 生成文章 + 完整功能        │
+│   👻 訪客 (Guest)   → 可看所有主題（瀏覽模式）                  │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**重要：主題是公開的熱門話題，不是用戶專屬內容。所有人都能看到相同的趨勢主題。**
+
+### Agent 自動化流程
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│                                                                  │
+│   🤖 Agent 每 6 小時自動運行（無需用戶觸發）                      │
+│                         ↓                                        │
+│   📡 收集全球熱門話題 / RSS / 社群趨勢                           │
+│                         ↓                                        │
+│   🎯 AI 分析並生成 30 個主題（3 類別 × 10）                      │
+│                         ↓                                        │
+│   💾 儲存到資料庫                                                │
+│                         ↓                                        │
+│   ┌────────────────────────────────────────────────────────┐    │
+│   │  📱 所有用戶/訪客 打開 App 即可看到今日熱門主題        │    │
+│   │     - Dashboard 顯示今日主題概覽                       │    │
+│   │     - Topics 頁面顯示完整主題列表                      │    │
+│   └────────────────────────────────────────────────────────┘    │
+│                         ↓                                        │
+│   👤 用戶選擇感興趣的主題                                        │
+│                         ↓                                        │
+│   🤖 Agent 根據用戶「風格檔案」生成專屬文章/腳本                 │
+│                         ↓                                        │
+│   🖼️ Agent 自動搜尋並匹配相關圖片                               │
+│                         ↓                                        │
+│   ✅ 用戶審核 → 編輯 → 一鍵發布到社群平台                       │
+│                                                                  │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+### Agent 的五大核心功能
+
+| 功能 | 說明 | 觸發方式 |
+|------|------|----------|
+| 🔍 **主題發掘** | 自動收集熱門趨勢、RSS、社群話題 | 每 6 小時自動執行 |
+| ✍️ **內容生成** | 根據用戶風格檔案生成文章/腳本 | 用戶點擊「生成」 |
+| 🖼️ **圖片匹配** | 自動搜尋並匹配相關圖片 | 用戶點擊「匹配圖片」 |
+| 📅 **排程發布** | 根據最佳時間安排發布 | 用戶設定排程 |
+| 📊 **學習優化** | 從用戶評分中學習，越來越精準 | 用戶評分後自動學習 |
+
+### 關鍵設計原則
+
+| 原則 | 說明 |
+|------|------|
+| **自動化優先** | Agent 自動運行，用戶無需手動觸發主題收集 |
+| **內容永遠存在** | Dashboard/Topics 頁面永遠有內容可看 |
+| **訪客友好** | 未登入也能瀏覽所有主題，吸引用戶註冊 |
+| **個人化生成** | 文章/腳本根據用戶風格檔案動態生成 |
+
+---
+
+## ⚠️ 其他重要設計要求
 
 **所有版面設定必須確保在手機和平板上使用 Webapp 也能清楚顯示。**
 
 詳細設計要求請參考：[專案設計要求.md](./專案設計要求.md)
 
-> **專案名稱**：AI Agent Webapp for Social Media Content Generation  
-> **版本**：1.0.0  
-> **狀態**：開發中  
-> **建立日期**：2025-12-19
 
 ---
 
@@ -248,9 +522,76 @@ cd backend
 python test_backend_api_comprehensive.py
 ```
 
-### 前端測試
+### 前端自動化測試
 
-前端目前使用手動測試，未來可添加自動化測試。
+本專案使用 `data-testid` 屬性標記所有按鈕、連結和輸入框，支援以下測試框架：
+
+- **React Testing Library**
+- **Cypress**
+- **Playwright**
+
+#### 測試 ID 命名規範
+
+```
+data-testid="{類型}-{位置}-{功能}"
+```
+
+| 前綴 | 類型 | 範例 |
+|------|------|------|
+| `btn-` | 按鈕 | `btn-login-submit` |
+| `link-` | 連結 | `link-sidebar-dashboard` |
+| `input-` | 輸入框 | `input-login-email` |
+| `form-` | 表單 | `form-register` |
+| `modal-` | 彈窗 | `modal-delete-confirm` |
+| `menu-` | 選單 | `menu-header-lang` |
+
+#### 已標記的組件
+
+| 組件 | Test ID 數量 |
+|------|:------------:|
+| Sidebar.tsx | 11 |
+| Header.tsx | 15 |
+| Login.tsx | 10 |
+| Register.tsx | 11 |
+| Dashboard.tsx | 6 |
+
+#### 測試範例
+
+**Cypress:**
+```javascript
+// 測試登入流程
+cy.get('[data-testid="input-login-email"]').type('test@example.com');
+cy.get('[data-testid="input-login-password"]').type('password123');
+cy.get('[data-testid="btn-login-submit"]').click();
+cy.url().should('include', '/topics');
+```
+
+**React Testing Library:**
+```javascript
+import { render, screen, fireEvent } from '@testing-library/react';
+
+test('should submit login form', () => {
+  render(<Login />);
+  
+  fireEvent.change(screen.getByTestId('input-login-email'), {
+    target: { value: 'test@example.com' }
+  });
+  fireEvent.click(screen.getByTestId('btn-login-submit'));
+});
+```
+
+**Playwright:**
+```javascript
+test('login flow', async ({ page }) => {
+  await page.goto('/login');
+  await page.getByTestId('input-login-email').fill('test@example.com');
+  await page.getByTestId('input-login-password').fill('password123');
+  await page.getByTestId('btn-login-submit').click();
+  await expect(page).toHaveURL('/topics');
+});
+```
+
+📖 完整測試 ID 清單請參考：[按鈕測試ID架構表.md](./按鈕測試ID架構表.md)
 
 ---
 
@@ -301,6 +642,125 @@ python test_backend_api_comprehensive.py
 - 提交前執行測試
 - 提交訊息使用中文
 
+### 🌐 多語言開發規範（零硬編碼政策）
+
+**本專案支援三種語言**：繁體中文 (zh-TW)、英文 (en)、日文 (ja)
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│   🔴 本專案絕對不允許硬編碼文字（Zero Hard-coded Text）          │
+│                                                                 │
+│   所有用戶可見的文字必須通過 i18n 系統管理                       │
+│   唯一例外：品牌名稱 "INFLUENCERS"                               │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+#### 核心原則
+
+| 原則 | 說明 |
+|------|------|
+| **🔴 禁止硬編碼** | 所有用戶可見的文字**必須**使用 `i18n` 系統，發現硬編碼視為 Bug |
+| **完整覆蓋** | 新增頁面/組件必須同時添加三種語言的翻譯 |
+| **統一管理** | 所有翻譯集中在 `frontend/src/i18n/index.ts` |
+| **品牌例外** | 僅品牌名稱 `INFLUENCERS` 可硬編碼（不翻譯） |
+
+#### 開發流程
+
+```
+1. 在 i18n/index.ts 的 zhTW 對象中添加翻譯 key
+2. 在 en 對象中添加對應的英文翻譯
+3. 在 ja 對象中添加對應的日文翻譯
+4. 在組件中使用 const { t } = useTranslation()
+5. 使用 t('your.translation.key') 顯示文字
+```
+
+#### 翻譯 Key 命名規範
+
+```
+{模組}.{頁面/功能}.{元素}
+
+範例：
+- auth.login.title          → 登入頁標題
+- auth.register.submit      → 註冊提交按鈕
+- legal.terms.section1.title → 服務條款第一段標題
+- nav.dashboard             → 導航列 Dashboard
+```
+
+#### 使用範例
+
+```tsx
+// ❌ 錯誤：硬編碼文字
+<h1>登入</h1>
+
+// ✅ 正確：使用 i18n
+import { useTranslation } from '../i18n';
+
+function Login() {
+  const { t } = useTranslation();
+  return <h1>{t('auth.login.title')}</h1>;
+}
+```
+
+#### 已實現的多語言頁面
+
+| 頁面 | 路徑 | 翻譯 Key 前綴 |
+|------|------|--------------|
+| 語言選擇 | `/language` | `language.*` |
+| 登入 | `/login` | `auth.login.*` |
+| 註冊 | `/register` | `auth.register.*` |
+| 服務條款 | `/terms` | `legal.terms.*` |
+| 隱私政策 | `/privacy` | `legal.privacy.*` |
+| Dashboard | `/dashboard` | `dashboard.*` |
+| 主題列表 | `/topics` | `topics.*` |
+
+### ⚠️ 工作記錄管理規範
+
+**重要：本專案只維護一個統一的工作記錄文件 `工作記錄.md`**
+
+| 規則 | 說明 |
+|------|------|
+| 📄 **唯一文件** | 所有工作記錄統一寫在 `工作記錄.md`，**禁止建立其他記錄文件** |
+| 📝 **新增方式** | 新的工作內容添加到「工作記錄（按時間倒序）」區段的**最前面** |
+| 🔄 **狀態更新** | 完成重大功能後，更新「當前狀態總覽」區段 |
+| ✅ **待辦事項** | 待辦事項寫在工作記錄的「待處理」區段，不要建立獨立文件 |
+| 🚫 **禁止行為** | 不要建立 `YYYY-MM-DD_工作記錄.md`、`明天待辦事項.md` 等文件 |
+
+**工作記錄文件結構**：
+```
+工作記錄.md
+├── 當前狀態總覽          # 已完成/進行中/待處理
+│   └── 待處理/明日待辦   # 待辦事項放這裡，不要獨立文件
+├── 工作記錄（按時間倒序）  # 每日工作詳情
+├── 技術架構              # 專案結構說明
+├── 規劃階段              # Phase 實施計劃
+└── 重要提醒              # Cursor AI 規則等
+```
+
+**⛔ 禁止建立的文件類型**：
+- `YYYY-MM-DD_工作記錄.md`
+- `明天待辦事項.md` / `待辦事項_YYYY-MM-DD.md`
+- `今日工作.md` / `每日記錄.md`
+
+### ⚠️ Cursor AI 行為規則
+
+1. **永遠不要直接修改 main 分支** - 所有更改必須在 feature 分支進行
+2. **修改核心 API 前必須先創建備份分支**
+3. **修改後端結構前必須先諮詢用戶**
+
+**受保護的核心文件**（修改前必須先備份）：
+- `backend/app/main.py`、`config.py`、`database.py`
+- `backend/app/api/v1/*.py`
+- `frontend/src/api/*.ts`
+- `frontend/src/router/*.tsx`
+
+**禁止操作**：
+- 禁止刪除核心目錄結構
+- 禁止清空關鍵文件內容
+- 禁止修改資料庫連接邏輯
+- 禁止修改 API 路由結構
+
 ---
 
 ## 🤝 貢獻
@@ -331,6 +791,6 @@ python test_backend_api_comprehensive.py
 
 ---
 
-**最後更新**：2026-01-06  
+**最後更新**：2026-02-05  
 **維護者**：開發團隊
 

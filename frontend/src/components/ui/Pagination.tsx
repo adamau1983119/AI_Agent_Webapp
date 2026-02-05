@@ -3,6 +3,8 @@
  * 提供完整的分頁控制功能
  */
 
+import { useTranslation } from '@/i18n'
+
 interface PaginationProps {
   /** 當前頁碼 */
   currentPage: number
@@ -32,6 +34,7 @@ export default function Pagination({
   showJump = true,
   className = '',
 }: PaginationProps) {
+  const { t } = useTranslation()
   // 計算顯示的頁碼範圍
   const getPageNumbers = (): (number | string)[] => {
     const pages: (number | string)[] = []
@@ -103,17 +106,17 @@ export default function Pagination({
         <div className="text-sm text-gray-600">
           {totalItems !== undefined ? (
             <>
-              顯示第{' '}
+              {t('pagination.showing')}{' '}
               <span className="font-medium">
                 {(currentPage - 1) * pageSize + 1} -{' '}
                 {Math.min(currentPage * pageSize, totalItems)}
               </span>{' '}
-              項，共 <span className="font-medium">{totalItems}</span> 項
+              {t('pagination.of')} <span className="font-medium">{totalItems}</span>
             </>
           ) : (
             <>
-              第 <span className="font-medium">{currentPage}</span> 頁，共{' '}
-              <span className="font-medium">{totalPages}</span> 頁
+              {t('pagination.page')} <span className="font-medium">{currentPage}</span> {t('pagination.of')}{' '}
+              <span className="font-medium">{totalPages}</span>
             </>
           )}
         </div>
@@ -126,7 +129,7 @@ export default function Pagination({
           onClick={() => handlePageChange(currentPage - 1)}
           disabled={currentPage === 1}
           className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white"
-          aria-label="上一頁"
+          aria-label={t('pagination.previous')}
         >
           ‹
         </button>
@@ -169,7 +172,7 @@ export default function Pagination({
           onClick={() => handlePageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
           className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white"
-          aria-label="下一頁"
+          aria-label={t('pagination.next')}
         >
           ›
         </button>
@@ -179,7 +182,7 @@ export default function Pagination({
       {showJump && totalPages > 5 && (
         <form onSubmit={handleJumpToPage} className="flex items-center gap-2">
           <label htmlFor="jump-page" className="text-sm text-gray-600">
-            跳轉至
+            {t('pagination.jumpTo')}
           </label>
           <input
             id="jump-page"
@@ -189,13 +192,13 @@ export default function Pagination({
             max={totalPages}
             defaultValue={currentPage}
             className="w-16 px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-            aria-label="跳轉頁碼"
+            aria-label={t('pagination.jumpTo')}
           />
           <button
             type="submit"
             className="px-3 py-1 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
           >
-            前往
+            {t('pagination.go')}
           </button>
         </form>
       )}

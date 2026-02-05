@@ -1,0 +1,225 @@
+# 主題生成配置檔 v4.1
+# v4.0.0 Phase 1: 支援每 6 小時收集、分層資料清理、分級健康監控
+# 用於控制主題生成的參數
+# 更新：2026-01-30 - 收集間隔從 4 小時改為 6 小時（降低 33% 負載）
+
+# ============================================
+# Phase 1: 收集排程設定（每 6 小時）
+# ============================================
+collection_schedule:
+  # 收集模式: "daily" 或 "interval"
+  mode: "interval"
+  # 收集間隔（小時），僅 mode=interval 時有效
+  interval_hours: 6
+  # 收集時間點（UTC，每 6 小時: 00:00, 06:00, 12:00, 18:00）
+  collection_hours: [0, 6, 12, 18]
+  timezone: "UTC"
+
+# 舊版相容設定（保留用於向後相容）
+daily_generation:
+  # 生成時間（香港時間）- 僅 mode=daily 時有效
+  time: "07:00"
+  timezone: "Asia/Hong_Kong"
+  
+  # 各分類的生成設定
+  categories:
+    fashion:
+      # 每天固定生成 10 個標題
+      count: 10
+      # 每個標題只生成 1 張預覽圖片
+      preview_images: 1
+      # 是否生成文字內容（階段1設為false，延遲生成）
+      generate_content: false
+      # 角色分配比例
+      role_distribution:
+        authority: 2    # 權威來源 (Vogue, Elle)
+        streetwear: 2   # 街頭潮牌 (Hypebeast, Highsnobiety)
+        asian: 2        # 亞洲時尚 (Popbee, SCMP Style)
+        industry: 2     # 產業分析 (BoF, WWD)
+        practical: 2    # 實用穿搭 (Who What Wear, Fashionista)
+      
+    food:
+      count: 10
+      preview_images: 1
+      generate_content: false
+      role_distribution:
+        mainstream: 2   # 主流美食 (Eater, Bon Appétit)
+        professional: 2 # 專業料理 (Epicurious, The Kitchn)
+        cultural: 2     # 文化美食 (BBC Good Food, Simply Recipes)
+        healthy: 2      # 健康飲食 (Eat This Not That)
+        casual: 2       # 輕鬆美食 (The Takeout, Mashed)
+      
+    trend:
+      count: 10
+      preview_images: 1
+      generate_content: false
+      role_distribution:
+        tech: 2         # 科技新聞 (TechCrunch, The Verge)
+        science: 2      # 科學技術 (Ars Technica, IEEE Spectrum)
+        culture: 2      # 文化分析 (Vox, The Atlantic)
+        innovation: 2   # 創新趨勢 (WIRED, MIT Technology Review)
+        lifestyle: 2    # 生活方式 (Fast Company, Rest of World)
+
+# 圖片搜尋設定
+image_search:
+  # Preview 模式（主題生成階段）
+  preview:
+    count: 1
+    keywords_enhancement:
+      - "editorial fashion"
+      - "luxury"
+      - "high-end"
+      - "professional photography"
+    quality:
+      min_resolution: "1920x1080"
+      min_saturation: 0.6
+      
+  # Full 模式（用戶展開階段）
+  full:
+    count: 8
+    use_content_keywords: true
+    
+  # Phase 5B 智能匹配設定
+  smart_matching:
+    enabled: true
+    target_count: 10
+    # 評分權重
+    weights:
+      keyword: 0.40     # 關鍵字匹配
+      trust: 0.25       # 來源信任度
+      quality: 0.15     # 圖片品質
+      diversity: 0.20   # 來源多樣性
+
+# 評分設定
+scoring:
+  # 文章評分權重
+  article:
+    time: 0.4           # 時效性
+    source: 0.3         # 來源信任度
+    completeness: 0.2   # 完整度
+    relevance: 0.1      # 相關度
+    
+  # 多樣性驗收標準
+  diversity:
+    min_score: 0.6      # 最低多樣性分數
+    warn_on_failure: true
+
+# 每日限制設定
+daily_limit:
+  enabled: true
+  unique_key: "date_category"
+
+# ============================================
+# Phase 1: 資料清理設定（分層保留）
+# ============================================
+data_cleanup:
+  enabled: true
+  # 清理時間（UTC，每日凌晨 03:00）
+  cleanup_hour: 3
+  cleanup_minute: 0
+  # 批次刪除數量（避免一次刪除太多造成效能問題）
+  batch_size: 100
+  
+  # 分層保留策略（新增）
+  retention_tiers:
+    # 熱門內容（高互動）
+    hot:
+      condition: "view_count >= 100 OR rating_count >= 10"
+      retention_days: 60
+    # 優質內容（高評分）
+    quality:
+      condition: "score >= 0.8"
+      retention_days: 45
+    # 一般內容
+    normal:
+      condition: "score >= 0.5"
+      retention_days: 30
+    # 低品質內容
+    low:
+      condition: "score < 0.5"
+      retention_days: 15
+    # AI 生成內容
+    ai_generated:
+      condition: "ai_generated == true"
+      retention_days: 7
+  
+  # 預設保留天數（無法匹配任何層級時）
+  default_retention_days: 15
+
+# ============================================
+# Phase 1: 分級健康監控設定 (Level 1-4)
+# ============================================
+health_monitoring:
+  enabled: true
+  
+  # Level 1: 臨時暫停（1 小時內連續失敗 3 次）
+  level_1:
+    name: "臨時暫停"
+    failure_count: 3
+    time_window_hours: 1
+    pause_duration_hours: 1
+    auto_recover: true
+  
+  # Level 2: 短期暫停（24 小時內失敗率 > 30%）
+  level_2:
+    name: "短期暫停"
+    failure_rate_threshold: 0.30
+    time_window_hours: 24
+    pause_duration_hours: 6
+    auto_recover: true
+  
+  # Level 3: 待替換（7 天內失敗率 > 50%）
+  level_3:
+    name: "待替換"
+    failure_rate_threshold: 0.50
+    time_window_days: 7
+    notify_admin: true
+    auto_recover: false
+  
+  # Level 4: 永久停用（手動標記或連續 14 天失敗率 > 70%）
+  level_4:
+    name: "永久停用"
+    failure_rate_threshold: 0.70
+    time_window_days: 14
+    require_manual_review: true
+  
+  # TTL：自動刪除 N 天前的健康記錄
+  record_ttl_days: 30
+
+# ============================================
+# Phase 1: RSS 來源名單管理
+# ============================================
+rss_source_lists:
+  # 白名單：高優先級來源（不會被自動停用）
+  whitelist:
+    enabled: true
+    # 白名單來源永遠不會被 Level 3-4 停用
+    immune_to_levels: [3, 4]
+  
+  # 黑名單：禁用來源（永不使用）
+  blacklist:
+    enabled: true
+    # 黑名單來源
+    sources: []
+  
+  # 灰名單：觀察中來源（降低優先級）
+  greylist:
+    enabled: true
+    # 灰名單來源的權重降低比例
+    weight_reduction: 0.5
+    # 觀察期（天）
+    observation_days: 7
+
+# ============================================
+# Phase 1: 多樣性門檻細分（各分類不同）
+# ============================================
+diversity_thresholds:
+  fashion:
+    min_score: 0.65
+    min_sources: 3
+  food:
+    min_score: 0.55
+    min_sources: 3
+  trend:
+    min_score: 0.60
+    min_sources: 3

@@ -1,28 +1,39 @@
+/**
+ * 即將到來的事件組件
+ * Style: Lane Crawford 風格 - 極簡黑白
+ */
 export default function UpcomingEvents() {
   // 暫時移除 mock 數據，等待真實 API
   const events: Array<{ title: string; date: string; time: string }> = []
+  const eventCount = events.length
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="font-bold text-gray-800">即將到來的事件</h3>
-        <button className="text-sm text-primary hover:text-primary-dark">View more</button>
+    <div className="bg-white border border-gray-100 p-4 transition-all duration-300 hover:border-gray-300">
+      {/* 標題 */}
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-[10px] tracking-[0.15em] uppercase text-gray-500 font-light">
+          UPCOMING
+        </h3>
+        <span className="text-[10px] text-gray-400 font-light">
+          {eventCount > 0 ? '100%' : '0%'}
+        </span>
       </div>
-      <div className="space-y-4">
-        {events.length > 0 ? (
-          events.map((event, index) => (
-            <div key={index} className="border-l-4 border-primary pl-4">
-              <p className="font-semibold text-gray-800">{event.title}</p>
-              <p className="text-sm text-gray-500">
-                {event.date}, {event.time}
-              </p>
-            </div>
-          ))
-        ) : (
-          <p className="text-sm text-gray-500 text-center py-4">暫無即將到來的事件</p>
-        )}
+      
+      {/* 進度條 */}
+      <div className="w-full h-px bg-gray-100 mb-3">
+        <div 
+          className="h-full bg-black transition-all duration-500"
+          style={{ width: eventCount > 0 ? '100%' : '0%' }}
+        />
       </div>
+      
+      {/* 數值 */}
+      <p className="text-xl font-light tracking-wide text-black mb-1">{eventCount}</p>
+      
+      {/* 訊息 */}
+      <p className="text-[10px] text-gray-400 font-light tracking-wide">
+        {eventCount > 0 ? 'SCHEDULED' : 'NO EVENTS'}
+      </p>
     </div>
   )
 }
-

@@ -9,6 +9,7 @@ from typing import Callable, Dict, Tuple
 from datetime import datetime, timedelta
 from collections import defaultdict
 import time
+from app.config import settings
 
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
@@ -96,6 +97,10 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         return True, ""
     
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
+        # 排除 OPTIONS 預檢請求（CORS 預檢請求不應計入速率限制）
+        if request.method == "OPTIONS":
+            return await call_next(request)
+        
         # 排除的路徑不需要限流
         if any(request.url.path.startswith(path) for path in self.exclude_paths):
             return await call_next(request)
@@ -110,15 +115,42 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         allowed, error_message = self._check_rate_limit(client_ip)
         
         if not allowed:
+            # 設定 CORS header（確保 429 響應也能通過 CORS 檢查）
+            headers = {
+                "X-RateLimit-Limit": str(self.requests_per_minute),
+                "X-RateLimit-Remaining": "0",
+                "Retry-After": "60",
+            }
+            
+            # 添加 CORS header
+            origin = request.headers.get("origin")
+            cors_origins = settings.CORS_ORIGINS
+            if isinstance(cors_origins, str):
+                cors_origins = [o.strip() for o in cors_origins.split(',') if o.strip()]
+            elif not isinstance(cors_origins, list):
+                cors_origins = list(cors_origins) if cors_origins else []
+            
+            # 設定 Access-Control-Allow-Origin
+            if "*" in cors_origins or not cors_origins:
+                headers["Access-Control-Allow-Origin"] = "*"
+            elif origin and origin in cors_origins:
+                headers["Access-Control-Allow-Origin"] = origin
+                headers["Access-Control-Allow-Credentials"] = "true"
+            elif origin:
+                # 開發環境：允許未列出的來源
+                headers["Access-Control-Allow-Origin"] = origin
+                headers["Access-Control-Allow-Credentials"] = "true"
+            elif cors_origins:
+                headers["Access-Control-Allow-Origin"] = cors_origins[0]
+            
+            headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+            headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-API-Key, Accept"
+            
             return Response(
                 content=f'{{"detail": "{error_message}"}}',
                 status_code=status.HTTP_429_TOO_MANY_REQUESTS,
                 media_type="application/json",
-                headers={
-                    "X-RateLimit-Limit": str(self.requests_per_minute),
-                    "X-RateLimit-Remaining": "0",
-                    "Retry-After": "60",
-                },
+                headers=headers,
             )
         
         # 計算剩餘請求數

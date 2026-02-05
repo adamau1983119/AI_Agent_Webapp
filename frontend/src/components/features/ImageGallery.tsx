@@ -9,6 +9,7 @@ import { showSuccess, showError } from '@/utils/toast'
 import type { Image } from '@/types'
 import type { ImageReorderItem } from '@/api/images'
 import ImagePreview from './ImagePreview'
+import { useTranslation } from '@/i18n'
 
 /**
  * 生成圖片代理 URL
@@ -178,7 +179,7 @@ function ImageGalleryItem({
             disabled={deletingId === image.id}
             className="px-3 py-1 bg-red-500/90 text-white rounded text-xs font-medium hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed pointer-events-auto"
           >
-            {deletingId === image.id ? '刪除中...' : '刪除'}
+            {deletingId === image.id ? t('common.deleting') : t('common.delete')}
           </button>
         </div>
       )}
@@ -207,6 +208,7 @@ export default function ImageGallery({
   topicId,
   onImageUpdate,
 }: ImageGalleryProps) {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [isMatching, setIsMatching] = useState(false)
 
@@ -215,17 +217,17 @@ export default function ImageGallery({
     mutationFn: (minCount: number) => imagesAPI.matchPhotos(topicId, minCount),
     onMutate: () => {
       setIsMatching(true)
-      showSuccess('正在智能匹配照片...')
+      showSuccess(t('common.loading'))
     },
     onSuccess: async (data) => {
       setIsMatching(false)
       // 立即重新獲取圖片列表，確保UI更新
       await queryClient.refetchQueries({ queryKey: ['images', topicId] })
-      showSuccess(`已匹配 ${data.length} 張照片`)
+      showSuccess(t('common.success'))
     },
     onError: (error: any) => {
       setIsMatching(false)
-      showError(error?.message || '匹配照片失敗')
+      showError(error?.message || t('common.failed'))
     },
   })
 
@@ -234,14 +236,14 @@ export default function ImageGallery({
     mutationFn: () => imagesAPI.validateMatch(topicId),
     onSuccess: (data) => {
       if (data.overall_match) {
-        showSuccess('照片與文字匹配度良好')
+        showSuccess(t('common.success'))
       } else {
-        showError(`發現 ${data.warnings.length} 個匹配問題`)
+        showError(t('common.failed'))
         console.warn('匹配問題:', data.warnings)
       }
     },
     onError: (error: any) => {
-      showError(error?.message || '驗證匹配度失敗')
+      showError(error?.message || t('common.failed'))
     },
   })
   const [previewImage, setPreviewImage] = useState<Image | null>(null)
@@ -254,12 +256,12 @@ export default function ImageGallery({
     mutationFn: (imageId: string) => imagesAPI.deleteImage(topicId, imageId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['images', topicId] })
-      showSuccess('圖片已成功刪除')
+      showSuccess(t('common.success'))
       onImageUpdate?.()
       setDeletingId(null)
     },
     onError: (error) => {
-      showError('刪除圖片失敗，請稍後再試')
+      showError(t('common.failed'))
       setDeletingId(null)
       console.error('Failed to delete image:', error)
     },
@@ -271,13 +273,13 @@ export default function ImageGallery({
       imagesAPI.reorderImages(topicId, orders),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['images', topicId] })
-      showSuccess('圖片順序已更新')
+      showSuccess(t('common.success'))
       setIsReordering(false)
       setReorderedImages([])
       onImageUpdate?.()
     },
     onError: (error) => {
-      showError('更新圖片順序失敗，請稍後再試')
+      showError(t('common.failed'))
       setIsReordering(false)
       setReorderedImages([])
       console.error('Failed to reorder images:', error)
@@ -285,7 +287,7 @@ export default function ImageGallery({
   })
 
   const handleDelete = (imageId: string) => {
-    if (confirm('確定要刪除這張圖片嗎？')) {
+    if (confirm(t('images.confirmDelete'))) {
       setDeletingId(imageId)
       deleteMutation.mutate(imageId)
     }
@@ -344,7 +346,7 @@ export default function ImageGallery({
             disabled={validateMutation.isPending}
             className="px-3 py-1 text-sm font-medium text-blue-700 bg-blue-100 rounded-md hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {validateMutation.isPending ? '驗證中...' : '✓ 驗證匹配度'}
+            {validateMutation.isPending ? t('common.loading') : `✓ ${t('images.validateMatch')}`}
           </button>
           {images.length < 8 && (
             <button
@@ -352,7 +354,7 @@ export default function ImageGallery({
               disabled={isMatching}
               className="px-3 py-1 text-sm font-medium text-primary bg-primary/10 rounded-md hover:bg-primary/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isMatching ? '匹配中...' : '🔍 智能匹配（補齊至8張）'}
+              {isMatching ? t('common.loading') : `🔍 ${t('images.smartMatch')}`}
             </button>
           )}
         </div>
@@ -361,7 +363,7 @@ export default function ImageGallery({
             onClick={handleStartReorder}
             className="px-3 py-1 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
           >
-            🔄 重新排序
+            🔄 {t('images.reorder')}
           </button>
         ) : (
           <div className="flex gap-2">
@@ -369,14 +371,14 @@ export default function ImageGallery({
               onClick={handleCancelReorder}
               className="px-3 py-1 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
             >
-              取消
+              {t('common.cancel')}
             </button>
             <button
               onClick={handleSaveReorder}
               disabled={reorderMutation.isPending}
               className="px-3 py-1 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {reorderMutation.isPending ? '儲存中...' : '儲存順序'}
+              {reorderMutation.isPending ? t('common.loading') : t('common.save')}
             </button>
           </div>
         )}

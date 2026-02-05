@@ -1,4 +1,4 @@
-# Backend - AI Agent Webapp
+# Influencers AI - Backend
 
 > **建立日期**：2025-12-19  
 > **狀態**：開發中

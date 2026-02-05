@@ -1,5 +1,5 @@
 """
-AI Agent Webapp - Backend Application
+Influencers AI - Backend Application
 """
 
 __version__ = "1.0.0"

@@ -14,7 +14,8 @@ import { handleAPIError } from './errors'
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
 
 /**
- * HTTP 請求輔助函數（使用攔截器）
+ * HTTP 請求輔助函數（簡化版，保留必要功能）
+ * 使用攔截器系統處理認證、錯誤等
  */
 async function fetchAPI<T>(
   endpoint: string,
@@ -24,10 +25,10 @@ async function fetchAPI<T>(
   const timeout = options?.timeout || 10000 // 預設 10 秒超時
 
   try {
-    // 1. 請求攔截器處理
+    // 1. 請求攔截器處理（添加認證、請求頭等）
     const config = requestInterceptor(options || {})
 
-    // 2. 發送請求（帶超時）
+    // 2. 發送請求（帶超時控制）
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), timeout)
     
@@ -38,9 +39,8 @@ async function fetchAPI<T>(
       })
       clearTimeout(timeoutId)
 
-      // 3. 響應攔截器處理
+      // 3. 響應攔截器處理（統一錯誤處理、分頁等）
       const data = await responseInterceptor(response, options?.skipErrorHandler)
-
       return data as T
     } catch (fetchError: any) {
       clearTimeout(timeoutId)
@@ -53,6 +53,12 @@ async function fetchAPI<T>(
     // 4. 統一錯誤處理
     const apiError = handleAPIError(error)
     
+    // 404 錯誤是正常情況（資源不存在），靜默處理
+    // 429 錯誤由 React Query 處理，不需要額外日誌
+    if (apiError.status === 404 || apiError.status === 429) {
+      throw apiError
+    }
+    
     // 詳細錯誤日誌（開發和生產環境都顯示）
     console.error(`❌ API request failed: ${endpoint}`, {
       url,
@@ -61,15 +67,20 @@ async function fetchAPI<T>(
       status: apiError.status,
     })
     
-    // 提供診斷建議
+    // 網路錯誤提供診斷建議
     if (apiError.message.includes('Failed to fetch') || 
         apiError.message.includes('NetworkError') ||
-        apiError.message.includes('請求超時')) {
+        apiError.message.includes('請求超時') ||
+        apiError.status === 0) {
       console.error('💡 診斷建議：')
       console.error('  1. 檢查後端服務是否運行：', API_BASE_URL.replace('/api/v1', '/health'))
       console.error('  2. 檢查 VITE_API_URL 環境變數：', API_BASE_URL)
       console.error('  3. 檢查 CORS 設定是否正確')
       console.error('  4. 檢查網路連接')
+      // 對於智能匹配照片，超時時間可能需要更長
+      if (endpoint.includes('/match')) {
+        console.error('  5. 智能匹配照片可能需要更長時間，請檢查後端日誌')
+      }
     }
     
     throw apiError
@@ -133,6 +144,10 @@ export const api = {
   updateTopic: topicsAPI.updateTopic,
   updateTopicStatus: topicsAPI.updateTopicStatus,
   deleteTopic: topicsAPI.deleteTopic,
+  // 搜尋相關（新的搜尋端點）
+  searchTopics: topicsAPI.searchTopics,
+  checkUrlExists: topicsAPI.checkUrlExists,
+  getHotQueries: topicsAPI.getHotQueries,
 
   // 內容相關（使用專用 API）
   getContent: contentsAPI.getContent,

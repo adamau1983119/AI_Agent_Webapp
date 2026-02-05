@@ -1,9 +1,11 @@
 /**
  * 主題篩選元件
+ * 支援多語言
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import type { TopicFilters as TopicFiltersType } from '@/api/topics'
+import { useTranslation } from '@/i18n'
 
 interface TopicFiltersProps {
   onFilterChange: (filters: TopicFiltersType) => void
@@ -14,6 +16,7 @@ export default function TopicFilters({
   onFilterChange,
   className = '',
 }: TopicFiltersProps) {
+  const { t } = useTranslation()
   const [category, setCategory] = useState<string>('')
   const [status, setStatus] = useState<string>('')
   const [date, setDate] = useState<string>('')
@@ -66,13 +69,13 @@ export default function TopicFilters({
 
   return (
     <div className={`bg-white rounded-lg shadow p-6 ${className}`}>
-      <h3 className="text-lg font-semibold text-gray-800 mb-4">篩選條件</h3>
+      <h3 className="text-lg font-semibold text-gray-800 mb-4">{t('filters.title')}</h3>
 
       <div className="space-y-4">
         {/* 搜尋框 */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            搜尋
+            {t('filters.search')}
           </label>
           <input
             type="text"
@@ -88,7 +91,7 @@ export default function TopicFilters({
                 handleFilterChange()
               }
             }}
-            placeholder="搜尋主題標題或來源..."
+            placeholder={t('filters.searchPlaceholder')}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
           />
         </div>
@@ -96,7 +99,7 @@ export default function TopicFilters({
         {/* 分類篩選 */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            分類
+            {t('filters.category')}
           </label>
           <select
             value={category}
@@ -106,17 +109,17 @@ export default function TopicFilters({
             }}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
           >
-            <option value="">全部</option>
-            <option value="fashion">時尚</option>
-            <option value="food">美食</option>
-            <option value="trend">趨勢</option>
+            <option value="">{t('filters.all')}</option>
+            <option value="fashion">{t('filters.fashion')}</option>
+            <option value="food">{t('filters.food')}</option>
+            <option value="trend">{t('filters.trend')}</option>
           </select>
         </div>
 
         {/* 狀態篩選 */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            狀態
+            {t('filters.status')}
           </label>
           <select
             value={status}
@@ -126,17 +129,17 @@ export default function TopicFilters({
             }}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
           >
-            <option value="">全部</option>
-            <option value="pending">待審核</option>
-            <option value="confirmed">已確認</option>
-            <option value="deleted">已刪除</option>
+            <option value="">{t('filters.all')}</option>
+            <option value="pending">{t('filters.pending')}</option>
+            <option value="confirmed">{t('filters.confirmed')}</option>
+            <option value="deleted">{t('filters.deleted')}</option>
           </select>
         </div>
 
         {/* 日期篩選 */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            日期
+            {t('filters.date')}
           </label>
           <input
             type="date"
@@ -155,7 +158,7 @@ export default function TopicFilters({
             onClick={handleReset}
             className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
           >
-            重置
+            {t('filters.reset')}
           </button>
         </div>
       </div>

@@ -1,0 +1,1835 @@
+============================================================
+HARDCODED TEXT SCAN REPORT
+============================================================
+
+[STATS] Summary
+   Total files scanned: 43
+   Files with issues: 43
+   Total hardcoded texts: 868
+
+[LIST] Detailed List
+------------------------------------------------------------
+
+[FILE] Channels.tsx (33 items)
+   Line 49: "載入頻道失敗');"
+      -> Suggested key: channels.載入頻道失敗
+   Line 56: "確定要刪除頻道「${channelName}」嗎"
+      -> Suggested key: channels.delete
+   Line 56: "此操作無法復原。`)) {"
+      -> Suggested key: channels.此操作無法復原
+   Line 62: "頻道已刪除');"
+      -> Suggested key: channels.delete
+   Line 65: "刪除失敗');"
+      -> Suggested key: channels.delete
+   Line 72: "收集任務已觸發');"
+      -> Suggested key: channels.收集任務已觸發
+   Line 74: "觸發失敗');"
+      -> Suggested key: channels.觸發失敗
+   Line 86: "標題 */}"
+      -> Suggested key: channels.標題
+   Line 90: "我的頻道"
+      -> Suggested key: channels.我的頻道
+   Line 93: "管理您的自定義內容頻道（{channels.length}/{maxChannels}）"
+      -> Suggested key: channels.管理您的自定義內容頻道channelslengthmaxchannels
+   Line 105: "建立頻道"
+      -> Suggested key: channels.建立頻道
+   Line 110: "載入中 */}"
+      -> Suggested key: channels.loading
+   Line 118: "載入中...</p>"
+      -> Suggested key: channels.loading
+   Line 123: "錯誤 */}"
+      -> Suggested key: channels.錯誤
+   Line 131: "重試"
+      -> Suggested key: channels.重試
+   Line 136: "空狀態 */}"
+      -> Suggested key: channels.空狀態
+   Line 145: "還沒有頻道"
+      -> Suggested key: channels.還沒有頻道
+   Line 148: "建立您的第一個頻道，開始接收個人化的內容推薦"
+      -> Suggested key: channels.建立您的第一個頻道開始接收個人化的內容推薦
+   Line 157: "建立第一個頻道"
+      -> Suggested key: channels.建立第一個頻道
+   Line 162: "頻道列表 */}"
+      -> Suggested key: channels.頻道列表
+   Line 174: "新增頻道卡片 */}"
+      -> Suggested key: channels.新增頻道卡片
+   Line 186: "新增頻道"
+      -> Suggested key: channels.新增頻道
+   Line 211: "頭部 */}"
+      -> Suggested key: channels.頭部
+   Line 227: "選單 */}"
+      -> Suggested key: channels.選單
+   Line 251: "編輯頻道"
+      -> Suggested key: channels.edit
+   Line 260: "立即收集"
+      -> Suggested key: channels.立即收集
+   Line 270: "刪除頻道"
+      -> Suggested key: channels.delete
+   Line 278: "描述 */}"
+      -> Suggested key: channels.描述
+   Line 285: "自定義關鍵字 */}"
+      -> Suggested key: channels.自定義關鍵字
+   Line 304: "統計 */}"
+      -> Suggested key: channels.統計
+   Line 307: "個主題</span>"
+      -> Suggested key: channels.個主題span
+   Line 310: "上次收集：{new Date(channel.last_collected_at).toLocaleDateString()}"
+      -> Suggested key: channels.上次收集newDatechannellast_collected_attolocaledatestring
+   Line 315: "狀態指示器 */}"
+      -> Suggested key: channels.狀態指示器
+
+[FILE] CreateChannel.tsx (41 items)
+   Line 88: "請輸入頻道名稱');"
+      -> Suggested key: createchannel.請輸入頻道名稱
+   Line 93: "請選擇類別');"
+      -> Suggested key: createchannel.請選擇類別
+   Line 98: "選擇「其他"
+      -> Suggested key: createchannel.選擇其他
+   Line 98: "類別時請輸入至少一個關鍵字');"
+      -> Suggested key: createchannel.類別時請輸入至少一個關鍵字
+   Line 114: "頻道建立成功！');"
+      -> Suggested key: createchannel.頻道建立成功
+   Line 117: "建立失敗');"
+      -> Suggested key: createchannel.建立失敗
+   Line 126: "返回按鈕 */}"
+      -> Suggested key: createchannel.back
+   Line 134: "返回頻道列表"
+      -> Suggested key: createchannel.back
+   Line 137: "標題 */}"
+      -> Suggested key: createchannel.標題
+   Line 140: "建立新頻道"
+      -> Suggested key: createchannel.建立新頻道
+   Line 143: "設定您的個人化內容頻道"
+      -> Suggested key: createchannel.設定您的個人化內容頻道
+   Line 147: "步驟指示器 */}"
+      -> Suggested key: createchannel.步驟指示器
+   Line 179: "表單內容 */}"
+      -> Suggested key: createchannel.表單內容
+   Line 181: "步驟 1: 選擇類別"
+      -> Suggested key: createchannel.步驟1選擇類別
+   Line 185: "選擇內容類別"
+      -> Suggested key: createchannel.選擇內容類別
+   Line 188: "選擇您感興趣的內容類型"
+      -> Suggested key: createchannel.選擇您感興趣的內容類型
+   Line 220: "下一步"
+      -> Suggested key: createchannel.next
+   Line 226: "步驟 2: 選擇地區"
+      -> Suggested key: createchannel.步驟2選擇地區
+   Line 230: "選擇內容地區"
+      -> Suggested key: createchannel.選擇內容地區
+   Line 233: "選擇您偏好的內容來源地區"
+      -> Suggested key: createchannel.選擇您偏好的內容來源地區
+   Line 258: "自定義關鍵字（當類別為"
+      -> Suggested key: createchannel.自定義關鍵字當類別為
+   Line 258: "時） */}"
+      -> Suggested key: createchannel.時
+   Line 262: "自定義關鍵字 <span className="text-red-500">*</span>"
+      -> Suggested key: createchannel.自定義關鍵字SpanClassnametextred500span
+   Line 270: "輸入關鍵字後按 Enter""
+      -> Suggested key: createchannel.輸入關鍵字後按Enter
+   Line 278: "添加"
+      -> Suggested key: createchannel.添加
+   Line 304: "最多 5 個關鍵字"
+      -> Suggested key: createchannel.最多5個關鍵字
+   Line 314: "上一步"
+      -> Suggested key: createchannel.上一步
+   Line 321: "下一步"
+      -> Suggested key: createchannel.next
+   Line 327: "步驟 3: 命名頻道"
+      -> Suggested key: createchannel.步驟3命名頻道
+   Line 331: "為頻道命名"
+      -> Suggested key: createchannel.為頻道命名
+   Line 334: "給您的頻道一個好記的名稱"
+      -> Suggested key: createchannel.給您的頻道一個好記的名稱
+   Line 340: "頻道名稱 <span className="text-red-500">*</span>"
+      -> Suggested key: createchannel.頻道名稱SpanClassnametextred500span
+   Line 346: "例如：我的時尚頻道"
+      -> Suggested key: createchannel.例如我的時尚頻道
+   Line 357: "頻道描述（選填"
+      -> Suggested key: createchannel.頻道描述選填
+   Line 362: "簡短描述這個頻道的內容...""
+      -> Suggested key: createchannel.簡短描述這個頻道的內容
+   Line 373: "預覽 */}"
+      -> Suggested key: createchannel.預覽
+   Line 376: "頻道預覽"
+      -> Suggested key: createchannel.頻道預覽
+   Line 384: "未命名頻道'}"
+      -> Suggested key: createchannel.未命名頻道
+   Line 398: "上一步"
+      -> Suggested key: createchannel.上一步
+   Line 411: "建立中..."
+      -> Suggested key: createchannel.建立中
+   Line 414: "建立頻道'"
+      -> Suggested key: createchannel.建立頻道
+
+[FILE] Dashboard.tsx (65 items)
+   Line 21: "生產環境調試資訊：')"
+      -> Suggested key: dashboard.生產環境調試資訊
+   Line 22: "未設置')"
+      -> Suggested key: dashboard.未設置
+   Line 23: "當前 API Base URL:', import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1')"
+      -> Suggested key: dashboard.當前ApiBase
+   Line 26: "空依賴數組，確保只執行一次"
+      -> Suggested key: dashboard.空依賴數組確保只執行一次
+   Line 36: "完全關閉自動重試，避免"
+      -> Suggested key: dashboard.完全關閉自動重試避免
+   Line 36: "錯誤循環"
+      -> Suggested key: dashboard.錯誤循環
+   Line 37: "秒內認為數據新鮮"
+      -> Suggested key: dashboard.秒內認為數據新鮮
+   Line 38: "分鐘緩存"
+      -> Suggested key: dashboard.分鐘緩存
+   Line 39: "每 5 秒自動輪詢一次"
+      -> Suggested key: dashboard.每5秒自動輪詢一次
+   Line 39: "降低頻率，避免觸發速率限制"
+      -> Suggested key: dashboard.降低頻率避免觸發速率限制
+   Line 40: "避免視窗聚焦時自動重試"
+      -> Suggested key: dashboard.避免視窗聚焦時自動重試
+   Line 41: "組件掛載時獲取數據"
+      -> Suggested key: dashboard.組件掛載時獲取數據
+   Line 51: "完全關閉自動重試，避免"
+      -> Suggested key: dashboard.完全關閉自動重試避免
+   Line 51: "錯誤循環"
+      -> Suggested key: dashboard.錯誤循環
+   Line 52: "秒內認為數據新鮮"
+      -> Suggested key: dashboard.秒內認為數據新鮮
+   Line 53: "分鐘緩存"
+      -> Suggested key: dashboard.分鐘緩存
+   Line 54: "關閉自動輪詢，避免超時問題"
+      -> Suggested key: dashboard.關閉自動輪詢避免超時問題
+   Line 55: "避免視窗聚焦時自動重試"
+      -> Suggested key: dashboard.避免視窗聚焦時自動重試
+   Line 56: "組件掛載時獲取數據"
+      -> Suggested key: dashboard.組件掛載時獲取數據
+   Line 71: "暫時禁用，避免"
+      -> Suggested key: dashboard.暫時禁用避免
+   Line 71: "錯誤影響 Dashboard"
+      -> Suggested key: dashboard.錯誤影響Dashboard
+   Line 141: "正在生成今日主題...', { id: 'generate-today' })"
+      -> Suggested key: dashboard.正在生成今日主題IdGeneratetoday
+   Line 146: "今日主題生成任務已啟動', { id: 'generate-today' })"
+      -> Suggested key: dashboard.今日主題生成任務已啟動IdGeneratetoday
+   Line 156: "生成今日主題失敗'"
+      -> Suggested key: dashboard.生成今日主題失敗
+   Line 159: "資料庫未連接，無法生成主題"
+      -> Suggested key: dashboard.資料庫未連接無法生成主題
+   Line 165: "伺服器內部錯誤，請查看後端日誌"
+      -> Suggested key: dashboard.伺服器內部錯誤請查看後端日誌
+   Line 167: "生成今日主題失敗'"
+      -> Suggested key: dashboard.生成今日主題失敗
+   Line 182: "已刪除 ${data.deleted_count} 個今日主題"
+      -> Suggested key: dashboard.delete
+   Line 188: "刪除今日主題失敗'"
+      -> Suggested key: dashboard.delete
+   Line 194: "確定要刪除所有今日生成的主題嗎？此操作無法復原"
+      -> Suggested key: dashboard.delete
+   Line 318: "只在 topics 或"
+      -> Suggested key: dashboard.只在Topics或
+   Line 318: "變化時執行"
+      -> Suggested key: dashboard.變化時執行
+   Line 372: "今日主題生成完成！', { id: 'generate-today-complete' })"
+      -> Suggested key: dashboard.今日主題生成完成IdGeneratetodaycomplete
+   Line 380: "只依賴 todayTopicsCount 和"
+      -> Suggested key: dashboard.只依賴Todaytopicscount和
+   Line 380: "不依賴 topics"
+      -> Suggested key: dashboard.不依賴Topics
+   Line 390: "頁面標題 */}"
+      -> Suggested key: dashboard.頁面標題
+   Line 392: "DASHBOARD"
+      -> Suggested key: dashboard.dashboard
+   Line 396: "錯誤警告（如果有連接錯誤"
+      -> Suggested key: dashboard.錯誤警告如果有連接錯誤
+   Line 400: "無法連接到後端服務')}"
+      -> Suggested key: dashboard.無法連接到後端服務
+   Line 406: "速率限制警告 - Lane Crawford Style */}"
+      -> Suggested key: dashboard.速率限制警告LaneCrawford
+   Line 415: "後端服務限制了請求頻率，請稍後再試"
+      -> Suggested key: dashboard.後端服務限制了請求頻率請稍後再試
+   Line 418: "建議等待 {(topicsError as any).details.retryAfter} 秒後再試"
+      -> Suggested key: dashboard.建議等待TopicserrorAs
+   Line 433: "載入超時提示 - Lane Crawford Style */}"
+      -> Suggested key: dashboard.載入超時提示LaneCrawford
+   Line 448: "生成進度提示 - Lane Crawford Style */}"
+      -> Suggested key: dashboard.生成進度提示LaneCrawford
+   Line 478: "統計卡片區 - Lane Crawford Style */}"
+      -> Suggested key: dashboard.統計卡片區LaneCrawford
+   Line 480: "今日主題卡片 - 特殊處理"
+      -> Suggested key: dashboard.今日主題卡片特殊處理
+   Line 501: "操作按鈕 */}"
+      -> Suggested key: dashboard.操作按鈕
+   Line 548: "快速操作區 - Lane Crawford Style */}"
+      -> Suggested key: dashboard.快速操作區LaneCrawford
+   Line 550: "QUICK ACTIONS"
+      -> Suggested key: dashboard.quickActions
+   Line 558: "BROWSE TOPICS"
+      -> Suggested key: dashboard.browseTopics
+   Line 566: "MY CHANNELS"
+      -> Suggested key: dashboard.myChannels
+   Line 574: "INSPIRATION"
+      -> Suggested key: dashboard.inspiration
+   Line 582: "STYLE PROFILE"
+      -> Suggested key: dashboard.styleProfile
+   Line 587: "中間區域：日曆"
+      -> Suggested key: dashboard.中間區域日曆
+   Line 587: "主題列表 */}"
+      -> Suggested key: dashboard.主題列表
+   Line 593: "底部區域：主題卡片"
+      -> Suggested key: dashboard.底部區域主題卡片
+   Line 593: "右側資訊欄 */}"
+      -> Suggested key: dashboard.右側資訊欄
+   Line 595: "主題卡片網格 - 顯示所有今日主題"
+      -> Suggested key: dashboard.主題卡片網格顯示所有今日主題
+   Line 604: "TOPIC CARDS"
+      -> Suggested key: dashboard.topicCards
+   Line 643: "今日熱門主題'"
+      -> Suggested key: dashboard.今日熱門主題
+   Line 656: "最新熱門主題'"
+      -> Suggested key: dashboard.最新熱門主題
+   Line 669: "AI AGENT COLLECTING"
+      -> Suggested key: dashboard.aiAgentCollecting
+   Line 738: "右側資訊欄 - Lane Crawford Style */}"
+      -> Suggested key: dashboard.右側資訊欄LaneCrawford
+   Line 740: "推薦主題 */}"
+      -> Suggested key: dashboard.推薦主題
+   Line 743: "RECOMMENDED FOR YOU"
+      -> Suggested key: dashboard.recommendedForYou
+
+[FILE] ForgotPassword.tsx (24 items)
+   Line 36: "請輸入有效的 Email 地址"
+      -> Suggested key: forgotpassword.請輸入有效的Email地址
+   Line 63: "發送失敗，請稍後再試"
+      -> Suggested key: forgotpassword.發送失敗請稍後再試
+   Line 71: "繁中',"
+      -> Suggested key: forgotpassword.繁中
+   Line 73: "日本語'"
+      -> Suggested key: forgotpassword.日本語
+   Line 81: "成功圖標 */}"
+      -> Suggested key: forgotpassword.成功圖標
+   Line 95: "我們已發送重設連結到"
+      -> Suggested key: forgotpassword.我們已發送重設連結到
+   Line 101: "請在 24 小時內完成密碼重設"
+      -> Suggested key: forgotpassword.請在24小時內完成密碼重設
+   Line 112: "沒收到郵件？請檢查垃圾郵件資料夾"
+      -> Suggested key: forgotpassword.沒收到郵件請檢查垃圾郵件資料夾
+   Line 121: "左側裝飾區 - 桌面版顯示"
+      -> Suggested key: forgotpassword.左側裝飾區桌面版顯示
+   Line 123: "優雅的幾何裝飾 */}"
+      -> Suggested key: forgotpassword.優雅的幾何裝飾
+   Line 139: "右側表單區 */}"
+      -> Suggested key: forgotpassword.右側表單區
+   Line 141: "頂部導航 */}"
+      -> Suggested key: forgotpassword.頂部導航
+   Line 162: "主要內容區 */}"
+      -> Suggested key: forgotpassword.主要內容區
+   Line 165: "移動端 Logo */}"
+      -> Suggested key: forgotpassword.移動端Logo
+   Line 176: "標題 */}"
+      -> Suggested key: forgotpassword.標題
+   Line 186: "說明文字 */}"
+      -> Suggested key: forgotpassword.說明文字
+   Line 191: "錯誤訊息 */}"
+      -> Suggested key: forgotpassword.錯誤訊息
+   Line 198: "表單 */}"
+      -> Suggested key: forgotpassword.表單
+   Line 200: "輸入框 */}"
+      -> Suggested key: forgotpassword.輸入框
+   Line 224: "提交按鈕 */}"
+      -> Suggested key: forgotpassword.submit
+   Line 244: "分隔線 */}"
+      -> Suggested key: forgotpassword.分隔線
+   Line 247: "返回登入連結 */}"
+      -> Suggested key: forgotpassword.back
+   Line 258: "底部裝飾線 */}"
+      -> Suggested key: forgotpassword.底部裝飾線
+   Line 265: "底部版權 - 僅移動端顯示"
+      -> Suggested key: forgotpassword.底部版權僅移動端顯示
+
+[FILE] Inspiration.tsx (27 items)
+   Line 13: "全部', icon: '✨' },"
+      -> Suggested key: inspiration.全部Icon
+   Line 14: "時尚', icon: '👗' },"
+      -> Suggested key: inspiration.時尚Icon
+   Line 15: "美食', icon: '🍽️' },"
+      -> Suggested key: inspiration.美食Icon
+   Line 16: "科技', icon: '💻' },"
+      -> Suggested key: inspiration.科技Icon
+   Line 17: "財經', icon: '💰' },"
+      -> Suggested key: inspiration.財經Icon
+   Line 18: "運動', icon: '⚽' },"
+      -> Suggested key: inspiration.運動Icon
+   Line 19: "娛樂', icon: '🎬' },"
+      -> Suggested key: inspiration.娛樂Icon
+   Line 89: "搜尋失敗');"
+      -> Suggested key: inspiration.搜尋失敗
+   Line 110: "標題 */}"
+      -> Suggested key: inspiration.標題
+   Line 113: "靈感策劃"
+      -> Suggested key: inspiration.靈感策劃
+   Line 116: "探索創作靈感，發現熱門趨勢"
+      -> Suggested key: inspiration.探索創作靈感發現熱門趨勢
+   Line 120: "搜尋欄 */}"
+      -> Suggested key: inspiration.搜尋欄
+   Line 130: "搜尋靈感主題...""
+      -> Suggested key: inspiration.搜尋靈感主題
+   Line 142: "搜尋建議 */}"
+      -> Suggested key: inspiration.搜尋建議
+   Line 174: "搜尋"
+      -> Suggested key: inspiration.搜尋
+   Line 179: "類別選擇 */}"
+      -> Suggested key: inspiration.類別選擇
+   Line 200: "結果列表 */}"
+      -> Suggested key: inspiration.結果列表
+   Line 208: "搜尋中...</p>"
+      -> Suggested key: inspiration.searching
+   Line 219: "暫無結果，試試其他關鍵字"
+      -> Suggested key: inspiration.暫無結果試試其他關鍵字
+   Line 239: "圖片 */}"
+      -> Suggested key: inspiration.圖片
+   Line 253: "內容 */}"
+      -> Suggested key: inspiration.內容
+   Line 266: "來源 */}"
+      -> Suggested key: inspiration.來源
+   Line 272: "搜尋結果' : '✨ AI 生成"
+      -> Suggested key: inspiration.搜尋結果Ai生成
+   Line 275: "連結 */}"
+      -> Suggested key: inspiration.連結
+   Line 283: "查看原文"
+      -> Suggested key: inspiration.查看原文
+   Line 292: "操作按鈕 */}"
+      -> Suggested key: inspiration.操作按鈕
+   Line 296: "使用此靈感""
+      -> Suggested key: inspiration.使用此靈感
+
+[FILE] LanguageSelection.tsx (12 items)
+   Line 38: "左側裝飾區 - 桌面版顯示"
+      -> Suggested key: languageselection.左側裝飾區桌面版顯示
+   Line 40: "優雅的幾何裝飾 */}"
+      -> Suggested key: languageselection.優雅的幾何裝飾
+   Line 56: "右側內容區 */}"
+      -> Suggested key: languageselection.右側內容區
+   Line 59: "移動端 Logo */}"
+      -> Suggested key: languageselection.移動端Logo
+   Line 70: "桌面版分隔線 */}"
+      -> Suggested key: languageselection.桌面版分隔線
+   Line 75: "標題 */}"
+      -> Suggested key: languageselection.標題
+   Line 78: "選擇您的語言"
+      -> Suggested key: languageselection.選擇您的語言
+   Line 85: "語言選項 */}"
+      -> Suggested key: languageselection.語言選項
+   Line 134: "底部裝飾線 */}"
+      -> Suggested key: languageselection.底部裝飾線
+   Line 139: "版權資訊 */}"
+      -> Suggested key: languageselection.版權資訊
+   Line 144: "測試用：清除語言偏好按鈕"
+      -> Suggested key: languageselection.測試用清除語言偏好按鈕
+   Line 144: "僅開發環境） */}"
+      -> Suggested key: languageselection.僅開發環境
+
+[FILE] Login.tsx (26 items)
+   Line 65: "左側裝飾區 - 桌面版顯示"
+      -> Suggested key: auth.login.左側裝飾區桌面版顯示
+   Line 67: "優雅的幾何裝飾 */}"
+      -> Suggested key: auth.login.優雅的幾何裝飾
+   Line 83: "右側表單區 */}"
+      -> Suggested key: auth.login.右側表單區
+   Line 85: "頂部導航 */}"
+      -> Suggested key: auth.login.頂部導航
+   Line 103: "主要內容區 */}"
+      -> Suggested key: auth.login.主要內容區
+   Line 106: "移動端 Logo */}"
+      -> Suggested key: auth.login.移動端Logo
+   Line 117: "標題 */}"
+      -> Suggested key: auth.login.標題
+   Line 127: "錯誤訊息 */}"
+      -> Suggested key: auth.login.錯誤訊息
+   Line 136: "登入表單 */}"
+      -> Suggested key: auth.login.登入表單
+   Line 138: "輸入框 */}"
+      -> Suggested key: auth.login.輸入框
+   Line 158: "密碼輸入框 */}"
+      -> Suggested key: auth.login.密碼輸入框
+   Line 197: "忘記密碼 */}"
+      -> Suggested key: auth.login.忘記密碼
+   Line 208: "登入按鈕 */}"
+      -> Suggested key: auth.login.登入按鈕
+   Line 229: "分隔線 */}"
+      -> Suggested key: auth.login.分隔線
+   Line 241: "登入 */}"
+      -> Suggested key: auth.login.登入
+   Line 269: "訪客瀏覽 */}"
+      -> Suggested key: auth.login.訪客瀏覽
+   Line 279: "分隔線 */}"
+      -> Suggested key: auth.login.分隔線
+   Line 282: "註冊連結 */}"
+      -> Suggested key: auth.login.註冊連結
+   Line 294: "底部裝飾線 */}"
+      -> Suggested key: auth.login.底部裝飾線
+   Line 301: "底部版權 - 僅移動端顯示"
+      -> Suggested key: auth.login.底部版權僅移動端顯示
+   Line 315: "您已取消 Google 登入"
+      -> Suggested key: auth.login.cancel
+   Line 316: "無法取得授權碼',"
+      -> Suggested key: auth.login.無法取得授權碼
+   Line 317: "授權失敗，請重試"
+      -> Suggested key: auth.login.授權失敗請重試
+   Line 318: "無法取得 Google 帳號資訊"
+      -> Suggested key: auth.login.無法取得Google帳號資訊
+   Line 320: "登入失敗，請重試"
+      -> Suggested key: auth.login.登入失敗請重試
+   Line 323: "登入失敗';"
+      -> Suggested key: auth.login.登入失敗
+
+[FILE] OAuthCallback.tsx (2 items)
+   Line 55: "正在處理登入..."
+      -> Suggested key: auth.oauth.正在處理登入
+   Line 57: "請稍候，正在驗證您的帳號"
+      -> Suggested key: auth.oauth.請稍候正在驗證您的帳號
+
+[FILE] Preferences.tsx (2 items)
+   Line 8: "偏好設定</h1>"
+      -> Suggested key: preferences.偏好設定h1
+   Line 10: "偏好設定功能開發中...</p>"
+      -> Suggested key: preferences.偏好設定功能開發中p
+
+[FILE] Privacy.tsx (2 items)
+   Line 14: "頂部導航 */}"
+      -> Suggested key: legal.privacy.頂部導航
+   Line 26: "內容區 */}"
+      -> Suggested key: legal.privacy.內容區
+
+[FILE] Publish.tsx (34 items)
+   Line 61: "載入連接失敗');"
+      -> Suggested key: publish.載入連接失敗
+   Line 101: "請輸入發布內容');"
+      -> Suggested key: publish.請輸入發布內容
+   Line 106: "請選擇至少一個平台');"
+      -> Suggested key: publish.請選擇至少一個平台
+   Line 112: "發布需要至少一張圖片');"
+      -> Suggested key: publish.發布需要至少一張圖片
+   Line 131: "發布成功！');"
+      -> Suggested key: publish.發布成功
+   Line 133: "部分發布成功（${result.successful}/${result.total_platforms}）`);"
+      -> Suggested key: publish.部分發布成功resultsuccessfulresulttotal_platforms
+   Line 135: "發布失敗');"
+      -> Suggested key: publish.發布失敗
+   Line 138: "發布失敗');"
+      -> Suggested key: publish.發布失敗
+   Line 149: "標題 */}"
+      -> Suggested key: publish.標題
+   Line 152: "一鍵發布"
+      -> Suggested key: publish.一鍵發布
+   Line 155: "將內容發布到多個社交平台"
+      -> Suggested key: publish.將內容發布到多個社交平台
+   Line 174: "尚未連接任何平台"
+      -> Suggested key: publish.尚未連接任何平台
+   Line 177: "請先連接您的社交媒體帳號"
+      -> Suggested key: publish.請先連接您的社交媒體帳號
+   Line 183: "連接帳號"
+      -> Suggested key: publish.連接帳號
+   Line 188: "左側：內容編輯"
+      -> Suggested key: publish.edit
+   Line 190: "內容輸入 */}"
+      -> Suggested key: publish.內容輸入
+   Line 193: "發布內容"
+      -> Suggested key: publish.發布內容
+   Line 198: "輸入您要發布的內容...""
+      -> Suggested key: publish.輸入您要發布的內容
+   Line 218: "輸入 hashtag""
+      -> Suggested key: publish.輸入Hashtag
+   Line 225: "添加"
+      -> Suggested key: publish.添加
+   Line 247: "圖片 */}"
+      -> Suggested key: publish.圖片
+   Line 250: "圖片（Instagram 必須"
+      -> Suggested key: publish.圖片instagram必須
+   Line 257: "輸入圖片 URL""
+      -> Suggested key: publish.輸入圖片Url
+   Line 264: "添加"
+      -> Suggested key: publish.添加
+   Line 273: "圖片 ${index + 1}`}"
+      -> Suggested key: publish.圖片Index1
+   Line 294: "右側：平台選擇和發布"
+      -> Suggested key: publish.右側平台選擇和發布
+   Line 296: "選擇平台 */}"
+      -> Suggested key: publish.選擇平台
+   Line 299: "選擇平台"
+      -> Suggested key: publish.選擇平台
+   Line 338: "發布按鈕 */}"
+      -> Suggested key: publish.發布按鈕
+   Line 350: "發布中..."
+      -> Suggested key: publish.發布中
+   Line 357: "發布到 {selectedPlatforms.length} 個平台"
+      -> Suggested key: publish.發布到Selectedplatformslength個平台
+   Line 362: "發布結果 */}"
+      -> Suggested key: publish.發布結果
+   Line 366: "發布結果"
+      -> Suggested key: publish.發布結果
+   Line 394: "查看貼文 →"
+      -> Suggested key: publish.查看貼文
+
+[FILE] Register.tsx (26 items)
+   Line 81: "請同意服務條款';"
+      -> Suggested key: auth.register.請同意服務條款
+   Line 129: "成功圖標 */}"
+      -> Suggested key: auth.register.成功圖標
+   Line 162: "左側裝飾區 - 桌面版顯示"
+      -> Suggested key: auth.register.左側裝飾區桌面版顯示
+   Line 164: "優雅的幾何裝飾 */}"
+      -> Suggested key: auth.register.優雅的幾何裝飾
+   Line 180: "右側表單區 */}"
+      -> Suggested key: auth.register.右側表單區
+   Line 183: "移動端 Logo */}"
+      -> Suggested key: auth.register.移動端Logo
+   Line 194: "標題 */}"
+      -> Suggested key: auth.register.標題
+   Line 204: "錯誤訊息 */}"
+      -> Suggested key: auth.register.錯誤訊息
+   Line 211: "註冊 */}"
+      -> Suggested key: auth.register.註冊
+   Line 239: "分隔線 */}"
+      -> Suggested key: auth.register.分隔線
+   Line 251: "註冊表單 */}"
+      -> Suggested key: auth.register.註冊表單
+   Line 253: "姓名欄位 - 分開姓和名"
+      -> Suggested key: auth.register.姓名欄位分開姓和名
+   Line 255: "姓 Surname */}"
+      -> Suggested key: auth.register.姓Surname
+   Line 267: "姓氏""
+      -> Suggested key: auth.register.姓氏
+   Line 271: "名 Given Name */}"
+      -> Suggested key: auth.register.名GivenName
+   Line 283: "名字""
+      -> Suggested key: auth.register.名字
+   Line 305: "密碼 */}"
+      -> Suggested key: auth.register.密碼
+   Line 323: "密碼顯示/隱藏按鈕"
+      -> Suggested key: auth.register.密碼顯示隱藏按鈕
+   Line 345: "密碼強度指示器 */}"
+      -> Suggested key: auth.register.密碼強度指示器
+   Line 362: "確認密碼 */}"
+      -> Suggested key: auth.register.confirm
+   Line 380: "確認密碼顯示/隱藏按鈕"
+      -> Suggested key: auth.register.confirm
+   Line 404: "語言偏好 */}"
+      -> Suggested key: auth.register.語言偏好
+   Line 425: "同意條款 */}"
+      -> Suggested key: auth.register.同意條款
+   Line 462: "提交按鈕 */}"
+      -> Suggested key: auth.register.submit
+   Line 483: "登入連結 */}"
+      -> Suggested key: auth.register.登入連結
+   Line 495: "底部裝飾線 */}"
+      -> Suggested key: auth.register.底部裝飾線
+
+[FILE] Schedule.tsx (2 items)
+   Line 8: "排程管理</h1>"
+      -> Suggested key: schedule.排程管理h1
+   Line 10: "排程管理功能開發中...</p>"
+      -> Suggested key: schedule.排程管理功能開發中p
+
+[FILE] Settings.tsx (36 items)
+   Line 74: "標題 */}"
+      -> Suggested key: settings.標題
+   Line 79: "管理您的帳號和偏好設定</p>"
+      -> Suggested key: settings.管理您的帳號和偏好設定p
+   Line 83: "側邊導航 */}"
+      -> Suggested key: settings.側邊導航
+   Line 102: "登出按鈕 */}"
+      -> Suggested key: settings.登出按鈕
+   Line 112: "主要內容 */}"
+      -> Suggested key: settings.主要內容
+   Line 115: "個人資料 */}"
+      -> Suggested key: settings.個人資料
+   Line 120: "頭像 */}"
+      -> Suggested key: settings.頭像
+   Line 136: "名稱 */}"
+      -> Suggested key: settings.名稱
+   Line 149: "只讀） */}"
+      -> Suggested key: settings.只讀
+   Line 163: "已驗證"
+      -> Suggested key: settings.已驗證
+   Line 169: "語言 */}"
+      -> Suggested key: settings.語言
+   Line 187: "儲存按鈕 */}"
+      -> Suggested key: settings.save
+   Line 203: "帳號設定 */}"
+      -> Suggested key: settings.帳號設定
+   Line 208: "更改密碼 */}"
+      -> Suggested key: settings.更改密碼
+   Line 235: "已連結帳號 */}"
+      -> Suggested key: settings.connected
+   Line 263: "已連結</p>"
+      -> Suggested key: settings.connected
+   Line 265: "未連結</p>"
+      -> Suggested key: settings.notConnected
+   Line 281: "刪除帳號 */}"
+      -> Suggested key: settings.delete
+   Line 292: "偏好設定 */}"
+      -> Suggested key: settings.偏好設定
+   Line 297: "主題 */}"
+      -> Suggested key: settings.主題
+   Line 299: "外觀</h3>"
+      -> Suggested key: settings.外觀h3
+   Line 303: "深色模式</span>"
+      -> Suggested key: settings.darkMode
+   Line 307: "淺色模式</span>"
+      -> Suggested key: settings.lightMode
+   Line 313: "通知 */}"
+      -> Suggested key: settings.通知
+   Line 318: "通知</span>"
+      -> Suggested key: settings.通知span
+   Line 326: "新功能提醒</span>"
+      -> Suggested key: settings.新功能提醒span
+   Line 334: "系統更新通知</span>"
+      -> Suggested key: settings.系統更新通知span
+   Line 343: "角色資訊 */}"
+      -> Suggested key: settings.角色資訊
+   Line 345: "帳號資訊</h3>"
+      -> Suggested key: settings.帳號資訊h3
+   Line 348: "帳號類型</span>"
+      -> Suggested key: settings.帳號類型span
+   Line 352: "註冊時間</span>"
+      -> Suggested key: settings.註冊時間span
+   Line 357: "上次登入</span>"
+      -> Suggested key: settings.上次登入span
+   Line 375: "一般用戶',"
+      -> Suggested key: settings.一般用戶
+   Line 376: "管理員',"
+      -> Suggested key: settings.管理員
+   Line 377: "測試用戶',"
+      -> Suggested key: settings.測試用戶
+   Line 378: "付費用戶',"
+      -> Suggested key: settings.付費用戶
+
+[FILE] SocialConnect.tsx (35 items)
+   Line 39: "帳號連接成功！');"
+      -> Suggested key: social.帳號連接成功
+   Line 41: "連接失敗：${error}`);"
+      -> Suggested key: social.連接失敗error
+   Line 57: "載入失敗');"
+      -> Suggested key: social.載入失敗
+   Line 69: "連接失敗');"
+      -> Suggested key: social.連接失敗
+   Line 80: "連接尚未開放');"
+      -> Suggested key: social.連接尚未開放
+   Line 86: "確定要斷開 ${platformLabels[platform]} 連接嗎"
+      -> Suggested key: social.確定要斷開Platformlabelsplatform連接嗎
+   Line 92: "已斷開 ${platformLabels[platform]}`);"
+      -> Suggested key: social.已斷開Platformlabelsplatform
+   Line 95: "斷開失敗');"
+      -> Suggested key: social.斷開失敗
+   Line 114: "標題 */}"
+      -> Suggested key: social.標題
+   Line 117: "社交平台連接"
+      -> Suggested key: social.社交平台連接
+   Line 120: "連接您的社交媒體帳號，一鍵發布內容到多個平台"
+      -> Suggested key: social.連接您的社交媒體帳號一鍵發布內容到多個平台
+   Line 133: "平台（Instagram + Facebook + Threads） */}"
+      -> Suggested key: social.平台instagramFacebookThreads
+   Line 141: "平台"
+      -> Suggested key: social.平台
+   Line 144: "一次連接"
+      -> Suggested key: social.一次連接
+   Line 184: "已連接"
+      -> Suggested key: social.已連接
+   Line 190: "斷開"
+      -> Suggested key: social.斷開
+   Line 194: "未連接</span>"
+      -> Suggested key: social.未連接span
+   Line 201: "連接按鈕 */}"
+      -> Suggested key: social.連接按鈕
+   Line 214: "連接中..."
+      -> Suggested key: social.連接中
+   Line 221: "連接 Meta 帳號"
+      -> Suggested key: social.連接Meta帳號
+   Line 239: "發布影片內容到 TikTok"
+      -> Suggested key: social.發布影片內容到Tiktok
+   Line 260: "已連接"
+      -> Suggested key: social.已連接
+   Line 266: "斷開"
+      -> Suggested key: social.斷開
+   Line 282: "連接中..."
+      -> Suggested key: social.連接中
+   Line 289: "連接 TikTok"
+      -> Suggested key: social.連接Tiktok
+   Line 296: "暫緩） */}"
+      -> Suggested key: social.暫緩
+   Line 307: "即將推出（API 成本較高"
+      -> Suggested key: social.即將推出api成本較高
+   Line 311: "敬請期待"
+      -> Suggested key: social.敬請期待
+   Line 316: "說明 */}"
+      -> Suggested key: social.說明
+   Line 319: "連接說明"
+      -> Suggested key: social.連接說明
+   Line 322: "連接後可以一鍵發布內容到多個平台</li>"
+      -> Suggested key: social.連接後可以一鍵發布內容到多個平台li
+   Line 323: "平台需要 Business 或"
+      -> Suggested key: social.平台需要Business或
+   Line 323: "帳號</li>"
+      -> Suggested key: social.帳號li
+   Line 324: "您可以隨時斷開連接</li>"
+      -> Suggested key: social.您可以隨時斷開連接li
+   Line 325: "我們不會在未經您同意下發布任何內容</li>"
+      -> Suggested key: social.我們不會在未經您同意下發布任何內容li
+
+[FILE] StyleProfile.tsx (54 items)
+   Line 19: "適合商業、財經"
+      -> Suggested key: style.適合商業財經
+   Line 19: "科技等專業內容' },"
+      -> Suggested key: style.科技等專業內容
+   Line 20: "適合生活、旅遊"
+      -> Suggested key: style.適合生活旅遊
+   Line 20: "美食等日常內容' },"
+      -> Suggested key: style.美食等日常內容
+   Line 21: "適合娛樂、趣聞"
+      -> Suggested key: style.適合娛樂趣聞
+   Line 21: "創意內容' },"
+      -> Suggested key: style.創意內容
+   Line 22: "適合勵志、成長"
+      -> Suggested key: style.適合勵志成長
+   Line 22: "心靈雞湯內容' },"
+      -> Suggested key: style.心靈雞湯內容
+   Line 23: "適合分享經歷、教學"
+      -> Suggested key: style.適合分享經歷教學
+   Line 23: "深度內容' },"
+      -> Suggested key: style.深度內容
+   Line 50: "載入風格檔案失敗');"
+      -> Suggested key: style.載入風格檔案失敗
+   Line 63: "已切換為「${presetStyleLabels[style]}」風格"
+      -> Suggested key: style.已切換為presetstylelabelsstyle風格
+   Line 66: "更新失敗');"
+      -> Suggested key: style.更新失敗
+   Line 75: "風格檔案已重置');"
+      -> Suggested key: style.風格檔案已重置
+   Line 79: "重置失敗');"
+      -> Suggested key: style.重置失敗
+   Line 93: "載入中...</p>"
+      -> Suggested key: style.loading
+   Line 104: "標題 */}"
+      -> Suggested key: style.標題
+   Line 106: "風格檔案</h1>"
+      -> Suggested key: style.風格檔案h1
+   Line 108: "管理您的個人化內容風格偏好"
+      -> Suggested key: style.管理您的個人化內容風格偏好
+   Line 112: "學習進度卡片 */}"
+      -> Suggested key: style.學習進度卡片
+   Line 117: "學習進度"
+      -> Suggested key: style.學習進度
+   Line 120: "冷啟動'} · 已評分"
+      -> Suggested key: style.冷啟動已評分
+   Line 134: "進度條 */}"
+      -> Suggested key: style.進度條
+   Line 142: "里程碑 */}"
+      -> Suggested key: style.里程碑
+   Line 144: "冷啟動 (0)</span>"
+      -> Suggested key: style.冷啟動0span
+   Line 145: "學習中 (20)</span>"
+      -> Suggested key: style.學習中20span
+   Line 146: "成熟 (100)</span>"
+      -> Suggested key: style.成熟100span
+   Line 149: "建議 */}"
+      -> Suggested key: style.建議
+   Line 162: "信心分數 */}"
+      -> Suggested key: style.信心分數
+   Line 165: "信心分數""
+      -> Suggested key: style.信心分數
+   Line 170: "總評分數""
+      -> Suggested key: style.總評分數
+   Line 175: "正面比例""
+      -> Suggested key: style.正面比例
+   Line 180: "風格特徵""
+      -> Suggested key: style.風格特徵
+   Line 186: "風格特徵 */}"
+      -> Suggested key: style.風格特徵
+   Line 190: "您的風格特徵"
+      -> Suggested key: style.您的風格特徵
+   Line 205: "預設風格選擇 */}"
+      -> Suggested key: style.預設風格選擇
+   Line 208: "預設風格"
+      -> Suggested key: style.預設風格
+   Line 211: "選擇一個基礎風格，系統會在此基礎上學習您的偏好"
+      -> Suggested key: style.選擇一個基礎風格系統會在此基礎上學習您的偏好
+   Line 244: "語氣偏好 */}"
+      -> Suggested key: style.語氣偏好
+   Line 248: "語氣偏好"
+      -> Suggested key: style.語氣偏好
+   Line 251: "正式程度" value={analysis.tone.formal_score} />"
+      -> Suggested key: style.正式程度Valueanalysistoneformal_score
+   Line 252: "幽默程度" value={analysis.tone.humor_score} />"
+      -> Suggested key: style.幽默程度Valueanalysistonehumor_score
+   Line 253: "情感表達" value={analysis.tone.emotion_score} />"
+      -> Suggested key: style.情感表達Valueanalysistoneemotion_score
+   Line 254: "直接程度" value={analysis.tone.directness_score} />"
+      -> Suggested key: style.直接程度Valueanalysistonedirectness_score
+   Line 259: "重置按鈕 */}"
+      -> Suggested key: style.重置按鈕
+   Line 262: "重置風格檔案"
+      -> Suggested key: style.重置風格檔案
+   Line 265: "清除所有學習記錄，重新開始"
+      -> Suggested key: style.清除所有學習記錄重新開始
+   Line 265: "此操作無法復原。"
+      -> Suggested key: style.此操作無法復原
+   Line 271: "重置風格檔案"
+      -> Suggested key: style.重置風格檔案
+   Line 275: "重置確認對話框 */}"
+      -> Suggested key: style.confirm
+   Line 280: "確認重置？"
+      -> Suggested key: style.confirm
+   Line 283: "這將清除所有學習記錄和評分歷史。您的預設風格將被保留"
+      -> Suggested key: style.這將清除所有學習記錄和評分歷史您的預設風格將被保留
+   Line 290: "取消"
+      -> Suggested key: style.cancel
+   Line 296: "確認重置"
+      -> Suggested key: style.confirm
+
+[FILE] Terms.tsx (2 items)
+   Line 14: "頂部導航 */}"
+      -> Suggested key: legal.terms.頂部導航
+   Line 26: "內容區 */}"
+      -> Suggested key: legal.terms.內容區
+
+[FILE] TopicDetail.tsx (92 items)
+   Line 60: "不重試"
+      -> Suggested key: topics.detail.不重試
+   Line 90: "開始生成內容，主題"
+      -> Suggested key: topics.detail.開始生成內容主題
+   Line 98: "內容生成成功:', data)"
+      -> Suggested key: topics.detail.內容生成成功Data
+   Line 101: "內容生成成功')"
+      -> Suggested key: topics.detail.內容生成成功
+   Line 104: "生成內容失敗:', error)"
+      -> Suggested key: topics.detail.生成內容失敗Error
+   Line 105: "錯誤詳情:', {"
+      -> Suggested key: topics.detail.錯誤詳情
+   Line 113: "生成內容失敗'"
+      -> Suggested key: topics.detail.生成內容失敗
+   Line 118: "未設定') || errorDetail.includes('未設定"
+      -> Suggested key: topics.detail.未設定Errordetailincludes未設定
+   Line 119: "未設定\n\n'"
+      -> Suggested key: topics.detail.未設定nn
+   Line 120: "請在後端環境變數中設置 DEEPSEEK_API_KEY：\n'"
+      -> Suggested key: topics.detail.請在後端環境變數中設置Deepseek_api_keyn
+   Line 121: "訪問 https://platform.deepseek.com/api_keys 獲取"
+      -> Suggested key: topics.detail.訪問Httpsplatformdeepseekcomapi_keys獲取
+   Line 122: "在 Railway/Docker 環境變數中添加"
+      -> Suggested key: topics.detail.在Railwaydocker環境變數中添加
+   Line 122: "你的API Key\n'"
+      -> Suggested key: topics.detail.你的apiKeyn
+   Line 123: "重新部署後端服務'"
+      -> Suggested key: topics.detail.重新部署後端服務
+   Line 125: "請求參數錯誤'"
+      -> Suggested key: topics.detail.請求參數錯誤
+   Line 130: "請求參數錯誤，請檢查後端配置"
+      -> Suggested key: topics.detail.請求參數錯誤請檢查後端配置
+   Line 133: "主題不存在，請重新載入頁面"
+      -> Suggested key: topics.detail.主題不存在請重新載入頁面
+   Line 135: "伺服器內部錯誤，請查看後端日誌"
+      -> Suggested key: topics.detail.伺服器內部錯誤請查看後端日誌
+   Line 149: "開始重新生成內容，主題"
+      -> Suggested key: topics.detail.開始重新生成內容主題
+   Line 157: "內容重新生成成功:', data)"
+      -> Suggested key: topics.detail.內容重新生成成功Data
+   Line 160: "內容重新生成成功')"
+      -> Suggested key: topics.detail.內容重新生成成功
+   Line 163: "重新生成內容失敗:', error)"
+      -> Suggested key: topics.detail.重新生成內容失敗Error
+   Line 164: "錯誤詳情:', {"
+      -> Suggested key: topics.detail.錯誤詳情
+   Line 172: "重新生成內容失敗'"
+      -> Suggested key: topics.detail.重新生成內容失敗
+   Line 175: "請求參數錯誤，請檢查後端配置"
+      -> Suggested key: topics.detail.請求參數錯誤請檢查後端配置
+   Line 177: "主題不存在，請重新載入頁面"
+      -> Suggested key: topics.detail.主題不存在請重新載入頁面
+   Line 179: "伺服器內部錯誤，請查看後端日誌"
+      -> Suggested key: topics.detail.伺服器內部錯誤請查看後端日誌
+   Line 204: "正在智能匹配照片...')"
+      -> Suggested key: topics.detail.正在智能匹配照片
+   Line 210: "已成功匹配 ${data.length} 張照片"
+      -> Suggested key: topics.detail.已成功匹配Datalength張照片
+   Line 217: "主題內容不存在') || errorDetail.includes('內容不存在"
+      -> Suggested key: topics.detail.主題內容不存在Errordetailincludes內容不存在
+   Line 218: "請先生成內容才能匹配照片。請先點擊"
+      -> Suggested key: topics.detail.請先生成內容才能匹配照片請先點擊
+   Line 218: "生成內容」按鈕"
+      -> Suggested key: topics.detail.生成內容按鈕
+   Line 220: "主題內容不存在，請先生成內容"
+      -> Suggested key: topics.detail.主題內容不存在請先生成內容
+   Line 223: "匹配照片失敗'"
+      -> Suggested key: topics.detail.匹配照片失敗
+   Line 226: "匹配照片失敗:', error)"
+      -> Suggested key: topics.detail.匹配照片失敗Error
+   Line 235: "主題已成功刪除')"
+      -> Suggested key: topics.detail.delete
+   Line 239: "刪除主題失敗，請稍後再試"
+      -> Suggested key: topics.detail.delete
+   Line 250: "主題已確認')"
+      -> Suggested key: topics.detail.confirm
+   Line 253: "確認主題失敗，請稍後再試"
+      -> Suggested key: topics.detail.confirm
+   Line 278: "找不到主題</p>"
+      -> Suggested key: topics.detail.找不到主題p
+   Line 279: "主題 ID: {id}</p>"
+      -> Suggested key: topics.detail.主題IdIdp
+   Line 282: "錯誤: {String(topicError)}"
+      -> Suggested key: topics.detail.錯誤Stringtopicerror
+   Line 289: "返回主題列表"
+      -> Suggested key: topics.detail.back
+   Line 298: "標題和操作按鈕 */}"
+      -> Suggested key: topics.detail.標題和操作按鈕
+   Line 306: "編輯"
+      -> Suggested key: topics.detail.edit
+   Line 314: "確認中...' : '確認"
+      -> Suggested key: topics.detail.confirm
+   Line 321: "刪除"
+      -> Suggested key: topics.detail.delete
+   Line 326: "編輯模態框 */}"
+      -> Suggested key: topics.detail.edit
+   Line 341: "刪除確認模態框 */}"
+      -> Suggested key: topics.detail.confirm
+   Line 346: "確認刪除"
+      -> Suggested key: topics.detail.confirm
+   Line 349: "您確定要刪除主題「{topic.title}」嗎"
+      -> Suggested key: topics.detail.delete
+   Line 349: "此操作無法復原。"
+      -> Suggested key: topics.detail.此操作無法復原
+   Line 356: "取消"
+      -> Suggested key: topics.detail.cancel
+   Line 366: "刪除中...' : '確認刪除"
+      -> Suggested key: topics.detail.confirm
+   Line 373: "登入提示模態框 */}"
+      -> Suggested key: topics.detail.登入提示模態框
+   Line 414: "圖片搜尋模態框 */}"
+      -> Suggested key: topics.detail.圖片搜尋模態框
+   Line 429: "三欄式佈局 */}"
+      -> Suggested key: topics.detail.三欄式佈局
+   Line 431: "左欄：圖片區塊"
+      -> Suggested key: topics.detail.左欄圖片區塊
+   Line 436: "圖片（{images.length} 張"
+      -> Suggested key: topics.detail.圖片imageslength張
+   Line 442: "新增圖片"
+      -> Suggested key: topics.detail.新增圖片
+   Line 446: "載入圖片中..." />"
+      -> Suggested key: topics.detail.載入圖片中
+   Line 452: "沒有圖片""
+      -> Suggested key: topics.detail.沒有圖片
+   Line 460: "請先生成內容才能匹配照片。智能匹配需要根據文章內容來匹配相關圖片"
+      -> Suggested key: topics.detail.請先生成內容才能匹配照片智能匹配需要根據文章內容來匹配相關圖片
+   Line 460: "根據文章內容智能匹配相關照片'}"
+      -> Suggested key: topics.detail.根據文章內容智能匹配相關照片
+   Line 462: "匹配中...' : '智能匹配照片"
+      -> Suggested key: topics.detail.匹配中智能匹配照片
+   Line 462: "張）'}"
+      -> Suggested key: topics.detail.張
+   Line 468: "手動搜尋"
+      -> Suggested key: topics.detail.手動搜尋
+   Line 484: "中欄：內容區塊"
+      -> Suggested key: topics.detail.中欄內容區塊
+   Line 488: "載入內容中..." />"
+      -> Suggested key: topics.detail.載入內容中
+   Line 494: "內容</h3>"
+      -> Suggested key: topics.detail.內容h3
+   Line 500: "重新生成中...' : '🔄 重新生成"
+      -> Suggested key: topics.detail.重新生成中重新生成
+   Line 504: "短文</h3>"
+      -> Suggested key: topics.detail.短文h3
+   Line 507: "尚未生成內容'}"
+      -> Suggested key: topics.detail.尚未生成內容
+   Line 511: "字數：{content.wordCount} 字"
+      -> Suggested key: topics.detail.字數contentwordcount字
+   Line 515: "腳本</h3>"
+      -> Suggested key: topics.detail.腳本h3
+   Line 518: "尚未生成內容'}"
+      -> Suggested key: topics.detail.尚未生成內容
+   Line 522: "時長：約"
+      -> Suggested key: topics.detail.時長約
+   Line 528: "尚未生成內容" size="sm" />"
+      -> Suggested key: topics.detail.尚未生成內容Sizesm
+   Line 534: "生成中...' : '生成內容"
+      -> Suggested key: topics.detail.生成中生成內容
+   Line 534: "字文章 + 30秒腳本"
+      -> Suggested key: topics.detail.字文章30秒腳本
+   Line 541: "右欄：資訊區塊"
+      -> Suggested key: topics.detail.右欄資訊區塊
+   Line 544: "互動按鈕 */}"
+      -> Suggested key: topics.detail.互動按鈕
+   Line 546: "互動</h3>"
+      -> Suggested key: topics.detail.互動h3
+   Line 557: "分類</h3>"
+      -> Suggested key: topics.detail.分類h3
+   Line 563: "狀態</h3>"
+      -> Suggested key: topics.detail.狀態h3
+   Line 569: "來源</h3>"
+      -> Suggested key: topics.detail.來源h3
+   Line 573: "生成時間</h3>"
+      -> Suggested key: topics.detail.生成時間h3
+   Line 580: "模型</h3>"
+      -> Suggested key: topics.detail.模型h3
+   Line 585: "統計</h3>"
+      -> Suggested key: topics.detail.統計h3
+   Line 587: "圖片數量：{topic.imageCount} 張"
+      -> Suggested key: topics.detail.圖片數量topicimagecount張
+   Line 588: "字數：{topic.wordCount} 字"
+      -> Suggested key: topics.detail.字數topicwordcount字
+   Line 589: "預計時長：{content.estimatedDuration} 秒"
+      -> Suggested key: topics.detail.預計時長contentestimatedduration秒
+
+[FILE] Topics.tsx (8 items)
+   Line 39: "重置到第一頁"
+      -> Suggested key: topics.重置到第一頁
+   Line 61: "可以從用戶狀態獲取"
+      -> Suggested key: topics.可以從用戶狀態獲取
+   Line 110: "顯示搜尋來源（如果使用新的搜尋端點"
+      -> Suggested key: topics.顯示搜尋來源如果使用新的搜尋端點
+   Line 140: "分頁控制 */}"
+      -> Suggested key: topics.分頁控制
+   Line 170: "搜尋時不顯示時間分組"
+      -> Suggested key: topics.搜尋時不顯示時間分組
+   Line 181: "顯示模式切換 */}"
+      -> Suggested key: topics.顯示模式切換
+   Line 217: "左側：篩選器"
+      -> Suggested key: topics.左側篩選器
+   Line 222: "右側：主題列表"
+      -> Suggested key: topics.右側主題列表
+
+[FILE] Calendar.tsx (1 items)
+   Line 14: "將星期日從 0 調整為"
+      -> Suggested key: calendar.將星期日從0調整為
+
+[FILE] ImageGallery.tsx (30 items)
+   Line 50: "圖片無法載入"
+      -> Suggested key: imagegallery.圖片無法載入
+   Line 88: "載入指示器 */}"
+      -> Suggested key: imagegallery.載入指示器
+   Line 95: "錯誤狀態 */}"
+      -> Suggested key: imagegallery.錯誤狀態
+   Line 104: "圖片 */}"
+      -> Suggested key: imagegallery.圖片
+   Line 116: "圖片載入失敗:', {"
+      -> Suggested key: imagegallery.圖片載入失敗
+   Line 125: "排序模式下的控制按鈕 */}"
+      -> Suggested key: imagegallery.排序模式下的控制按鈕
+   Line 157: "懸停時顯示的操作按鈕（非排序模式"
+      -> Suggested key: imagegallery.懸停時顯示的操作按鈕非排序模式
+   Line 170: "預覽"
+      -> Suggested key: imagegallery.預覽
+   Line 181: "刪除中...' : '刪除"
+      -> Suggested key: imagegallery.delete
+   Line 186: "底部資訊 */}"
+      -> Suggested key: imagegallery.底部資訊
+   Line 218: "正在智能匹配照片...')"
+      -> Suggested key: imagegallery.正在智能匹配照片
+   Line 224: "已匹配 ${data.length} 張照片"
+      -> Suggested key: imagegallery.已匹配Datalength張照片
+   Line 228: "匹配照片失敗')"
+      -> Suggested key: imagegallery.匹配照片失敗
+   Line 237: "照片與文字匹配度良好')"
+      -> Suggested key: imagegallery.照片與文字匹配度良好
+   Line 239: "發現 ${data.warnings.length} 個匹配問題"
+      -> Suggested key: imagegallery.發現Datawarningslength個匹配問題
+   Line 240: "匹配問題:', data.warnings)"
+      -> Suggested key: imagegallery.匹配問題Datawarnings
+   Line 244: "驗證匹配度失敗')"
+      -> Suggested key: imagegallery.驗證匹配度失敗
+   Line 257: "圖片已成功刪除')"
+      -> Suggested key: imagegallery.delete
+   Line 262: "刪除圖片失敗，請稍後再試"
+      -> Suggested key: imagegallery.delete
+   Line 274: "圖片順序已更新')"
+      -> Suggested key: imagegallery.圖片順序已更新
+   Line 280: "更新圖片順序失敗，請稍後再試"
+      -> Suggested key: imagegallery.更新圖片順序失敗請稍後再試
+   Line 288: "確定要刪除這張圖片嗎？')) {"
+      -> Suggested key: imagegallery.delete
+   Line 339: "排序控制按鈕 */}"
+      -> Suggested key: imagegallery.排序控制按鈕
+   Line 347: "驗證中...' : '✓ 驗證匹配度"
+      -> Suggested key: imagegallery.驗證中驗證匹配度
+   Line 355: "匹配中...' : '🔍 智能匹配"
+      -> Suggested key: imagegallery.匹配中智能匹配
+   Line 355: "補齊至8張"
+      -> Suggested key: imagegallery.補齊至8張
+   Line 364: "重新排序"
+      -> Suggested key: imagegallery.重新排序
+   Line 372: "取消"
+      -> Suggested key: imagegallery.cancel
+   Line 379: "儲存中...' : '儲存順序"
+      -> Suggested key: imagegallery.save
+   Line 402: "圖片預覽 */}"
+      -> Suggested key: imagegallery.圖片預覽
+
+[FILE] ImagePreview.tsx (13 items)
+   Line 42: "關閉按鈕 */}"
+      -> Suggested key: imagepreview.關閉按鈕
+   Line 50: "圖片 */}"
+      -> Suggested key: imagepreview.圖片
+   Line 59: "圖片無法載入</div>"
+      -> Suggested key: imagepreview.圖片無法載入div
+   Line 61: "無法載入圖片預覽。可能是網路問題或圖片"
+      -> Suggested key: imagepreview.無法載入圖片預覽可能是網路問題或圖片
+   Line 61: "無效。"
+      -> Suggested key: imagepreview.無效
+   Line 77: "圖片預覽載入失敗:', {"
+      -> Suggested key: imagepreview.圖片預覽載入失敗
+   Line 86: "圖片資訊 */}"
+      -> Suggested key: imagepreview.圖片資訊
+   Line 90: "來源</span>"
+      -> Suggested key: imagepreview.來源span
+   Line 95: "攝影師</span>"
+      -> Suggested key: imagepreview.攝影師span
+   Line 102: "授權</span>"
+      -> Suggested key: imagepreview.授權span
+   Line 106: "順序</span>"
+      -> Suggested key: imagepreview.順序span
+   Line 111: "圖片 URL */}"
+      -> Suggested key: imagepreview.圖片Url
+   Line 113: "圖片 URL</span>"
+      -> Suggested key: imagepreview.圖片Urlspan
+
+[FILE] ImageSearch.tsx (101 items)
+   Line 52: "圖片無法載入"
+      -> Suggested key: imagesearch.圖片無法載入
+   Line 82: "最多重試 1 次"
+      -> Suggested key: imagesearch.最多重試1次
+   Line 104: "圖片載入失敗（已重試"
+      -> Suggested key: imagesearch.圖片載入失敗已重試
+   Line 117: "圖片載入失敗:', {"
+      -> Suggested key: imagesearch.圖片載入失敗
+   Line 137: "占位符 SVG */}"
+      -> Suggested key: imagesearch.占位符Svg
+   Line 142: "圖片無法載入"
+      -> Suggested key: imagesearch.圖片無法載入
+   Line 147: "原始 URL: {image.url.length > 40 ? `${image.url.substring(0, 40)}...` : image.url}"
+      -> Suggested key: imagesearch.原始UrlImageurllength
+   Line 150: "代理 URL: {proxyUrl.length > 40 ? `${proxyUrl.substring(0, 40)}...` : proxyUrl}"
+      -> Suggested key: imagesearch.代理UrlProxyurllength
+   Line 153: "可能原因: CORS 限制"
+      -> Suggested key: imagesearch.可能原因Cors限制
+   Line 153: "無效或伺服器錯誤"
+      -> Suggested key: imagesearch.無效或伺服器錯誤
+   Line 162: "新增中...' : '仍可選擇"
+      -> Suggested key: imagesearch.新增中仍可選擇
+   Line 184: "新增中...' : '選擇"
+      -> Suggested key: imagesearch.新增中選擇
+   Line 204: "對我而言', '他"
+      -> Suggested key: imagesearch.對我而言他
+   Line 204: "她', '它"
+      -> Suggested key: imagesearch.她它
+   Line 204: "的', '是"
+      -> Suggested key: imagesearch.的是
+   Line 204: "在', '有"
+      -> Suggested key: imagesearch.在有
+   Line 204: "和', '與"
+      -> Suggested key: imagesearch.和與
+   Line 204: "及', '或"
+      -> Suggested key: imagesearch.及或
+   Line 205: "近乎', '傳奇"
+      -> Suggested key: imagesearch.近乎傳奇
+   Line 205: "回憶', '巨匠"
+      -> Suggested key: imagesearch.回憶巨匠
+   Line 205: "大師', '設計師"
+      -> Suggested key: imagesearch.大師設計師
+   Line 205: "時尚', '品牌"
+      -> Suggested key: imagesearch.時尚品牌
+   Line 206: "大', '必"
+      -> Suggested key: imagesearch.大必
+   Line 206: "吃', '平民"
+      -> Suggested key: imagesearch.吃平民
+   Line 206: "美食', '推薦"
+      -> Suggested key: imagesearch.美食推薦
+   Line 206: "介紹', '分享"
+      -> Suggested key: imagesearch.介紹分享
+   Line 206: "體驗',"
+      -> Suggested key: imagesearch.體驗
+   Line 207: "一個', '一種"
+      -> Suggested key: imagesearch.一個一種
+   Line 207: "這個', '那個"
+      -> Suggested key: imagesearch.這個那個
+   Line 207: "這些', '那些"
+      -> Suggested key: imagesearch.這些那些
+   Line 228: "移除英文和數字"
+      -> Suggested key: imagesearch.移除英文和數字
+   Line 229: "移除標點"
+      -> Suggested key: imagesearch.移除標點
+   Line 253: "對我而言他近乎傳奇回憶巨匠大師設計師時尚品牌]/g, '')"
+      -> Suggested key: imagesearch.對我而言他近乎傳奇回憶巨匠大師設計師時尚品牌g
+   Line 278: "老婆餅', '雞蛋仔"
+      -> Suggested key: imagesearch.老婆餅雞蛋仔
+   Line 278: "腸粉', '燒賣"
+      -> Suggested key: imagesearch.腸粉燒賣
+   Line 278: "叉燒包', '蝦餃"
+      -> Suggested key: imagesearch.叉燒包蝦餃
+   Line 278: "燒鵝', '燒肉"
+      -> Suggested key: imagesearch.燒鵝燒肉
+   Line 279: "雲吞', '魚蛋"
+      -> Suggested key: imagesearch.雲吞魚蛋
+   Line 279: "牛腩', '煲仔飯"
+      -> Suggested key: imagesearch.牛腩煲仔飯
+   Line 279: "車仔麵', '絲襪奶茶"
+      -> Suggested key: imagesearch.車仔麵絲襪奶茶
+   Line 279: "菠蘿包',"
+      -> Suggested key: imagesearch.菠蘿包
+   Line 280: "蛋撻', '燒餅"
+      -> Suggested key: imagesearch.蛋撻燒餅
+   Line 280: "油條', '豆漿"
+      -> Suggested key: imagesearch.油條豆漿
+   Line 280: "小籠包', '生煎包"
+      -> Suggested key: imagesearch.小籠包生煎包
+   Line 280: "鍋貼', '餃子"
+      -> Suggested key: imagesearch.鍋貼餃子
+   Line 281: "拉麵', '烏冬"
+      -> Suggested key: imagesearch.拉麵烏冬
+   Line 281: "壽司', '刺身"
+      -> Suggested key: imagesearch.壽司刺身
+   Line 281: "天婦羅', '章魚燒"
+      -> Suggested key: imagesearch.天婦羅章魚燒
+   Line 281: "大阪燒',"
+      -> Suggested key: imagesearch.大阪燒
+   Line 282: "漢堡', '披薩"
+      -> Suggested key: imagesearch.漢堡披薩
+   Line 282: "義大利麵', '牛排"
+      -> Suggested key: imagesearch.義大利麵牛排
+   Line 282: "沙拉', '三明治"
+      -> Suggested key: imagesearch.沙拉三明治
+   Line 282: "熱狗',"
+      -> Suggested key: imagesearch.熱狗
+   Line 283: "蛋糕', '餅乾"
+      -> Suggested key: imagesearch.蛋糕餅乾
+   Line 283: "巧克力', '冰淇淋"
+      -> Suggested key: imagesearch.巧克力冰淇淋
+   Line 283: "布丁', '馬卡龍"
+      -> Suggested key: imagesearch.布丁馬卡龍
+   Line 283: "可頌'"
+      -> Suggested key: imagesearch.可頌
+   Line 294: "傳統[\u4e00-\u9fa5]+/g,  // 傳統"
+      -> Suggested key: imagesearch.傳統u4e00u9fa5g傳統
+   Line 295: "街頭[\u4e00-\u9fa5]+/g,  // 街頭"
+      -> Suggested key: imagesearch.街頭u4e00u9fa5g街頭
+   Line 296: "經典[\u4e00-\u9fa5]+/g,  // 經典"
+      -> Suggested key: imagesearch.經典u4e00u9fa5g經典
+   Line 297: "特色[\u4e00-\u9fa5]+/g,  // 特色"
+      -> Suggested key: imagesearch.特色u4e00u9fa5g特色
+   Line 298: "招牌[\u4e00-\u9fa5]+/g,  // 招牌"
+      -> Suggested key: imagesearch.招牌u4e00u9fa5g招牌
+   Line 305: "傳統|街頭"
+      -> Suggested key: imagesearch.傳統街頭
+   Line 305: "經典|特色"
+      -> Suggested key: imagesearch.經典特色
+   Line 305: "招牌/g, '').trim()"
+      -> Suggested key: imagesearch.招牌gTrim
+   Line 320: "鏡頭[^\]]+\]/g,"
+      -> Suggested key: imagesearch.鏡頭g
+   Line 321: "特寫[^\s]+/g,"
+      -> Suggested key: imagesearch.特寫sg
+   Line 322: "近景[^\s]+/g,"
+      -> Suggested key: imagesearch.近景sg
+   Line 323: "遠景[^\s]+/g,"
+      -> Suggested key: imagesearch.遠景sg
+   Line 331: "鏡頭|特寫"
+      -> Suggested key: imagesearch.鏡頭特寫
+   Line 331: "近景|遠景"
+      -> Suggested key: imagesearch.近景遠景
+   Line 343: "過濾太長或太短的關鍵字"
+      -> Suggested key: imagesearch.過濾太長或太短的關鍵字
+   Line 352: "最多返回 8 個關鍵字"
+      -> Suggested key: imagesearch.back
+   Line 368: "診斷模式開關"
+      -> Suggested key: imagesearch.診斷模式開關
+   Line 404: "重命名避免與狀態變數衝突"
+      -> Suggested key: imagesearch.重命名避免與狀態變數衝突
+   Line 420: "將在後端自動設定"
+      -> Suggested key: imagesearch.將在後端自動設定
+   Line 424: "圖片已成功新增')"
+      -> Suggested key: imagesearch.圖片已成功新增
+   Line 432: "新增圖片失敗，請稍後再試"
+      -> Suggested key: imagesearch.新增圖片失敗請稍後再試
+   Line 457: "搜尋圖片</h2>"
+      -> Suggested key: imagesearch.搜尋圖片h2
+   Line 466: "建議關鍵字 */}"
+      -> Suggested key: imagesearch.建議關鍵字
+   Line 469: "建議關鍵字（從內容中提取"
+      -> Suggested key: imagesearch.建議關鍵字從內容中提取
+   Line 492: "搜尋表單 */}"
+      -> Suggested key: imagesearch.搜尋表單
+   Line 499: "輸入關鍵字搜尋圖片...""
+      -> Suggested key: imagesearch.輸入關鍵字搜尋圖片
+   Line 501: "圖片搜尋關鍵字""
+      -> Suggested key: imagesearch.圖片搜尋關鍵字
+   Line 512: "圖片來源選擇""
+      -> Suggested key: imagesearch.圖片來源選擇
+   Line 514: "所有來源</option>"
+      -> Suggested key: imagesearch.所有來源option
+   Line 526: "搜尋"
+      -> Suggested key: imagesearch.搜尋
+   Line 531: "診斷模式開關 */}"
+      -> Suggested key: imagesearch.診斷模式開關
+   Line 535: "使用來源: <strong>{usedSource}</strong></span>"
+      -> Suggested key: imagesearch.使用來源Strongusedsourcestrongspan
+   Line 538: "追蹤 ID: <code className="text-xs bg-gray-100 px-1 rounded">{traceId}</code></span>"
+      -> Suggested key: imagesearch.追蹤IdCode
+   Line 548: "診斷模式"
+      -> Suggested key: imagesearch.診斷模式
+   Line 552: "搜尋結果 */}"
+      -> Suggested key: imagesearch.搜尋結果
+   Line 559: "沒有找到圖片" description="嘗試使用不同的關鍵字"
+      -> Suggested key: imagesearch.沒有找到圖片Description嘗試使用不同的關鍵字
+   Line 560: "顯示 attempts 資訊"
+      -> Suggested key: imagesearch.顯示Attempts資訊
+   Line 563: "搜尋嘗試記錄：</h4>"
+      -> Suggested key: imagesearch.搜尋嘗試記錄h4
+   Line 569: "成功 ({attempt.count} 張"
+      -> Suggested key: imagesearch.成功Attemptcount張
+   Line 572: "無結果</span>"
+      -> Suggested key: imagesearch.無結果span
+   Line 576: "錯誤 ({attempt.code}): {attempt.message}"
+      -> Suggested key: imagesearch.錯誤AttemptcodeAttemptmessage
+   Line 585: "不可用 ({attempt.message})</span>"
+      -> Suggested key: imagesearch.不可用Attemptmessagespan
+   Line 589: "異常: {attempt.message}"
+      -> Suggested key: imagesearch.異常Attemptmessage
+   Line 615: "分頁控制 */}"
+      -> Suggested key: imagesearch.分頁控制
+
+[FILE] InfiniteTopicsList.tsx (7 items)
+   Line 23: "篩選條件 */"
+      -> Suggested key: infinitetopicslist.篩選條件
+   Line 25: "每頁數量 */"
+      -> Suggested key: infinitetopicslist.每頁數量
+   Line 27: "是否顯示時間分組 */"
+      -> Suggested key: infinitetopicslist.是否顯示時間分組
+   Line 29: "卡片列數（響應式"
+      -> Suggested key: infinitetopicslist.卡片列數響應式
+   Line 31: "自定義空狀態訊息 */"
+      -> Suggested key: infinitetopicslist.自定義空狀態訊息
+   Line 145: "統計資訊 */}"
+      -> Suggested key: infinitetopicslist.統計資訊
+   Line 150: "無限滾動容器 */}"
+      -> Suggested key: infinitetopicslist.無限滾動容器
+
+[FILE] InteractionButtons.tsx (15 items)
+   Line 47: "已記錄您的喜好')"
+      -> Suggested key: interactionbuttons.已記錄您的喜好
+   Line 52: "記錄互動失敗')"
+      -> Suggested key: interactionbuttons.記錄互動失敗
+   Line 69: "已記錄您的反饋')"
+      -> Suggested key: interactionbuttons.已記錄您的反饋
+   Line 74: "記錄互動失敗')"
+      -> Suggested key: interactionbuttons.記錄互動失敗
+   Line 90: "桌面版：水平排列"
+      -> Suggested key: interactionbuttons.桌面版水平排列
+   Line 102: "喜歡</span>"
+      -> Suggested key: interactionbuttons.喜歡span
+   Line 115: "不喜歡</span>"
+      -> Suggested key: interactionbuttons.不喜歡span
+   Line 124: "編輯</span>"
+      -> Suggested key: interactionbuttons.edit
+   Line 134: "替換照片</span>"
+      -> Suggested key: interactionbuttons.替換照片span
+   Line 144: "版本歷史</span>"
+      -> Suggested key: interactionbuttons.版本歷史span
+   Line 149: "手機版：固定底部欄"
+      -> Suggested key: interactionbuttons.手機版固定底部欄
+   Line 160: "喜歡</span>"
+      -> Suggested key: interactionbuttons.喜歡span
+   Line 171: "不喜歡</span>"
+      -> Suggested key: interactionbuttons.不喜歡span
+   Line 180: "編輯</span>"
+      -> Suggested key: interactionbuttons.edit
+   Line 190: "照片</span>"
+      -> Suggested key: interactionbuttons.照片span
+
+[FILE] RatingPanel.tsx (15 items)
+   Line 90: "感謝您的評分！這將幫助我們更了解您的偏好"
+      -> Suggested key: ratingpanel.感謝您的評分這將幫助我們更了解您的偏好
+   Line 93: "評分失敗');"
+      -> Suggested key: ratingpanel.評分失敗
+   Line 103: "評分標題 */}"
+      -> Suggested key: ratingpanel.評分標題
+   Line 106: "這個內容對您有幫助嗎？"
+      -> Suggested key: ratingpanel.這個內容對您有幫助嗎
+   Line 113: "已評分"
+      -> Suggested key: ratingpanel.已評分
+   Line 118: "評分按鈕 */}"
+      -> Suggested key: ratingpanel.評分按鈕
+   Line 130: "喜歡</span>"
+      -> Suggested key: ratingpanel.喜歡span
+   Line 143: "不喜歡</span>"
+      -> Suggested key: ratingpanel.不喜歡span
+   Line 147: "原因選擇 */}"
+      -> Suggested key: ratingpanel.原因選擇
+   Line 151: "告訴我們原因（可選多個"
+      -> Suggested key: ratingpanel.告訴我們原因可選多個
+   Line 172: "評論 */}"
+      -> Suggested key: ratingpanel.評論
+   Line 176: "還有其他想說的嗎？（選填"
+      -> Suggested key: ratingpanel.還有其他想說的嗎選填
+   Line 182: "提交按鈕 */}"
+      -> Suggested key: ratingpanel.submit
+   Line 195: "提交中..."
+      -> Suggested key: ratingpanel.submit
+   Line 198: "提交評分'"
+      -> Suggested key: ratingpanel.submit
+
+[FILE] RecentActivities.tsx (4 items)
+   Line 12: "標題 */}"
+      -> Suggested key: recentactivities.標題
+   Line 22: "進度條 */}"
+      -> Suggested key: recentactivities.進度條
+   Line 30: "數值 */}"
+      -> Suggested key: recentactivities.數值
+   Line 33: "訊息 */}"
+      -> Suggested key: recentactivities.訊息
+
+[FILE] TodayTopics.tsx (20 items)
+   Line 7: "可選，目前未使用"
+      -> Suggested key: todaytopics.可選目前未使用
+   Line 18: "時尚趨勢',"
+      -> Suggested key: todaytopics.時尚趨勢
+   Line 23: "美食推薦',"
+      -> Suggested key: todaytopics.美食推薦
+   Line 28: "社會趨勢',"
+      -> Suggested key: todaytopics.社會趨勢
+   Line 91: "最多顯示 10 個"
+      -> Suggested key: todaytopics.最多顯示10個
+   Line 118: "今日主題' : '最新主題"
+      -> Suggested key: todaytopics.今日主題最新主題
+   Line 122: "顯示最近主題"
+      -> Suggested key: todaytopics.顯示最近主題
+   Line 127: "如果完全沒有主題，顯示"
+      -> Suggested key: todaytopics.如果完全沒有主題顯示
+   Line 127: "收集中 */}"
+      -> Suggested key: todaytopics.收集中
+   Line 135: "正在收集熱門話題...</p>"
+      -> Suggested key: todaytopics.正在收集熱門話題p
+   Line 136: "系統每 6 小時自動更新"
+      -> Suggested key: todaytopics.系統每6小時自動更新
+   Line 136: "請稍候</p>"
+      -> Suggested key: todaytopics.請稍候p
+   Line 146: "分類標題 */}"
+      -> Suggested key: todaytopics.分類標題
+   Line 152: "個主題"
+      -> Suggested key: todaytopics.個主題
+   Line 156: "主題列表 */}"
+      -> Suggested key: todaytopics.主題列表
+   Line 161: "未知來源'"
+      -> Suggested key: todaytopics.未知來源
+   Line 169: "圖片縮圖 */}"
+      -> Suggested key: todaytopics.圖片縮圖
+   Line 174: "主題圖片'}"
+      -> Suggested key: todaytopics.主題圖片
+   Line 187: "標題和來源 */}"
+      -> Suggested key: todaytopics.標題和來源
+   Line 211: "正在收集 {category.label}...</p>"
+      -> Suggested key: todaytopics.正在收集Categorylabelp
+
+[FILE] TopicEditor.tsx (23 items)
+   Line 36: "主題已成功更新')"
+      -> Suggested key: topiceditor.主題已成功更新
+   Line 41: "更新主題失敗，請稍後再試"
+      -> Suggested key: topiceditor.更新主題失敗請稍後再試
+   Line 42: "更新失敗，請稍後再試"
+      -> Suggested key: topiceditor.更新失敗請稍後再試
+   Line 51: "標題為必填項'"
+      -> Suggested key: topiceditor.標題為必填項
+   Line 55: "分類為必填項'"
+      -> Suggested key: topiceditor.分類為必填項
+   Line 59: "來源為必填項'"
+      -> Suggested key: topiceditor.來源為必填項
+   Line 75: "編輯主題</h2>"
+      -> Suggested key: topiceditor.edit
+   Line 78: "標題 */}"
+      -> Suggested key: topiceditor.標題
+   Line 81: "標題 <span className="text-red-500">*</span>"
+      -> Suggested key: topiceditor.標題SpanClassnametextred500span
+   Line 92: "輸入主題標題""
+      -> Suggested key: topiceditor.輸入主題標題
+   Line 99: "分類 */}"
+      -> Suggested key: topiceditor.分類
+   Line 102: "分類 <span className="text-red-500">*</span>"
+      -> Suggested key: topiceditor.分類SpanClassnametextred500span
+   Line 116: "選擇分類</option>"
+      -> Suggested key: topiceditor.選擇分類option
+   Line 117: "時尚</option>"
+      -> Suggested key: topiceditor.時尚option
+   Line 118: "美食</option>"
+      -> Suggested key: topiceditor.美食option
+   Line 119: "趨勢</option>"
+      -> Suggested key: topiceditor.趨勢option
+   Line 126: "來源 */}"
+      -> Suggested key: topiceditor.來源
+   Line 129: "來源 <span className="text-red-500">*</span>"
+      -> Suggested key: topiceditor.來源SpanClassnametextred500span
+   Line 140: "輸入來源""
+      -> Suggested key: topiceditor.輸入來源
+   Line 147: "錯誤訊息 */}"
+      -> Suggested key: topiceditor.錯誤訊息
+   Line 154: "操作按鈕 */}"
+      -> Suggested key: topiceditor.操作按鈕
+   Line 161: "取消"
+      -> Suggested key: topiceditor.cancel
+   Line 168: "儲存中...' : '儲存"
+      -> Suggested key: topiceditor.save
+
+[FILE] TopicFilters.tsx (5 items)
+   Line 75: "搜尋框 */}"
+      -> Suggested key: topicfilters.搜尋框
+   Line 99: "分類篩選 */}"
+      -> Suggested key: topicfilters.分類篩選
+   Line 119: "狀態篩選 */}"
+      -> Suggested key: topicfilters.狀態篩選
+   Line 139: "日期篩選 */}"
+      -> Suggested key: topicfilters.日期篩選
+   Line 155: "操作按鈕 */}"
+      -> Suggested key: topicfilters.操作按鈕
+
+[FILE] UpcomingEvents.tsx (4 items)
+   Line 12: "標題 */}"
+      -> Suggested key: upcomingevents.標題
+   Line 22: "進度條 */}"
+      -> Suggested key: upcomingevents.進度條
+   Line 30: "數值 */}"
+      -> Suggested key: upcomingevents.數值
+   Line 33: "訊息 */}"
+      -> Suggested key: upcomingevents.訊息
+
+[FILE] Header.tsx (14 items)
+   Line 16: "年M月"
+      -> Suggested key: header.年m月
+   Line 16: "日 EEEE',"
+      -> Suggested key: header.日Eeee
+   Line 18: "年M月"
+      -> Suggested key: header.年m月
+   Line 18: "日(EEEE)'"
+      -> Suggested key: header.日eeee
+   Line 61: "清空搜索框"
+      -> Suggested key: header.清空搜索框
+   Line 91: "移動端漢堡菜單按鈕 */}"
+      -> Suggested key: header.移動端漢堡菜單按鈕
+   Line 110: "搜索框 - 移動端隱藏"
+      -> Suggested key: header.搜索框移動端隱藏
+   Line 129: "清除搜索""
+      -> Suggested key: header.清除搜索
+   Line 138: "通知按鈕 */}"
+      -> Suggested key: header.通知按鈕
+   Line 146: "語言選擇器 */}"
+      -> Suggested key: header.語言選擇器
+   Line 161: "語言下拉選單 */}"
+      -> Suggested key: header.語言下拉選單
+   Line 189: "用戶信息 */}"
+      -> Suggested key: header.用戶信息
+   Line 197: "頭像 */}"
+      -> Suggested key: header.頭像
+   Line 217: "下拉選單 */}"
+      -> Suggested key: header.下拉選單
+
+[FILE] MainLayout.tsx (3 items)
+   Line 27: "移動端遮罩層 */}"
+      -> Suggested key: mainlayout.移動端遮罩層
+   Line 35: "側邊欄 */}"
+      -> Suggested key: mainlayout.側邊欄
+   Line 38: "主內容區 */}"
+      -> Suggested key: mainlayout.主內容區
+
+[FILE] Sidebar.tsx (2 items)
+   Line 61: "導航選單 */}"
+      -> Suggested key: sidebar.導航選單
+   Line 83: "登出 */}"
+      -> Suggested key: sidebar.登出
+
+[FILE] ConnectionErrorDisplay.tsx (11 items)
+   Line 37: "無法連接到後端服務"
+      -> Suggested key: connectionerrordisplay.無法連接到後端服務
+   Line 45: "診斷步驟："
+      -> Suggested key: connectionerrordisplay.診斷步驟
+   Line 49: "檢查後端服務狀態："
+      -> Suggested key: connectionerrordisplay.檢查後端服務狀態
+   Line 56: "健康檢查"
+      -> Suggested key: connectionerrordisplay.健康檢查
+   Line 61: "檢查 API URL 設定"
+      -> Suggested key: connectionerrordisplay.檢查ApiUrl
+   Line 63: "檢查 CORS 設定是否包含前端網域"
+      -> Suggested key: connectionerrordisplay.檢查Cors設定是否包含前端網域
+   Line 64: "檢查網路連接</li>"
+      -> Suggested key: connectionerrordisplay.檢查網路連接li
+   Line 75: "重試"
+      -> Suggested key: connectionerrordisplay.重試
+   Line 85: "查看 API 文檔"
+      -> Suggested key: connectionerrordisplay.查看Api文檔
+   Line 90: "提示：如果問題持續存在"
+      -> Suggested key: connectionerrordisplay.提示如果問題持續存在
+   Line 90: "請檢查環境變數設定和後端服務日誌"
+      -> Suggested key: connectionerrordisplay.請檢查環境變數設定和後端服務日誌
+
+[FILE] EmptyState.tsx (1 items)
+   Line 17: "沒有找到資料',"
+      -> Suggested key: emptystate.沒有找到資料
+
+[FILE] ErrorDisplay.tsx (8 items)
+   Line 18: "未知錯誤', 0)"
+      -> Suggested key: errordisplay.未知錯誤0
+   Line 22: "找不到請求的資源'"
+      -> Suggested key: errordisplay.找不到請求的資源
+   Line 25: "未授權，請重新登入"
+      -> Suggested key: errordisplay.未授權請重新登入
+   Line 28: "無權限訪問此資源'"
+      -> Suggested key: errordisplay.無權限訪問此資源
+   Line 31: "伺服器錯誤，請稍後再試"
+      -> Suggested key: errordisplay.伺服器錯誤請稍後再試
+   Line 33: "發生錯誤，請稍後再試"
+      -> Suggested key: errordisplay.發生錯誤請稍後再試
+   Line 53: "錯誤</h3>"
+      -> Suggested key: errordisplay.錯誤h3
+   Line 60: "重試"
+      -> Suggested key: errordisplay.重試
+
+[FILE] InfiniteScroll.tsx (19 items)
+   Line 15: "子元素 */"
+      -> Suggested key: infinitescroll.子元素
+   Line 17: "是否有更多資料 */"
+      -> Suggested key: infinitescroll.是否有更多資料
+   Line 19: "是否正在載入 */"
+      -> Suggested key: infinitescroll.是否正在載入
+   Line 21: "載入更多的回調函數 */"
+      -> Suggested key: infinitescroll.載入更多的回調函數
+   Line 23: "載入閾值（距離底部多少像素時觸發載入"
+      -> Suggested key: infinitescroll.載入閾值距離底部多少像素時觸發載入
+   Line 25: "載入中顯示的元素 */"
+      -> Suggested key: infinitescroll.loading
+   Line 27: "沒有更多資料時顯示的元素 */"
+      -> Suggested key: infinitescroll.沒有更多資料時顯示的元素
+   Line 29: "容器的 className */"
+      -> Suggested key: infinitescroll.容器的Classname
+   Line 31: "錯誤訊息 */"
+      -> Suggested key: infinitescroll.錯誤訊息
+   Line 33: "重試回調 */"
+      -> Suggested key: infinitescroll.重試回調
+   Line 65: "使用 viewport 作為"
+      -> Suggested key: infinitescroll.使用Viewport作為
+   Line 86: "載入更多...</span>"
+      -> Suggested key: infinitescroll.載入更多span
+   Line 94: "已顯示全部內容</span>"
+      -> Suggested key: infinitescroll.已顯示全部內容span
+   Line 102: "載入失敗: {error?.message || '未知錯誤"
+      -> Suggested key: infinitescroll.載入失敗Errormessage未知錯誤
+   Line 108: "重試"
+      -> Suggested key: infinitescroll.重試
+   Line 118: "載入觸發點 */}"
+      -> Suggested key: infinitescroll.載入觸發點
+   Line 121: "載入中狀態 */}"
+      -> Suggested key: infinitescroll.loading
+   Line 124: "錯誤狀態 */}"
+      -> Suggested key: infinitescroll.錯誤狀態
+   Line 127: "沒有更多資料 */}"
+      -> Suggested key: infinitescroll.沒有更多資料
+
+[FILE] LoadingSpinner.tsx (1 items)
+   Line 13: "載入中...',"
+      -> Suggested key: loadingspinner.loading
+
+[FILE] Pagination.tsx (26 items)
+   Line 7: "當前頁碼 */"
+      -> Suggested key: pagination.當前頁碼
+   Line 9: "總頁數 */"
+      -> Suggested key: pagination.總頁數
+   Line 11: "每頁數量 */"
+      -> Suggested key: pagination.每頁數量
+   Line 13: "總資料數 */"
+      -> Suggested key: pagination.總資料數
+   Line 15: "頁碼變更回調 */"
+      -> Suggested key: pagination.頁碼變更回調
+   Line 17: "是否顯示總數 */"
+      -> Suggested key: pagination.是否顯示總數
+   Line 19: "是否顯示頁碼跳轉 */"
+      -> Suggested key: pagination.是否顯示頁碼跳轉
+   Line 21: "自訂樣式 */"
+      -> Suggested key: pagination.自訂樣式
+   Line 38: "最多顯示 7 個頁碼"
+      -> Suggested key: pagination.最多顯示7個頁碼
+   Line 94: "只有一頁或沒有資料時不顯示分頁"
+      -> Suggested key: pagination.只有一頁或沒有資料時不顯示分頁
+   Line 101: "左側：總數資訊"
+      -> Suggested key: pagination.左側總數資訊
+   Line 106: "顯示第{' '}"
+      -> Suggested key: pagination.顯示第
+   Line 111: "項，共"
+      -> Suggested key: pagination.項共
+   Line 115: "第 <span className="font-medium">{currentPage}</span> 頁"
+      -> Suggested key: pagination.第SpanClassnamefontmediumcurrentpagespan
+   Line 115: "共{' '}"
+      -> Suggested key: pagination.共
+   Line 122: "中間：頁碼控制"
+      -> Suggested key: pagination.中間頁碼控制
+   Line 124: "上一頁 */}"
+      -> Suggested key: pagination.上一頁
+   Line 129: "上一頁""
+      -> Suggested key: pagination.上一頁
+   Line 134: "頁碼 */}"
+      -> Suggested key: pagination.頁碼
+   Line 159: "第 ${pageNum} 頁"
+      -> Suggested key: pagination.第Pagenum頁
+   Line 167: "下一頁 */}"
+      -> Suggested key: pagination.下一頁
+   Line 172: "下一頁""
+      -> Suggested key: pagination.下一頁
+   Line 178: "右側：頁碼跳轉"
+      -> Suggested key: pagination.右側頁碼跳轉
+   Line 182: "跳轉至"
+      -> Suggested key: pagination.跳轉至
+   Line 192: "跳轉頁碼""
+      -> Suggested key: pagination.跳轉頁碼
+   Line 198: "前往"
+      -> Suggested key: pagination.前往
+
+[FILE] ProgressCard.tsx (4 items)
+   Line 21: "標題 */}"
+      -> Suggested key: progresscard.標題
+   Line 31: "進度條 */}"
+      -> Suggested key: progresscard.進度條
+   Line 39: "數值 */}"
+      -> Suggested key: progresscard.數值
+   Line 42: "訊息 */}"
+      -> Suggested key: progresscard.訊息
+
+[FILE] TimeGroupLabel.tsx (7 items)
+   Line 17: "時間分組 */"
+      -> Suggested key: timegrouplabel.時間分組
+   Line 19: "顯示的項目數量（可選"
+      -> Suggested key: timegrouplabel.顯示的項目數量可選
+   Line 21: "自定義 className */"
+      -> Suggested key: timegrouplabel.自定義Classname
+   Line 48: "週日是0，需要特殊處理"
+      -> Suggested key: timegrouplabel.週日是0需要特殊處理
+   Line 119: "左側分隔線 */}"
+      -> Suggested key: timegrouplabel.左側分隔線
+   Line 122: "標籤 */}"
+      -> Suggested key: timegrouplabel.標籤
+   Line 139: "右側分隔線 */}"
+      -> Suggested key: timegrouplabel.右側分隔線
+
+[FILE] TopicCard.tsx (11 items)
+   Line 55: "標題區域：包含左上角圖片和標題"
+      -> Suggested key: topiccard.標題區域包含左上角圖片和標題
+   Line 57: "左上角：小圖片圖標"
+      -> Suggested key: topiccard.左上角小圖片圖標
+   Line 77: "標題 */}"
+      -> Suggested key: topiccard.標題
+   Line 83: "內容區域：主要顯示文字內容"
+      -> Suggested key: topiccard.內容區域主要顯示文字內容
+   Line 86: "字內容撮要 - 始終顯示"
+      -> Suggested key: topiccard.字內容撮要始終顯示
+   Line 92: "暫無內容撮要</span>"
+      -> Suggested key: topiccard.暫無內容撮要span
+   Line 97: "進度條 */}"
+      -> Suggested key: topiccard.進度條
+   Line 101: "內容完成度</span>"
+      -> Suggested key: topiccard.內容完成度span
+   Line 113: "圖片完成度</span>"
+      -> Suggested key: topiccard.圖片完成度span
+   Line 126: "展開按鈕 */}"
+      -> Suggested key: topiccard.展開按鈕
+   Line 128: "展開內容 →'}"
+      -> Suggested key: topiccard.展開內容
+
+============================================================
