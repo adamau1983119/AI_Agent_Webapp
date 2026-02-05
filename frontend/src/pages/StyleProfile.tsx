@@ -5,6 +5,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
+import { useTranslation } from '../i18n';
 import {
   styleProfileApi,
   StyleAnalysis,
@@ -24,6 +25,7 @@ const presetStyles: { value: PresetStyle; icon: string; description: string }[] 
 ];
 
 export default function StyleProfile() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuthStore();
   const [analysis, setAnalysis] = useState<StyleAnalysis | null>(null);
@@ -47,7 +49,7 @@ export default function StyleProfile() {
       setAnalysis(data);
       setSelectedStyle(data.preset_style);
     } catch (err: any) {
-      toast.error('載入風格檔案失敗');
+      toast.error(t('common.failed'));
     } finally {
       setIsLoading(false);
     }
@@ -63,7 +65,7 @@ export default function StyleProfile() {
       toast.success(`已切換為「${presetStyleLabels[style]}」風格`);
       loadAnalysis();
     } catch (err: any) {
-      toast.error(err.message || '更新失敗');
+      toast.error(err.message || t('common.failed'));
     } finally {
       setIsUpdating(false);
     }
@@ -72,11 +74,11 @@ export default function StyleProfile() {
   const handleReset = async () => {
     try {
       await styleProfileApi.reset();
-      toast.success('風格檔案已重置');
+      toast.success(t('common.success'));
       setShowResetConfirm(false);
       loadAnalysis();
     } catch (err: any) {
-      toast.error(err.message || '重置失敗');
+      toast.error(err.message || t('common.failed'));
     }
   };
 
@@ -90,7 +92,7 @@ export default function StyleProfile() {
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
           </svg>
-          <p className="text-gray-500">載入中...</p>
+          <p className="text-gray-500">{t('common.loading')}</p>
         </div>
       </div>
     );
@@ -103,9 +105,9 @@ export default function StyleProfile() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* 標題 */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">風格檔案</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('style.title')}</h1>
           <p className="text-gray-500 dark:text-gray-400 mt-2">
-            管理您的個人化內容風格偏好
+            {t('nav.styleProfile')}
           </p>
         </div>
 
@@ -141,9 +143,9 @@ export default function StyleProfile() {
 
           {/* 里程碑 */}
           <div className="flex justify-between mt-2 text-xs text-gray-500 dark:text-gray-400">
-            <span>冷啟動 (0)</span>
-            <span>學習中 (20)</span>
-            <span>成熟 (100)</span>
+            <span>{t('style.coldStart')} (0)</span>
+            <span>{t('style.learning')} (20)</span>
+            <span>{t('style.mature')} (100)</span>
           </div>
 
           {/* 建議 */}
@@ -287,13 +289,13 @@ export default function StyleProfile() {
                   onClick={() => setShowResetConfirm(false)}
                   className="flex-1 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600"
                 >
-                  取消
+                  {t('common.cancel')}
                 </button>
                 <button
                   onClick={handleReset}
                   className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
                 >
-                  確認重置
+                  {t('common.confirm')}
                 </button>
               </div>
             </div>

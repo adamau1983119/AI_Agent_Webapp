@@ -5,6 +5,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
+import { useTranslation } from '../i18n';
 import {
   socialApi,
   SocialConnection,
@@ -18,6 +19,7 @@ import {
 import toast from 'react-hot-toast';
 
 export default function Publish() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { isAuthenticated } = useAuthStore();
@@ -58,7 +60,7 @@ export default function Publish() {
       const { connections } = await socialApi.getMyConnections();
       setConnections(connections.filter((c) => c.status === 'connected'));
     } catch (err: any) {
-      toast.error('載入連接失敗');
+      toast.error(t('common.failed'));
     } finally {
       setIsLoading(false);
     }
@@ -149,10 +151,10 @@ export default function Publish() {
         {/* 標題 */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            一鍵發布
+            {t('publish.title')}
           </h1>
           <p className="text-gray-500 dark:text-gray-400 mt-2">
-            將內容發布到多個社交平台
+            {t('nav.publish')}
           </p>
         </div>
 
@@ -180,7 +182,7 @@ export default function Publish() {
               onClick={() => navigate('/social-connect')}
               className="px-6 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600"
             >
-              連接帳號
+              {t('social.connect')}
             </button>
           </div>
         ) : (
@@ -222,7 +224,7 @@ export default function Publish() {
                     onClick={addHashtag}
                     className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600"
                   >
-                    添加
+                    {t('common.add')}
                   </button>
                 </div>
                 {hashtags.length > 0 && (
@@ -261,7 +263,7 @@ export default function Publish() {
                     onClick={addImageUrl}
                     className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600"
                   >
-                    添加
+                    {t('common.add')}
                   </button>
                 </div>
                 {imageUrls.length > 0 && (
