@@ -78,7 +78,7 @@ export default function Register() {
     
     // 同意條款
     if (!formData.agreeTerms) {
-      errors.agreeTerms = '請同意服務條款';
+      errors.agreeTerms = t('error.validation');
     }
     
     setValidationErrors(errors);
@@ -264,7 +264,7 @@ export default function Register() {
                   value={formData.surname}
                   onChange={(e) => handleChange('surname', e.target.value)}
                   className="w-full px-0 py-3 bg-transparent border-0 border-b border-gray-200 text-black placeholder-gray-300 focus:outline-none focus:border-black transition-colors duration-300 text-sm tracking-wide"
-                  placeholder="姓氏"
+                  placeholder={t('auth.register.surname')}
                 />
               </div>
               
@@ -280,7 +280,7 @@ export default function Register() {
                   value={formData.givenName}
                   onChange={(e) => handleChange('givenName', e.target.value)}
                   className="w-full px-0 py-3 bg-transparent border-0 border-b border-gray-200 text-black placeholder-gray-300 focus:outline-none focus:border-black transition-colors duration-300 text-sm tracking-wide"
-                  placeholder="名字"
+                  placeholder={t('auth.register.givenName')}
                 />
               </div>
             </div>

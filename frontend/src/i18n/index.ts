@@ -81,6 +81,8 @@ const zhTW = {
   'auth.register.subtitle': '加入我們，開始您的 AI 創作之旅',
   'auth.register.name': '名稱',
   'auth.register.namePlaceholder': '您的名稱',
+  'auth.register.surname': '姓氏',
+  'auth.register.givenName': '名字',
   'auth.register.email': 'Email 地址',
   'auth.register.emailPlaceholder': 'example@email.com',
   'auth.register.password': '密碼',
@@ -228,6 +230,11 @@ const zhTW = {
   'error.notFound': '找不到資源',
   'error.validation': '請檢查輸入資料',
   'error.maxUsers': '目前系統已達用戶上限',
+  'error.oauth.accessDenied': '您已取消 Google 登入',
+  'error.oauth.noCode': '無法取得授權碼',
+  'error.oauth.tokenFailed': 'Google 授權失敗，請重試',
+  'error.oauth.userInfoFailed': '無法取得 Google 帳號資訊',
+  'error.oauth.failed': 'Google 登入失敗，請重試',
   
   // 主題相關
   'topics.title': '主題',
@@ -580,6 +587,8 @@ const en: typeof zhTW = {
   'auth.register.subtitle': 'Join us and start your AI creative journey',
   'auth.register.name': 'Name',
   'auth.register.namePlaceholder': 'Your name',
+  'auth.register.surname': 'Surname',
+  'auth.register.givenName': 'Given Name',
   'auth.register.email': 'Email Address',
   'auth.register.emailPlaceholder': 'example@email.com',
   'auth.register.password': 'Password',
@@ -727,6 +736,11 @@ const en: typeof zhTW = {
   'error.notFound': 'Resource not found',
   'error.validation': 'Please check your input',
   'error.maxUsers': 'System has reached user limit',
+  'error.oauth.accessDenied': 'You have cancelled Google login',
+  'error.oauth.noCode': 'Unable to get authorization code',
+  'error.oauth.tokenFailed': 'Google authorization failed, please try again',
+  'error.oauth.userInfoFailed': 'Unable to get Google account info',
+  'error.oauth.failed': 'Google login failed, please try again',
   
   // Topics
   'topics.title': 'Topics',
@@ -1079,6 +1093,8 @@ const ja: typeof zhTW = {
   'auth.register.subtitle': '私たちに参加して、AI クリエイティブジャーニーを始めましょう',
   'auth.register.name': '名前',
   'auth.register.namePlaceholder': 'お名前',
+  'auth.register.surname': '姓',
+  'auth.register.givenName': '名',
   'auth.register.email': 'メールアドレス',
   'auth.register.emailPlaceholder': 'example@email.com',
   'auth.register.password': 'パスワード',
@@ -1226,6 +1242,11 @@ const ja: typeof zhTW = {
   'error.notFound': 'リソースが見つかりません',
   'error.validation': '入力を確認してください',
   'error.maxUsers': 'システムがユーザー制限に達しました',
+  'error.oauth.accessDenied': 'Google ログインをキャンセルしました',
+  'error.oauth.noCode': '認証コードを取得できません',
+  'error.oauth.tokenFailed': 'Google 認証に失敗しました。再試行してください',
+  'error.oauth.userInfoFailed': 'Google アカウント情報を取得できません',
+  'error.oauth.failed': 'Google ログインに失敗しました。再試行してください',
   
   // トピック
   'topics.title': 'トピック',

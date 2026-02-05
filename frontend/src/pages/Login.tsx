@@ -312,13 +312,13 @@ function getOAuthErrorMessage(error: string | null, t: (key: string) => string):
   if (!error) return '';
   
   const errorMessages: Record<string, string> = {
-    'access_denied': '您已取消 Google 登入',
-    'no_code': '無法取得授權碼',
-    'token_exchange_failed': 'Google 授權失敗，請重試',
-    'user_info_failed': '無法取得 Google 帳號資訊',
+    'access_denied': t('error.oauth.accessDenied'),
+    'no_code': t('error.oauth.noCode'),
+    'token_exchange_failed': t('error.oauth.tokenFailed'),
+    'user_info_failed': t('error.oauth.userInfoFailed'),
     'max_users_reached': t('error.maxUsers'),
-    'oauth_failed': 'Google 登入失敗，請重試',
+    'oauth_failed': t('error.oauth.failed'),
   };
   
-  return errorMessages[error] || 'Google 登入失敗';
+  return errorMessages[error] || t('error.oauth.failed');
 }
