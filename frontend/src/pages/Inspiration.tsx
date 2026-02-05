@@ -9,18 +9,18 @@ import { useAuthStore } from '../stores/authStore';
 import { inspirationApi, InspirationItem } from '../api/inspiration';
 import toast from 'react-hot-toast';
 
-const categories = [
-  { value: 'general', label: '全部', icon: '✨' },
-  { value: 'fashion', label: '時尚', icon: '👗' },
-  { value: 'food', label: '美食', icon: '🍽️' },
-  { value: 'tech', label: '科技', icon: '💻' },
-  { value: 'finance', label: '財經', icon: '💰' },
-  { value: 'sports', label: '運動', icon: '⚽' },
-  { value: 'entertainment', label: '娛樂', icon: '🎬' },
-];
-
 export default function Inspiration() {
   const { t } = useTranslation();
+  
+  const categories = [
+    { value: 'general', label: t('filters.all'), icon: '✨' },
+    { value: 'fashion', label: t('filters.fashion'), icon: '👗' },
+    { value: 'food', label: t('filters.food'), icon: '🍽️' },
+    { value: 'tech', label: t('filters.tech'), icon: '💻' },
+    { value: 'finance', label: t('filters.finance'), icon: '💰' },
+    { value: 'sports', label: t('filters.sports'), icon: '⚽' },
+    { value: 'entertainment', label: t('filters.entertainment'), icon: '🎬' },
+  ];
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuthStore();
   
@@ -127,7 +127,7 @@ export default function Inspiration() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={handleKeyDown}
                 onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
-                placeholder="搜尋靈感主題..."
+                placeholder={t('inspiration.searchPlaceholder')}
                 className="w-full px-5 py-4 pl-12 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               />
               <svg
@@ -269,7 +269,7 @@ function InspirationCard({ item }: { item: InspirationItem }) {
                 ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
                 : 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400'
             }`}>
-              {item.source === 'google' ? '🔍 搜尋結果' : '✨ AI 生成'}
+              {item.source === 'google' ? `🔍 ${t('inspiration.searchResult')}` : `✨ ${t('inspiration.aiGenerated')}`}
             </span>
             
             {/* 連結 */}
@@ -293,7 +293,7 @@ function InspirationCard({ item }: { item: InspirationItem }) {
         <div className="flex-shrink-0">
           <button
             className="p-2 text-gray-400 hover:text-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-lg transition-colors"
-            title="使用此靈感"
+            title={t('inspiration.useThis')}
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />

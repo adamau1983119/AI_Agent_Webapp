@@ -455,6 +455,10 @@ const zhTW = {
   
   // 靈感
   'inspiration.title': '靈感策劃',
+  'inspiration.searchPlaceholder': '搜尋靈感主題...',
+  'inspiration.searchResult': '搜尋結果',
+  'inspiration.aiGenerated': 'AI 生成',
+  'inspiration.useThis': '使用此靈感',
   
   // 偏好設定
   'preferences.title': '偏好設定',
@@ -962,6 +966,10 @@ const en: typeof zhTW = {
   
   // Inspiration
   'inspiration.title': 'Inspiration',
+  'inspiration.searchPlaceholder': 'Search inspiration topics...',
+  'inspiration.searchResult': 'Search Result',
+  'inspiration.aiGenerated': 'AI Generated',
+  'inspiration.useThis': 'Use This Inspiration',
   
   // Preferences
   'preferences.title': 'Preferences',
@@ -1469,6 +1477,10 @@ const ja: typeof zhTW = {
   
   // インスピレーション
   'inspiration.title': 'インスピレーション',
+  'inspiration.searchPlaceholder': 'インスピレーションを検索...',
+  'inspiration.searchResult': '検索結果',
+  'inspiration.aiGenerated': 'AI生成',
+  'inspiration.useThis': 'このインスピレーションを使用',
   
   // 環境設定
   'preferences.title': '環境設定',
