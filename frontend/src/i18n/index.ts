@@ -318,6 +318,13 @@ const zhTW = {
   'common.more': '更多',
   'common.confirmDelete': '確認刪除',
   
+  // 分頁
+  'pagination.showing': '顯示第',
+  'pagination.of': '共',
+  'pagination.page': '第',
+  'pagination.jumpTo': '跳轉至',
+  'pagination.go': '前往',
+  
   // 認證 - 擴展
   'auth.sendFailed': '發送失敗，請稍後再試',
   'auth.invalidEmail': '請輸入有效的 Email 地址',
@@ -770,6 +777,13 @@ const en: typeof zhTW = {
   'common.viewDetails': 'View Details',
   'common.confirmDelete': 'Confirm Delete',
   
+  // Pagination
+  'pagination.showing': 'Showing',
+  'pagination.of': 'of',
+  'pagination.page': 'Page',
+  'pagination.jumpTo': 'Jump to',
+  'pagination.go': 'Go',
+  
   // Auth - Extended
   'auth.sendFailed': 'Failed to send, please try again later',
   'auth.invalidEmail': 'Please enter a valid email address',
@@ -1221,6 +1235,13 @@ const ja: typeof zhTW = {
   'common.noMoreData': 'すべてのコンテンツを表示済み',
   'common.viewDetails': '詳細を見る',
   'common.confirmDelete': '削除確認',
+  
+  // ページネーション
+  'pagination.showing': '表示',
+  'pagination.of': '/',
+  'pagination.page': 'ページ',
+  'pagination.jumpTo': 'ジャンプ',
+  'pagination.go': '移動',
   
   // 認証 - 拡張
   'auth.sendFailed': '送信に失敗しました。後でもう一度お試しください',

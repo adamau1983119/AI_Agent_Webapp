@@ -3,6 +3,7 @@
  */
 
 import { APIError } from '@/api/errors'
+import { useTranslation } from '@/i18n'
 
 interface ErrorDisplayProps {
   error: unknown
@@ -15,22 +16,23 @@ export default function ErrorDisplay({
   onRetry,
   className = '',
 }: ErrorDisplayProps) {
-  const apiError = error instanceof APIError ? error : new APIError('未知錯誤', 0)
+  const { t } = useTranslation()
+  const apiError = error instanceof APIError ? error : new APIError(t('error.unknown'), 0)
 
   const getErrorMessage = () => {
     if (apiError.status === 404) {
-      return '找不到請求的資源'
+      return t('error.notFound')
     }
     if (apiError.status === 401) {
-      return '未授權，請重新登入'
+      return t('error.unauthorized')
     }
     if (apiError.status === 403) {
-      return '無權限訪問此資源'
+      return t('error.forbidden')
     }
     if (apiError.status === 500) {
-      return '伺服器錯誤，請稍後再試'
+      return t('error.server')
     }
-    return apiError.message || '發生錯誤，請稍後再試'
+    return apiError.message || t('error.networkError')
   }
 
   return (
@@ -50,14 +52,14 @@ export default function ErrorDisplay({
           </svg>
         </div>
         <div className="ml-3 flex-1">
-          <h3 className="text-sm font-medium text-red-800">錯誤</h3>
+          <h3 className="text-sm font-medium text-red-800">{t('common.error')}</h3>
           <p className="mt-2 text-sm text-red-700">{getErrorMessage()}</p>
           {onRetry && (
             <button
               onClick={onRetry}
               className="mt-4 text-sm font-medium text-red-800 hover:text-red-900 underline"
             >
-              重試
+              {t('common.retry')}
             </button>
           )}
         </div>
