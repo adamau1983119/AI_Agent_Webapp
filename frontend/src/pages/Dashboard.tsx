@@ -10,9 +10,11 @@ import RecentActivities from '@/components/features/RecentActivities'
 import ConnectionErrorDisplay from '@/components/ui/ConnectionErrorDisplay'
 import toast from 'react-hot-toast'
 import { usePageTitle } from '@/hooks/usePageTitle'
+import { useTranslation } from '@/i18n'
 
 export default function Dashboard() {
   usePageTitle()
+  const { t } = useTranslation()
   const [isGenerating, setIsGenerating] = useState(false)
   
   // 調試：檢查環境變數是否正確讀取（僅在首次掛載時執行）
@@ -138,12 +140,12 @@ export default function Dashboard() {
         total: 30,
         percentage: Math.round((currentCount / 30) * 100)
       })
-      toast.loading('正在生成今日主題...', { id: 'generate-today' })
+      toast.loading(t('dashboard.generating'), { id: 'generate-today' })
     },
     onSuccess: async (data) => {
       // 不立即設置 isGenerating 為 false，讓進度顯示繼續運行
       // setIsGenerating(false) 將在 useEffect 中根據主題數量自動更新
-      toast.success(data.message || '今日主題生成任務已啟動', { id: 'generate-today' })
+      toast.success(data.message || t('dashboard.generateStarted'), { id: 'generate-today' })
       
       // 立即刷新數據
       // React Query 的 refetchInterval 會自動處理後續的輪詢
@@ -153,18 +155,18 @@ export default function Dashboard() {
     onError: (error: any) => {
       setIsGenerating(false)
       // 根據錯誤狀態碼顯示不同的錯誤訊息
-      let errorMessage = '生成今日主題失敗'
+      let errorMessage = t('dashboard.generateFailed')
       if (error?.status === 400) {
         // 400 錯誤：通常是資料庫未連接
-        errorMessage = error?.message || '資料庫未連接，無法生成主題'
+        errorMessage = error?.message || t('dashboard.dbNotConnected')
         if (error?.details?.suggestion) {
           errorMessage = `${errorMessage}\n${error.details.suggestion}`
         }
       } else if (error?.status === 500) {
         // 500 錯誤：系統內部錯誤
-        errorMessage = error?.message || '伺服器內部錯誤，請查看後端日誌'
+        errorMessage = error?.message || t('dashboard.serverError')
       } else {
-        errorMessage = error?.message || '生成今日主題失敗'
+        errorMessage = error?.message || t('dashboard.generateFailed')
       }
       toast.error(errorMessage, { id: 'generate-today', duration: 5000 })
     },
@@ -185,13 +187,13 @@ export default function Dashboard() {
       refetchSchedules()
     },
     onError: (error: any) => {
-      const errorMessage = error?.message || '刪除今日主題失敗'
+      const errorMessage = error?.message || t('dashboard.deleteFailed')
       toast.error(errorMessage, { id: 'delete-today', duration: 5000 })
     },
   })
 
   const handleDeleteToday = () => {
-    if (!confirm('確定要刪除所有今日生成的主題嗎？此操作無法復原。')) {
+    if (!confirm(t('dashboard.confirmDelete'))) {
       return
     }
     deleteTodayMutation.mutate()
@@ -369,7 +371,7 @@ export default function Dashboard() {
       hasShownCompleteToast.current = true
       setIsGenerating(false)
       setGenerationProgress(prev => ({ ...prev, isGenerating: false }))
-      toast.success('今日主題生成完成！', { id: 'generate-today-complete' })
+      toast.success(t('dashboard.generateSuccess'), { id: 'generate-today-complete' })
     } else if (currentCount < 30) {
       // 重置標記，如果主題數量減少
       hasShownCompleteToast.current = false
@@ -389,7 +391,7 @@ export default function Dashboard() {
     <div className="min-h-screen bg-[#FAF9F7] p-6 sm:p-8 font-sans">
       {/* 頁面標題 */}
       <div className="mb-8">
-        <h1 className="text-2xl font-light tracking-[0.1em] text-black mb-2">DASHBOARD</h1>
+        <h1 className="text-2xl font-light tracking-[0.1em] text-black mb-2 uppercase">{t('nav.dashboard')}</h1>
         <div className="w-12 h-px bg-black"></div>
       </div>
 
@@ -397,7 +399,7 @@ export default function Dashboard() {
       {shouldShowError && (
         <div className="mb-6">
           <ConnectionErrorDisplay 
-            error={topicsError || schedulesError || new Error('無法連接到後端服務')} 
+            error={topicsError || schedulesError || new Error(t('dashboard.cannotConnect'))} 
             onRetry={handleRetry} 
           />
         </div>
@@ -640,7 +642,7 @@ export default function Dashboard() {
                 
                 // 決定顯示哪些主題
                 let displayTopics = todayTopicsList
-                let displayTitle = '今日熱門主題'
+                let displayTitle = t('dashboard.todayTopics')
                 let showNotice = false
                 
                 if (todayTopicsList.length === 0) {
@@ -653,7 +655,7 @@ export default function Dashboard() {
                     if (!dateA || !dateB) return 0
                     return new Date(dateB).getTime() - new Date(dateA).getTime()
                   })
-                  displayTitle = '最新熱門主題'
+                  displayTitle = t('dashboard.latestTopics')
                   showNotice = true
                 }
                 

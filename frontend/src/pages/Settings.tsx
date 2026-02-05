@@ -76,7 +76,7 @@ export default function Settings() {
           <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">
             {t('settings.title')}
           </h1>
-          <p className="text-gray-400 mt-2">管理您的帳號和偏好設定</p>
+          <p className="text-gray-400 mt-2">{t('settings.subtitle')}</p>
         </div>
         
         <div className="flex gap-8">
@@ -160,7 +160,7 @@ export default function Settings() {
                       />
                       {user.email_verified && (
                         <span className="px-3 py-1 bg-green-500/20 text-green-400 text-sm rounded-full">
-                          ✓ 已驗證
+                          ✓ {t('auth.verify.success').replace('!', '')}
                         </span>
                       )}
                     </div>
@@ -260,9 +260,9 @@ export default function Settings() {
                         <div>
                           <p className="font-medium">Google</p>
                           {user.google_id ? (
-                            <p className="text-sm text-green-400">已連結</p>
+                            <p className="text-sm text-green-400">{t('social.connected')}</p>
                           ) : (
-                            <p className="text-sm text-gray-400">未連結</p>
+                            <p className="text-sm text-gray-400">{t('social.notConnected')}</p>
                           )}
                         </div>
                       </div>
@@ -296,15 +296,15 @@ export default function Settings() {
                   
                   {/* 主題 */}
                   <div className="p-6 bg-slate-700/30 rounded-lg">
-                    <h3 className="font-medium mb-4">外觀</h3>
+                    <h3 className="font-medium mb-4">{t('settings.appearance')}</h3>
                     <div className="flex gap-4">
                       <button className="flex-1 p-4 bg-slate-800 border-2 border-purple-500 rounded-lg text-center">
                         <span className="text-2xl mb-2 block">🌙</span>
-                        <span className="text-sm">深色模式</span>
+                        <span className="text-sm">{t('settings.darkMode')}</span>
                       </button>
                       <button className="flex-1 p-4 bg-slate-700/50 border-2 border-transparent rounded-lg text-center opacity-50 cursor-not-allowed">
                         <span className="text-2xl mb-2 block">☀️</span>
-                        <span className="text-sm">淺色模式</span>
+                        <span className="text-sm">{t('settings.lightMode')}</span>
                         <span className="text-xs text-gray-500 block mt-1">{t('feature.comingSoon')}</span>
                       </button>
                     </div>
@@ -315,7 +315,7 @@ export default function Settings() {
                     <h3 className="font-medium mb-4">{t('settings.notifications')}</h3>
                     <div className="space-y-4">
                       <label className="flex items-center justify-between">
-                        <span className="text-gray-300">Email 通知</span>
+                        <span className="text-gray-300">{t('settings.emailNotifications')}</span>
                         <input
                           type="checkbox"
                           defaultChecked
@@ -323,7 +323,7 @@ export default function Settings() {
                         />
                       </label>
                       <label className="flex items-center justify-between">
-                        <span className="text-gray-300">新功能提醒</span>
+                        <span className="text-gray-300">{t('settings.newFeatures')}</span>
                         <input
                           type="checkbox"
                           defaultChecked
@@ -331,7 +331,7 @@ export default function Settings() {
                         />
                       </label>
                       <label className="flex items-center justify-between">
-                        <span className="text-gray-300">系統更新通知</span>
+                        <span className="text-gray-300">{t('settings.systemUpdates')}</span>
                         <input
                           type="checkbox"
                           className="w-5 h-5 rounded bg-slate-700 border-slate-600 text-purple-500 focus:ring-purple-500"
@@ -342,19 +342,19 @@ export default function Settings() {
                   
                   {/* 角色資訊 */}
                   <div className="p-6 bg-slate-700/30 rounded-lg">
-                    <h3 className="font-medium mb-4">帳號資訊</h3>
+                    <h3 className="font-medium mb-4">{t('settings.accountInfo')}</h3>
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
-                        <span className="text-gray-400">帳號類型</span>
+                        <span className="text-gray-400">{t('settings.accountType')}</span>
                         <span className="text-white">{getRoleLabel(user.role)}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-400">註冊時間</span>
+                        <span className="text-gray-400">{t('settings.registrationTime')}</span>
                         <span className="text-white">{new Date(user.created_at).toLocaleDateString()}</span>
                       </div>
                       {user.last_login_at && (
                         <div className="flex justify-between">
-                          <span className="text-gray-400">上次登入</span>
+                          <span className="text-gray-400">{t('settings.lastLogin')}</span>
                           <span className="text-white">{new Date(user.last_login_at).toLocaleString()}</span>
                         </div>
                       )}

@@ -5,6 +5,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
+import { useTranslation } from '../i18n';
 import {
   socialApi,
   SocialConnection,
@@ -16,6 +17,7 @@ import {
 import toast from 'react-hot-toast';
 
 export default function SocialConnect() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { isAuthenticated } = useAuthStore();
@@ -36,9 +38,9 @@ export default function SocialConnect() {
     const error = searchParams.get('error');
     
     if (success === 'true') {
-      toast.success('帳號連接成功！');
+      toast.success(t('common.success'));
     } else if (error) {
-      toast.error(`連接失敗：${error}`);
+      toast.error(`${t('common.failed')}: ${error}`);
     }
     
     loadData();
@@ -54,7 +56,7 @@ export default function SocialConnect() {
       setConnections(connectionsRes.connections);
       setPlatforms(platformsRes.platforms);
     } catch (err: any) {
-      toast.error('載入失敗');
+      toast.error(t('common.failed'));
     } finally {
       setIsLoading(false);
     }
@@ -66,7 +68,7 @@ export default function SocialConnect() {
       const { oauth_url } = await socialApi.getMetaOAuthUrl();
       window.location.href = oauth_url;
     } catch (err: any) {
-      toast.error('連接失敗');
+      toast.error(t('common.failed'));
       setConnectingPlatform(null);
     }
   };
@@ -77,22 +79,22 @@ export default function SocialConnect() {
       const { oauth_url } = await socialApi.getTikTokOAuthUrl();
       window.location.href = oauth_url;
     } catch (err: any) {
-      toast.error('TikTok 連接尚未開放');
+      toast.error(t('feature.comingSoon'));
       setConnectingPlatform(null);
     }
   };
 
   const handleDisconnect = async (platform: SocialPlatform) => {
-    if (!confirm(`確定要斷開 ${platformLabels[platform]} 連接嗎？`)) {
+    if (!confirm(`${t('social.disconnect')} ${platformLabels[platform]}?`)) {
       return;
     }
     
     try {
       await socialApi.disconnectPlatform(platform);
-      toast.success(`已斷開 ${platformLabels[platform]}`);
+      toast.success(t('common.success'));
       loadData();
     } catch (err: any) {
-      toast.error(err.message || '斷開失敗');
+      toast.error(err.message || t('common.failed'));
     }
   };
 
@@ -114,10 +116,10 @@ export default function SocialConnect() {
         {/* 標題 */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            社交平台連接
+            {t('social.title')}
           </h1>
           <p className="text-gray-500 dark:text-gray-400 mt-2">
-            連接您的社交媒體帳號，一鍵發布內容到多個平台
+            {t('social.tip1')}
           </p>
         </div>
 
@@ -181,17 +183,17 @@ export default function SocialConnect() {
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                             </svg>
-                            已連接
+                            {t('social.connected')}
                           </span>
                           <button
                             onClick={() => handleDisconnect(p)}
                             className="text-red-500 hover:text-red-600 text-sm"
                           >
-                            斷開
+                            {t('social.disconnect')}
                           </button>
                         </div>
                       ) : (
-                        <span className="text-gray-400 text-sm">未連接</span>
+                        <span className="text-gray-400 text-sm">{t('social.notConnected')}</span>
                       )}
                     </div>
                   );
@@ -211,14 +213,14 @@ export default function SocialConnect() {
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                       </svg>
-                      連接中...
+                      {t('common.loading')}
                     </>
                   ) : (
                     <>
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                       </svg>
-                      連接 Meta 帳號
+                      {t('social.connect')} Meta
                     </>
                   )}
                 </button>
@@ -257,13 +259,13 @@ export default function SocialConnect() {
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
-                      已連接
+                      {t('social.connected')}
                     </span>
                     <button
                       onClick={() => handleDisconnect('tiktok')}
                       className="text-red-500 hover:text-red-600 text-sm"
                     >
-                      斷開
+                      {t('social.disconnect')}
                     </button>
                   </div>
                 </div>
@@ -279,14 +281,14 @@ export default function SocialConnect() {
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                       </svg>
-                      連接中...
+                      {t('common.loading')}
                     </>
                   ) : (
                     <>
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                       </svg>
-                      連接 TikTok
+                      {t('social.connect')} TikTok
                     </>
                   )}
                 </button>
@@ -308,7 +310,7 @@ export default function SocialConnect() {
                   </p>
                 </div>
                 <span className="px-3 py-1 bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 text-sm rounded-full">
-                  敬請期待
+                  {t('feature.comingSoon')}
                 </span>
               </div>
             </div>
@@ -316,13 +318,13 @@ export default function SocialConnect() {
             {/* 說明 */}
             <div className="mt-8 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
               <h3 className="text-sm font-medium text-blue-800 dark:text-blue-300 mb-2">
-                💡 連接說明
+                💡 {t('social.tips')}
               </h3>
               <ul className="text-sm text-blue-700 dark:text-blue-400 space-y-1">
-                <li>• 連接後可以一鍵發布內容到多個平台</li>
-                <li>• Meta 平台需要 Business 或 Creator 帳號</li>
-                <li>• 您可以隨時斷開連接</li>
-                <li>• 我們不會在未經您同意下發布任何內容</li>
+                <li>• {t('social.tip1')}</li>
+                <li>• {t('social.tip2')}</li>
+                <li>• {t('social.tip3')}</li>
+                <li>• {t('social.tip4')}</li>
               </ul>
             </div>
           </>
