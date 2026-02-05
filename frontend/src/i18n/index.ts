@@ -282,6 +282,8 @@ const zhTW = {
   'images.license': '授權',
   'images.order': '順序',
   'images.imageUrl': '圖片 URL',
+  'images.replacePhoto': '替換照片',
+  'images.photo': '照片',
   
   // 篩選器
   'filters.title': '篩選條件',
@@ -324,6 +326,11 @@ const zhTW = {
   'pagination.page': '第',
   'pagination.jumpTo': '跳轉至',
   'pagination.go': '前往',
+  
+  // 互動
+  'style.like': '喜歡',
+  'style.dislike': '不喜歡',
+  'common.history': '版本歷史',
   
   // 認證 - 擴展
   'auth.sendFailed': '發送失敗，請稍後再試',
@@ -741,6 +748,8 @@ const en: typeof zhTW = {
   'images.license': 'License',
   'images.order': 'Order',
   'images.imageUrl': 'Image URL',
+  'images.replacePhoto': 'Replace Photo',
+  'images.photo': 'Photo',
   
   // Filters
   'filters.title': 'Filters',
@@ -783,6 +792,11 @@ const en: typeof zhTW = {
   'pagination.page': 'Page',
   'pagination.jumpTo': 'Jump to',
   'pagination.go': 'Go',
+  
+  // Interaction
+  'style.like': 'Like',
+  'style.dislike': 'Dislike',
+  'common.history': 'Version History',
   
   // Auth - Extended
   'auth.sendFailed': 'Failed to send, please try again later',
@@ -1200,6 +1214,8 @@ const ja: typeof zhTW = {
   'images.license': 'ライセンス',
   'images.order': '順番',
   'images.imageUrl': '画像 URL',
+  'images.replacePhoto': '写真を置換',
+  'images.photo': '写真',
   
   // フィルター
   'filters.title': 'フィルター',
@@ -1242,6 +1258,11 @@ const ja: typeof zhTW = {
   'pagination.page': 'ページ',
   'pagination.jumpTo': 'ジャンプ',
   'pagination.go': '移動',
+  
+  // インタラクション
+  'style.like': 'いいね',
+  'style.dislike': '嫌い',
+  'common.history': 'バージョン履歴',
   
   // 認証 - 拡張
   'auth.sendFailed': '送信に失敗しました。後でもう一度お試しください',

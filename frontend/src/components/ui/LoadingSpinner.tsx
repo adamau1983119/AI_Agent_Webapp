@@ -2,6 +2,8 @@
  * 載入指示器元件
  */
 
+import { useTranslation } from '@/i18n'
+
 interface LoadingSpinnerProps {
   size?: 'sm' | 'md' | 'lg'
   text?: string
@@ -10,9 +12,11 @@ interface LoadingSpinnerProps {
 
 export default function LoadingSpinner({
   size = 'md',
-  text = '載入中...',
+  text,
   className = '',
 }: LoadingSpinnerProps) {
+  const { t } = useTranslation()
+  const displayText = text ?? t('common.loading')
   const sizeClasses = {
     sm: 'h-4 w-4',
     md: 'h-8 w-8',
@@ -24,7 +28,7 @@ export default function LoadingSpinner({
       <div
         className={`inline-block animate-spin rounded-full border-b-2 border-primary ${sizeClasses[size]}`}
       />
-      {text && <p className="mt-4 text-gray-500">{text}</p>}
+      {displayText && <p className="mt-4 text-gray-500">{displayText}</p>}
     </div>
   )
 }

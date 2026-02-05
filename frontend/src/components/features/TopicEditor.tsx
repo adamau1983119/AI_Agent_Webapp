@@ -2,10 +2,11 @@
  * 主題編輯元件
  */
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { topicsAPI } from '@/api/client'
 import { showSuccess, showError } from '@/utils/toast'
+import { useTranslation } from '@/i18n'
 import type { Topic } from '@/types'
 import type { TopicUpdate } from '@/api/topics'
 
@@ -20,6 +21,7 @@ export default function TopicEditor({
   onClose,
   onSuccess,
 }: TopicEditorProps) {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [formData, setFormData] = useState<TopicUpdate>({
     title: topic.title,
@@ -33,13 +35,13 @@ export default function TopicEditor({
     onSuccess: () => {
       queryClient.invalidateQueries(['topic', topic.id])
       queryClient.invalidateQueries(['topics'])
-      showSuccess('主題已成功更新')
+      showSuccess(t('common.success'))
       onSuccess?.()
       onClose()
     },
     onError: (error) => {
-      showError('更新主題失敗，請稍後再試')
-      setErrors({ submit: '更新失敗，請稍後再試' })
+      showError(t('common.failed'))
+      setErrors({ submit: t('common.failed') })
       console.error('Failed to update topic:', error)
     },
   })
@@ -48,15 +50,15 @@ export default function TopicEditor({
     const newErrors: Record<string, string> = {}
 
     if (!formData.title || formData.title.trim() === '') {
-      newErrors.title = '標題為必填項'
+      newErrors.title = t('error.validation')
     }
 
     if (!formData.category) {
-      newErrors.category = '分類為必填項'
+      newErrors.category = t('error.validation')
     }
 
     if (!formData.source || formData.source.trim() === '') {
-      newErrors.source = '來源為必填項'
+      newErrors.source = t('error.validation')
     }
 
     setErrors(newErrors)
@@ -72,13 +74,13 @@ export default function TopicEditor({
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-6 max-w-2xl">
-      <h2 className="text-xl font-bold text-gray-800 mb-6">編輯主題</h2>
+      <h2 className="text-xl font-bold text-gray-800 mb-6">{t('topics.edit')}</h2>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* 標題 */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            標題 <span className="text-red-500">*</span>
+            {t('topics.title')} <span className="text-red-500">*</span>
           </label>
           <input
             type="text"
@@ -89,7 +91,7 @@ export default function TopicEditor({
             className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary ${
               errors.title ? 'border-red-500' : 'border-gray-300'
             }`}
-            placeholder="輸入主題標題"
+            placeholder={t('topics.title')}
           />
           {errors.title && (
             <p className="mt-1 text-sm text-red-500">{errors.title}</p>
@@ -99,7 +101,7 @@ export default function TopicEditor({
         {/* 分類 */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            分類 <span className="text-red-500">*</span>
+            {t('filters.category')} <span className="text-red-500">*</span>
           </label>
           <select
             value={formData.category || ''}
@@ -113,10 +115,10 @@ export default function TopicEditor({
               errors.category ? 'border-red-500' : 'border-gray-300'
             }`}
           >
-            <option value="">選擇分類</option>
-            <option value="fashion">時尚</option>
-            <option value="food">美食</option>
-            <option value="trend">趨勢</option>
+            <option value="">{t('filters.all')}</option>
+            <option value="fashion">{t('filters.fashion')}</option>
+            <option value="food">{t('filters.food')}</option>
+            <option value="trend">{t('filters.trend')}</option>
           </select>
           {errors.category && (
             <p className="mt-1 text-sm text-red-500">{errors.category}</p>
@@ -126,7 +128,7 @@ export default function TopicEditor({
         {/* 來源 */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            來源 <span className="text-red-500">*</span>
+            {t('topics.source')} <span className="text-red-500">*</span>
           </label>
           <input
             type="text"
@@ -137,7 +139,7 @@ export default function TopicEditor({
             className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary ${
               errors.source ? 'border-red-500' : 'border-gray-300'
             }`}
-            placeholder="輸入來源"
+            placeholder={t('topics.source')}
           />
           {errors.source && (
             <p className="mt-1 text-sm text-red-500">{errors.source}</p>
@@ -158,14 +160,14 @@ export default function TopicEditor({
             onClick={onClose}
             className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
           >
-            取消
+            {t('common.cancel')}
           </button>
           <button
             type="submit"
             disabled={updateMutation.isPending}
             className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {updateMutation.isPending ? '儲存中...' : '儲存'}
+            {updateMutation.isPending ? t('common.loading') : t('common.save')}
           </button>
         </div>
       </form>
