@@ -13,6 +13,8 @@ import Login from '@/pages/Login'
 import Register from '@/pages/Register'
 import ForgotPassword from '@/pages/ForgotPassword'
 import OAuthCallback from '@/pages/OAuthCallback'
+import Terms from '@/pages/Terms'
+import Privacy from '@/pages/Privacy'
 // Phase 2: 會員系統頁面
 import Settings from '@/pages/Settings'
 // Phase 3: 內容功能頁面
@@ -63,6 +65,8 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/oauth-callback" element={<OAuthCallback />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/privacy" element={<Privacy />} />
         
         {/* 主要頁面（有 Layout） */}
         <Route
