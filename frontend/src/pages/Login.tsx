@@ -85,13 +85,15 @@ export default function Login() {
         {/* 頂部導航 */}
         <header className="flex items-center justify-between px-8 py-6">
           <Link 
-            to="/language" 
+            to="/language"
+            data-testid="btn-login-back"
             className="text-gray-400 hover:text-black transition-colors text-[10px] tracking-[0.15em] uppercase"
           >
             ← {t('common.back')}
           </Link>
           <Link 
-            to="/language" 
+            to="/language"
+            data-testid="btn-login-lang"
             className="text-gray-400 hover:text-black transition-colors text-[10px] tracking-[0.15em] uppercase"
           >
             {t('common.language')}
@@ -132,7 +134,7 @@ export default function Login() {
             )}
             
             {/* 登入表單 */}
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form data-testid="form-login" onSubmit={handleSubmit} className="space-y-6">
               {/* Email 輸入框 */}
               <div>
                 <label 
@@ -143,6 +145,7 @@ export default function Login() {
                 </label>
                 <input
                   id="email"
+                  data-testid="input-login-email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -163,6 +166,7 @@ export default function Login() {
                 <div className="relative">
                   <input
                     id="password"
+                    data-testid="input-login-password"
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -172,6 +176,7 @@ export default function Login() {
                   />
                   <button
                     type="button"
+                    data-testid="btn-login-toggle-password"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black text-[10px] tracking-[0.1em] uppercase transition-colors"
                   >
@@ -184,6 +189,7 @@ export default function Login() {
               <div className="text-right pt-1">
                 <Link
                   to="/forgot-password"
+                  data-testid="link-login-forgot"
                   className="text-[10px] text-gray-400 hover:text-black transition-colors tracking-[0.1em] uppercase"
                 >
                   {t('auth.login.forgotPassword')}
@@ -193,6 +199,7 @@ export default function Login() {
               {/* 登入按鈕 */}
               <button
                 type="submit"
+                data-testid="btn-login-submit"
                 disabled={isLoading}
                 className="w-full py-4 bg-black text-white text-[11px] tracking-[0.2em] uppercase hover:bg-gray-900 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors duration-300"
               >
@@ -225,6 +232,7 @@ export default function Login() {
             {/* Google 登入 */}
             <button
               type="button"
+              data-testid="btn-login-google"
               onClick={handleGoogleLogin}
               className="w-full flex items-center justify-center gap-3 px-6 py-4 border border-gray-200 hover:border-black text-black text-[11px] tracking-[0.15em] uppercase transition-all duration-300"
             >
@@ -252,6 +260,7 @@ export default function Login() {
             {/* 訪客瀏覽 */}
             <button
               type="button"
+              data-testid="btn-login-guest"
               onClick={handleGuestMode}
               className="w-full mt-4 py-3 text-gray-400 hover:text-black text-[10px] tracking-[0.15em] uppercase transition-colors duration-300"
             >
@@ -266,6 +275,7 @@ export default function Login() {
               {t('auth.login.noAccount')}{' '}
               <Link
                 to="/register"
+                data-testid="link-login-register"
                 className="text-black underline hover:no-underline transition-all"
               >
                 {t('auth.login.registerLink')}

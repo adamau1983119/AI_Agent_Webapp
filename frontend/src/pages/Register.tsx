@@ -208,6 +208,7 @@ export default function Register() {
           {/* Google 註冊 */}
           <button
             type="button"
+            data-testid="btn-register-google"
             onClick={handleGoogleRegister}
             className="w-full flex items-center justify-center gap-3 px-6 py-4 border border-gray-200 hover:border-black text-black text-[11px] tracking-[0.15em] uppercase transition-all duration-300 mb-8"
           >
@@ -245,7 +246,7 @@ export default function Register() {
           </div>
           
           {/* Email 註冊表單 */}
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form data-testid="form-register" onSubmit={handleSubmit} className="space-y-6">
             {/* 名稱 */}
             <div>
               <label htmlFor="name" className="block text-[10px] tracking-[0.15em] uppercase text-gray-500 mb-3">
@@ -253,6 +254,7 @@ export default function Register() {
               </label>
               <input
                 id="name"
+                data-testid="input-register-name"
                 type="text"
                 value={formData.name}
                 onChange={(e) => handleChange('name', e.target.value)}
@@ -268,6 +270,7 @@ export default function Register() {
               </label>
               <input
                 id="email"
+                data-testid="input-register-email"
                 type="email"
                 value={formData.email}
                 onChange={(e) => handleChange('email', e.target.value)}
@@ -284,6 +287,7 @@ export default function Register() {
               </label>
               <input
                 id="password"
+                data-testid="input-register-password"
                 type="password"
                 value={formData.password}
                 onChange={(e) => handleChange('password', e.target.value)}
@@ -320,6 +324,7 @@ export default function Register() {
               </label>
               <input
                 id="confirmPassword"
+                data-testid="input-register-confirm"
                 type="password"
                 value={formData.confirmPassword}
                 onChange={(e) => handleChange('confirmPassword', e.target.value)}
@@ -341,6 +346,7 @@ export default function Register() {
               </label>
               <select
                 id="language"
+                data-testid="select-register-lang"
                 value={formData.language}
                 onChange={(e) => handleChange('language', e.target.value)}
                 className="w-full px-0 py-3 bg-transparent border-0 border-b border-gray-200 text-black focus:outline-none focus:border-black transition-colors duration-300 text-sm tracking-wide appearance-none cursor-pointer"
@@ -360,6 +366,7 @@ export default function Register() {
                 <div className="relative mt-0.5">
                   <input
                     type="checkbox"
+                    data-testid="checkbox-register-terms"
                     checked={formData.agreeTerms}
                     onChange={(e) => handleChange('agreeTerms', e.target.checked)}
                     className="sr-only peer"
@@ -393,6 +400,7 @@ export default function Register() {
             {/* 提交按鈕 */}
             <button
               type="submit"
+              data-testid="btn-register-submit"
               disabled={isLoading}
               className="w-full py-4 mt-4 bg-black text-white text-[11px] tracking-[0.2em] uppercase hover:bg-gray-900 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors duration-300"
             >
@@ -415,6 +423,7 @@ export default function Register() {
             {t('auth.register.hasAccount')}{' '}
             <Link
               to="/login"
+              data-testid="link-register-login"
               className="text-black underline hover:no-underline transition-all"
             >
               {t('auth.register.loginLink')}

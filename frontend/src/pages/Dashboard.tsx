@@ -502,6 +502,7 @@ export default function Dashboard() {
           <div className="flex gap-2 mt-2">
             {topics.length > 0 && (
               <button
+                data-testid="btn-dashboard-delete"
                 onClick={handleDeleteToday}
                 disabled={deleteTodayMutation.isPending}
                 className="flex-1 py-1.5 text-[10px] tracking-[0.15em] uppercase border border-gray-200 text-gray-600 hover:border-black hover:text-black disabled:opacity-50 transition-all"
@@ -511,6 +512,7 @@ export default function Dashboard() {
             )}
             {todayTopics < 30 && (
               <button
+                data-testid="btn-dashboard-generate"
                 onClick={handleGenerateToday}
                 disabled={isGenerating}
                 className="flex-1 py-1.5 text-[10px] tracking-[0.2em] uppercase bg-black text-white hover:bg-gray-900 disabled:bg-gray-300 transition-all"
@@ -547,7 +549,7 @@ export default function Dashboard() {
       <div className="mb-8">
         <h2 className="text-[11px] tracking-[0.15em] uppercase text-gray-500 mb-4">QUICK ACTIONS</h2>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <a href="/topics" className="group bg-white border border-gray-100 p-6 text-center hover:border-black transition-all">
+          <a href="/topics" data-testid="link-dashboard-topics" className="group bg-white border border-gray-100 p-6 text-center hover:border-black transition-all">
             <div className="w-10 h-10 mx-auto mb-3 border border-gray-200 flex items-center justify-center group-hover:border-black transition-all">
               <svg className="w-5 h-5 text-gray-400 group-hover:text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
@@ -555,7 +557,7 @@ export default function Dashboard() {
             </div>
             <p className="text-[10px] tracking-[0.15em] uppercase text-gray-600 group-hover:text-black">BROWSE TOPICS</p>
           </a>
-          <a href="/channels" className="group bg-white border border-gray-100 p-6 text-center hover:border-black transition-all">
+          <a href="/channels" data-testid="link-dashboard-channels" className="group bg-white border border-gray-100 p-6 text-center hover:border-black transition-all">
             <div className="w-10 h-10 mx-auto mb-3 border border-gray-200 flex items-center justify-center group-hover:border-black transition-all">
               <svg className="w-5 h-5 text-gray-400 group-hover:text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M7 4V2m0 2v2m0-2H5m2 0h2m6 0V2m0 2v2m0-2h-2m2 0h2M5 8h14M5 12h14M5 16h14M5 20h14" />
@@ -563,7 +565,7 @@ export default function Dashboard() {
             </div>
             <p className="text-[10px] tracking-[0.15em] uppercase text-gray-600 group-hover:text-black">MY CHANNELS</p>
           </a>
-          <a href="/inspiration" className="group bg-white border border-gray-100 p-6 text-center hover:border-black transition-all">
+          <a href="/inspiration" data-testid="link-dashboard-inspiration" className="group bg-white border border-gray-100 p-6 text-center hover:border-black transition-all">
             <div className="w-10 h-10 mx-auto mb-3 border border-gray-200 flex items-center justify-center group-hover:border-black transition-all">
               <svg className="w-5 h-5 text-gray-400 group-hover:text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
@@ -571,7 +573,7 @@ export default function Dashboard() {
             </div>
             <p className="text-[10px] tracking-[0.15em] uppercase text-gray-600 group-hover:text-black">INSPIRATION</p>
           </a>
-          <a href="/style-profile" className="group bg-white border border-gray-100 p-6 text-center hover:border-black transition-all">
+          <a href="/style-profile" data-testid="link-dashboard-style" className="group bg-white border border-gray-100 p-6 text-center hover:border-black transition-all">
             <div className="w-10 h-10 mx-auto mb-3 border border-gray-200 flex items-center justify-center group-hover:border-black transition-all">
               <svg className="w-5 h-5 text-gray-400 group-hover:text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />

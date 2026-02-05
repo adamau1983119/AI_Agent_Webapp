@@ -3,17 +3,17 @@ import { useUIStore } from '@/stores/uiStore'
 import { useAuthStore } from '@/stores/authStore'
 import { useTranslation } from '@/i18n'
 
-// 選單項目配置（使用翻譯 key）
+// 選單項目配置（使用翻譯 key + 測試 ID）
 const menuItemsConfig = [
-  { path: '/dashboard', labelKey: 'nav.dashboard', icon: 'home' },
-  { path: '/topics', labelKey: 'nav.topics', icon: 'document' },
-  { path: '/channels', labelKey: 'nav.channels', icon: 'channel' },
-  { path: '/inspiration', labelKey: 'nav.inspiration', icon: 'lightbulb' },
-  { path: '/style-profile', labelKey: 'nav.styleProfile', icon: 'sparkles' },
-  { path: '/publish', labelKey: 'nav.publish', icon: 'rocket' },
-  { path: '/social-connect', labelKey: 'nav.socialConnect', icon: 'link' },
-  { path: '/preferences', labelKey: 'nav.settings', icon: 'settings' },
-  { path: '/schedule', labelKey: 'nav.schedule', icon: 'calendar' },
+  { path: '/dashboard', labelKey: 'nav.dashboard', icon: 'home', testId: 'link-sidebar-dashboard' },
+  { path: '/topics', labelKey: 'nav.topics', icon: 'document', testId: 'link-sidebar-topics' },
+  { path: '/channels', labelKey: 'nav.channels', icon: 'channel', testId: 'link-sidebar-channels' },
+  { path: '/inspiration', labelKey: 'nav.inspiration', icon: 'lightbulb', testId: 'link-sidebar-inspiration' },
+  { path: '/style-profile', labelKey: 'nav.styleProfile', icon: 'sparkles', testId: 'link-sidebar-style' },
+  { path: '/publish', labelKey: 'nav.publish', icon: 'rocket', testId: 'link-sidebar-publish' },
+  { path: '/social-connect', labelKey: 'nav.socialConnect', icon: 'link', testId: 'link-sidebar-social' },
+  { path: '/preferences', labelKey: 'nav.settings', icon: 'settings', testId: 'link-sidebar-preferences' },
+  { path: '/schedule', labelKey: 'nav.schedule', icon: 'calendar', testId: 'link-sidebar-schedule' },
 ]
 
 export default function Sidebar() {
@@ -43,7 +43,7 @@ export default function Sidebar() {
     >
       {/* Logo - Influencers AI */}
       <div className="p-6 border-b border-gray-200">
-        <Link to="/dashboard" className="flex items-center gap-3">
+        <Link to="/dashboard" data-testid="link-sidebar-logo" className="flex items-center gap-3">
           <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg">
             <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
@@ -67,6 +67,7 @@ export default function Sidebar() {
               <li key={item.path}>
                 <Link
                   to={item.path}
+                  data-testid={item.testId}
                   onClick={() => handleClick(item.path)}
                   className={`sidebar-item ${isActive ? 'active' : ''}`}
                 >
@@ -82,7 +83,7 @@ export default function Sidebar() {
       {/* 登出 */}
       {isAuthenticated && (
         <div className="p-4 border-t border-gray-200">
-          <button onClick={handleLogout} className="sidebar-item w-full text-red-600 hover:bg-red-50">
+          <button data-testid="btn-sidebar-logout" onClick={handleLogout} className="sidebar-item w-full text-red-600 hover:bg-red-50">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
             </svg>
