@@ -110,29 +110,25 @@ export default function TopicDetail() {
       })
       
       // 根據錯誤類型顯示不同的錯誤訊息
-      let errorMessage = '生成內容失敗'
+      let errorMessage = t('error.generateFailed')
       
       if (error?.status === 400) {
         // 處理 API Key 未設定的錯誤
         const errorDetail = error?.details?.detail || error?.message || ''
-        if (typeof errorDetail === 'string' && (errorDetail.includes('API Key 未設定') || errorDetail.includes('未設定'))) {
-          errorMessage = 'DeepSeek API Key 未設定\n\n'
-          errorMessage += '請在後端環境變數中設置 DEEPSEEK_API_KEY：\n'
-          errorMessage += '1. 訪問 https://platform.deepseek.com/api_keys 獲取 API Key\n'
-          errorMessage += '2. 在 Railway/Docker 環境變數中添加：DEEPSEEK_API_KEY=sk-你的API Key\n'
-          errorMessage += '3. 重新部署後端服務'
+        if (typeof errorDetail === 'string' && (errorDetail.includes('API Key') || errorDetail.includes('未設定'))) {
+          errorMessage = t('error.apiKeyNotSet')
         } else if (error?.details?.suggestion) {
-          errorMessage = error?.message || error?.details?.detail || '請求參數錯誤'
+          errorMessage = error?.message || error?.details?.detail || t('error.badRequest')
           if (typeof error?.details?.suggestion === 'string') {
             errorMessage = `${errorMessage}\n\n${error.details.suggestion}`
           }
         } else {
-          errorMessage = error?.message || error?.details?.detail || '請求參數錯誤，請檢查後端配置'
+          errorMessage = error?.message || error?.details?.detail || t('error.badRequest')
         }
       } else if (error?.status === 404) {
-        errorMessage = '主題不存在，請重新載入頁面'
+        errorMessage = t('error.topicNotFound')
       } else if (error?.status === 500) {
-        errorMessage = error?.message || '伺服器內部錯誤，請查看後端日誌'
+        errorMessage = error?.message || t('error.serverError')
       } else if (error?.message) {
         errorMessage = error.message
       } else if (error?.details?.detail) {
@@ -169,14 +165,14 @@ export default function TopicDetail() {
       })
       
       // 根據錯誤類型顯示不同的錯誤訊息
-      let errorMessage = '重新生成內容失敗'
+      let errorMessage = t('error.regenerateFailed')
       
       if (error?.status === 400) {
-        errorMessage = error?.message || error?.details?.detail || '請求參數錯誤，請檢查後端配置'
+        errorMessage = error?.message || error?.details?.detail || t('error.badRequest')
       } else if (error?.status === 404) {
-        errorMessage = '主題不存在，請重新載入頁面'
+        errorMessage = t('error.topicNotFound')
       } else if (error?.status === 500) {
-        errorMessage = error?.message || '伺服器內部錯誤，請查看後端日誌'
+        errorMessage = error?.message || t('error.serverError')
       } else if (error?.message) {
         errorMessage = error.message
       } else if (error?.details?.detail) {
@@ -438,13 +434,13 @@ export default function TopicDetail() {
               </button>
             </div>
             {imagesLoading ? (
-              <LoadingSpinner size="sm" text="載入圖片中..." />
+              <LoadingSpinner size="sm" text={t('images.loading')} />
             ) : imagesError ? (
               <ErrorDisplay error={imagesError} />
             ) : images.length === 0 ? (
               <div className="space-y-3">
                 <EmptyState
-                  message="沒有圖片"
+                  message={t('images.noImages')}
                   size="sm"
                 />
                 <div className="flex gap-2">
@@ -452,9 +448,9 @@ export default function TopicDetail() {
                     onClick={() => requireAuth(() => matchPhotosMutation.mutate(8))}
                     disabled={matchPhotosMutation.isPending || !content || !content?.article}
                     className="flex-1 px-3 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
-                    title={!content || !content?.article ? '請先生成內容才能匹配照片。智能匹配需要根據文章內容來匹配相關圖片。' : '根據文章內容智能匹配相關照片'}
+                    title={!content || !content?.article ? t('images.generateContentFirst') : t('images.matchPhotosTitle')}
                   >
-                    {matchPhotosMutation.isPending ? '匹配中...' : '智能匹配照片（8張）'}
+                    {matchPhotosMutation.isPending ? t('common.matching') : t('images.smartMatchPhotos')}
                   </button>
                   <button
                     onClick={() => requireAuth(() => setShowImageSearch(true))}
@@ -480,7 +476,7 @@ export default function TopicDetail() {
         <div className="col-span-12 lg:col-span-5">
           <div className="bg-white rounded-lg shadow p-6 space-y-6">
             {contentLoading ? (
-              <LoadingSpinner size="sm" text="載入內容中..." />
+              <LoadingSpinner size="sm" text={t('common.loadingContent')} />
             ) : contentError && (contentError as any)?.status !== 404 ? (
               <ErrorDisplay error={contentError} />
             ) : content ? (
@@ -492,14 +488,14 @@ export default function TopicDetail() {
                     disabled={regenerateContentMutation.isPending}
                     className="px-3 py-1 text-xs font-medium text-primary bg-primary/10 rounded-md hover:bg-primary/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {regenerateContentMutation.isPending ? '重新生成中...' : '🔄 重新生成'}
+                    {regenerateContentMutation.isPending ? t('common.regenerating') : `🔄 ${t('common.regenerate')}`}
                   </button>
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-700 mb-2">短文</h3>
                   <div className="bg-gray-50 rounded-lg p-4 max-h-96 overflow-y-auto">
                     <p className="text-gray-700 whitespace-pre-line text-sm leading-relaxed">
-                      {content.article || '尚未生成內容'}
+                      {content.article || t('common.noContent')}
                     </p>
                   </div>
                   <p className="text-xs text-gray-500 mt-2">
@@ -510,7 +506,7 @@ export default function TopicDetail() {
                   <h3 className="font-semibold text-gray-700 mb-2">腳本</h3>
                   <div className="bg-gray-50 rounded-lg p-4 max-h-64 overflow-y-auto">
                     <p className="text-gray-700 whitespace-pre-line text-sm leading-relaxed">
-                      {content.script || '尚未生成內容'}
+                      {content.script || t('common.noContent')}
                     </p>
                   </div>
                   <p className="text-xs text-gray-500 mt-2">
@@ -520,13 +516,13 @@ export default function TopicDetail() {
               </>
             ) : (
               <div className="space-y-3">
-                <EmptyState message="尚未生成內容" size="sm" />
+                <EmptyState message={t('common.noContent')} size="sm" />
                 <button
                   onClick={() => requireAuth(() => generateContentMutation.mutate())}
                   disabled={generateContentMutation.isPending}
                   className="w-full px-4 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {generateContentMutation.isPending ? '生成中...' : '生成內容（500字文章 + 30秒腳本）'}
+                  {generateContentMutation.isPending ? t('common.generating') : t('topics.generateContent')}
                 </button>
               </div>
             )}

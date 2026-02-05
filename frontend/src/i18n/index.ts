@@ -20,6 +20,12 @@ const zhTW = {
   'common.success': '成功',
   'common.cancel': '取消',
   'common.clearSearch': '清除搜索',
+  'common.loadingContent': '載入內容中...',
+  'common.regenerating': '重新生成中...',
+  'common.regenerate': '重新生成',
+  'common.noContent': '尚未生成內容',
+  'common.generating': '生成中...',
+  'common.matching': '匹配中...',
   'common.confirm': '確認',
   'common.save': '儲存',
   'common.delete': '刪除',
@@ -236,6 +242,12 @@ const zhTW = {
   'error.oauth.tokenFailed': 'Google 授權失敗，請重試',
   'error.oauth.userInfoFailed': '無法取得 Google 帳號資訊',
   'error.oauth.failed': 'Google 登入失敗，請重試',
+  'error.generateFailed': '生成內容失敗',
+  'error.regenerateFailed': '重新生成內容失敗',
+  'error.apiKeyNotSet': 'DeepSeek API Key 未設定',
+  'error.badRequest': '請求參數錯誤',
+  'error.topicNotFound': '主題不存在，請重新載入頁面',
+  'error.serverError': '伺服器內部錯誤',
   
   // 主題相關
   'topics.title': '主題',
@@ -292,6 +304,11 @@ const zhTW = {
   'images.imageUrl': '圖片 URL',
   'images.replacePhoto': '替換照片',
   'images.photo': '照片',
+  'images.loading': '載入圖片中...',
+  'images.noImages': '沒有圖片',
+  'images.generateContentFirst': '請先生成內容才能匹配照片',
+  'images.matchPhotosTitle': '根據文章內容智能匹配相關照片',
+  'images.smartMatchPhotos': '智能匹配照片（8張）',
   
   // 篩選器
   'filters.title': '篩選條件',
@@ -488,6 +505,12 @@ const zhTW = {
   'publish.hashtagPlaceholder': '輸入 hashtag',
   'publish.imageUrlPlaceholder': '輸入圖片 URL',
   
+  // 主題
+  'topics.edit': '編輯主題',
+  'topics.title': '標題',
+  'topics.source': '來源',
+  'topics.generateContent': '生成內容（500字文章 + 30秒腳本）',
+  
   // 偏好設定
   'preferences.title': '偏好設定',
   'preferences.developing': '偏好設定功能開發中...',
@@ -559,6 +582,12 @@ const en: typeof zhTW = {
   'common.success': 'Success',
   'common.cancel': 'Cancel',
   'common.clearSearch': 'Clear Search',
+  'common.loadingContent': 'Loading content...',
+  'common.regenerating': 'Regenerating...',
+  'common.regenerate': 'Regenerate',
+  'common.noContent': 'No content generated yet',
+  'common.generating': 'Generating...',
+  'common.matching': 'Matching...',
   'common.confirm': 'Confirm',
   'common.save': 'Save',
   'common.delete': 'Delete',
@@ -775,6 +804,12 @@ const en: typeof zhTW = {
   'error.oauth.tokenFailed': 'Google authorization failed, please try again',
   'error.oauth.userInfoFailed': 'Unable to get Google account info',
   'error.oauth.failed': 'Google login failed, please try again',
+  'error.generateFailed': 'Failed to generate content',
+  'error.regenerateFailed': 'Failed to regenerate content',
+  'error.apiKeyNotSet': 'DeepSeek API Key not set',
+  'error.badRequest': 'Bad request parameters',
+  'error.topicNotFound': 'Topic not found, please reload the page',
+  'error.serverError': 'Internal server error',
   
   // Topics
   'topics.title': 'Topics',
@@ -831,6 +866,11 @@ const en: typeof zhTW = {
   'images.imageUrl': 'Image URL',
   'images.replacePhoto': 'Replace Photo',
   'images.photo': 'Photo',
+  'images.loading': 'Loading images...',
+  'images.noImages': 'No images',
+  'images.generateContentFirst': 'Please generate content first to match photos',
+  'images.matchPhotosTitle': 'Smart match photos based on article content',
+  'images.smartMatchPhotos': 'Smart Match Photos (8)',
   
   // Filters
   'filters.title': 'Filters',
@@ -1027,6 +1067,12 @@ const en: typeof zhTW = {
   'publish.hashtagPlaceholder': 'Enter hashtag',
   'publish.imageUrlPlaceholder': 'Enter image URL',
   
+  // Topics
+  'topics.edit': 'Edit Topic',
+  'topics.title': 'Title',
+  'topics.source': 'Source',
+  'topics.generateContent': 'Generate Content (500-word article + 30s script)',
+  
   // Preferences
   'preferences.title': 'Preferences',
   'preferences.developing': 'Preferences feature in development...',
@@ -1098,6 +1144,12 @@ const ja: typeof zhTW = {
   'common.success': '成功',
   'common.cancel': 'キャンセル',
   'common.clearSearch': '検索をクリア',
+  'common.loadingContent': 'コンテンツを読み込み中...',
+  'common.regenerating': '再生成中...',
+  'common.regenerate': '再生成',
+  'common.noContent': 'まだコンテンツが生成されていません',
+  'common.generating': '生成中...',
+  'common.matching': 'マッチング中...',
   'common.confirm': '確認',
   'common.save': '保存',
   'common.delete': '削除',
@@ -1314,6 +1366,12 @@ const ja: typeof zhTW = {
   'error.oauth.tokenFailed': 'Google 認証に失敗しました。再試行してください',
   'error.oauth.userInfoFailed': 'Google アカウント情報を取得できません',
   'error.oauth.failed': 'Google ログインに失敗しました。再試行してください',
+  'error.generateFailed': 'コンテンツの生成に失敗しました',
+  'error.regenerateFailed': 'コンテンツの再生成に失敗しました',
+  'error.apiKeyNotSet': 'DeepSeek API Key が設定されていません',
+  'error.badRequest': 'リクエストパラメータエラー',
+  'error.topicNotFound': 'トピックが見つかりません。ページを再読み込みしてください',
+  'error.serverError': 'サーバー内部エラー',
   
   // トピック
   'topics.title': 'トピック',
@@ -1370,6 +1428,11 @@ const ja: typeof zhTW = {
   'images.imageUrl': '画像 URL',
   'images.replacePhoto': '写真を置換',
   'images.photo': '写真',
+  'images.loading': '画像を読み込み中...',
+  'images.noImages': '画像なし',
+  'images.generateContentFirst': '写真をマッチするには、まずコンテンツを生成してください',
+  'images.matchPhotosTitle': '記事の内容に基づいて写真をスマートマッチ',
+  'images.smartMatchPhotos': 'スマートマッチ写真（8枚）',
   
   // フィルター
   'filters.title': 'フィルター',
@@ -1565,6 +1628,12 @@ const ja: typeof zhTW = {
   'publish.contentPlaceholder': '公開するコンテンツを入力...',
   'publish.hashtagPlaceholder': 'ハッシュタグを入力',
   'publish.imageUrlPlaceholder': '画像URLを入力',
+  
+  // トピック
+  'topics.edit': 'トピックを編集',
+  'topics.title': 'タイトル',
+  'topics.source': 'ソース',
+  'topics.generateContent': 'コンテンツを生成（500字記事 + 30秒スクリプト）',
   
   // 環境設定
   'preferences.title': '環境設定',
