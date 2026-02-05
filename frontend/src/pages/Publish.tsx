@@ -100,18 +100,18 @@ export default function Publish() {
 
   const handlePublish = async () => {
     if (!content.trim()) {
-      toast.error('請輸入發布內容');
+      toast.error(t('publish.validation.contentRequired'));
       return;
     }
     
     if (selectedPlatforms.length === 0) {
-      toast.error('請選擇至少一個平台');
+      toast.error(t('publish.validation.platformRequired'));
       return;
     }
     
     // 檢查 Instagram 是否需要圖片
     if (selectedPlatforms.includes('instagram') && imageUrls.length === 0) {
-      toast.error('Instagram 發布需要至少一張圖片');
+      toast.error(t('publish.validation.instagramImageRequired'));
       return;
     }
     
@@ -130,14 +130,14 @@ export default function Publish() {
       setPublishResult(result);
       
       if (result.successful === result.total_platforms) {
-        toast.success('發布成功！');
+        toast.success(t('publish.success'));
       } else if (result.successful > 0) {
-        toast.success(`部分發布成功（${result.successful}/${result.total_platforms}）`);
+        toast.success(t('publish.partialSuccess', { successful: result.successful, total: result.total_platforms }));
       } else {
-        toast.error('發布失敗');
+        toast.error(t('publish.failed'));
       }
     } catch (err: any) {
-      toast.error(err.message || '發布失敗');
+      toast.error(err.message || t('publish.failed'));
     } finally {
       setIsPublishing(false);
     }
@@ -197,7 +197,7 @@ export default function Publish() {
                 <textarea
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  placeholder="輸入您要發布的內容..."
+                  placeholder={t('publish.contentPlaceholder')}
                   rows={6}
                   className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 resize-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 />
@@ -217,7 +217,7 @@ export default function Publish() {
                     value={hashtagInput}
                     onChange={(e) => setHashtagInput(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addHashtag())}
-                    placeholder="輸入 hashtag"
+                    placeholder={t('publish.hashtagPlaceholder')}
                     className="flex-1 px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white"
                   />
                   <button
@@ -256,7 +256,7 @@ export default function Publish() {
                     type="text"
                     value={imageInput}
                     onChange={(e) => setImageInput(e.target.value)}
-                    placeholder="輸入圖片 URL"
+                    placeholder={t('publish.imageUrlPlaceholder')}
                     className="flex-1 px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white"
                   />
                   <button

@@ -460,6 +460,34 @@ const zhTW = {
   'inspiration.aiGenerated': 'AI 生成',
   'inspiration.useThis': '使用此靈感',
   
+  // 風格設定
+  'style.coldStart': '冷啟動',
+  'style.totalRatingsCount': '已評分 {count} 次',
+  'style.confidenceScore': '信心分數',
+  'style.totalRatings': '總評分數',
+  'style.positiveRatio': '正面比例',
+  'style.styleTraits': '風格特徵',
+  'style.formalLevel': '正式程度',
+  'style.humorLevel': '幽默程度',
+  'style.emotionLevel': '情感表達',
+  'style.directnessLevel': '直接程度',
+  'style.preset.professional.desc': '適合商業、財經、科技等專業內容',
+  'style.preset.casual.desc': '適合生活、旅遊、美食等日常內容',
+  'style.preset.humorous.desc': '適合娛樂、趣聞、創意內容',
+  'style.preset.inspiring.desc': '適合勵志、成長、心靈雞湯內容',
+  'style.preset.storytelling.desc': '適合分享經歷、教學、深度內容',
+  
+  // 發佈
+  'publish.validation.contentRequired': '請輸入發布內容',
+  'publish.validation.platformRequired': '請選擇至少一個平台',
+  'publish.validation.instagramImageRequired': 'Instagram 發布需要至少一張圖片',
+  'publish.success': '發布成功！',
+  'publish.partialSuccess': '部分發布成功（{successful}/{total}）',
+  'publish.failed': '發布失敗',
+  'publish.contentPlaceholder': '輸入您要發布的內容...',
+  'publish.hashtagPlaceholder': '輸入 hashtag',
+  'publish.imageUrlPlaceholder': '輸入圖片 URL',
+  
   // 偏好設定
   'preferences.title': '偏好設定',
   'preferences.developing': '偏好設定功能開發中...',
@@ -971,6 +999,34 @@ const en: typeof zhTW = {
   'inspiration.aiGenerated': 'AI Generated',
   'inspiration.useThis': 'Use This Inspiration',
   
+  // Style Settings
+  'style.coldStart': 'Cold Start',
+  'style.totalRatingsCount': 'Rated {count} times',
+  'style.confidenceScore': 'Confidence Score',
+  'style.totalRatings': 'Total Ratings',
+  'style.positiveRatio': 'Positive Ratio',
+  'style.styleTraits': 'Style Traits',
+  'style.formalLevel': 'Formality Level',
+  'style.humorLevel': 'Humor Level',
+  'style.emotionLevel': 'Emotion Level',
+  'style.directnessLevel': 'Directness Level',
+  'style.preset.professional.desc': 'Suitable for business, finance, tech and professional content',
+  'style.preset.casual.desc': 'Suitable for lifestyle, travel, food and daily content',
+  'style.preset.humorous.desc': 'Suitable for entertainment, fun facts, creative content',
+  'style.preset.inspiring.desc': 'Suitable for motivational, growth, inspirational content',
+  'style.preset.storytelling.desc': 'Suitable for sharing experiences, teaching, in-depth content',
+  
+  // Publish
+  'publish.validation.contentRequired': 'Please enter content to publish',
+  'publish.validation.platformRequired': 'Please select at least one platform',
+  'publish.validation.instagramImageRequired': 'Instagram publishing requires at least one image',
+  'publish.success': 'Published successfully!',
+  'publish.partialSuccess': 'Partially published ({successful}/{total})',
+  'publish.failed': 'Publishing failed',
+  'publish.contentPlaceholder': 'Enter your content to publish...',
+  'publish.hashtagPlaceholder': 'Enter hashtag',
+  'publish.imageUrlPlaceholder': 'Enter image URL',
+  
   // Preferences
   'preferences.title': 'Preferences',
   'preferences.developing': 'Preferences feature in development...',
@@ -1481,6 +1537,34 @@ const ja: typeof zhTW = {
   'inspiration.searchResult': '検索結果',
   'inspiration.aiGenerated': 'AI生成',
   'inspiration.useThis': 'このインスピレーションを使用',
+  
+  // スタイル設定
+  'style.coldStart': 'コールドスタート',
+  'style.totalRatingsCount': '{count} 回評価済み',
+  'style.confidenceScore': '信頼度スコア',
+  'style.totalRatings': '総評価数',
+  'style.positiveRatio': '肯定的な割合',
+  'style.styleTraits': 'スタイル特性',
+  'style.formalLevel': 'フォーマルレベル',
+  'style.humorLevel': 'ユーモアレベル',
+  'style.emotionLevel': '感情レベル',
+  'style.directnessLevel': '直接性レベル',
+  'style.preset.professional.desc': 'ビジネス、金融、テクノロジーなど専門的なコンテンツに適しています',
+  'style.preset.casual.desc': 'ライフスタイル、旅行、食べ物など日常的なコンテンツに適しています',
+  'style.preset.humorous.desc': 'エンターテイメント、トリビア、クリエイティブなコンテンツに適しています',
+  'style.preset.inspiring.desc': 'モチベーション、成長、インスピレーショナルなコンテンツに適しています',
+  'style.preset.storytelling.desc': '体験の共有、教育、深いコンテンツに適しています',
+  
+  // 公開
+  'publish.validation.contentRequired': '公開するコンテンツを入力してください',
+  'publish.validation.platformRequired': '少なくとも1つのプラットフォームを選択してください',
+  'publish.validation.instagramImageRequired': 'Instagramの投稿には少なくとも1枚の画像が必要です',
+  'publish.success': '公開成功！',
+  'publish.partialSuccess': '部分的に公開成功（{successful}/{total}）',
+  'publish.failed': '公開失敗',
+  'publish.contentPlaceholder': '公開するコンテンツを入力...',
+  'publish.hashtagPlaceholder': 'ハッシュタグを入力',
+  'publish.imageUrlPlaceholder': '画像URLを入力',
   
   // 環境設定
   'preferences.title': '環境設定',

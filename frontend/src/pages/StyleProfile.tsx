@@ -16,16 +16,16 @@ import {
 } from '../api/styleProfile';
 import toast from 'react-hot-toast';
 
-const presetStyles: { value: PresetStyle; icon: string; description: string }[] = [
-  { value: 'professional', icon: '💼', description: '適合商業、財經、科技等專業內容' },
-  { value: 'casual', icon: '😊', description: '適合生活、旅遊、美食等日常內容' },
-  { value: 'humorous', icon: '😂', description: '適合娛樂、趣聞、創意內容' },
-  { value: 'inspiring', icon: '✨', description: '適合勵志、成長、心靈雞湯內容' },
-  { value: 'storytelling', icon: '📖', description: '適合分享經歷、教學、深度內容' },
-];
-
 export default function StyleProfile() {
   const { t } = useTranslation();
+  
+  const presetStyles: { value: PresetStyle; icon: string; descriptionKey: string }[] = [
+    { value: 'professional', icon: '💼', descriptionKey: 'style.preset.professional.desc' },
+    { value: 'casual', icon: '😊', descriptionKey: 'style.preset.casual.desc' },
+    { value: 'humorous', icon: '😂', descriptionKey: 'style.preset.humorous.desc' },
+    { value: 'inspiring', icon: '✨', descriptionKey: 'style.preset.inspiring.desc' },
+    { value: 'storytelling', icon: '📖', descriptionKey: 'style.preset.storytelling.desc' },
+  ];
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuthStore();
   const [analysis, setAnalysis] = useState<StyleAnalysis | null>(null);
@@ -119,7 +119,7 @@ export default function StyleProfile() {
                 學習進度
               </h2>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                {analysis?.learning_stage_label || '冷啟動'} · 已評分 {analysis?.total_ratings || 0} 次
+                {analysis?.learning_stage_label || t('style.coldStart')} · {t('style.totalRatingsCount', { count: analysis?.total_ratings || 0 })}
               </p>
             </div>
             <div className={`px-4 py-2 rounded-full text-sm font-medium ${
@@ -164,22 +164,22 @@ export default function StyleProfile() {
         {/* 信心分數 */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <StatCard
-            label="信心分數"
+            label={t('style.confidenceScore')}
             value={`${Math.round((analysis?.confidence_score || 0) * 100)}%`}
             icon="🎯"
           />
           <StatCard
-            label="總評分數"
+            label={t('style.totalRatings')}
             value={analysis?.total_ratings?.toString() || '0'}
             icon="📊"
           />
           <StatCard
-            label="正面比例"
+            label={t('style.positiveRatio')}
             value={`${Math.round((analysis?.positive_ratio || 0) * 100)}%`}
             icon="👍"
           />
           <StatCard
-            label="風格特徵"
+            label={t('style.styleTraits')}
             value={analysis?.style_traits?.length?.toString() || '0'}
             icon="✨"
           />
@@ -250,10 +250,10 @@ export default function StyleProfile() {
               語氣偏好
             </h2>
             <div className="space-y-4">
-              <ToneBar label="正式程度" value={analysis.tone.formal_score} />
-              <ToneBar label="幽默程度" value={analysis.tone.humor_score} />
-              <ToneBar label="情感表達" value={analysis.tone.emotion_score} />
-              <ToneBar label="直接程度" value={analysis.tone.directness_score} />
+              <ToneBar label={t('style.formalLevel')} value={analysis.tone.formal_score} />
+              <ToneBar label={t('style.humorLevel')} value={analysis.tone.humor_score} />
+              <ToneBar label={t('style.emotionLevel')} value={analysis.tone.emotion_score} />
+              <ToneBar label={t('style.directnessLevel')} value={analysis.tone.directness_score} />
             </div>
           </div>
         )}
