@@ -11,6 +11,7 @@ import {
   negativeReasons,
 } from '../../api/ratings';
 import { RatingValue } from '../../api/styleProfile';
+import { useTranslation } from '../../i18n';
 import toast from 'react-hot-toast';
 
 interface RatingPanelProps {
@@ -30,6 +31,7 @@ export default function RatingPanel({
   topicCategory,
   onRatingSubmitted,
 }: RatingPanelProps) {
+  const { t } = useTranslation();
   const [selectedValue, setSelectedValue] = useState<RatingValue | null>(null);
   const [selectedReasons, setSelectedReasons] = useState<RatingReason[]>([]);
   const [comment, setComment] = useState('');
@@ -87,10 +89,10 @@ export default function RatingPanel({
 
       setHasRated(true);
       setShowReasons(false);
-      toast.success('感謝您的評分！這將幫助我們更了解您的偏好');
+      toast.success(t('common.success'));
       onRatingSubmitted?.(selectedValue);
     } catch (err: any) {
-      toast.error(err.message || '評分失敗');
+      toast.error(err.message || t('common.failed'));
     } finally {
       setIsSubmitting(false);
     }
@@ -192,10 +194,10 @@ export default function RatingPanel({
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                   </svg>
-                  提交中...
+                  {t('common.loading')}
                 </>
               ) : (
-                '提交評分'
+                t('common.submit')
               )}
             </button>
           </div>

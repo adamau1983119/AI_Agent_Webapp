@@ -249,6 +249,11 @@ const zhTW = {
   'topics.searchSource': '搜尋來源',
   'topics.total': '共 {count} 個主題',
   'topics.loaded': '已載入 {count} 個',
+  'topics.source': '來源',
+  'topics.noContent': '暫無內容撮要',
+  'topics.contentProgress': '內容完成度',
+  'topics.imageProgress': '圖片完成度',
+  'topics.deleteConfirmMessage': '您確定要刪除此主題嗎？此操作無法復原。',
   
   // 內容生成
   'content.generate': '生成內容',
@@ -264,6 +269,19 @@ const zhTW = {
   'images.upload': '上傳圖片',
   'images.select': '選擇圖片',
   'images.noResults': '找不到相關圖片',
+  'images.searchTitle': '搜尋圖片',
+  'images.suggestedKeywords': '建議關鍵字（從內容中提取）',
+  'images.sourceLabel': '來源',
+  'images.allSources': '所有來源',
+  'images.diagnosticMode': '診斷模式',
+  'images.tryDifferentKeywords': '嘗試使用不同的關鍵字',
+  'images.validateMatch': '驗證匹配度',
+  'images.reorder': '重新排序',
+  'images.loadError': '圖片無法載入',
+  'images.photographer': '攝影師',
+  'images.license': '授權',
+  'images.order': '順序',
+  'images.imageUrl': '圖片 URL',
   
   // 篩選器
   'filters.title': '篩選條件',
@@ -290,12 +308,15 @@ const zhTW = {
   'common.previous': '上一步',
   'common.failed': '失敗',
   'common.noData': '沒有找到資料',
+  'common.noMoreData': '已顯示全部內容',
   'common.copy': '複製',
   'common.copied': '已複製',
   'common.preview': '預覽',
   'common.view': '查看',
+  'common.viewDetails': '查看詳情',
   'common.all': '全部',
   'common.more': '更多',
+  'common.confirmDelete': '確認刪除',
   
   // 認證 - 擴展
   'auth.sendFailed': '發送失敗，請稍後再試',
@@ -680,6 +701,11 @@ const en: typeof zhTW = {
   'topics.searchSource': 'Search source',
   'topics.total': '{count} topics total',
   'topics.loaded': '{count} loaded',
+  'topics.source': 'Source',
+  'topics.noContent': 'No content summary',
+  'topics.contentProgress': 'Content Progress',
+  'topics.imageProgress': 'Image Progress',
+  'topics.deleteConfirmMessage': 'Are you sure you want to delete this topic? This action cannot be undone.',
   
   // Content Generation
   'content.generate': 'Generate Content',
@@ -695,6 +721,19 @@ const en: typeof zhTW = {
   'images.upload': 'Upload Image',
   'images.select': 'Select Image',
   'images.noResults': 'No images found',
+  'images.searchTitle': 'Search Images',
+  'images.suggestedKeywords': 'Suggested Keywords (extracted from content)',
+  'images.sourceLabel': 'Source',
+  'images.allSources': 'All Sources',
+  'images.diagnosticMode': 'Diagnostic Mode',
+  'images.tryDifferentKeywords': 'Try different keywords',
+  'images.validateMatch': 'Validate Match',
+  'images.reorder': 'Reorder',
+  'images.loadError': 'Image failed to load',
+  'images.photographer': 'Photographer',
+  'images.license': 'License',
+  'images.order': 'Order',
+  'images.imageUrl': 'Image URL',
   
   // Filters
   'filters.title': 'Filters',
@@ -727,6 +766,9 @@ const en: typeof zhTW = {
   'common.view': 'View',
   'common.all': 'All',
   'common.more': 'More',
+  'common.noMoreData': 'All content displayed',
+  'common.viewDetails': 'View Details',
+  'common.confirmDelete': 'Confirm Delete',
   
   // Auth - Extended
   'auth.sendFailed': 'Failed to send, please try again later',
@@ -1111,6 +1153,11 @@ const ja: typeof zhTW = {
   'topics.searchSource': '検索ソース',
   'topics.total': '合計 {count} トピック',
   'topics.loaded': '{count} 件読み込み済み',
+  'topics.source': 'ソース',
+  'topics.noContent': 'コンテンツ概要なし',
+  'topics.contentProgress': 'コンテンツ進捗',
+  'topics.imageProgress': '画像進捗',
+  'topics.deleteConfirmMessage': 'このトピックを削除しますか？この操作は元に戻せません。',
   
   // コンテンツ生成
   'content.generate': 'コンテンツ生成',
@@ -1126,6 +1173,19 @@ const ja: typeof zhTW = {
   'images.upload': '画像アップロード',
   'images.select': '画像選択',
   'images.noResults': '画像が見つかりません',
+  'images.searchTitle': '画像検索',
+  'images.suggestedKeywords': 'おすすめキーワード（コンテンツから抽出）',
+  'images.sourceLabel': 'ソース',
+  'images.allSources': 'すべてのソース',
+  'images.diagnosticMode': '診断モード',
+  'images.tryDifferentKeywords': '別のキーワードをお試しください',
+  'images.validateMatch': 'マッチング検証',
+  'images.reorder': '並び替え',
+  'images.loadError': '画像を読み込めません',
+  'images.photographer': '撮影者',
+  'images.license': 'ライセンス',
+  'images.order': '順番',
+  'images.imageUrl': '画像 URL',
   
   // フィルター
   'filters.title': 'フィルター',
@@ -1158,6 +1218,9 @@ const ja: typeof zhTW = {
   'common.view': '表示',
   'common.all': 'すべて',
   'common.more': 'もっと見る',
+  'common.noMoreData': 'すべてのコンテンツを表示済み',
+  'common.viewDetails': '詳細を見る',
+  'common.confirmDelete': '削除確認',
   
   // 認証 - 拡張
   'auth.sendFailed': '送信に失敗しました。後でもう一度お試しください',

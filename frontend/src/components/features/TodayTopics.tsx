@@ -2,6 +2,7 @@ import React from 'react'
 import type { Schedule, Topic } from '@/types'
 import { getProxyUrl } from '@/utils/imageProxy'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from '@/i18n'
 
 interface TodayTopicsProps {
   schedules?: Schedule[]  // 可選，目前未使用
@@ -9,23 +10,24 @@ interface TodayTopicsProps {
 }
 
 export default function TodayTopics({ topics }: TodayTopicsProps) {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   
   // 分類配置
   const categories = [
     { 
       key: 'fashion', 
-      label: '時尚趨勢', 
+      label: t('filters.fashion'), 
       timeSlot: '07:00',
     },
     { 
       key: 'food', 
-      label: '美食推薦', 
+      label: t('filters.food'), 
       timeSlot: '12:00',
     },
     { 
       key: 'trend', 
-      label: '社會趨勢', 
+      label: t('filters.trend'), 
       timeSlot: '18:00',
     },
   ]
@@ -115,11 +117,11 @@ export default function TodayTopics({ topics }: TodayTopicsProps) {
     <div className="bg-white rounded-lg shadow p-6">
       <div className="flex items-center justify-between mb-6">
         <h3 className="font-bold text-gray-800 text-lg">
-          {isToday ? '今日主題' : '最新主題'}
+          {isToday ? t('dashboard.todayTopics') : t('dashboard.latestTopics')}
         </h3>
         {!isToday && displayTopics.length > 0 && (
           <span className="text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded">
-            顯示最近主題
+            {t('dashboard.latestTopics')}
           </span>
         )}
       </div>
@@ -132,8 +134,8 @@ export default function TodayTopics({ topics }: TodayTopicsProps) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
             </svg>
           </div>
-          <p className="text-gray-600 font-medium mb-2">🤖 AI Agent 正在收集熱門話題...</p>
-          <p className="text-gray-400 text-sm">系統每 6 小時自動更新，請稍候</p>
+          <p className="text-gray-600 font-medium mb-2">🤖 {t('common.loading')}</p>
+          <p className="text-gray-400 text-sm">{t('dashboard.noContent')}</p>
         </div>
       ) : (
         <div className="space-y-8">
@@ -149,7 +151,7 @@ export default function TodayTopics({ topics }: TodayTopicsProps) {
                     {category.label}
                   </h4>
                   <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
-                    {topicsCount} 個主題
+                    {topicsCount} {t('channels.topics')}
                   </span>
                 </div>
                 
@@ -158,7 +160,7 @@ export default function TodayTopics({ topics }: TodayTopicsProps) {
                   <div className="space-y-3">
                     {categoryTopics.map((topic) => {
                       const imageUrl = getTopicImage(topic)
-                      const source = topic.source || '未知來源'
+                      const source = topic.source || t('topics.source')
                       
                       return (
                         <div 
@@ -208,7 +210,7 @@ export default function TodayTopics({ topics }: TodayTopicsProps) {
                   </div>
                 ) : (
                   <div className="text-center py-6 text-gray-400 bg-gray-50 rounded-lg">
-                    <p className="text-sm">🤖 Agent 正在收集 {category.label}...</p>
+                    <p className="text-sm">🤖 {t('common.loading')}</p>
                   </div>
                 )}
               </div>

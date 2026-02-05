@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import type { Topic } from '@/types'
 import { API_BASE_URL } from '@/api/client'
+import { useTranslation } from '@/i18n'
 
 /**
  * 生成圖片代理 URL（如果需要）
@@ -27,6 +28,7 @@ const gradientClasses = {
 }
 
 export default function TopicCard({ topic }: TopicCardProps) {
+  const { t } = useTranslation()
   // 從 topic 數據計算進度
   const contentProgress = (topic.wordCount || 0) > 0 ? Math.min(100, ((topic.wordCount || 0) / 500) * 100) : 0
   const imageProgress = (topic.imageCount || 0) >= 8 ? 100 : Math.min(100, ((topic.imageCount || 0) / 8) * 100)
@@ -89,7 +91,7 @@ export default function TopicCard({ topic }: TopicCardProps) {
                 {topic.description ? (
                   topic.description
                 ) : (
-                  <span className="text-gray-400 italic">暫無內容撮要</span>
+                  <span className="text-gray-400 italic">{t('topics.noContent')}</span>
                 )}
               </p>
             </div>
@@ -98,7 +100,7 @@ export default function TopicCard({ topic }: TopicCardProps) {
             <div className="space-y-1.5 md:space-y-2">
               <div>
                 <div className="flex justify-between text-xs mb-0.5 md:mb-1">
-                  <span className="text-gray-600">內容完成度</span>
+                  <span className="text-gray-600">{t('topics.contentProgress')}</span>
                   <span className="font-semibold">{contentProgress}%</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-1.5">
@@ -110,7 +112,7 @@ export default function TopicCard({ topic }: TopicCardProps) {
               </div>
               <div>
                 <div className="flex justify-between text-xs mb-0.5 md:mb-1">
-                  <span className="text-gray-600">圖片完成度</span>
+                  <span className="text-gray-600">{t('topics.imageProgress')}</span>
                   <span className="font-semibold">{imageProgress}%</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-1.5">
@@ -125,7 +127,7 @@ export default function TopicCard({ topic }: TopicCardProps) {
           
           {/* 展開按鈕 */}
           <button className="text-primary hover:text-primary-dark font-medium text-xs md:text-sm mt-3 md:mt-4 self-start">
-            {isExpanded ? 'View details →' : '展開內容 →'}
+            {t('common.viewDetails')} →
           </button>
         </div>
       </div>

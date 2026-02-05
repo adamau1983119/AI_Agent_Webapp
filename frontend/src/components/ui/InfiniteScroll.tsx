@@ -10,6 +10,7 @@
 
 import { useEffect, useRef, useCallback } from 'react'
 import LoadingSpinner from './LoadingSpinner'
+import { useTranslation } from '@/i18n'
 
 interface InfiniteScrollProps {
   /** 子元素 */
@@ -46,6 +47,7 @@ export default function InfiniteScroll({
   error,
   onRetry,
 }: InfiniteScrollProps) {
+  const { t } = useTranslation()
   const observerRef = useRef<IntersectionObserver | null>(null)
   const loadMoreRef = useRef<HTMLDivElement>(null)
 
@@ -83,7 +85,7 @@ export default function InfiniteScroll({
   const defaultLoader = (
     <div className="flex justify-center items-center py-8">
       <LoadingSpinner />
-      <span className="ml-3 text-gray-600">載入更多...</span>
+      <span className="ml-3 text-gray-600">{t('common.loading')}</span>
     </div>
   )
 
@@ -91,7 +93,7 @@ export default function InfiniteScroll({
     <div className="text-center py-8 text-gray-500">
       <div className="flex items-center justify-center gap-2">
         <div className="w-8 h-px bg-gray-300" />
-        <span>已顯示全部內容</span>
+        <span>{t('common.noMoreData')}</span>
         <div className="w-8 h-px bg-gray-300" />
       </div>
     </div>
@@ -99,13 +101,13 @@ export default function InfiniteScroll({
 
   const errorMessage = (
     <div className="text-center py-8">
-      <p className="text-red-500 mb-4">載入失敗: {error?.message || '未知錯誤'}</p>
+      <p className="text-red-500 mb-4">{t('common.failed')}: {error?.message || t('error.unknown')}</p>
       {onRetry && (
         <button
           onClick={onRetry}
           className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
         >
-          重試
+          {t('common.retry')}
         </button>
       )}
     </div>

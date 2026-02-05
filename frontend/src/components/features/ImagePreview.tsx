@@ -5,6 +5,7 @@
 import { useMemo, useState } from 'react'
 import { API_BASE_URL } from '@/api/client'
 import type { Image } from '@/types'
+import { useTranslation } from '@/i18n'
 
 /**
  * 生成圖片代理 URL
@@ -26,6 +27,7 @@ export default function ImagePreview({
   image,
   onClose,
 }: ImagePreviewProps) {
+  const { t } = useTranslation()
   const proxyUrl = useMemo(() => getProxyImageUrl(image.url), [image.url])
   const [imageError, setImageError] = useState(false)
   const [imageLoading, setImageLoading] = useState(true)
@@ -56,9 +58,9 @@ export default function ImagePreview({
           )}
           {imageError && (
             <div className="flex flex-col items-center justify-center h-[80vh] bg-gray-100 p-8">
-              <div className="text-gray-500 text-lg mb-2">⚠️ 圖片無法載入</div>
+              <div className="text-gray-500 text-lg mb-2">⚠️ {t('images.loadError')}</div>
               <div className="text-gray-400 text-sm text-center max-w-md">
-                無法載入圖片預覽。可能是網路問題或圖片 URL 無效。
+                {t('error.networkError')}
               </div>
             </div>
           )}
@@ -87,30 +89,30 @@ export default function ImagePreview({
           <div className="bg-white p-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
               <div>
-                <span className="text-gray-500">來源</span>
+                <span className="text-gray-500">{t('images.sourceLabel')}</span>
                 <p className="font-medium text-gray-900">{image.source}</p>
               </div>
               {image.photographer && (
                 <div>
-                  <span className="text-gray-500">攝影師</span>
+                  <span className="text-gray-500">{t('images.photographer')}</span>
                   <p className="font-medium text-gray-900">
                     {image.photographer}
                   </p>
                 </div>
               )}
               <div>
-                <span className="text-gray-500">授權</span>
+                <span className="text-gray-500">{t('images.license')}</span>
                 <p className="font-medium text-gray-900">{image.license}</p>
               </div>
               <div>
-                <span className="text-gray-500">順序</span>
+                <span className="text-gray-500">{t('images.order')}</span>
                 <p className="font-medium text-gray-900">#{image.order + 1}</p>
               </div>
             </div>
 
             {/* 圖片 URL */}
             <div className="mt-4 pt-4 border-t border-gray-200">
-              <span className="text-gray-500 text-sm">圖片 URL</span>
+              <span className="text-gray-500 text-sm">{t('images.imageUrl')}</span>
               <p className="text-xs text-gray-600 break-all mt-1">{image.url}</p>
             </div>
           </div>

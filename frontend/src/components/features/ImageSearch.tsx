@@ -11,6 +11,7 @@ import Pagination from '@/components/ui/Pagination'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import ErrorDisplay from '@/components/ui/ErrorDisplay'
 import EmptyState from '@/components/ui/EmptyState'
+import { useTranslation } from '@/i18n'
 
 /**
  * 生成圖片代理 URL
@@ -361,6 +362,7 @@ export default function ImageSearch({
   onImageSelect,
   onClose,
 }: ImageSearchProps) {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [keywords, setKeywords] = useState('')
   const [source, setSource] = useState<ImageSource | undefined>()
@@ -421,7 +423,7 @@ export default function ImageSearch({
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['images', topicId] })
-      showSuccess('圖片已成功新增')
+      showSuccess(t('common.success'))
       onImageSelect({
         url: '',
         source: '',
@@ -429,7 +431,7 @@ export default function ImageSearch({
       })
     },
     onError: (error) => {
-      showError('新增圖片失敗，請稍後再試')
+      showError(t('common.failed'))
       console.error('Failed to add image:', error)
     },
   })
@@ -454,7 +456,7 @@ export default function ImageSearch({
   return (
     <div className="bg-white rounded-lg shadow-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-bold text-gray-800">搜尋圖片</h2>
+        <h2 className="text-xl font-bold text-gray-800">{t('images.searchTitle')}</h2>
         <button
           onClick={onClose}
           className="text-gray-400 hover:text-gray-600 text-2xl font-bold"
@@ -466,7 +468,7 @@ export default function ImageSearch({
       {/* 建議關鍵字 */}
       {suggestedKeywords.length > 0 && (
         <div className="mb-4">
-          <p className="text-sm text-gray-600 mb-2">建議關鍵字（從內容中提取）：</p>
+          <p className="text-sm text-gray-600 mb-2">{t('images.suggestedKeywords')}</p>
           <div className="flex flex-wrap gap-2">
             {suggestedKeywords.map((keyword, index) => (
               <button
@@ -496,9 +498,9 @@ export default function ImageSearch({
             type="text"
             value={keywords}
             onChange={(e) => setKeywords(e.target.value)}
-            placeholder="輸入關鍵字搜尋圖片..."
+            placeholder={t('images.searchPlaceholder')}
             className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-            aria-label="圖片搜尋關鍵字"
+            aria-label={t('images.searchTitle')}
             autoComplete="off"
           />
           <select
@@ -509,9 +511,9 @@ export default function ImageSearch({
               )
             }
             className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-            aria-label="圖片來源選擇"
+            aria-label={t('images.sourceLabel')}
           >
-            <option value="">所有來源</option>
+            <option value="">{t('images.allSources')}</option>
             <option value="unsplash">Unsplash</option>
             <option value="pexels">Pexels</option>
             <option value="pixabay">Pixabay</option>
@@ -523,7 +525,7 @@ export default function ImageSearch({
             disabled={!keywords.trim()}
             className="px-6 py-2 bg-primary text-white rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            搜尋
+            {t('common.search')}
           </button>
         </div>
       </form>
@@ -545,7 +547,7 @@ export default function ImageSearch({
             onChange={(e) => setDiagnosticMode(e.target.checked)}
             className="rounded"
           />
-          診斷模式
+          {t('images.diagnosticMode')}
         </label>
       </div>
 
@@ -556,7 +558,7 @@ export default function ImageSearch({
         <ErrorDisplay error={error} onRetry={() => refetch()} />
       ) : searchResults.length === 0 && keywords ? (
         <div>
-          <EmptyState message="沒有找到圖片" description="嘗試使用不同的關鍵字" />
+          <EmptyState message={t('images.noResults')} description={t('images.tryDifferentKeywords')} />
           {/* 顯示 attempts 資訊 */}
           {attempts.length > 0 && (
             <div className="mt-4 p-4 bg-gray-50 rounded-lg">

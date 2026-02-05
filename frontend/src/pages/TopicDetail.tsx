@@ -98,7 +98,7 @@ export default function TopicDetail() {
       console.log('✅ 內容生成成功:', data)
       queryClient.invalidateQueries({ queryKey: ['content', id] })
       queryClient.invalidateQueries({ queryKey: ['topic', id] })
-      showSuccess('內容生成成功')
+      showSuccess(t('common.success'))
     },
     onError: (error: any) => {
       console.error('❌ 生成內容失敗:', error)
@@ -157,7 +157,7 @@ export default function TopicDetail() {
       console.log('✅ 內容重新生成成功:', data)
       queryClient.invalidateQueries({ queryKey: ['content', id] })
       queryClient.invalidateQueries({ queryKey: ['topic', id] })
-      showSuccess('內容重新生成成功')
+      showSuccess(t('common.success'))
     },
     onError: (error: any) => {
       console.error('❌ 重新生成內容失敗:', error)
@@ -201,26 +201,21 @@ export default function TopicDetail() {
   const matchPhotosMutation = useMutation({
     mutationFn: (minCount: number) => imagesAPI.matchPhotos(id!, minCount),
     onMutate: () => {
-      showSuccess('正在智能匹配照片...')
+      showSuccess(t('common.loading'))
     },
     onSuccess: async (data) => {
       // 立即重新獲取圖片列表，確保UI更新
       await queryClient.refetchQueries({ queryKey: ['images', id] })
       queryClient.invalidateQueries({ queryKey: ['topic', id] })
-      showSuccess(`已成功匹配 ${data.length} 張照片`)
+      showSuccess(t('common.success'))
     },
     onError: (error: any) => {
       // 檢查是否為 404 錯誤（內容不存在）
       const status = error?.status || error?.response?.status
       if (status === 404) {
-        const errorDetail = error?.response?.data?.detail || error?.message || ''
-        if (errorDetail.includes('主題內容不存在') || errorDetail.includes('內容不存在')) {
-          showError('請先生成內容才能匹配照片。請先點擊「生成內容」按鈕。')
-        } else {
-          showError('主題內容不存在，請先生成內容')
-        }
+        showError(t('common.failed'))
       } else {
-        const errorMessage = error?.response?.data?.detail || error?.message || '匹配照片失敗'
+        const errorMessage = error?.response?.data?.detail || error?.message || t('common.failed')
         showError(errorMessage)
       }
       console.error('匹配照片失敗:', error)
@@ -232,11 +227,11 @@ export default function TopicDetail() {
     mutationFn: () => topicsAPI.deleteTopic(id!),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['topics'] })
-      showSuccess('主題已成功刪除')
+      showSuccess(t('common.success'))
       navigate('/topics')
     },
     onError: (error) => {
-      showError('刪除主題失敗，請稍後再試')
+      showError(t('common.failed'))
       console.error('Failed to delete topic:', error)
     },
   })
@@ -247,10 +242,10 @@ export default function TopicDetail() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['topic', id] })
       queryClient.invalidateQueries({ queryKey: ['topics'] })
-      showSuccess('主題已確認')
+      showSuccess(t('common.success'))
     },
     onError: (error) => {
-      showError('確認主題失敗，請稍後再試')
+      showError(t('common.failed'))
       console.error('Failed to confirm topic:', error)
     },
   })
@@ -303,7 +298,7 @@ export default function TopicDetail() {
             onClick={() => requireAuth(() => setShowEditor(true))}
             className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
           >
-            編輯
+            {t('common.edit')}
           </button>
           {topic.status !== 'confirmed' && (
             <button
@@ -311,14 +306,14 @@ export default function TopicDetail() {
               disabled={confirmMutation.isPending}
               className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {confirmMutation.isPending ? '確認中...' : '確認'}
+              {confirmMutation.isPending ? t('common.loading') : t('common.confirm')}
             </button>
           )}
           <button
             onClick={() => requireAuth(() => setShowDeleteConfirm(true))}
             className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
           >
-            刪除
+            {t('common.delete')}
           </button>
         </div>
       </div>
@@ -343,17 +338,17 @@ export default function TopicDetail() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full mx-4">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              確認刪除
+              {t('common.confirmDelete')}
             </h3>
             <p className="text-gray-600 mb-6">
-              您確定要刪除主題「{topic.title}」嗎？此操作無法復原。
+              {t('topics.deleteConfirmMessage')}
             </p>
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setShowDeleteConfirm(false)}
                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
               >
-                取消
+                {t('common.cancel')}
               </button>
               <button
                 onClick={() => {
@@ -363,7 +358,7 @@ export default function TopicDetail() {
                 disabled={deleteMutation.isPending}
                 className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {deleteMutation.isPending ? '刪除中...' : '確認刪除'}
+                {deleteMutation.isPending ? t('common.loading') : t('common.confirmDelete')}
               </button>
             </div>
           </div>
