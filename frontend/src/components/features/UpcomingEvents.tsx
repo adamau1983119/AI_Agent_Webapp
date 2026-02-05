@@ -12,7 +12,7 @@ export default function UpcomingEvents() {
       {/* 標題 */}
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-[10px] tracking-[0.15em] uppercase text-gray-500 font-light">
-          即將到來
+          UPCOMING
         </h3>
         <span className="text-[10px] text-gray-400 font-light">
           {eventCount > 0 ? '100%' : '0%'}
@@ -32,7 +32,7 @@ export default function UpcomingEvents() {
       
       {/* 訊息 */}
       <p className="text-[10px] text-gray-400 font-light tracking-wide">
-        {eventCount > 0 ? '有事件' : '暫無事件'}
+        {eventCount > 0 ? 'SCHEDULED' : 'NO EVENTS'}
       </p>
     </div>
   )

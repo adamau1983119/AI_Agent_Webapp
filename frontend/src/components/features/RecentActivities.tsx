@@ -12,7 +12,7 @@ export default function RecentActivities() {
       {/* 標題 */}
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-[10px] tracking-[0.15em] uppercase text-gray-500 font-light">
-          最近活動
+          RECENT
         </h3>
         <span className="text-[10px] text-gray-400 font-light">
           {activityCount > 0 ? '100%' : '0%'}
@@ -32,7 +32,7 @@ export default function RecentActivities() {
       
       {/* 訊息 */}
       <p className="text-[10px] text-gray-400 font-light tracking-wide">
-        {activityCount > 0 ? '有活動' : '暫無活動'}
+        {activityCount > 0 ? 'ACTIVE' : 'NO ACTIVITY'}
       </p>
     </div>
   )

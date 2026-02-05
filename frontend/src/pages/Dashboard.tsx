@@ -421,7 +421,7 @@ export default function Dashboard() {
               </p>
               <button
                 onClick={handleRetry}
-                className="px-6 py-2 bg-black text-white text-[10px] tracking-[0.15em] uppercase hover:bg-gray-900 transition-colors"
+                className="px-6 py-3 bg-black text-white text-[11px] tracking-[0.2em] uppercase hover:bg-gray-900 transition-colors"
               >
                 RETRY
               </button>
@@ -504,7 +504,7 @@ export default function Dashboard() {
               <button
                 onClick={handleDeleteToday}
                 disabled={deleteTodayMutation.isPending}
-                className="flex-1 py-1.5 text-[9px] tracking-[0.1em] uppercase border border-gray-200 text-gray-600 hover:border-black hover:text-black disabled:opacity-50 transition-all"
+                className="flex-1 py-1.5 text-[10px] tracking-[0.15em] uppercase border border-gray-200 text-gray-600 hover:border-black hover:text-black disabled:opacity-50 transition-all"
               >
                 {deleteTodayMutation.isPending ? '...' : 'DELETE'}
               </button>
@@ -513,7 +513,7 @@ export default function Dashboard() {
               <button
                 onClick={handleGenerateToday}
                 disabled={isGenerating}
-                className="flex-1 py-1.5 text-[9px] tracking-[0.1em] uppercase bg-black text-white hover:bg-gray-900 disabled:bg-gray-300 transition-all"
+                className="flex-1 py-1.5 text-[10px] tracking-[0.2em] uppercase bg-black text-white hover:bg-gray-900 disabled:bg-gray-300 transition-all"
               >
                 {isGenerating ? '...' : 'GENERATE'}
               </button>
