@@ -1,8 +1,45 @@
 # Influencers AI Agents（網紅 AI 助手）
 
-> **版本**：v4.1.1  
+> **版本**：v4.2.0  
 > **更新日期**：2026-02-05  
-> **當前分支**：`phase-1-login-register`
+> **當前分支**：`phase-1-login-register`  
+> **穩定標籤**：`v4.2.0-i18n-complete`
+
+---
+
+## 🎉 v4.2.0 重大更新（2026-02-05）
+
+### 📦 硬編碼文字全面 i18n 化
+
+| 項目 | 數量 | 說明 |
+|------|------|------|
+| **已修復硬編碼** | 220+ | 所有用戶可見的 UI 文字 |
+| **翻譯語言** | 3 種 | zh-TW（繁體中文）、en（英文）、ja（日文） |
+| **修改批次** | 11 批 | 系統性、規範性修改 |
+| **涉及文件** | 30+ | 頁面、組件、工具 |
+
+### 📝 修改記錄
+
+```
+commit 643e9e9 - feat: fix hardcoded text in feature components (batch 11)
+commit 5aeb0da - feat: fix hardcoded text in TopicDetail (batch 10)
+commit eebf687 - feat: fix hardcoded text in StyleProfile/Publish (batch 9)
+commit a6a787a - feat: fix hardcoded text in Inspiration page (batch 8)
+commit 9e96e8b - feat: fix hardcoded text in components (batch 7)
+commit 734b185 - feat: fix hardcoded text in Login/Register (batch 6)
+commit a099ae9 - feat: fix hardcoded text in pages (batch 5)
+commit 2cce11b - feat: fix hardcoded text in components (batch 4)
+commit 55bb375 - feat: fix hardcoded text in UI components (batch 3)
+commit 502394e - feat: fix hardcoded text in components (batch 2)
+commit 6444217 - feat: replace hardcoded text with i18n keys (batch 2)
+commit 1e131c1 - feat: replace hardcoded text with i18n keys (batch 1)
+```
+
+### ✅ 此版本為穩定基線
+
+- **標籤**：`v4.2.0-i18n-complete`
+- **用途**：未來開發的基礎版本
+- **保護狀態**：此標籤不應被刪除或覆蓋
 
 ---
 
