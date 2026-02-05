@@ -33,7 +33,7 @@ export default function ForgotPassword() {
       return false;
     }
     if (!emailRegex.test(value)) {
-      setEmailError('請輸入有效的 Email 地址');
+      setEmailError(t('error.validation'));
       return false;
     }
     setEmailError('');
@@ -60,7 +60,7 @@ export default function ForgotPassword() {
       await authApi.forgotPassword(email);
       setIsSuccess(true);
     } catch (err: any) {
-      setError(err.message || '發送失敗，請稍後再試');
+      setError(err.message || t('common.failed'));
     } finally {
       setIsLoading(false);
     }
@@ -92,13 +92,13 @@ export default function ForgotPassword() {
           <div className="w-12 h-px bg-black mx-auto mb-6"></div>
           
           <p className="text-gray-500 text-sm font-light mb-2">
-            我們已發送重設連結到
+            {t('auth.forgot.sentTo')}
           </p>
           <p className="text-black font-light mb-6 tracking-wide">
             {email}
           </p>
           <p className="text-[10px] text-gray-400 mb-10 tracking-[0.1em] uppercase">
-            請在 24 小時內完成密碼重設
+            {t('auth.forgot.expiry')}
           </p>
           
           <Link
@@ -109,7 +109,7 @@ export default function ForgotPassword() {
           </Link>
           
           <p className="mt-8 text-[10px] text-gray-400 tracking-wide">
-            沒收到郵件？請檢查垃圾郵件資料夾
+            {t('auth.forgot.checkSpam')}
           </p>
         </div>
       </div>

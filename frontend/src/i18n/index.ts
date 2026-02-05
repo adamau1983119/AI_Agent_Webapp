@@ -332,6 +332,35 @@ const zhTW = {
   'style.dislike': '不喜歡',
   'common.history': '版本歷史',
   
+  // 忘記密碼
+  'auth.forgot.sentTo': '我們已發送重設連結到',
+  'auth.forgot.expiry': '請在 24 小時內完成密碼重設',
+  'auth.forgot.checkSpam': '沒收到郵件？請檢查垃圾郵件資料夾',
+  
+  // 頻道
+  'channels.backToList': '返回頻道列表',
+  'channels.create': '建立新頻道',
+  'channels.createDescription': '設定您的個人化內容頻道',
+  'channels.createSuccess': '頻道建立成功！',
+  'channels.step1.title': '選擇內容類別',
+  'channels.step1.description': '選擇您感興趣的內容類型',
+  'channels.step2.title': '選擇內容地區',
+  'channels.step2.description': '選擇您偏好的內容來源地區',
+  'channels.step3.title': '為頻道命名',
+  'channels.step3.description': '給您的頻道一個好記的名稱',
+  'channels.customKeywords': '自定義關鍵字',
+  'channels.keywordPlaceholder': '輸入關鍵字後按 Enter',
+  'channels.keywordsMax': '最多 5 個關鍵字',
+  'channels.channelName': '頻道名稱',
+  'channels.channelNamePlaceholder': '例如：我的時尚頻道',
+  'channels.channelDescription': '頻道描述（選填）',
+  'channels.channelDescriptionPlaceholder': '簡短描述這個頻道的內容...',
+  'channels.preview': '頻道預覽',
+  'channels.unnamed': '未命名頻道',
+  'channels.validation.nameRequired': '請輸入頻道名稱',
+  'channels.validation.categoryRequired': '請選擇類別',
+  'channels.validation.keywordsRequired': '選擇「其他」類別時請輸入至少一個關鍵字',
+  
   // 認證 - 擴展
   'auth.sendFailed': '發送失敗，請稍後再試',
   'auth.invalidEmail': '請輸入有效的 Email 地址',
@@ -442,6 +471,10 @@ const zhTW = {
   'settings.accountType': '帳號類型',
   'settings.registrationTime': '註冊時間',
   'settings.lastLogin': '上次登入',
+  'settings.roles.user': '一般用戶',
+  'settings.roles.admin': '管理員',
+  'settings.roles.tester': '測試用戶',
+  'settings.roles.premium': '付費用戶',
   
   // 社交連接
   'social.title': '平台連接',
@@ -798,6 +831,35 @@ const en: typeof zhTW = {
   'style.dislike': 'Dislike',
   'common.history': 'Version History',
   
+  // Forgot Password
+  'auth.forgot.sentTo': 'We have sent a reset link to',
+  'auth.forgot.expiry': 'Please complete password reset within 24 hours',
+  'auth.forgot.checkSpam': 'Did not receive the email? Please check your spam folder',
+  
+  // Channels
+  'channels.backToList': 'Back to Channel List',
+  'channels.create': 'Create New Channel',
+  'channels.createDescription': 'Set up your personalized content channel',
+  'channels.createSuccess': 'Channel created successfully!',
+  'channels.step1.title': 'Select Content Category',
+  'channels.step1.description': 'Choose the type of content you are interested in',
+  'channels.step2.title': 'Select Content Region',
+  'channels.step2.description': 'Choose your preferred content source region',
+  'channels.step3.title': 'Name Your Channel',
+  'channels.step3.description': 'Give your channel a memorable name',
+  'channels.customKeywords': 'Custom Keywords',
+  'channels.keywordPlaceholder': 'Enter keyword and press Enter',
+  'channels.keywordsMax': 'Maximum 5 keywords',
+  'channels.channelName': 'Channel Name',
+  'channels.channelNamePlaceholder': 'e.g., My Fashion Channel',
+  'channels.channelDescription': 'Channel Description (Optional)',
+  'channels.channelDescriptionPlaceholder': 'Briefly describe the channel content...',
+  'channels.preview': 'Channel Preview',
+  'channels.unnamed': 'Unnamed Channel',
+  'channels.validation.nameRequired': 'Please enter channel name',
+  'channels.validation.categoryRequired': 'Please select a category',
+  'channels.validation.keywordsRequired': 'Please enter at least one keyword for "Other" category',
+  
   // Auth - Extended
   'auth.sendFailed': 'Failed to send, please try again later',
   'auth.invalidEmail': 'Please enter a valid email address',
@@ -908,6 +970,10 @@ const en: typeof zhTW = {
   'settings.accountType': 'Account Type',
   'settings.registrationTime': 'Registration Time',
   'settings.lastLogin': 'Last Login',
+  'settings.roles.user': 'Regular User',
+  'settings.roles.admin': 'Administrator',
+  'settings.roles.tester': 'Test User',
+  'settings.roles.premium': 'Premium User',
   
   // Social
   'social.title': 'Social Connect',
@@ -1264,6 +1330,35 @@ const ja: typeof zhTW = {
   'style.dislike': '嫌い',
   'common.history': 'バージョン履歴',
   
+  // パスワードをお忘れの方
+  'auth.forgot.sentTo': 'リセットリンクを送信しました',
+  'auth.forgot.expiry': '24時間以内にパスワードをリセットしてください',
+  'auth.forgot.checkSpam': 'メールが届かない場合は、迷惑メールフォルダをご確認ください',
+  
+  // チャンネル
+  'channels.backToList': 'チャンネル一覧に戻る',
+  'channels.create': '新しいチャンネルを作成',
+  'channels.createDescription': 'パーソナライズされたコンテンツチャンネルを設定',
+  'channels.createSuccess': 'チャンネルが正常に作成されました！',
+  'channels.step1.title': 'コンテンツカテゴリを選択',
+  'channels.step1.description': '興味のあるコンテンツタイプを選択してください',
+  'channels.step2.title': 'コンテンツ地域を選択',
+  'channels.step2.description': 'お好みのコンテンツソース地域を選択してください',
+  'channels.step3.title': 'チャンネルに名前を付ける',
+  'channels.step3.description': 'チャンネルに覚えやすい名前を付けてください',
+  'channels.customKeywords': 'カスタムキーワード',
+  'channels.keywordPlaceholder': 'キーワードを入力してEnterを押す',
+  'channels.keywordsMax': '最大5個のキーワード',
+  'channels.channelName': 'チャンネル名',
+  'channels.channelNamePlaceholder': '例：私のファッションチャンネル',
+  'channels.channelDescription': 'チャンネル説明（任意）',
+  'channels.channelDescriptionPlaceholder': 'チャンネルの内容を簡単に説明...',
+  'channels.preview': 'チャンネルプレビュー',
+  'channels.unnamed': '無名チャンネル',
+  'channels.validation.nameRequired': 'チャンネル名を入力してください',
+  'channels.validation.categoryRequired': 'カテゴリを選択してください',
+  'channels.validation.keywordsRequired': '「その他」カテゴリの場合、少なくとも1つのキーワードを入力してください',
+  
   // 認証 - 拡張
   'auth.sendFailed': '送信に失敗しました。後でもう一度お試しください',
   'auth.invalidEmail': '有効なメールアドレスを入力してください',
@@ -1374,6 +1469,10 @@ const ja: typeof zhTW = {
   'settings.accountType': 'アカウントタイプ',
   'settings.registrationTime': '登録日時',
   'settings.lastLogin': '最終ログイン',
+  'settings.roles.user': '一般ユーザー',
+  'settings.roles.admin': '管理者',
+  'settings.roles.tester': 'テストユーザー',
+  'settings.roles.premium': 'プレミアムユーザー',
   
   // ソーシャル
   'social.title': 'ソーシャル連携',

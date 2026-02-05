@@ -346,7 +346,7 @@ export default function Settings() {
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
                         <span className="text-gray-400">{t('settings.accountType')}</span>
-                        <span className="text-white">{getRoleLabel(user.role)}</span>
+                        <span className="text-white">{t(`settings.roles.${user.role}`)}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-400">{t('settings.registrationTime')}</span>
@@ -370,13 +370,5 @@ export default function Settings() {
   );
 }
 
-function getRoleLabel(role: string): string {
-  const labels: Record<string, string> = {
-    'user': '一般用戶',
-    'admin': '管理員',
-    'tester': '測試用戶',
-    'premium': '付費用戶',
-  };
-  return labels[role] || role;
-}
+// getRoleLabel is now handled inside component with i18n
 

@@ -85,17 +85,17 @@ export default function CreateChannel() {
   // 提交表單
   const handleSubmit = async () => {
     if (!name.trim()) {
-      toast.error('請輸入頻道名稱');
+      toast.error(t('channels.validation.nameRequired'));
       return;
     }
     
     if (!category) {
-      toast.error('請選擇類別');
+      toast.error(t('channels.validation.categoryRequired'));
       return;
     }
     
     if (category === 'other' && customKeywords.length === 0) {
-      toast.error('選擇「其他」類別時請輸入至少一個關鍵字');
+      toast.error(t('channels.validation.keywordsRequired'));
       return;
     }
     
@@ -111,10 +111,10 @@ export default function CreateChannel() {
       };
       
       await channelsApi.createChannel(data);
-      toast.success('頻道建立成功！');
+      toast.success(t('channels.createSuccess'));
       navigate('/channels');
     } catch (err: any) {
-      toast.error(err.message || '建立失敗');
+      toast.error(err.message || t('common.failed'));
     } finally {
       setIsSubmitting(false);
     }
@@ -131,16 +131,16 @@ export default function CreateChannel() {
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
-          返回頻道列表
+          {t('channels.backToList')}
         </button>
         
         {/* 標題 */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            建立新頻道
+            {t('channels.create')}
           </h1>
           <p className="text-gray-500 dark:text-gray-400 mt-2">
-            設定您的個人化內容頻道
+            {t('channels.createDescription')}
           </p>
         </div>
         
@@ -182,10 +182,10 @@ export default function CreateChannel() {
           {step === 1 && (
             <div>
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                選擇內容類別
+                {t('channels.step1.title')}
               </h2>
               <p className="text-gray-500 dark:text-gray-400 mb-6">
-                選擇您感興趣的內容類型
+                {t('channels.step1.description')}
               </p>
               
               <div className="grid grid-cols-2 gap-4">
@@ -217,7 +217,7 @@ export default function CreateChannel() {
                   disabled={!category}
                   className="px-6 py-3 bg-purple-500 text-white font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-purple-600 transition-colors"
                 >
-                  下一步
+                  {t('common.next')}
                 </button>
               </div>
             </div>
@@ -227,10 +227,10 @@ export default function CreateChannel() {
           {step === 2 && (
             <div>
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                選擇內容地區
+                {t('channels.step2.title')}
               </h2>
               <p className="text-gray-500 dark:text-gray-400 mb-6">
-                選擇您偏好的內容來源地區
+                {t('channels.step2.description')}
               </p>
               
               <div className="grid grid-cols-2 gap-4">
@@ -259,7 +259,7 @@ export default function CreateChannel() {
               {category === 'other' && (
                 <div className="mt-6">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                    自定義關鍵字 <span className="text-red-500">*</span>
+                    {t('channels.customKeywords')} <span className="text-red-500">*</span>
                   </label>
                   <div className="flex gap-2">
                     <input
@@ -267,7 +267,7 @@ export default function CreateChannel() {
                       value={keywordInput}
                       onChange={(e) => setKeywordInput(e.target.value)}
                       onKeyDown={handleKeywordKeyDown}
-                      placeholder="輸入關鍵字後按 Enter"
+                      placeholder={t('channels.keywordPlaceholder')}
                       className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
                     <button
@@ -275,7 +275,7 @@ export default function CreateChannel() {
                       disabled={!keywordInput.trim() || customKeywords.length >= 5}
                       className="px-4 py-2 bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      添加
+                      {t('common.add')}
                     </button>
                   </div>
                   
@@ -301,7 +301,7 @@ export default function CreateChannel() {
                   )}
                   
                   <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                    最多 5 個關鍵字（{customKeywords.length}/5）
+                    {t('channels.keywordsMax')} ({customKeywords.length}/5)
                   </p>
                 </div>
               )}
@@ -311,14 +311,14 @@ export default function CreateChannel() {
                   onClick={() => setStep(1)}
                   className="px-6 py-3 text-gray-600 dark:text-gray-300 font-medium hover:text-gray-800 dark:hover:text-white"
                 >
-                  上一步
+                  {t('common.previous')}
                 </button>
                 <button
                   onClick={() => setStep(3)}
                   disabled={category === 'other' && customKeywords.length === 0}
                   className="px-6 py-3 bg-purple-500 text-white font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-purple-600 transition-colors"
                 >
-                  下一步
+                  {t('common.next')}
                 </button>
               </div>
             </div>
@@ -328,22 +328,22 @@ export default function CreateChannel() {
           {step === 3 && (
             <div>
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                為頻道命名
+                {t('channels.step3.title')}
               </h2>
               <p className="text-gray-500 dark:text-gray-400 mb-6">
-                給您的頻道一個好記的名稱
+                {t('channels.step3.description')}
               </p>
               
               <div className="space-y-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                    頻道名稱 <span className="text-red-500">*</span>
+                    {t('channels.channelName')} <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="例如：我的時尚頻道"
+                    placeholder={t('channels.channelNamePlaceholder')}
                     maxLength={50}
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   />
@@ -354,12 +354,12 @@ export default function CreateChannel() {
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                    頻道描述（選填）
+                    {t('channels.channelDescription')}
                   </label>
                   <textarea
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    placeholder="簡短描述這個頻道的內容..."
+                    placeholder={t('channels.channelDescriptionPlaceholder')}
                     maxLength={200}
                     rows={3}
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
@@ -373,7 +373,7 @@ export default function CreateChannel() {
               {/* 預覽 */}
               <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
                 <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">
-                  頻道預覽
+                  {t('channels.preview')}
                 </h3>
                 <div className="flex items-center gap-3">
                   <span className="text-3xl">
@@ -381,7 +381,7 @@ export default function CreateChannel() {
                   </span>
                   <div>
                     <p className="font-medium text-gray-900 dark:text-white">
-                      {name || '未命名頻道'}
+                      {name || t('channels.unnamed')}
                     </p>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
                       {category && categoryLabels[category]} · {regionLabels[region]}
@@ -395,7 +395,7 @@ export default function CreateChannel() {
                   onClick={() => setStep(2)}
                   className="px-6 py-3 text-gray-600 dark:text-gray-300 font-medium hover:text-gray-800 dark:hover:text-white"
                 >
-                  上一步
+                  {t('common.previous')}
                 </button>
                 <button
                   onClick={handleSubmit}
@@ -408,10 +408,10 @@ export default function CreateChannel() {
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                       </svg>
-                      建立中...
+                      {t('common.loading')}
                     </>
                   ) : (
-                    '建立頻道'
+                    t('channels.create')
                   )}
                 </button>
               </div>
