@@ -1,0 +1,2362 @@
+[
+  {
+    "key": "channels.failed",
+    "zh_tw": "載入頻道失敗",
+    "en": "[TRANSLATE] 載入頻道失敗",
+    "ja": "[TRANSLATE] 載入頻道失敗",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\Channels.tsx",
+    "line": 49
+  },
+  {
+    "key": "channels.delete",
+    "zh_tw": "頻道已刪除",
+    "en": "[TRANSLATE] 頻道已刪除",
+    "ja": "[TRANSLATE] 頻道已刪除",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\Channels.tsx",
+    "line": 62
+  },
+  {
+    "key": "channels.刪除失敗",
+    "zh_tw": "刪除失敗",
+    "en": "[TRANSLATE] 刪除失敗",
+    "ja": "[TRANSLATE] 刪除失敗",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\Channels.tsx",
+    "line": 65
+  },
+  {
+    "key": "channels.收集任務",
+    "zh_tw": "收集任務已觸發",
+    "en": "[TRANSLATE] 收集任務已觸發",
+    "ja": "[TRANSLATE] 收集任務已觸發",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\Channels.tsx",
+    "line": 72
+  },
+  {
+    "key": "channels.觸發失敗",
+    "zh_tw": "觸發失敗",
+    "en": "[TRANSLATE] 觸發失敗",
+    "ja": "[TRANSLATE] 觸發失敗",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\Channels.tsx",
+    "line": 74
+  },
+  {
+    "key": "channels.topics",
+    "zh_tw": "個主題",
+    "en": "[TRANSLATE] 個主題",
+    "ja": "[TRANSLATE] 個主題",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\Channels.tsx",
+    "line": 307
+  },
+  {
+    "key": "channels.channelname",
+    "zh_tw": "請輸入頻道名稱",
+    "en": "[TRANSLATE] 請輸入頻道名稱",
+    "ja": "[TRANSLATE] 請輸入頻道名稱",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\CreateChannel.tsx",
+    "line": 88
+  },
+  {
+    "key": "channels.selectcategory",
+    "zh_tw": "請選擇類別",
+    "en": "[TRANSLATE] 請選擇類別",
+    "ja": "[TRANSLATE] 請選擇類別",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\CreateChannel.tsx",
+    "line": 93
+  },
+  {
+    "key": "channels.category",
+    "zh_tw": "選擇「其他」類別時請輸入至少一個關鍵字",
+    "en": "[TRANSLATE] 選擇「其他」類別時請輸入至少一個關鍵字",
+    "ja": "[TRANSLATE] 選擇「其他」類別時請輸入至少一個關鍵字",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\CreateChannel.tsx",
+    "line": 98
+  },
+  {
+    "key": "channels.success",
+    "zh_tw": "頻道建立成功！",
+    "en": "[TRANSLATE] 頻道建立成功！",
+    "ja": "[TRANSLATE] 頻道建立成功！",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\CreateChannel.tsx",
+    "line": 114
+  },
+  {
+    "key": "channels.建立失敗",
+    "zh_tw": "建立失敗",
+    "en": "[TRANSLATE] 建立失敗",
+    "ja": "[TRANSLATE] 建立失敗",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\CreateChannel.tsx",
+    "line": 117
+  },
+  {
+    "key": "channels.輸入關鍵",
+    "zh_tw": "輸入關鍵字後按 Enter",
+    "en": "[TRANSLATE] 輸入關鍵字後按 Enter",
+    "ja": "[TRANSLATE] 輸入關鍵字後按 Enter",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\CreateChannel.tsx",
+    "line": 270
+  },
+  {
+    "key": "channels.fashion",
+    "zh_tw": "例如：我的時尚頻道",
+    "en": "[TRANSLATE] 例如：我的時尚頻道",
+    "ja": "[TRANSLATE] 例如：我的時尚頻道",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\CreateChannel.tsx",
+    "line": 346
+  },
+  {
+    "key": "channels.content",
+    "zh_tw": "簡短描述這個頻道的內容",
+    "en": "[TRANSLATE] 簡短描述這個頻道的內容",
+    "ja": "[TRANSLATE] 簡短描述這個頻道的內容",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\CreateChannel.tsx",
+    "line": 362
+  },
+  {
+    "key": "channels.未命名頻",
+    "zh_tw": "未命名頻道",
+    "en": "[TRANSLATE] 未命名頻道",
+    "ja": "[TRANSLATE] 未命名頻道",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\CreateChannel.tsx",
+    "line": 384
+  },
+  {
+    "key": "channels.createchannel",
+    "zh_tw": "建立頻道",
+    "en": "Create Channel",
+    "ja": "[TRANSLATE] 建立頻道",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\CreateChannel.tsx",
+    "line": 414
+  },
+  {
+    "key": "dashboard.topics",
+    "zh_tw": "正在生成今日主題",
+    "en": "[TRANSLATE] 正在生成今日主題",
+    "ja": "[TRANSLATE] 正在生成今日主題",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\Dashboard.tsx",
+    "line": 141
+  },
+  {
+    "key": "dashboard.generate",
+    "zh_tw": "今日主題生成任務已啟動",
+    "en": "[TRANSLATE] 今日主題生成任務已啟動",
+    "ja": "[TRANSLATE] 今日主題生成任務已啟動",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\Dashboard.tsx",
+    "line": 146
+  },
+  {
+    "key": "dashboard.failed",
+    "zh_tw": "生成今日主題失敗",
+    "en": "[TRANSLATE] 生成今日主題失敗",
+    "ja": "[TRANSLATE] 生成今日主題失敗",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\Dashboard.tsx",
+    "line": 156
+  },
+  {
+    "key": "dashboard.資料庫未",
+    "zh_tw": "資料庫未連接，無法生成主題",
+    "en": "[TRANSLATE] 資料庫未連接，無法生成主題",
+    "ja": "[TRANSLATE] 資料庫未連接，無法生成主題",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\Dashboard.tsx",
+    "line": 159
+  },
+  {
+    "key": "dashboard.error",
+    "zh_tw": "伺服器內部錯誤，請查看後端日誌",
+    "en": "[TRANSLATE] 伺服器內部錯誤，請查看後端日誌",
+    "ja": "[TRANSLATE] 伺服器內部錯誤，請查看後端日誌",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\Dashboard.tsx",
+    "line": 165
+  },
+  {
+    "key": "dashboard.today",
+    "zh_tw": "生成今日主題失敗",
+    "en": "[TRANSLATE] 生成今日主題失敗",
+    "ja": "[TRANSLATE] 生成今日主題失敗",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\Dashboard.tsx",
+    "line": 167
+  },
+  {
+    "key": "dashboard.delete",
+    "zh_tw": "刪除今日主題失敗",
+    "en": "[TRANSLATE] 刪除今日主題失敗",
+    "ja": "[TRANSLATE] 刪除今日主題失敗",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\Dashboard.tsx",
+    "line": 188
+  },
+  {
+    "key": "dashboard.確定要刪",
+    "zh_tw": "確定要刪除所有今日生成的主題嗎？此操作無法復原。",
+    "en": "[TRANSLATE] 確定要刪除所有今日生成的主題嗎？此操作無法復原。",
+    "ja": "[TRANSLATE] 確定要刪除所有今日生成的主題嗎？此操作無法復原。",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\Dashboard.tsx",
+    "line": 194
+  },
+  {
+    "key": "dashboard.今日主題",
+    "zh_tw": "今日主題生成完成！",
+    "en": "[TRANSLATE] 今日主題生成完成！",
+    "ja": "[TRANSLATE] 今日主題生成完成！",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\Dashboard.tsx",
+    "line": 372
+  },
+  {
+    "key": "dashboard.無法連接",
+    "zh_tw": "無法連接到後端服務",
+    "en": "[TRANSLATE] 無法連接到後端服務",
+    "ja": "[TRANSLATE] 無法連接到後端服務",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\Dashboard.tsx",
+    "line": 400
+  },
+  {
+    "key": "dashboard.popular",
+    "zh_tw": "今日熱門主題",
+    "en": "[TRANSLATE] 今日熱門主題",
+    "ja": "[TRANSLATE] 今日熱門主題",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\Dashboard.tsx",
+    "line": 643
+  },
+  {
+    "key": "dashboard.latest",
+    "zh_tw": "最新熱門主題",
+    "en": "[TRANSLATE] 最新熱門主題",
+    "ja": "[TRANSLATE] 最新熱門主題",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\Dashboard.tsx",
+    "line": 656
+  },
+  {
+    "key": "auth.請輸入有",
+    "zh_tw": "請輸入有效的 Email 地址",
+    "en": "[TRANSLATE] 請輸入有效的 Email 地址",
+    "ja": "[TRANSLATE] 請輸入有效的 Email 地址",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\ForgotPassword.tsx",
+    "line": 36
+  },
+  {
+    "key": "auth.failed",
+    "zh_tw": "發送失敗，請稍後再試",
+    "en": "[TRANSLATE] 發送失敗，請稍後再試",
+    "ja": "[TRANSLATE] 發送失敗，請稍後再試",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\ForgotPassword.tsx",
+    "line": 63
+  },
+  {
+    "key": "auth.繁中",
+    "zh_tw": "繁中",
+    "en": "[TRANSLATE] 繁中",
+    "ja": "[TRANSLATE] 繁中",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\ForgotPassword.tsx",
+    "line": 71
+  },
+  {
+    "key": "auth.日本語",
+    "zh_tw": "日本語",
+    "en": "[TRANSLATE] 日本語",
+    "ja": "[TRANSLATE] 日本語",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\ForgotPassword.tsx",
+    "line": 73
+  },
+  {
+    "key": "inspiration.all",
+    "zh_tw": "全部",
+    "en": "All",
+    "ja": "すべて",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\Inspiration.tsx",
+    "line": 13
+  },
+  {
+    "key": "inspiration.fashion",
+    "zh_tw": "時尚",
+    "en": "Fashion",
+    "ja": "ファッション",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\Inspiration.tsx",
+    "line": 14
+  },
+  {
+    "key": "inspiration.food",
+    "zh_tw": "美食",
+    "en": "Food",
+    "ja": "グルメ",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\Inspiration.tsx",
+    "line": 15
+  },
+  {
+    "key": "inspiration.科技",
+    "zh_tw": "科技",
+    "en": "[TRANSLATE] 科技",
+    "ja": "[TRANSLATE] 科技",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\Inspiration.tsx",
+    "line": 16
+  },
+  {
+    "key": "inspiration.財經",
+    "zh_tw": "財經",
+    "en": "[TRANSLATE] 財經",
+    "ja": "[TRANSLATE] 財經",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\Inspiration.tsx",
+    "line": 17
+  },
+  {
+    "key": "inspiration.運動",
+    "zh_tw": "運動",
+    "en": "[TRANSLATE] 運動",
+    "ja": "[TRANSLATE] 運動",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\Inspiration.tsx",
+    "line": 18
+  },
+  {
+    "key": "inspiration.娛樂",
+    "zh_tw": "娛樂",
+    "en": "[TRANSLATE] 娛樂",
+    "ja": "[TRANSLATE] 娛樂",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\Inspiration.tsx",
+    "line": 19
+  },
+  {
+    "key": "inspiration.failed",
+    "zh_tw": "搜尋失敗",
+    "en": "[TRANSLATE] 搜尋失敗",
+    "ja": "[TRANSLATE] 搜尋失敗",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\Inspiration.tsx",
+    "line": 89
+  },
+  {
+    "key": "inspiration.topics",
+    "zh_tw": "搜尋靈感主題",
+    "en": "[TRANSLATE] 搜尋靈感主題",
+    "ja": "[TRANSLATE] 搜尋靈感主題",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\Inspiration.tsx",
+    "line": 130
+  },
+  {
+    "key": "inspiration.搜尋結果",
+    "zh_tw": "🔍 搜尋結果",
+    "en": "[TRANSLATE] 🔍 搜尋結果",
+    "ja": "[TRANSLATE] 🔍 搜尋結果",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\Inspiration.tsx",
+    "line": 272
+  },
+  {
+    "key": "inspiration.generate",
+    "zh_tw": "✨ AI 生成",
+    "en": "✨ AI Generate",
+    "ja": "[TRANSLATE] ✨ AI 生成",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\Inspiration.tsx",
+    "line": 272
+  },
+  {
+    "key": "inspiration.使用此靈",
+    "zh_tw": "使用此靈感",
+    "en": "[TRANSLATE] 使用此靈感",
+    "ja": "[TRANSLATE] 使用此靈感",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\Inspiration.tsx",
+    "line": 296
+  },
+  {
+    "key": "login.cancel",
+    "zh_tw": "您已取消 Google 登入",
+    "en": "[TRANSLATE] 您已取消 Google 登入",
+    "ja": "[TRANSLATE] 您已取消 Google 登入",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\Login.tsx",
+    "line": 315
+  },
+  {
+    "key": "login.無法取得",
+    "zh_tw": "無法取得授權碼",
+    "en": "[TRANSLATE] 無法取得授權碼",
+    "ja": "[TRANSLATE] 無法取得授權碼",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\Login.tsx",
+    "line": 316
+  },
+  {
+    "key": "login.retry",
+    "zh_tw": "Google 授權失敗，請重試",
+    "en": "[TRANSLATE] Google 授權失敗，請重試",
+    "ja": "[TRANSLATE] Google 授權失敗，請重試",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\Login.tsx",
+    "line": 317
+  },
+  {
+    "key": "login.account",
+    "zh_tw": "無法取得 Google 帳號資訊",
+    "en": "[TRANSLATE] 無法取得 Google 帳號資訊",
+    "ja": "[TRANSLATE] 無法取得 Google 帳號資訊",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\Login.tsx",
+    "line": 318
+  },
+  {
+    "key": "login.failed",
+    "zh_tw": "Google 登入失敗，請重試",
+    "en": "[TRANSLATE] Google 登入失敗，請重試",
+    "ja": "[TRANSLATE] Google 登入失敗，請重試",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\Login.tsx",
+    "line": 320
+  },
+  {
+    "key": "login.signin",
+    "zh_tw": "Google 登入失敗",
+    "en": "[TRANSLATE] Google 登入失敗",
+    "ja": "[TRANSLATE] Google 登入失敗",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\Login.tsx",
+    "line": 323
+  },
+  {
+    "key": "publish.failed",
+    "zh_tw": "載入連接失敗",
+    "en": "[TRANSLATE] 載入連接失敗",
+    "ja": "[TRANSLATE] 載入連接失敗",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\Publish.tsx",
+    "line": 61
+  },
+  {
+    "key": "publish.content",
+    "zh_tw": "請輸入發布內容",
+    "en": "[TRANSLATE] 請輸入發布內容",
+    "ja": "[TRANSLATE] 請輸入發布內容",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\Publish.tsx",
+    "line": 101
+  },
+  {
+    "key": "publish.請選擇至",
+    "zh_tw": "請選擇至少一個平台",
+    "en": "[TRANSLATE] 請選擇至少一個平台",
+    "ja": "[TRANSLATE] 請選擇至少一個平台",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\Publish.tsx",
+    "line": 106
+  },
+  {
+    "key": "publish.publish",
+    "zh_tw": "Instagram 發布需要至少一張圖片",
+    "en": "[TRANSLATE] Instagram 發布需要至少一張圖片",
+    "ja": "[TRANSLATE] Instagram 發布需要至少一張圖片",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\Publish.tsx",
+    "line": 112
+  },
+  {
+    "key": "publish.success",
+    "zh_tw": "發布成功！",
+    "en": "[TRANSLATE] 發布成功！",
+    "ja": "[TRANSLATE] 發布成功！",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\Publish.tsx",
+    "line": 131
+  },
+  {
+    "key": "publish.發布失敗",
+    "zh_tw": "發布失敗",
+    "en": "[TRANSLATE] 發布失敗",
+    "ja": "[TRANSLATE] 發布失敗",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\Publish.tsx",
+    "line": 135
+  },
+  {
+    "key": "publish.發布失敗1",
+    "zh_tw": "發布失敗",
+    "en": "[TRANSLATE] 發布失敗",
+    "ja": "[TRANSLATE] 發布失敗",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\Publish.tsx",
+    "line": 138
+  },
+  {
+    "key": "publish.輸入您要",
+    "zh_tw": "輸入您要發布的內容",
+    "en": "[TRANSLATE] 輸入您要發布的內容",
+    "ja": "[TRANSLATE] 輸入您要發布的內容",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\Publish.tsx",
+    "line": 198
+  },
+  {
+    "key": "publish.輸入ha",
+    "zh_tw": "輸入 hashtag",
+    "en": "[TRANSLATE] 輸入 hashtag",
+    "ja": "[TRANSLATE] 輸入 hashtag",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\Publish.tsx",
+    "line": 218
+  },
+  {
+    "key": "publish.images",
+    "zh_tw": "輸入圖片 URL",
+    "en": "[TRANSLATE] 輸入圖片 URL",
+    "ja": "[TRANSLATE] 輸入圖片 URL",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\Publish.tsx",
+    "line": 257
+  },
+  {
+    "key": "register.請同意服",
+    "zh_tw": "請同意服務條款",
+    "en": "[TRANSLATE] 請同意服務條款",
+    "ja": "[TRANSLATE] 請同意服務條款",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\Register.tsx",
+    "line": 81
+  },
+  {
+    "key": "register.姓氏",
+    "zh_tw": "姓氏",
+    "en": "[TRANSLATE] 姓氏",
+    "ja": "[TRANSLATE] 姓氏",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\Register.tsx",
+    "line": 267
+  },
+  {
+    "key": "register.名字",
+    "zh_tw": "名字",
+    "en": "[TRANSLATE] 名字",
+    "ja": "[TRANSLATE] 名字",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\Register.tsx",
+    "line": 283
+  },
+  {
+    "key": "settings.一般用戶",
+    "zh_tw": "一般用戶",
+    "en": "[TRANSLATE] 一般用戶",
+    "ja": "[TRANSLATE] 一般用戶",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\Settings.tsx",
+    "line": 375
+  },
+  {
+    "key": "settings.管理員",
+    "zh_tw": "管理員",
+    "en": "[TRANSLATE] 管理員",
+    "ja": "[TRANSLATE] 管理員",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\Settings.tsx",
+    "line": 376
+  },
+  {
+    "key": "settings.測試用戶",
+    "zh_tw": "測試用戶",
+    "en": "[TRANSLATE] 測試用戶",
+    "ja": "[TRANSLATE] 測試用戶",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\Settings.tsx",
+    "line": 377
+  },
+  {
+    "key": "settings.付費用戶",
+    "zh_tw": "付費用戶",
+    "en": "[TRANSLATE] 付費用戶",
+    "ja": "[TRANSLATE] 付費用戶",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\Settings.tsx",
+    "line": 378
+  },
+  {
+    "key": "social.success",
+    "zh_tw": "帳號連接成功！",
+    "en": "[TRANSLATE] 帳號連接成功！",
+    "ja": "[TRANSLATE] 帳號連接成功！",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\SocialConnect.tsx",
+    "line": 39
+  },
+  {
+    "key": "social.failed",
+    "zh_tw": "載入失敗",
+    "en": "[TRANSLATE] 載入失敗",
+    "ja": "[TRANSLATE] 載入失敗",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\SocialConnect.tsx",
+    "line": 57
+  },
+  {
+    "key": "social.連接失敗",
+    "zh_tw": "連接失敗",
+    "en": "[TRANSLATE] 連接失敗",
+    "ja": "[TRANSLATE] 連接失敗",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\SocialConnect.tsx",
+    "line": 69
+  },
+  {
+    "key": "social.TikT",
+    "zh_tw": "TikTok 連接尚未開放",
+    "en": "[TRANSLATE] TikTok 連接尚未開放",
+    "ja": "[TRANSLATE] TikTok 連接尚未開放",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\SocialConnect.tsx",
+    "line": 80
+  },
+  {
+    "key": "social.斷開失敗",
+    "zh_tw": "斷開失敗",
+    "en": "[TRANSLATE] 斷開失敗",
+    "ja": "[TRANSLATE] 斷開失敗",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\SocialConnect.tsx",
+    "line": 95
+  },
+  {
+    "key": "social.content",
+    "zh_tw": "• 連接後可以一鍵發布內容到多個平台",
+    "en": "[TRANSLATE] • 連接後可以一鍵發布內容到多個平台",
+    "ja": "[TRANSLATE] • 連接後可以一鍵發布內容到多個平台",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\SocialConnect.tsx",
+    "line": 322
+  },
+  {
+    "key": "social.account",
+    "zh_tw": "• Meta 平台需要 Business 或 Creator 帳號",
+    "en": "[TRANSLATE] • Meta 平台需要 Business 或 Creator 帳號",
+    "ja": "[TRANSLATE] • Meta 平台需要 Business 或 Creator 帳號",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\SocialConnect.tsx",
+    "line": 323
+  },
+  {
+    "key": "social.您可以隨",
+    "zh_tw": "• 您可以隨時斷開連接",
+    "en": "[TRANSLATE] • 您可以隨時斷開連接",
+    "ja": "[TRANSLATE] • 您可以隨時斷開連接",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\SocialConnect.tsx",
+    "line": 324
+  },
+  {
+    "key": "social.publish",
+    "zh_tw": "• 我們不會在未經您同意下發布任何內容",
+    "en": "[TRANSLATE] • 我們不會在未經您同意下發布任何內容",
+    "ja": "[TRANSLATE] • 我們不會在未經您同意下發布任何內容",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\SocialConnect.tsx",
+    "line": 325
+  },
+  {
+    "key": "style.content",
+    "zh_tw": "適合商業、財經、科技等專業內容",
+    "en": "[TRANSLATE] 適合商業、財經、科技等專業內容",
+    "ja": "[TRANSLATE] 適合商業、財經、科技等專業內容",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\StyleProfile.tsx",
+    "line": 19
+  },
+  {
+    "key": "style.food",
+    "zh_tw": "適合生活、旅遊、美食等日常內容",
+    "en": "[TRANSLATE] 適合生活、旅遊、美食等日常內容",
+    "ja": "[TRANSLATE] 適合生活、旅遊、美食等日常內容",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\StyleProfile.tsx",
+    "line": 20
+  },
+  {
+    "key": "style.適合娛樂",
+    "zh_tw": "適合娛樂、趣聞、創意內容",
+    "en": "[TRANSLATE] 適合娛樂、趣聞、創意內容",
+    "ja": "[TRANSLATE] 適合娛樂、趣聞、創意內容",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\StyleProfile.tsx",
+    "line": 21
+  },
+  {
+    "key": "style.適合勵志",
+    "zh_tw": "適合勵志、成長、心靈雞湯內容",
+    "en": "[TRANSLATE] 適合勵志、成長、心靈雞湯內容",
+    "ja": "[TRANSLATE] 適合勵志、成長、心靈雞湯內容",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\StyleProfile.tsx",
+    "line": 22
+  },
+  {
+    "key": "style.share",
+    "zh_tw": "適合分享經歷、教學、深度內容",
+    "en": "[TRANSLATE] 適合分享經歷、教學、深度內容",
+    "ja": "[TRANSLATE] 適合分享經歷、教學、深度內容",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\StyleProfile.tsx",
+    "line": 23
+  },
+  {
+    "key": "style.failed",
+    "zh_tw": "載入風格檔案失敗",
+    "en": "[TRANSLATE] 載入風格檔案失敗",
+    "ja": "[TRANSLATE] 載入風格檔案失敗",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\StyleProfile.tsx",
+    "line": 50
+  },
+  {
+    "key": "style.更新失敗",
+    "zh_tw": "更新失敗",
+    "en": "[TRANSLATE] 更新失敗",
+    "ja": "[TRANSLATE] 更新失敗",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\StyleProfile.tsx",
+    "line": 66
+  },
+  {
+    "key": "style.styleprofile",
+    "zh_tw": "風格檔案已重置",
+    "en": "[TRANSLATE] 風格檔案已重置",
+    "ja": "[TRANSLATE] 風格檔案已重置",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\StyleProfile.tsx",
+    "line": 75
+  },
+  {
+    "key": "style.重置失敗",
+    "zh_tw": "重置失敗",
+    "en": "[TRANSLATE] 重置失敗",
+    "ja": "[TRANSLATE] 重置失敗",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\StyleProfile.tsx",
+    "line": 79
+  },
+  {
+    "key": "style.冷啟動",
+    "zh_tw": "冷啟動",
+    "en": "[TRANSLATE] 冷啟動",
+    "ja": "[TRANSLATE] 冷啟動",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\StyleProfile.tsx",
+    "line": 120
+  },
+  {
+    "key": "style.冷啟動0",
+    "zh_tw": "冷啟動 (0",
+    "en": "[TRANSLATE] 冷啟動 (0",
+    "ja": "[TRANSLATE] 冷啟動 (0",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\StyleProfile.tsx",
+    "line": 144
+  },
+  {
+    "key": "style.學習中2",
+    "zh_tw": "學習中 (20",
+    "en": "[TRANSLATE] 學習中 (20",
+    "ja": "[TRANSLATE] 學習中 (20",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\StyleProfile.tsx",
+    "line": 145
+  },
+  {
+    "key": "style.成熟10",
+    "zh_tw": "成熟 (100",
+    "en": "[TRANSLATE] 成熟 (100",
+    "ja": "[TRANSLATE] 成熟 (100",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\StyleProfile.tsx",
+    "line": 146
+  },
+  {
+    "key": "style.信心分數",
+    "zh_tw": "信心分數",
+    "en": "[TRANSLATE] 信心分數",
+    "ja": "[TRANSLATE] 信心分數",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\StyleProfile.tsx",
+    "line": 165
+  },
+  {
+    "key": "style.rating",
+    "zh_tw": "總評分數",
+    "en": "[TRANSLATE] 總評分數",
+    "ja": "[TRANSLATE] 總評分數",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\StyleProfile.tsx",
+    "line": 170
+  },
+  {
+    "key": "style.正面比例",
+    "zh_tw": "正面比例",
+    "en": "[TRANSLATE] 正面比例",
+    "ja": "[TRANSLATE] 正面比例",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\StyleProfile.tsx",
+    "line": 175
+  },
+  {
+    "key": "style.風格特徵",
+    "zh_tw": "風格特徵",
+    "en": "[TRANSLATE] 風格特徵",
+    "ja": "[TRANSLATE] 風格特徵",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\StyleProfile.tsx",
+    "line": 180
+  },
+  {
+    "key": "style.正式程度",
+    "zh_tw": "正式程度",
+    "en": "[TRANSLATE] 正式程度",
+    "ja": "[TRANSLATE] 正式程度",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\StyleProfile.tsx",
+    "line": 251
+  },
+  {
+    "key": "style.幽默程度",
+    "zh_tw": "幽默程度",
+    "en": "[TRANSLATE] 幽默程度",
+    "ja": "[TRANSLATE] 幽默程度",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\StyleProfile.tsx",
+    "line": 252
+  },
+  {
+    "key": "style.情感表達",
+    "zh_tw": "情感表達",
+    "en": "[TRANSLATE] 情感表達",
+    "ja": "[TRANSLATE] 情感表達",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\StyleProfile.tsx",
+    "line": 253
+  },
+  {
+    "key": "style.直接程度",
+    "zh_tw": "直接程度",
+    "en": "[TRANSLATE] 直接程度",
+    "ja": "[TRANSLATE] 直接程度",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\StyleProfile.tsx",
+    "line": 254
+  },
+  {
+    "key": "topics.success",
+    "zh_tw": "內容生成成功",
+    "en": "[TRANSLATE] 內容生成成功",
+    "ja": "[TRANSLATE] 內容生成成功",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\TopicDetail.tsx",
+    "line": 101
+  },
+  {
+    "key": "topics.failed",
+    "zh_tw": "生成內容失敗",
+    "en": "[TRANSLATE] 生成內容失敗",
+    "ja": "[TRANSLATE] 生成內容失敗",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\TopicDetail.tsx",
+    "line": 113
+  },
+  {
+    "key": "topics.settings",
+    "zh_tw": "API Key 未設定",
+    "en": "[TRANSLATE] API Key 未設定",
+    "ja": "[TRANSLATE] API Key 未設定",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\TopicDetail.tsx",
+    "line": 118
+  },
+  {
+    "key": "topics.未設定",
+    "zh_tw": "未設定",
+    "en": "[TRANSLATE] 未設定",
+    "ja": "[TRANSLATE] 未設定",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\TopicDetail.tsx",
+    "line": 118
+  },
+  {
+    "key": "topics.Deep",
+    "zh_tw": "DeepSeek API Key 未設定\\n\\n",
+    "en": "[TRANSLATE] DeepSeek API Key 未設定\\n\\n",
+    "ja": "[TRANSLATE] DeepSeek API Key 未設定\\n\\n",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\TopicDetail.tsx",
+    "line": 119
+  },
+  {
+    "key": "topics.請在後端",
+    "zh_tw": "請在後端環境變數中設置 DEEPSEEK_API_KEY：\\n",
+    "en": "[TRANSLATE] 請在後端環境變數中設置 DEEPSEEK_API_KEY：\\n",
+    "ja": "[TRANSLATE] 請在後端環境變數中設置 DEEPSEEK_API_KEY：\\n",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\TopicDetail.tsx",
+    "line": 120
+  },
+  {
+    "key": "topics.1訪問h",
+    "zh_tw": "1. 訪問 https://platform.deepseek.com/api_keys 獲取 API Key\\n",
+    "en": "[TRANSLATE] 1. 訪問 https://platform.deepseek.com/api_keys 獲取 API Key\\n",
+    "ja": "[TRANSLATE] 1. 訪問 https://platform.deepseek.com/api_keys 獲取 API Key\\n",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\TopicDetail.tsx",
+    "line": 121
+  },
+  {
+    "key": "topics.add",
+    "zh_tw": "2. 在 Railway/Docker 環境變數中添加：DEEPSEEK_API_KEY=sk-你的API Key\\n",
+    "en": "[TRANSLATE] 2. 在 Railway/Docker 環境變數中添加：DEEPSEEK_API_KEY=sk-你的API Key\\n",
+    "ja": "[TRANSLATE] 2. 在 Railway/Docker 環境變數中添加：DEEPSEEK_API_KEY=sk-你的API Key\\n",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\TopicDetail.tsx",
+    "line": 122
+  },
+  {
+    "key": "topics.3重新部",
+    "zh_tw": "3. 重新部署後端服務",
+    "en": "[TRANSLATE] 3. 重新部署後端服務",
+    "ja": "[TRANSLATE] 3. 重新部署後端服務",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\TopicDetail.tsx",
+    "line": 123
+  },
+  {
+    "key": "topics.error",
+    "zh_tw": "請求參數錯誤",
+    "en": "[TRANSLATE] 請求參數錯誤",
+    "ja": "[TRANSLATE] 請求參數錯誤",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\TopicDetail.tsx",
+    "line": 125
+  },
+  {
+    "key": "topics.請求參數",
+    "zh_tw": "請求參數錯誤，請檢查後端配置",
+    "en": "[TRANSLATE] 請求參數錯誤，請檢查後端配置",
+    "ja": "[TRANSLATE] 請求參數錯誤，請檢查後端配置",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\TopicDetail.tsx",
+    "line": 130
+  },
+  {
+    "key": "topics.topics",
+    "zh_tw": "主題不存在，請重新載入頁面",
+    "en": "[TRANSLATE] 主題不存在，請重新載入頁面",
+    "ja": "[TRANSLATE] 主題不存在，請重新載入頁面",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\TopicDetail.tsx",
+    "line": 133
+  },
+  {
+    "key": "topics.view",
+    "zh_tw": "伺服器內部錯誤，請查看後端日誌",
+    "en": "[TRANSLATE] 伺服器內部錯誤，請查看後端日誌",
+    "ja": "[TRANSLATE] 伺服器內部錯誤，請查看後端日誌",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\TopicDetail.tsx",
+    "line": 135
+  },
+  {
+    "key": "topics.content",
+    "zh_tw": "內容重新生成成功",
+    "en": "[TRANSLATE] 內容重新生成成功",
+    "ja": "[TRANSLATE] 內容重新生成成功",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\TopicDetail.tsx",
+    "line": 160
+  },
+  {
+    "key": "topics.generate",
+    "zh_tw": "重新生成內容失敗",
+    "en": "[TRANSLATE] 重新生成內容失敗",
+    "ja": "[TRANSLATE] 重新生成內容失敗",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\TopicDetail.tsx",
+    "line": 172
+  },
+  {
+    "key": "topics.請求參數1",
+    "zh_tw": "請求參數錯誤，請檢查後端配置",
+    "en": "[TRANSLATE] 請求參數錯誤，請檢查後端配置",
+    "ja": "[TRANSLATE] 請求參數錯誤，請檢查後端配置",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\TopicDetail.tsx",
+    "line": 175
+  },
+  {
+    "key": "topics.主題不存",
+    "zh_tw": "主題不存在，請重新載入頁面",
+    "en": "[TRANSLATE] 主題不存在，請重新載入頁面",
+    "ja": "[TRANSLATE] 主題不存在，請重新載入頁面",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\TopicDetail.tsx",
+    "line": 177
+  },
+  {
+    "key": "topics.伺服器內",
+    "zh_tw": "伺服器內部錯誤，請查看後端日誌",
+    "en": "[TRANSLATE] 伺服器內部錯誤，請查看後端日誌",
+    "ja": "[TRANSLATE] 伺服器內部錯誤，請查看後端日誌",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\TopicDetail.tsx",
+    "line": 179
+  },
+  {
+    "key": "topics.正在智能",
+    "zh_tw": "正在智能匹配照片",
+    "en": "[TRANSLATE] 正在智能匹配照片",
+    "ja": "[TRANSLATE] 正在智能匹配照片",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\TopicDetail.tsx",
+    "line": 204
+  },
+  {
+    "key": "topics.主題內容",
+    "zh_tw": "主題內容不存在",
+    "en": "[TRANSLATE] 主題內容不存在",
+    "ja": "[TRANSLATE] 主題內容不存在",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\TopicDetail.tsx",
+    "line": 217
+  },
+  {
+    "key": "topics.內容不存",
+    "zh_tw": "內容不存在",
+    "en": "[TRANSLATE] 內容不存在",
+    "ja": "[TRANSLATE] 內容不存在",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\TopicDetail.tsx",
+    "line": 217
+  },
+  {
+    "key": "topics.請先生成",
+    "zh_tw": "請先生成內容才能匹配照片。請先點擊「生成內容」按鈕。",
+    "en": "[TRANSLATE] 請先生成內容才能匹配照片。請先點擊「生成內容」按鈕。",
+    "ja": "[TRANSLATE] 請先生成內容才能匹配照片。請先點擊「生成內容」按鈕。",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\TopicDetail.tsx",
+    "line": 218
+  },
+  {
+    "key": "topics.主題內容1",
+    "zh_tw": "主題內容不存在，請先生成內容",
+    "en": "[TRANSLATE] 主題內容不存在，請先生成內容",
+    "ja": "[TRANSLATE] 主題內容不存在，請先生成內容",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\TopicDetail.tsx",
+    "line": 220
+  },
+  {
+    "key": "topics.匹配照片",
+    "zh_tw": "匹配照片失敗",
+    "en": "[TRANSLATE] 匹配照片失敗",
+    "ja": "[TRANSLATE] 匹配照片失敗",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\TopicDetail.tsx",
+    "line": 223
+  },
+  {
+    "key": "topics.delete",
+    "zh_tw": "主題已成功刪除",
+    "en": "[TRANSLATE] 主題已成功刪除",
+    "ja": "[TRANSLATE] 主題已成功刪除",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\TopicDetail.tsx",
+    "line": 235
+  },
+  {
+    "key": "topics.刪除主題",
+    "zh_tw": "刪除主題失敗，請稍後再試",
+    "en": "[TRANSLATE] 刪除主題失敗，請稍後再試",
+    "ja": "[TRANSLATE] 刪除主題失敗，請稍後再試",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\TopicDetail.tsx",
+    "line": 239
+  },
+  {
+    "key": "topics.confirm",
+    "zh_tw": "主題已確認",
+    "en": "[TRANSLATE] 主題已確認",
+    "ja": "[TRANSLATE] 主題已確認",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\TopicDetail.tsx",
+    "line": 250
+  },
+  {
+    "key": "topics.確認主題",
+    "zh_tw": "確認主題失敗，請稍後再試",
+    "en": "[TRANSLATE] 確認主題失敗，請稍後再試",
+    "ja": "[TRANSLATE] 確認主題失敗，請稍後再試",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\TopicDetail.tsx",
+    "line": 253
+  },
+  {
+    "key": "topics.確認中",
+    "zh_tw": "確認中",
+    "en": "[TRANSLATE] 確認中",
+    "ja": "[TRANSLATE] 確認中",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\TopicDetail.tsx",
+    "line": 314
+  },
+  {
+    "key": "topics.確認",
+    "zh_tw": "確認",
+    "en": "Confirm",
+    "ja": "[TRANSLATE] 確認",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\TopicDetail.tsx",
+    "line": 314
+  },
+  {
+    "key": "topics.刪除中",
+    "zh_tw": "刪除中",
+    "en": "[TRANSLATE] 刪除中",
+    "ja": "[TRANSLATE] 刪除中",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\TopicDetail.tsx",
+    "line": 366
+  },
+  {
+    "key": "topics.確認刪除",
+    "zh_tw": "確認刪除",
+    "en": "[TRANSLATE] 確認刪除",
+    "ja": "[TRANSLATE] 確認刪除",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\TopicDetail.tsx",
+    "line": 366
+  },
+  {
+    "key": "topics.signin",
+    "zh_tw": "需要登入",
+    "en": "[TRANSLATE] 需要登入",
+    "ja": "[TRANSLATE] 需要登入",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\TopicDetail.tsx",
+    "line": 384
+  },
+  {
+    "key": "topics.account",
+    "zh_tw": "此功能需要登入才能使用。請先登入或註冊帳號。",
+    "en": "[TRANSLATE] 此功能需要登入才能使用。請先登入或註冊帳號。",
+    "ja": "[TRANSLATE] 此功能需要登入才能使用。請先登入或註冊帳號。",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\TopicDetail.tsx",
+    "line": 387
+  },
+  {
+    "key": "topics.cancel",
+    "zh_tw": "取消",
+    "en": "Cancel",
+    "ja": "キャンセル",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\TopicDetail.tsx",
+    "line": 394
+  },
+  {
+    "key": "topics.登入",
+    "zh_tw": "登入",
+    "en": "Sign In",
+    "ja": "ログイン",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\TopicDetail.tsx",
+    "line": 400
+  },
+  {
+    "key": "topics.register",
+    "zh_tw": "註冊",
+    "en": "Register",
+    "ja": "[TRANSLATE] 註冊",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\TopicDetail.tsx",
+    "line": 406
+  },
+  {
+    "key": "topics.images",
+    "zh_tw": "載入圖片中",
+    "en": "[TRANSLATE] 載入圖片中",
+    "ja": "[TRANSLATE] 載入圖片中",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\TopicDetail.tsx",
+    "line": 446
+  },
+  {
+    "key": "topics.沒有圖片",
+    "zh_tw": "沒有圖片",
+    "en": "[TRANSLATE] 沒有圖片",
+    "ja": "[TRANSLATE] 沒有圖片",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\TopicDetail.tsx",
+    "line": 452
+  },
+  {
+    "key": "topics.請先生成1",
+    "zh_tw": "請先生成內容才能匹配照片。智能匹配需要根據文章內容來匹配相關圖片。",
+    "en": "[TRANSLATE] 請先生成內容才能匹配照片。智能匹配需要根據文章內容來匹配相關圖片。",
+    "ja": "[TRANSLATE] 請先生成內容才能匹配照片。智能匹配需要根據文章內容來匹配相關圖片。",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\TopicDetail.tsx",
+    "line": 460
+  },
+  {
+    "key": "topics.根據文章",
+    "zh_tw": "根據文章內容智能匹配相關照片",
+    "en": "[TRANSLATE] 根據文章內容智能匹配相關照片",
+    "ja": "[TRANSLATE] 根據文章內容智能匹配相關照片",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\TopicDetail.tsx",
+    "line": 460
+  },
+  {
+    "key": "topics.匹配中",
+    "zh_tw": "匹配中",
+    "en": "[TRANSLATE] 匹配中",
+    "ja": "[TRANSLATE] 匹配中",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\TopicDetail.tsx",
+    "line": 462
+  },
+  {
+    "key": "topics.智能匹配",
+    "zh_tw": "智能匹配照片（8張）",
+    "en": "[TRANSLATE] 智能匹配照片（8張）",
+    "ja": "[TRANSLATE] 智能匹配照片（8張）",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\TopicDetail.tsx",
+    "line": 462
+  },
+  {
+    "key": "topics.載入內容",
+    "zh_tw": "載入內容中",
+    "en": "[TRANSLATE] 載入內容中",
+    "ja": "[TRANSLATE] 載入內容中",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\TopicDetail.tsx",
+    "line": 488
+  },
+  {
+    "key": "topics.重新生成",
+    "zh_tw": "重新生成中",
+    "en": "[TRANSLATE] 重新生成中",
+    "ja": "[TRANSLATE] 重新生成中",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\TopicDetail.tsx",
+    "line": 500
+  },
+  {
+    "key": "topics.重新生成1",
+    "zh_tw": "🔄 重新生成",
+    "en": "[TRANSLATE] 🔄 重新生成",
+    "ja": "[TRANSLATE] 🔄 重新生成",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\TopicDetail.tsx",
+    "line": 500
+  },
+  {
+    "key": "topics.尚未生成",
+    "zh_tw": "尚未生成內容",
+    "en": "[TRANSLATE] 尚未生成內容",
+    "ja": "[TRANSLATE] 尚未生成內容",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\TopicDetail.tsx",
+    "line": 507
+  },
+  {
+    "key": "topics.尚未生成1",
+    "zh_tw": "尚未生成內容",
+    "en": "[TRANSLATE] 尚未生成內容",
+    "ja": "[TRANSLATE] 尚未生成內容",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\TopicDetail.tsx",
+    "line": 518
+  },
+  {
+    "key": "topics.尚未生成2",
+    "zh_tw": "尚未生成內容",
+    "en": "[TRANSLATE] 尚未生成內容",
+    "ja": "[TRANSLATE] 尚未生成內容",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\TopicDetail.tsx",
+    "line": 528
+  },
+  {
+    "key": "topics.生成中",
+    "zh_tw": "生成中",
+    "en": "[TRANSLATE] 生成中",
+    "ja": "[TRANSLATE] 生成中",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\TopicDetail.tsx",
+    "line": 534
+  },
+  {
+    "key": "topics.script",
+    "zh_tw": "生成內容（500字文章 + 30秒腳本）",
+    "en": "[TRANSLATE] 生成內容（500字文章 + 30秒腳本）",
+    "ja": "[TRANSLATE] 生成內容（500字文章 + 30秒腳本）",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\TopicDetail.tsx",
+    "line": 534
+  },
+  {
+    "key": "topics.圖片數量",
+    "zh_tw": "圖片數量： 張",
+    "en": "[TRANSLATE] 圖片數量： 張",
+    "ja": "[TRANSLATE] 圖片數量： 張",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\TopicDetail.tsx",
+    "line": 587
+  },
+  {
+    "key": "topics.wordcount",
+    "zh_tw": "字數： 字",
+    "en": "[TRANSLATE] 字數： 字",
+    "ja": "[TRANSLATE] 字數： 字",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\TopicDetail.tsx",
+    "line": 588
+  },
+  {
+    "key": "topics.預計時長",
+    "zh_tw": "預計時長： 秒",
+    "en": "[TRANSLATE] 預計時長： 秒",
+    "ja": "[TRANSLATE] 預計時長： 秒",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\pages\\TopicDetail.tsx",
+    "line": 589
+  },
+  {
+    "key": "imagegallery.delete",
+    "zh_tw": "刪除中",
+    "en": "[TRANSLATE] 刪除中",
+    "ja": "[TRANSLATE] 刪除中",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageGallery.tsx",
+    "line": 181
+  },
+  {
+    "key": "imagegallery.刪除",
+    "zh_tw": "刪除",
+    "en": "Delete",
+    "ja": "[TRANSLATE] 刪除",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageGallery.tsx",
+    "line": 181
+  },
+  {
+    "key": "imagegallery.正在智能",
+    "zh_tw": "正在智能匹配照片",
+    "en": "[TRANSLATE] 正在智能匹配照片",
+    "ja": "[TRANSLATE] 正在智能匹配照片",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageGallery.tsx",
+    "line": 218
+  },
+  {
+    "key": "imagegallery.failed",
+    "zh_tw": "匹配照片失敗",
+    "en": "[TRANSLATE] 匹配照片失敗",
+    "ja": "[TRANSLATE] 匹配照片失敗",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageGallery.tsx",
+    "line": 228
+  },
+  {
+    "key": "imagegallery.照片與文",
+    "zh_tw": "照片與文字匹配度良好",
+    "en": "[TRANSLATE] 照片與文字匹配度良好",
+    "ja": "[TRANSLATE] 照片與文字匹配度良好",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageGallery.tsx",
+    "line": 237
+  },
+  {
+    "key": "imagegallery.驗證匹配",
+    "zh_tw": "驗證匹配度失敗",
+    "en": "[TRANSLATE] 驗證匹配度失敗",
+    "ja": "[TRANSLATE] 驗證匹配度失敗",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageGallery.tsx",
+    "line": 244
+  },
+  {
+    "key": "imagegallery.success",
+    "zh_tw": "圖片已成功刪除",
+    "en": "[TRANSLATE] 圖片已成功刪除",
+    "ja": "[TRANSLATE] 圖片已成功刪除",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageGallery.tsx",
+    "line": 257
+  },
+  {
+    "key": "imagegallery.images",
+    "zh_tw": "刪除圖片失敗，請稍後再試",
+    "en": "[TRANSLATE] 刪除圖片失敗，請稍後再試",
+    "ja": "[TRANSLATE] 刪除圖片失敗，請稍後再試",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageGallery.tsx",
+    "line": 262
+  },
+  {
+    "key": "imagegallery.圖片順序",
+    "zh_tw": "圖片順序已更新",
+    "en": "[TRANSLATE] 圖片順序已更新",
+    "ja": "[TRANSLATE] 圖片順序已更新",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageGallery.tsx",
+    "line": 274
+  },
+  {
+    "key": "imagegallery.更新圖片",
+    "zh_tw": "更新圖片順序失敗，請稍後再試",
+    "en": "[TRANSLATE] 更新圖片順序失敗，請稍後再試",
+    "ja": "[TRANSLATE] 更新圖片順序失敗，請稍後再試",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageGallery.tsx",
+    "line": 280
+  },
+  {
+    "key": "imagegallery.確定要刪",
+    "zh_tw": "確定要刪除這張圖片嗎？",
+    "en": "[TRANSLATE] 確定要刪除這張圖片嗎？",
+    "ja": "[TRANSLATE] 確定要刪除這張圖片嗎？",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageGallery.tsx",
+    "line": 288
+  },
+  {
+    "key": "imagegallery.驗證中",
+    "zh_tw": "驗證中",
+    "en": "[TRANSLATE] 驗證中",
+    "ja": "[TRANSLATE] 驗證中",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageGallery.tsx",
+    "line": 347
+  },
+  {
+    "key": "imagegallery.驗證匹配1",
+    "zh_tw": "✓ 驗證匹配度",
+    "en": "[TRANSLATE] ✓ 驗證匹配度",
+    "ja": "[TRANSLATE] ✓ 驗證匹配度",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageGallery.tsx",
+    "line": 347
+  },
+  {
+    "key": "imagegallery.匹配中",
+    "zh_tw": "匹配中",
+    "en": "[TRANSLATE] 匹配中",
+    "ja": "[TRANSLATE] 匹配中",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageGallery.tsx",
+    "line": 355
+  },
+  {
+    "key": "imagegallery.智能匹配",
+    "zh_tw": "🔍 智能匹配（補齊至8張）",
+    "en": "[TRANSLATE] 🔍 智能匹配（補齊至8張）",
+    "ja": "[TRANSLATE] 🔍 智能匹配（補齊至8張）",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageGallery.tsx",
+    "line": 355
+  },
+  {
+    "key": "imagegallery.save",
+    "zh_tw": "儲存中",
+    "en": "[TRANSLATE] 儲存中",
+    "ja": "[TRANSLATE] 儲存中",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageGallery.tsx",
+    "line": 379
+  },
+  {
+    "key": "imagegallery.儲存順序",
+    "zh_tw": "儲存順序",
+    "en": "[TRANSLATE] 儲存順序",
+    "ja": "[TRANSLATE] 儲存順序",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageGallery.tsx",
+    "line": 379
+  },
+  {
+    "key": "imagesearch.新增中",
+    "zh_tw": "新增中",
+    "en": "[TRANSLATE] 新增中",
+    "ja": "[TRANSLATE] 新增中",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 162
+  },
+  {
+    "key": "imagesearch.仍可選擇",
+    "zh_tw": "仍可選擇",
+    "en": "[TRANSLATE] 仍可選擇",
+    "ja": "[TRANSLATE] 仍可選擇",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 162
+  },
+  {
+    "key": "imagesearch.新增中1",
+    "zh_tw": "新增中",
+    "en": "[TRANSLATE] 新增中",
+    "ja": "[TRANSLATE] 新增中",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 184
+  },
+  {
+    "key": "imagesearch.選擇",
+    "zh_tw": "選擇",
+    "en": "[TRANSLATE] 選擇",
+    "ja": "[TRANSLATE] 選擇",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 184
+  },
+  {
+    "key": "imagesearch.對我而言",
+    "zh_tw": "對我而言",
+    "en": "[TRANSLATE] 對我而言",
+    "ja": "[TRANSLATE] 對我而言",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 204
+  },
+  {
+    "key": "imagesearch.近乎",
+    "zh_tw": "近乎",
+    "en": "[TRANSLATE] 近乎",
+    "ja": "[TRANSLATE] 近乎",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 205
+  },
+  {
+    "key": "imagesearch.傳奇",
+    "zh_tw": "傳奇",
+    "en": "[TRANSLATE] 傳奇",
+    "ja": "[TRANSLATE] 傳奇",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 205
+  },
+  {
+    "key": "imagesearch.回憶",
+    "zh_tw": "回憶",
+    "en": "[TRANSLATE] 回憶",
+    "ja": "[TRANSLATE] 回憶",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 205
+  },
+  {
+    "key": "imagesearch.巨匠",
+    "zh_tw": "巨匠",
+    "en": "[TRANSLATE] 巨匠",
+    "ja": "[TRANSLATE] 巨匠",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 205
+  },
+  {
+    "key": "imagesearch.大師",
+    "zh_tw": "大師",
+    "en": "[TRANSLATE] 大師",
+    "ja": "[TRANSLATE] 大師",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 205
+  },
+  {
+    "key": "imagesearch.設計師",
+    "zh_tw": "設計師",
+    "en": "[TRANSLATE] 設計師",
+    "ja": "[TRANSLATE] 設計師",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 205
+  },
+  {
+    "key": "imagesearch.fashion",
+    "zh_tw": "時尚",
+    "en": "Fashion",
+    "ja": "ファッション",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 205
+  },
+  {
+    "key": "imagesearch.品牌",
+    "zh_tw": "品牌",
+    "en": "[TRANSLATE] 品牌",
+    "ja": "[TRANSLATE] 品牌",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 205
+  },
+  {
+    "key": "imagesearch.平民",
+    "zh_tw": "平民",
+    "en": "[TRANSLATE] 平民",
+    "ja": "[TRANSLATE] 平民",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 206
+  },
+  {
+    "key": "imagesearch.food",
+    "zh_tw": "美食",
+    "en": "Food",
+    "ja": "グルメ",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 206
+  },
+  {
+    "key": "imagesearch.recommended",
+    "zh_tw": "推薦",
+    "en": "Recommended",
+    "ja": "おすすめ",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 206
+  },
+  {
+    "key": "imagesearch.介紹",
+    "zh_tw": "介紹",
+    "en": "[TRANSLATE] 介紹",
+    "ja": "[TRANSLATE] 介紹",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 206
+  },
+  {
+    "key": "imagesearch.share",
+    "zh_tw": "分享",
+    "en": "Share",
+    "ja": "シェア",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 206
+  },
+  {
+    "key": "imagesearch.體驗",
+    "zh_tw": "體驗",
+    "en": "[TRANSLATE] 體驗",
+    "ja": "[TRANSLATE] 體驗",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 206
+  },
+  {
+    "key": "imagesearch.一個",
+    "zh_tw": "一個",
+    "en": "[TRANSLATE] 一個",
+    "ja": "[TRANSLATE] 一個",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 207
+  },
+  {
+    "key": "imagesearch.一種",
+    "zh_tw": "一種",
+    "en": "[TRANSLATE] 一種",
+    "ja": "[TRANSLATE] 一種",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 207
+  },
+  {
+    "key": "imagesearch.這個",
+    "zh_tw": "這個",
+    "en": "[TRANSLATE] 這個",
+    "ja": "[TRANSLATE] 這個",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 207
+  },
+  {
+    "key": "imagesearch.那個",
+    "zh_tw": "那個",
+    "en": "[TRANSLATE] 那個",
+    "ja": "[TRANSLATE] 那個",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 207
+  },
+  {
+    "key": "imagesearch.這些",
+    "zh_tw": "這些",
+    "en": "[TRANSLATE] 這些",
+    "ja": "[TRANSLATE] 這些",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 207
+  },
+  {
+    "key": "imagesearch.那些",
+    "zh_tw": "那些",
+    "en": "[TRANSLATE] 那些",
+    "ja": "[TRANSLATE] 那些",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 207
+  },
+  {
+    "key": "imagesearch.老婆餅",
+    "zh_tw": "老婆餅",
+    "en": "[TRANSLATE] 老婆餅",
+    "ja": "[TRANSLATE] 老婆餅",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 278
+  },
+  {
+    "key": "imagesearch.雞蛋仔",
+    "zh_tw": "雞蛋仔",
+    "en": "[TRANSLATE] 雞蛋仔",
+    "ja": "[TRANSLATE] 雞蛋仔",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 278
+  },
+  {
+    "key": "imagesearch.腸粉",
+    "zh_tw": "腸粉",
+    "en": "[TRANSLATE] 腸粉",
+    "ja": "[TRANSLATE] 腸粉",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 278
+  },
+  {
+    "key": "imagesearch.燒賣",
+    "zh_tw": "燒賣",
+    "en": "[TRANSLATE] 燒賣",
+    "ja": "[TRANSLATE] 燒賣",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 278
+  },
+  {
+    "key": "imagesearch.叉燒包",
+    "zh_tw": "叉燒包",
+    "en": "[TRANSLATE] 叉燒包",
+    "ja": "[TRANSLATE] 叉燒包",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 278
+  },
+  {
+    "key": "imagesearch.蝦餃",
+    "zh_tw": "蝦餃",
+    "en": "[TRANSLATE] 蝦餃",
+    "ja": "[TRANSLATE] 蝦餃",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 278
+  },
+  {
+    "key": "imagesearch.燒鵝",
+    "zh_tw": "燒鵝",
+    "en": "[TRANSLATE] 燒鵝",
+    "ja": "[TRANSLATE] 燒鵝",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 278
+  },
+  {
+    "key": "imagesearch.燒肉",
+    "zh_tw": "燒肉",
+    "en": "[TRANSLATE] 燒肉",
+    "ja": "[TRANSLATE] 燒肉",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 278
+  },
+  {
+    "key": "imagesearch.雲吞",
+    "zh_tw": "雲吞",
+    "en": "[TRANSLATE] 雲吞",
+    "ja": "[TRANSLATE] 雲吞",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 279
+  },
+  {
+    "key": "imagesearch.魚蛋",
+    "zh_tw": "魚蛋",
+    "en": "[TRANSLATE] 魚蛋",
+    "ja": "[TRANSLATE] 魚蛋",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 279
+  },
+  {
+    "key": "imagesearch.牛腩",
+    "zh_tw": "牛腩",
+    "en": "[TRANSLATE] 牛腩",
+    "ja": "[TRANSLATE] 牛腩",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 279
+  },
+  {
+    "key": "imagesearch.煲仔飯",
+    "zh_tw": "煲仔飯",
+    "en": "[TRANSLATE] 煲仔飯",
+    "ja": "[TRANSLATE] 煲仔飯",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 279
+  },
+  {
+    "key": "imagesearch.車仔麵",
+    "zh_tw": "車仔麵",
+    "en": "[TRANSLATE] 車仔麵",
+    "ja": "[TRANSLATE] 車仔麵",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 279
+  },
+  {
+    "key": "imagesearch.絲襪奶茶",
+    "zh_tw": "絲襪奶茶",
+    "en": "[TRANSLATE] 絲襪奶茶",
+    "ja": "[TRANSLATE] 絲襪奶茶",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 279
+  },
+  {
+    "key": "imagesearch.菠蘿包",
+    "zh_tw": "菠蘿包",
+    "en": "[TRANSLATE] 菠蘿包",
+    "ja": "[TRANSLATE] 菠蘿包",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 279
+  },
+  {
+    "key": "imagesearch.蛋撻",
+    "zh_tw": "蛋撻",
+    "en": "[TRANSLATE] 蛋撻",
+    "ja": "[TRANSLATE] 蛋撻",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 280
+  },
+  {
+    "key": "imagesearch.燒餅",
+    "zh_tw": "燒餅",
+    "en": "[TRANSLATE] 燒餅",
+    "ja": "[TRANSLATE] 燒餅",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 280
+  },
+  {
+    "key": "imagesearch.油條",
+    "zh_tw": "油條",
+    "en": "[TRANSLATE] 油條",
+    "ja": "[TRANSLATE] 油條",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 280
+  },
+  {
+    "key": "imagesearch.豆漿",
+    "zh_tw": "豆漿",
+    "en": "[TRANSLATE] 豆漿",
+    "ja": "[TRANSLATE] 豆漿",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 280
+  },
+  {
+    "key": "imagesearch.小籠包",
+    "zh_tw": "小籠包",
+    "en": "[TRANSLATE] 小籠包",
+    "ja": "[TRANSLATE] 小籠包",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 280
+  },
+  {
+    "key": "imagesearch.生煎包",
+    "zh_tw": "生煎包",
+    "en": "[TRANSLATE] 生煎包",
+    "ja": "[TRANSLATE] 生煎包",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 280
+  },
+  {
+    "key": "imagesearch.鍋貼",
+    "zh_tw": "鍋貼",
+    "en": "[TRANSLATE] 鍋貼",
+    "ja": "[TRANSLATE] 鍋貼",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 280
+  },
+  {
+    "key": "imagesearch.餃子",
+    "zh_tw": "餃子",
+    "en": "[TRANSLATE] 餃子",
+    "ja": "[TRANSLATE] 餃子",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 280
+  },
+  {
+    "key": "imagesearch.拉麵",
+    "zh_tw": "拉麵",
+    "en": "[TRANSLATE] 拉麵",
+    "ja": "[TRANSLATE] 拉麵",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 281
+  },
+  {
+    "key": "imagesearch.烏冬",
+    "zh_tw": "烏冬",
+    "en": "[TRANSLATE] 烏冬",
+    "ja": "[TRANSLATE] 烏冬",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 281
+  },
+  {
+    "key": "imagesearch.壽司",
+    "zh_tw": "壽司",
+    "en": "[TRANSLATE] 壽司",
+    "ja": "[TRANSLATE] 壽司",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 281
+  },
+  {
+    "key": "imagesearch.刺身",
+    "zh_tw": "刺身",
+    "en": "[TRANSLATE] 刺身",
+    "ja": "[TRANSLATE] 刺身",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 281
+  },
+  {
+    "key": "imagesearch.天婦羅",
+    "zh_tw": "天婦羅",
+    "en": "[TRANSLATE] 天婦羅",
+    "ja": "[TRANSLATE] 天婦羅",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 281
+  },
+  {
+    "key": "imagesearch.章魚燒",
+    "zh_tw": "章魚燒",
+    "en": "[TRANSLATE] 章魚燒",
+    "ja": "[TRANSLATE] 章魚燒",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 281
+  },
+  {
+    "key": "imagesearch.大阪燒",
+    "zh_tw": "大阪燒",
+    "en": "[TRANSLATE] 大阪燒",
+    "ja": "[TRANSLATE] 大阪燒",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 281
+  },
+  {
+    "key": "imagesearch.漢堡",
+    "zh_tw": "漢堡",
+    "en": "[TRANSLATE] 漢堡",
+    "ja": "[TRANSLATE] 漢堡",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 282
+  },
+  {
+    "key": "imagesearch.披薩",
+    "zh_tw": "披薩",
+    "en": "[TRANSLATE] 披薩",
+    "ja": "[TRANSLATE] 披薩",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 282
+  },
+  {
+    "key": "imagesearch.義大利麵",
+    "zh_tw": "義大利麵",
+    "en": "[TRANSLATE] 義大利麵",
+    "ja": "[TRANSLATE] 義大利麵",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 282
+  },
+  {
+    "key": "imagesearch.牛排",
+    "zh_tw": "牛排",
+    "en": "[TRANSLATE] 牛排",
+    "ja": "[TRANSLATE] 牛排",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 282
+  },
+  {
+    "key": "imagesearch.沙拉",
+    "zh_tw": "沙拉",
+    "en": "[TRANSLATE] 沙拉",
+    "ja": "[TRANSLATE] 沙拉",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 282
+  },
+  {
+    "key": "imagesearch.三明治",
+    "zh_tw": "三明治",
+    "en": "[TRANSLATE] 三明治",
+    "ja": "[TRANSLATE] 三明治",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 282
+  },
+  {
+    "key": "imagesearch.熱狗",
+    "zh_tw": "熱狗",
+    "en": "[TRANSLATE] 熱狗",
+    "ja": "[TRANSLATE] 熱狗",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 282
+  },
+  {
+    "key": "imagesearch.蛋糕",
+    "zh_tw": "蛋糕",
+    "en": "[TRANSLATE] 蛋糕",
+    "ja": "[TRANSLATE] 蛋糕",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 283
+  },
+  {
+    "key": "imagesearch.餅乾",
+    "zh_tw": "餅乾",
+    "en": "[TRANSLATE] 餅乾",
+    "ja": "[TRANSLATE] 餅乾",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 283
+  },
+  {
+    "key": "imagesearch.巧克力",
+    "zh_tw": "巧克力",
+    "en": "[TRANSLATE] 巧克力",
+    "ja": "[TRANSLATE] 巧克力",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 283
+  },
+  {
+    "key": "imagesearch.冰淇淋",
+    "zh_tw": "冰淇淋",
+    "en": "[TRANSLATE] 冰淇淋",
+    "ja": "[TRANSLATE] 冰淇淋",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 283
+  },
+  {
+    "key": "imagesearch.布丁",
+    "zh_tw": "布丁",
+    "en": "[TRANSLATE] 布丁",
+    "ja": "[TRANSLATE] 布丁",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 283
+  },
+  {
+    "key": "imagesearch.馬卡龍",
+    "zh_tw": "馬卡龍",
+    "en": "[TRANSLATE] 馬卡龍",
+    "ja": "[TRANSLATE] 馬卡龍",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 283
+  },
+  {
+    "key": "imagesearch.可頌",
+    "zh_tw": "可頌",
+    "en": "[TRANSLATE] 可頌",
+    "ja": "[TRANSLATE] 可頌",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 283
+  },
+  {
+    "key": "imagesearch.success",
+    "zh_tw": "圖片已成功新增",
+    "en": "[TRANSLATE] 圖片已成功新增",
+    "ja": "[TRANSLATE] 圖片已成功新增",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 424
+  },
+  {
+    "key": "imagesearch.failed",
+    "zh_tw": "新增圖片失敗，請稍後再試",
+    "en": "[TRANSLATE] 新增圖片失敗，請稍後再試",
+    "ja": "[TRANSLATE] 新增圖片失敗，請稍後再試",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 432
+  },
+  {
+    "key": "imagesearch.images",
+    "zh_tw": "輸入關鍵字搜尋圖片",
+    "en": "[TRANSLATE] 輸入關鍵字搜尋圖片",
+    "ja": "[TRANSLATE] 輸入關鍵字搜尋圖片",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 499
+  },
+  {
+    "key": "imagesearch.圖片搜尋",
+    "zh_tw": "圖片搜尋關鍵字",
+    "en": "[TRANSLATE] 圖片搜尋關鍵字",
+    "ja": "[TRANSLATE] 圖片搜尋關鍵字",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 501
+  },
+  {
+    "key": "imagesearch.source",
+    "zh_tw": "圖片來源選擇",
+    "en": "[TRANSLATE] 圖片來源選擇",
+    "ja": "[TRANSLATE] 圖片來源選擇",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 512
+  },
+  {
+    "key": "imagesearch.所有來源",
+    "zh_tw": "所有來源",
+    "en": "[TRANSLATE] 所有來源",
+    "ja": "[TRANSLATE] 所有來源",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 514
+  },
+  {
+    "key": "imagesearch.使用來源",
+    "zh_tw": "使用來源",
+    "en": "[TRANSLATE] 使用來源",
+    "ja": "[TRANSLATE] 使用來源",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 535
+  },
+  {
+    "key": "imagesearch.沒有找到",
+    "zh_tw": "沒有找到圖片",
+    "en": "[TRANSLATE] 沒有找到圖片",
+    "ja": "[TRANSLATE] 沒有找到圖片",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 559
+  },
+  {
+    "key": "imagesearch.嘗試使用",
+    "zh_tw": "嘗試使用不同的關鍵字",
+    "en": "[TRANSLATE] 嘗試使用不同的關鍵字",
+    "ja": "[TRANSLATE] 嘗試使用不同的關鍵字",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\ImageSearch.tsx",
+    "line": 559
+  },
+  {
+    "key": "interactionbuttons.已記錄您",
+    "zh_tw": "已記錄您的喜好",
+    "en": "[TRANSLATE] 已記錄您的喜好",
+    "ja": "[TRANSLATE] 已記錄您的喜好",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\InteractionButtons.tsx",
+    "line": 47
+  },
+  {
+    "key": "interactionbuttons.failed",
+    "zh_tw": "記錄互動失敗",
+    "en": "[TRANSLATE] 記錄互動失敗",
+    "ja": "[TRANSLATE] 記錄互動失敗",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\InteractionButtons.tsx",
+    "line": 52
+  },
+  {
+    "key": "interactionbuttons.已記錄您1",
+    "zh_tw": "已記錄您的反饋",
+    "en": "[TRANSLATE] 已記錄您的反饋",
+    "ja": "[TRANSLATE] 已記錄您的反饋",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\InteractionButtons.tsx",
+    "line": 69
+  },
+  {
+    "key": "interactionbuttons.記錄互動",
+    "zh_tw": "記錄互動失敗",
+    "en": "[TRANSLATE] 記錄互動失敗",
+    "ja": "[TRANSLATE] 記錄互動失敗",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\InteractionButtons.tsx",
+    "line": 74
+  },
+  {
+    "key": "ratingpanel.rating",
+    "zh_tw": "感謝您的評分！這將幫助我們更了解您的偏好",
+    "en": "[TRANSLATE] 感謝您的評分！這將幫助我們更了解您的偏好",
+    "ja": "[TRANSLATE] 感謝您的評分！這將幫助我們更了解您的偏好",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\RatingPanel.tsx",
+    "line": 90
+  },
+  {
+    "key": "ratingpanel.failed",
+    "zh_tw": "評分失敗",
+    "en": "[TRANSLATE] 評分失敗",
+    "ja": "[TRANSLATE] 評分失敗",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\RatingPanel.tsx",
+    "line": 93
+  },
+  {
+    "key": "ratingpanel.喜歡",
+    "zh_tw": "喜歡",
+    "en": "[TRANSLATE] 喜歡",
+    "ja": "[TRANSLATE] 喜歡",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\RatingPanel.tsx",
+    "line": 130
+  },
+  {
+    "key": "ratingpanel.不喜歡",
+    "zh_tw": "不喜歡",
+    "en": "[TRANSLATE] 不喜歡",
+    "ja": "[TRANSLATE] 不喜歡",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\RatingPanel.tsx",
+    "line": 143
+  },
+  {
+    "key": "ratingpanel.還有其他",
+    "zh_tw": "還有其他想說的嗎？（選填）",
+    "en": "[TRANSLATE] 還有其他想說的嗎？（選填）",
+    "ja": "[TRANSLATE] 還有其他想說的嗎？（選填）",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\RatingPanel.tsx",
+    "line": 176
+  },
+  {
+    "key": "ratingpanel.submit",
+    "zh_tw": "提交評分",
+    "en": "[TRANSLATE] 提交評分",
+    "ja": "[TRANSLATE] 提交評分",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\RatingPanel.tsx",
+    "line": 198
+  },
+  {
+    "key": "todaytopics.trend",
+    "zh_tw": "時尚趨勢",
+    "en": "[TRANSLATE] 時尚趨勢",
+    "ja": "[TRANSLATE] 時尚趨勢",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\TodayTopics.tsx",
+    "line": 18
+  },
+  {
+    "key": "todaytopics.food",
+    "zh_tw": "美食推薦",
+    "en": "[TRANSLATE] 美食推薦",
+    "ja": "[TRANSLATE] 美食推薦",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\TodayTopics.tsx",
+    "line": 23
+  },
+  {
+    "key": "todaytopics.社會趨勢",
+    "zh_tw": "社會趨勢",
+    "en": "[TRANSLATE] 社會趨勢",
+    "ja": "[TRANSLATE] 社會趨勢",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\TodayTopics.tsx",
+    "line": 28
+  },
+  {
+    "key": "todaytopics.topics",
+    "zh_tw": "今日主題",
+    "en": "[TRANSLATE] 今日主題",
+    "ja": "[TRANSLATE] 今日主題",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\TodayTopics.tsx",
+    "line": 118
+  },
+  {
+    "key": "todaytopics.latest",
+    "zh_tw": "最新主題",
+    "en": "[TRANSLATE] 最新主題",
+    "ja": "[TRANSLATE] 最新主題",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\TodayTopics.tsx",
+    "line": 118
+  },
+  {
+    "key": "todaytopics.source",
+    "zh_tw": "未知來源",
+    "en": "[TRANSLATE] 未知來源",
+    "ja": "[TRANSLATE] 未知來源",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\TodayTopics.tsx",
+    "line": 161
+  },
+  {
+    "key": "todaytopics.images",
+    "zh_tw": "主題圖片",
+    "en": "[TRANSLATE] 主題圖片",
+    "ja": "[TRANSLATE] 主題圖片",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\TodayTopics.tsx",
+    "line": 174
+  },
+  {
+    "key": "topiceditor.success",
+    "zh_tw": "主題已成功更新",
+    "en": "[TRANSLATE] 主題已成功更新",
+    "ja": "[TRANSLATE] 主題已成功更新",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\TopicEditor.tsx",
+    "line": 36
+  },
+  {
+    "key": "topiceditor.failed",
+    "zh_tw": "更新主題失敗，請稍後再試",
+    "en": "[TRANSLATE] 更新主題失敗，請稍後再試",
+    "ja": "[TRANSLATE] 更新主題失敗，請稍後再試",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\TopicEditor.tsx",
+    "line": 41
+  },
+  {
+    "key": "topiceditor.更新失敗",
+    "zh_tw": "更新失敗，請稍後再試",
+    "en": "[TRANSLATE] 更新失敗，請稍後再試",
+    "ja": "[TRANSLATE] 更新失敗，請稍後再試",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\TopicEditor.tsx",
+    "line": 42
+  },
+  {
+    "key": "topiceditor.標題為必",
+    "zh_tw": "標題為必填項",
+    "en": "[TRANSLATE] 標題為必填項",
+    "ja": "[TRANSLATE] 標題為必填項",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\TopicEditor.tsx",
+    "line": 51
+  },
+  {
+    "key": "topiceditor.分類為必",
+    "zh_tw": "分類為必填項",
+    "en": "[TRANSLATE] 分類為必填項",
+    "ja": "[TRANSLATE] 分類為必填項",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\TopicEditor.tsx",
+    "line": 55
+  },
+  {
+    "key": "topiceditor.source",
+    "zh_tw": "來源為必填項",
+    "en": "[TRANSLATE] 來源為必填項",
+    "ja": "[TRANSLATE] 來源為必填項",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\TopicEditor.tsx",
+    "line": 59
+  },
+  {
+    "key": "topiceditor.topics",
+    "zh_tw": "輸入主題標題",
+    "en": "[TRANSLATE] 輸入主題標題",
+    "ja": "[TRANSLATE] 輸入主題標題",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\TopicEditor.tsx",
+    "line": 92
+  },
+  {
+    "key": "topiceditor.選擇分類",
+    "zh_tw": "選擇分類",
+    "en": "[TRANSLATE] 選擇分類",
+    "ja": "[TRANSLATE] 選擇分類",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\TopicEditor.tsx",
+    "line": 116
+  },
+  {
+    "key": "topiceditor.fashion",
+    "zh_tw": "時尚",
+    "en": "Fashion",
+    "ja": "ファッション",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\TopicEditor.tsx",
+    "line": 117
+  },
+  {
+    "key": "topiceditor.food",
+    "zh_tw": "美食",
+    "en": "Food",
+    "ja": "グルメ",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\TopicEditor.tsx",
+    "line": 118
+  },
+  {
+    "key": "topiceditor.trend",
+    "zh_tw": "趨勢",
+    "en": "Trend",
+    "ja": "トレンド",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\TopicEditor.tsx",
+    "line": 119
+  },
+  {
+    "key": "topiceditor.輸入來源",
+    "zh_tw": "輸入來源",
+    "en": "[TRANSLATE] 輸入來源",
+    "ja": "[TRANSLATE] 輸入來源",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\TopicEditor.tsx",
+    "line": 140
+  },
+  {
+    "key": "topiceditor.save",
+    "zh_tw": "儲存中",
+    "en": "[TRANSLATE] 儲存中",
+    "ja": "[TRANSLATE] 儲存中",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\TopicEditor.tsx",
+    "line": 168
+  },
+  {
+    "key": "topiceditor.儲存",
+    "zh_tw": "儲存",
+    "en": "Save",
+    "ja": "[TRANSLATE] 儲存",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\features\\TopicEditor.tsx",
+    "line": 168
+  },
+  {
+    "key": "header.yyyy",
+    "zh_tw": "yyyy年M月d日 EEEE",
+    "en": "[TRANSLATE] yyyy年M月d日 EEEE",
+    "ja": "[TRANSLATE] yyyy年M月d日 EEEE",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\layout\\Header.tsx",
+    "line": 16
+  },
+  {
+    "key": "header.yyyy1",
+    "zh_tw": "yyyy年M月d日(EEEE",
+    "en": "[TRANSLATE] yyyy年M月d日(EEEE",
+    "ja": "[TRANSLATE] yyyy年M月d日(EEEE",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\layout\\Header.tsx",
+    "line": 18
+  },
+  {
+    "key": "header.清除搜索",
+    "zh_tw": "清除搜索",
+    "en": "[TRANSLATE] 清除搜索",
+    "ja": "[TRANSLATE] 清除搜索",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\layout\\Header.tsx",
+    "line": 129
+  },
+  {
+    "key": "connectionerrordisplay.settings",
+    "zh_tw": "檢查 CORS 設定是否包含前端網域",
+    "en": "[TRANSLATE] 檢查 CORS 設定是否包含前端網域",
+    "ja": "[TRANSLATE] 檢查 CORS 設定是否包含前端網域",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\ui\\ConnectionErrorDisplay.tsx",
+    "line": 63
+  },
+  {
+    "key": "connectionerrordisplay.檢查網路",
+    "zh_tw": "檢查網路連接",
+    "en": "[TRANSLATE] 檢查網路連接",
+    "ja": "[TRANSLATE] 檢查網路連接",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\ui\\ConnectionErrorDisplay.tsx",
+    "line": 64
+  },
+  {
+    "key": "emptystate.沒有找到",
+    "zh_tw": "沒有找到資料",
+    "en": "[TRANSLATE] 沒有找到資料",
+    "ja": "[TRANSLATE] 沒有找到資料",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\ui\\EmptyState.tsx",
+    "line": 17
+  },
+  {
+    "key": "errordisplay.error",
+    "zh_tw": "未知錯誤",
+    "en": "[TRANSLATE] 未知錯誤",
+    "ja": "[TRANSLATE] 未知錯誤",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\ui\\ErrorDisplay.tsx",
+    "line": 18
+  },
+  {
+    "key": "errordisplay.找不到請",
+    "zh_tw": "找不到請求的資源",
+    "en": "[TRANSLATE] 找不到請求的資源",
+    "ja": "[TRANSLATE] 找不到請求的資源",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\ui\\ErrorDisplay.tsx",
+    "line": 22
+  },
+  {
+    "key": "errordisplay.signin",
+    "zh_tw": "未授權，請重新登入",
+    "en": "[TRANSLATE] 未授權，請重新登入",
+    "ja": "[TRANSLATE] 未授權，請重新登入",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\ui\\ErrorDisplay.tsx",
+    "line": 25
+  },
+  {
+    "key": "errordisplay.無權限訪",
+    "zh_tw": "無權限訪問此資源",
+    "en": "[TRANSLATE] 無權限訪問此資源",
+    "ja": "[TRANSLATE] 無權限訪問此資源",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\ui\\ErrorDisplay.tsx",
+    "line": 28
+  },
+  {
+    "key": "errordisplay.伺服器錯",
+    "zh_tw": "伺服器錯誤，請稍後再試",
+    "en": "[TRANSLATE] 伺服器錯誤，請稍後再試",
+    "ja": "[TRANSLATE] 伺服器錯誤，請稍後再試",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\ui\\ErrorDisplay.tsx",
+    "line": 31
+  },
+  {
+    "key": "errordisplay.發生錯誤",
+    "zh_tw": "發生錯誤，請稍後再試",
+    "en": "[TRANSLATE] 發生錯誤，請稍後再試",
+    "ja": "[TRANSLATE] 發生錯誤，請稍後再試",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\ui\\ErrorDisplay.tsx",
+    "line": 33
+  },
+  {
+    "key": "infinitescroll.content",
+    "zh_tw": "已顯示全部內容",
+    "en": "[TRANSLATE] 已顯示全部內容",
+    "ja": "[TRANSLATE] 已顯示全部內容",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\ui\\InfiniteScroll.tsx",
+    "line": 94
+  },
+  {
+    "key": "loadingspinner.loading",
+    "zh_tw": "載入中",
+    "en": "Loading",
+    "ja": "[TRANSLATE] 載入中",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\ui\\LoadingSpinner.tsx",
+    "line": 13
+  },
+  {
+    "key": "pagination.上一頁",
+    "zh_tw": "上一頁",
+    "en": "[TRANSLATE] 上一頁",
+    "ja": "[TRANSLATE] 上一頁",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\ui\\Pagination.tsx",
+    "line": 129
+  },
+  {
+    "key": "pagination.下一頁",
+    "zh_tw": "下一頁",
+    "en": "[TRANSLATE] 下一頁",
+    "ja": "[TRANSLATE] 下一頁",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\ui\\Pagination.tsx",
+    "line": 172
+  },
+  {
+    "key": "pagination.跳轉頁碼",
+    "zh_tw": "跳轉頁碼",
+    "en": "[TRANSLATE] 跳轉頁碼",
+    "ja": "[TRANSLATE] 跳轉頁碼",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\ui\\Pagination.tsx",
+    "line": 192
+  },
+  {
+    "key": "topiccard.content",
+    "zh_tw": "展開內容 →",
+    "en": "[TRANSLATE] 展開內容 →",
+    "ja": "[TRANSLATE] 展開內容 →",
+    "file": "F:\\Adam 2025\\Myproject\\AI_Agent_Wbbapp_for_Social_Media_Content_Generation\\frontend\\src\\components\\ui\\TopicCard.tsx",
+    "line": 128
+  }
+]
