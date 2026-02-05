@@ -1,42 +1,39 @@
+/**
+ * 即將到來的事件組件
+ * Style: Lane Crawford 風格 - 極簡黑白
+ */
 export default function UpcomingEvents() {
   // 暫時移除 mock 數據，等待真實 API
   const events: Array<{ title: string; date: string; time: string }> = []
   const eventCount = events.length
 
   return (
-    <div className="bg-white rounded-lg shadow p-3">
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="font-semibold text-gray-700 text-sm">即將到來的事件</h3>
-        <div className="relative w-8 h-8">
-          <svg className="progress-ring w-8 h-8 transform -rotate-90">
-            <circle
-              cx={16}
-              cy={16}
-              r={14}
-              stroke="#E5E7EB"
-              strokeWidth="2"
-              fill="transparent"
-            />
-            <circle
-              className="progress-ring-circle text-purple-600 stroke-purple-600"
-              cx={16}
-              cy={16}
-              r={14}
-              stroke="currentColor"
-              strokeWidth="2"
-              fill="transparent"
-              strokeDasharray={87.96}
-              strokeDashoffset={eventCount > 0 ? 0 : 87.96}
-            />
-          </svg>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-xs font-bold text-purple-600">{eventCount > 0 ? 100 : 0}%</span>
-          </div>
-        </div>
+    <div className="bg-white border border-gray-100 p-4 transition-all duration-300 hover:border-gray-300">
+      {/* 標題 */}
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-[10px] tracking-[0.15em] uppercase text-gray-500 font-light">
+          即將到來
+        </h3>
+        <span className="text-[10px] text-gray-400 font-light">
+          {eventCount > 0 ? '100%' : '0%'}
+        </span>
       </div>
-      <p className="text-xl font-bold text-gray-800">{eventCount}</p>
-      <p className="text-xs text-gray-500 mt-1">{eventCount > 0 ? "有事件" : "暫無事件"}</p>
+      
+      {/* 進度條 */}
+      <div className="w-full h-px bg-gray-100 mb-3">
+        <div 
+          className="h-full bg-black transition-all duration-500"
+          style={{ width: eventCount > 0 ? '100%' : '0%' }}
+        />
+      </div>
+      
+      {/* 數值 */}
+      <p className="text-xl font-light tracking-wide text-black mb-1">{eventCount}</p>
+      
+      {/* 訊息 */}
+      <p className="text-[10px] text-gray-400 font-light tracking-wide">
+        {eventCount > 0 ? '有事件' : '暫無事件'}
+      </p>
     </div>
   )
 }
-
