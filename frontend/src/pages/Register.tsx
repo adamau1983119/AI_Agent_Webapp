@@ -23,7 +23,8 @@ export default function Register() {
   const { register, isLoading, error, clearError, isAuthenticated } = useAuthStore();
   
   const [formData, setFormData] = useState({
-    name: '',
+    surname: '',
+    givenName: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -32,6 +33,8 @@ export default function Register() {
   });
   
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   
   // 如果已登入，重定向到首頁
@@ -91,7 +94,7 @@ export default function Register() {
     }
     
     const success = await register({
-      name: formData.name,
+      name: `${formData.surname} ${formData.givenName}`.trim(),
       email: formData.email,
       password: formData.password,
       language: formData.language,
@@ -247,20 +250,39 @@ export default function Register() {
           
           {/* Email 註冊表單 */}
           <form data-testid="form-register" onSubmit={handleSubmit} className="space-y-6">
-            {/* 名稱 */}
-            <div>
-              <label htmlFor="name" className="block text-[10px] tracking-[0.15em] uppercase text-gray-500 mb-3">
-                NAME
-              </label>
-              <input
-                id="name"
-                data-testid="input-register-name"
-                type="text"
-                value={formData.name}
-                onChange={(e) => handleChange('name', e.target.value)}
-                className="w-full px-0 py-3 bg-transparent border-0 border-b border-gray-200 text-black placeholder-gray-300 focus:outline-none focus:border-black transition-colors duration-300 text-sm tracking-wide"
-                placeholder={t('auth.register.namePlaceholder')}
-              />
+            {/* 姓名欄位 - 分開姓和名 */}
+            <div className="grid grid-cols-2 gap-4">
+              {/* 姓 Surname */}
+              <div>
+                <label htmlFor="surname" className="block text-[10px] tracking-[0.15em] uppercase text-gray-500 mb-3">
+                  SURNAME
+                </label>
+                <input
+                  id="surname"
+                  data-testid="input-register-surname"
+                  type="text"
+                  value={formData.surname}
+                  onChange={(e) => handleChange('surname', e.target.value)}
+                  className="w-full px-0 py-3 bg-transparent border-0 border-b border-gray-200 text-black placeholder-gray-300 focus:outline-none focus:border-black transition-colors duration-300 text-sm tracking-wide"
+                  placeholder="姓氏"
+                />
+              </div>
+              
+              {/* 名 Given Name */}
+              <div>
+                <label htmlFor="givenName" className="block text-[10px] tracking-[0.15em] uppercase text-gray-500 mb-3">
+                  GIVEN NAME
+                </label>
+                <input
+                  id="givenName"
+                  data-testid="input-register-given-name"
+                  type="text"
+                  value={formData.givenName}
+                  onChange={(e) => handleChange('givenName', e.target.value)}
+                  className="w-full px-0 py-3 bg-transparent border-0 border-b border-gray-200 text-black placeholder-gray-300 focus:outline-none focus:border-black transition-colors duration-300 text-sm tracking-wide"
+                  placeholder="名字"
+                />
+              </div>
             </div>
             
             {/* Email */}
@@ -285,18 +307,38 @@ export default function Register() {
               <label htmlFor="password" className="block text-[10px] tracking-[0.15em] uppercase text-gray-500 mb-3">
                 PASSWORD
               </label>
-              <input
-                id="password"
-                data-testid="input-register-password"
-                type="password"
-                value={formData.password}
-                onChange={(e) => handleChange('password', e.target.value)}
-                required
-                className={`w-full px-0 py-3 bg-transparent border-0 border-b text-black placeholder-gray-300 focus:outline-none transition-colors duration-300 text-sm tracking-wide ${
-                  validationErrors.password ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-black'
-                }`}
-                placeholder={t('auth.register.passwordPlaceholder')}
-              />
+              <div className="relative">
+                <input
+                  id="password"
+                  data-testid="input-register-password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={formData.password}
+                  onChange={(e) => handleChange('password', e.target.value)}
+                  required
+                  className={`w-full px-0 py-3 pr-10 bg-transparent border-0 border-b text-black placeholder-gray-300 focus:outline-none transition-colors duration-300 text-sm tracking-wide ${
+                    validationErrors.password ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-black'
+                  }`}
+                  placeholder={t('auth.register.passwordPlaceholder')}
+                />
+                {/* 密碼顯示/隱藏按鈕 */}
+                <button
+                  type="button"
+                  data-testid="btn-register-toggle-password"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-0 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-black transition-colors"
+                >
+                  {showPassword ? (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                    </svg>
+                  ) : (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                  )}
+                </button>
+              </div>
               {validationErrors.password && (
                 <p className="mt-2 text-[10px] text-red-500 font-light tracking-wide">{validationErrors.password}</p>
               )}
@@ -322,18 +364,38 @@ export default function Register() {
               <label htmlFor="confirmPassword" className="block text-[10px] tracking-[0.15em] uppercase text-gray-500 mb-3">
                 CONFIRM PASSWORD
               </label>
-              <input
-                id="confirmPassword"
-                data-testid="input-register-confirm"
-                type="password"
-                value={formData.confirmPassword}
-                onChange={(e) => handleChange('confirmPassword', e.target.value)}
-                required
-                className={`w-full px-0 py-3 bg-transparent border-0 border-b text-black placeholder-gray-300 focus:outline-none transition-colors duration-300 text-sm tracking-wide ${
-                  validationErrors.confirmPassword ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-black'
-                }`}
-                placeholder={t('auth.register.confirmPasswordPlaceholder')}
-              />
+              <div className="relative">
+                <input
+                  id="confirmPassword"
+                  data-testid="input-register-confirm"
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  value={formData.confirmPassword}
+                  onChange={(e) => handleChange('confirmPassword', e.target.value)}
+                  required
+                  className={`w-full px-0 py-3 pr-10 bg-transparent border-0 border-b text-black placeholder-gray-300 focus:outline-none transition-colors duration-300 text-sm tracking-wide ${
+                    validationErrors.confirmPassword ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-black'
+                  }`}
+                  placeholder={t('auth.register.confirmPasswordPlaceholder')}
+                />
+                {/* 確認密碼顯示/隱藏按鈕 */}
+                <button
+                  type="button"
+                  data-testid="btn-register-toggle-confirm-password"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-0 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-black transition-colors"
+                >
+                  {showConfirmPassword ? (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                    </svg>
+                  ) : (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                  )}
+                </button>
+              </div>
               {validationErrors.confirmPassword && (
                 <p className="mt-2 text-[10px] text-red-500 font-light tracking-wide">{validationErrors.confirmPassword}</p>
               )}
