@@ -81,9 +81,11 @@ async def get_content(topic_id: str = Path(..., description="主題 ID")):
     try:
         content = await content_repo.get_content_by_topic_id(topic_id)
         if not content:
+            from app.utils.i18n import get_error_message, get_user_language
+            language = get_user_language(user=current_user, request=request)
             raise HTTPException(
                 status_code=404,
-                detail=f"內容不存在: topic_id={topic_id}"
+                detail=get_error_message("content.not_found", language)
             )
         
         return _convert_to_response(content)
@@ -108,9 +110,11 @@ async def generate_content(
         # 檢查主題是否存在
         topic = await topic_repo.get_topic_by_id(topic_id)
         if not topic:
+            from app.utils.i18n import get_error_message, get_user_language
+            language = get_user_language(user=current_user, request=request)
             raise HTTPException(
                 status_code=404,
-                detail=f"主題不存在: {topic_id}"
+                detail=get_error_message("content.topic_not_found", language)
             )
         
         # 調用 AI 服務生成內容（使用統一的 AIServiceFactory）
@@ -311,9 +315,11 @@ async def update_content(
         )
         
         if not updated:
+            from app.utils.i18n import get_error_message, get_user_language
+            language = get_user_language(user=current_user, request=request)
             raise HTTPException(
                 status_code=404,
-                detail=f"內容不存在: topic_id={topic_id}"
+                detail=get_error_message("content.not_found", language)
             )
         
         return _convert_to_response(updated)
@@ -356,9 +362,11 @@ async def regenerate_content(
         # 檢查主題是否存在
         topic = await topic_repo.get_topic_by_id(topic_id)
         if not topic:
+            from app.utils.i18n import get_error_message, get_user_language
+            language = get_user_language(user=current_user, request=request)
             raise HTTPException(
                 status_code=404,
-                detail=f"主題不存在: {topic_id}"
+                detail=get_error_message("content.topic_not_found", language)
             )
         
         # 調用生成內容端點（邏輯相同）

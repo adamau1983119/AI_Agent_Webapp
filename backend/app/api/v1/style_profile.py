@@ -5,6 +5,7 @@ Phase 4: AI 個人化
 """
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import Request
 from app.models.style_profile import (
     StyleProfileResponse, StyleProfileUpdate, StyleProfileStats,
     PresetStyle, OutputFormat,
@@ -12,6 +13,7 @@ from app.models.style_profile import (
 )
 from app.services.style_learning_service import style_learning_service
 from app.middleware.jwt_auth import get_current_user
+from app.utils.i18n import get_error_message, get_user_language
 import logging
 
 logger = logging.getLogger(__name__)
@@ -58,6 +60,7 @@ async def get_style_analysis(
 
 @router.put("/preset-style")
 async def set_preset_style(
+    request: Request,
     preset_style: PresetStyle = Query(..., description="預設風格"),
     current_user: dict = Depends(get_current_user)
 ):
@@ -71,9 +74,11 @@ async def set_preset_style(
     - **inspiring**: 激勵人心
     - **storytelling**: 故事敘述
     """
+    language = get_user_language(user=current_user, request=request)
     profile, error = await style_learning_service.set_preset_style(
         user_id=current_user["id"],
-        preset_style=preset_style
+        preset_style=preset_style,
+        language=language
     )
     
     if error:
@@ -132,16 +137,18 @@ async def get_available_formats():
 
 @router.get("/preview-style/{style}")
 async def preview_style(
-    style: PresetStyle
+    style: PresetStyle,
+    request: Request
 ):
     """
     預覽特定風格的配置
     """
     config = PRESET_STYLE_CONFIGS.get(style)
     if not config:
+        language = get_user_language(request=request)
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="風格不存在"
+            detail=get_error_message("style.not_found", language)
         )
     
     return {
@@ -156,16 +163,18 @@ async def preview_style(
 
 @router.get("/preview-format/{format}")
 async def preview_format(
-    format: OutputFormat
+    format: OutputFormat,
+    request: Request
 ):
     """
     預覽特定輸出格式的配置
     """
     config = OUTPUT_FORMAT_CONFIGS.get(format)
     if not config:
+        language = get_user_language(request=request)
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="格式不存在"
+            detail=get_error_message("style.format_not_found", language)
         )
     
     return {

@@ -63,11 +63,13 @@ class UserCreate(UserBase):
     
     @validator('password')
     def validate_password(cls, v):
-        """驗證密碼：至少 8 位 + 1 個大寫字母"""
+        """驗證密碼：至少 8 位 + 1 個大寫字母 + 1 個數字"""
         if len(v) < 8:
             raise ValueError('密碼至少需要 8 個字元')
         if not any(c.isupper() for c in v):
             raise ValueError('密碼必須包含至少一個大寫字母')
+        if not any(c.isdigit() for c in v):
+            raise ValueError('密碼必須包含至少一個數字')
         return v
 
 
@@ -101,6 +103,9 @@ class UserResponse(UserBase):
     updated_at: datetime
     last_login_at: Optional[datetime] = Field(None, description="最後登入時間")
     email_verified_at: Optional[datetime] = Field(None, description="Email 驗證時間")
+    
+    # 警告訊息（用於註冊時郵件發送失敗等情況）
+    warning: Optional[str] = Field(None, description="警告訊息（例如：郵件發送失敗）")
     
     class Config:
         from_attributes = True
@@ -145,11 +150,13 @@ class PasswordResetConfirm(BaseModel):
     
     @validator('new_password')
     def validate_password(cls, v):
-        """驗證密碼：至少 8 位 + 1 個大寫字母"""
+        """驗證密碼：至少 8 位 + 1 個大寫字母 + 1 個數字"""
         if len(v) < 8:
             raise ValueError('密碼至少需要 8 個字元')
         if not any(c.isupper() for c in v):
             raise ValueError('密碼必須包含至少一個大寫字母')
+        if not any(c.isdigit() for c in v):
+            raise ValueError('密碼必須包含至少一個數字')
         return v
 
 

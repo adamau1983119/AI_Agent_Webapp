@@ -14,6 +14,7 @@ from app.config import settings
 from app.models.topic import Status
 from app.utils.error_reporter import ErrorReporter, ErrorType
 from app.utils.retry_wrapper import retry_with_backoff, RetryConfig
+from app.utils.i18n import get_error_message
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +57,8 @@ class AutomationWorkflow:
         topic_id: str,
         auto_generate_content: bool = True,
         auto_search_images: bool = True,
-        image_count: int = 3
+        image_count: int = 3,
+        language: str = "zh-TW"
     ) -> Dict[str, Any]:
         """
         處理主題的完整工作流
@@ -123,7 +125,7 @@ class AutomationWorkflow:
                     # 配置錯誤（所有圖片服務 API Key 都未設定）
                     if "沒有可用的圖片服務" in str(e) or "API Key 都未設定" in str(e):
                         error = ErrorReporter.create_configuration_error(
-                            message="所有圖片服務的 API Key 都未設定，圖片搜尋失敗",
+                            message=get_error_message("workflow.image_api_keys_not_set", language),
                             service="image_service",
                             missing_key="UNSPLASH_ACCESS_KEY, PEXELS_API_KEY, PIXABAY_API_KEY"
                         )

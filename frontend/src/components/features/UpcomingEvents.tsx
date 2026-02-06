@@ -2,7 +2,10 @@
  * 即將到來的事件組件
  * Style: Lane Crawford 風格 - 極簡黑白
  */
+import { useTranslation } from '@/i18n'
+
 export default function UpcomingEvents() {
+  const { t } = useTranslation()
   // 暫時移除 mock 數據，等待真實 API
   const events: Array<{ title: string; date: string; time: string }> = []
   const eventCount = events.length
@@ -12,7 +15,7 @@ export default function UpcomingEvents() {
       {/* 標題 */}
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-[10px] tracking-[0.15em] uppercase text-gray-500 font-light">
-          UPCOMING
+          {t('dashboard.upcoming')}
         </h3>
         <span className="text-[10px] text-gray-400 font-light">
           {eventCount > 0 ? '100%' : '0%'}
@@ -32,7 +35,7 @@ export default function UpcomingEvents() {
       
       {/* 訊息 */}
       <p className="text-[10px] text-gray-400 font-light tracking-wide">
-        {eventCount > 0 ? 'SCHEDULED' : 'NO EVENTS'}
+        {eventCount > 0 ? t('dashboard.scheduled') : t('dashboard.noEvents')}
       </p>
     </div>
   )

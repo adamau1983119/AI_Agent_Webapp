@@ -10,6 +10,8 @@ from app.services.feature_flag_service import (
 )
 from app.middleware.jwt_auth import get_current_user, get_current_user_optional
 from app.models.user import UserRole
+from app.utils.i18n import get_error_message, get_user_language
+from fastapi import Request
 import logging
 
 logger = logging.getLogger(__name__)
@@ -76,9 +78,11 @@ async def check_feature(
     flag = feature_flag_service.get_flag(flag_name)
     
     if not flag:
+        from app.utils.i18n import get_error_message, get_user_language
+        language = get_user_language(user=current_user, request=request)
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"未知的功能: {flag_name}"
+            detail=get_error_message("feature_flag.not_found", language)
         )
     
     user_id = current_user.get("id") if current_user else None
@@ -105,9 +109,10 @@ async def get_all_feature_flags_admin(
     取得所有 Feature Flags（管理員）
     """
     if current_user.get("role") != UserRole.ADMIN.value:
+        language = get_user_language(user=current_user, request=request)
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="需要管理員權限"
+            detail=get_error_message("feature_flag.admin_required", language)
         )
     
     flags = feature_flag_service.get_all_flags()
@@ -136,16 +141,19 @@ async def update_feature_flag(
     更新 Feature Flag（管理員）
     """
     if current_user.get("role") != UserRole.ADMIN.value:
+        language = get_user_language(user=current_user, request=request)
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="需要管理員權限"
+            detail=get_error_message("feature_flag.admin_required", language)
         )
     
     flag = feature_flag_service.get_flag(flag_name)
     if not flag:
+        from app.utils.i18n import get_error_message, get_user_language
+        language = get_user_language(user=current_user, request=request)
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"未知的功能: {flag_name}"
+            detail=get_error_message("feature_flag.not_found", language)
         )
     
     # 更新狀態

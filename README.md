@@ -283,6 +283,115 @@ commit 1e131c1 - feat: replace hardcoded text with i18n keys (batch 1)
 
 ---
 
+## 🗂️ 主題卡生成邏輯（Topic Card Generation）
+
+### 完整流程
+
+```
+排程服務 (每 6 小時)
+    │
+    ▼
+RSS 收集 ──→ 角色分配策略 ──→ 從全球多語言 RSS 來源抓取
+    │            │
+    │            ├── 英文來源 (Vogue, WWD, TechCrunch...)
+    │            ├── 日文來源 (FASHIONSNAP, 食べログ...)
+    │            └── 中文來源 (ELLE HK, 香港01...)
+    │
+    ▼
+內容去重 (MD5 + 相似度) ──→ 過濾重複主題
+    │
+    ▼
+多樣性評分 ──→ 確保來源多元（不同媒體、不同角色）
+    │
+    ▼
+AI 翻譯（待開發）──→ 標題/摘要翻譯為用戶語言
+    │                    titles_i18n: { "zh-TW": "...", "en": "...", "ja": "..." }
+    │
+    ▼
+儲存到 MongoDB ──→ 每個分類 10 筆，每日最多 40 筆/類
+    │
+    ▼
+圖片匹配 ──→ 從 RSS 原文提取 + 搜尋引擎匹配
+    │
+    ▼
+前端顯示 ──→ 按用戶語言顯示對應標題/摘要
+              Dashboard / Topics / TopicDetail
+```
+
+### 三大收集類別
+
+| 類別 | 每次數量 | 每日 4 次 | RSS 來源 | 說明 |
+|------|:--------:|:---------:|:--------:|------|
+| **Fashion** (時尚) | 10 | 40 | 23+ | 時裝趨勢、設計師、街頭穿搭 |
+| **Food** (美食) | 10 | 40 | 19+ | 餐廳推薦、食譜、美食趨勢 |
+| **Trend** (趨勢) | 10 | 40 | 30+ | AI 科技、社會現象、生活方式 |
+
+### 核心服務架構
+
+```
+SchedulerService (排程)
+    ├── TopicCollector (收集)
+    │     ├── RSS Feed 抓取（角色分配策略）
+    │     ├── ContentDeduplicator (去重)
+    │     ├── DiversityScorer (多樣性)
+    │     └── FeedHealthService (健康監控)
+    │
+    ├── AutomationWorkflow (自動化)
+    │     ├── 預覽圖片提取 (OriginalImageExtractor)
+    │     ├── 圖片搜尋 (ImageService)
+    │     └── AI 內容生成 (AIServiceFactory)
+    │
+    └── TranslationService (翻譯) [待開發]
+          ├── DeepSeek API 翻譯
+          └── 快取機制（避免重複翻譯）
+```
+
+### 「資訊差」策略
+
+> 本產品的核心競爭力在於**資訊差**：  
+> 從全球多語言來源收集最新趨勢 → AI 翻譯為用戶語言 → 提供尚未被本地媒體報導的國際內容。  
+> 用戶無需懂外語，即可第一時間獲得全球趨勢資訊，搶先創作內容。
+
+### 主題資料結構
+
+```javascript
+{
+  id: "topic_fashion_20260206120000_0",
+  title: "原始標題（來源語言）",
+  category: "fashion",
+  status: "pending",
+  source: "Vogue",
+  sources: [{
+    type: "rss",
+    name: "Vogue",
+    url: "https://...",
+    language: "en",              // 原文語言
+    original_content: "...",     // 原文內容
+    keywords: ["trend", "..."],
+    images: ["https://..."]      // 原文圖片
+  }],
+  description: "摘要（約 30 字）",
+  preview_images: ["https://..."],
+
+  // 多語言欄位（待開發）
+  original_language: "en",
+  titles_i18n: {
+    "zh-TW": "翻譯後的繁中標題",
+    "en": "Original English Title",
+    "ja": "翻訳された日本語タイトル"
+  },
+  description_i18n: {
+    "zh-TW": "翻譯後的繁中摘要",
+    "en": "Original summary",
+    "ja": "翻訳された概要"
+  }
+}
+```
+
+詳細架構請參考：[專案完整架構表.md](./專案完整架構表.md)
+
+---
+
 ## ⚠️ 其他重要設計要求
 
 **所有版面設定必須確保在手機和平板上使用 Webapp 也能清楚顯示。**

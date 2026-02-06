@@ -128,9 +128,11 @@ async def get_schedules(
                 ]
             else:
                 # 生產環境必須有資料庫連接
+                from app.utils.i18n import get_error_message, get_user_language
+                language = get_user_language(user=current_user, request=request)
                 raise HTTPException(
                     status_code=503,
-                    detail=f"資料庫服務暫時不可用: {reason}"
+                    detail=get_error_message("schedule.database_unavailable", language)
                 )
         
         # 取得該日期的主題（設置超時，避免長時間等待）
@@ -152,9 +154,10 @@ async def get_schedules(
             if settings.ENVIRONMENT == "development":
                 topics = []
             else:
+                language = get_user_language(request=request)
                 raise HTTPException(
                     status_code=503,
-                    detail="資料庫服務暫時不可用，請稍後再試"
+                    detail=get_error_message("schedule.database_unavailable", language)
                 )
         except Exception as e:
             logger.warning(f"取得日期 {target_date} 的主題失敗: {e}")
@@ -295,16 +298,17 @@ async def generate_today_all_topics(
         db = request.app.state.db
         if db is None:
             logger.error("❌ 資料庫未連接，無法生成主題")
+            language = get_user_language(request=request)
             return JSONResponse(
                 status_code=400,
                 content={
                     "status": "failed",
-                    "message": "資料庫未連接，無法生成主題",
+                    "message": get_error_message("schedule.database_not_connected", language),
                     "detail": "資料庫客戶端未初始化",
                     "categories": ["fashion", "food", "trend"],
                     "expected_count": 30,
                     "existing_count": 0,
-                    "suggestion": "請檢查 MONGODB_URL 並確保 MongoDB 服務正在運行"
+                    "suggestion": get_error_message("schedule.suggestion.check_mongodb", language)
                 }
             )
         
@@ -323,16 +327,17 @@ async def generate_today_all_topics(
             logger.info(f"📊 現有主題數量: {len(existing_topics)}")
         except ConnectionFailure as e:
             logger.error(f"❌ 查詢現有主題時資料庫連接失敗: {e}")
+            language = get_user_language(request=request)
             return JSONResponse(
                 status_code=400,
                 content={
                     "status": "failed",
-                    "message": "資料庫連接失敗，無法查詢現有主題",
+                    "message": get_error_message("schedule.database_unavailable", language),
                     "detail": str(e),
                     "categories": ["fashion", "food", "trend"],
                     "expected_count": 30,
                     "existing_count": 0,
-                    "suggestion": "請檢查 MONGODB_URL 配置和 MongoDB 服務狀態"
+                    "suggestion": get_error_message("schedule.suggestion.check_mongodb_config", language)
                 }
             )
         except Exception as e:

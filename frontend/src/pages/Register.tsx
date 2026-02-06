@@ -9,6 +9,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation, languageOptions } from '../i18n';
 import { useAuthStore } from '../stores/authStore';
 import { authApi } from '../api/auth';
+import { showWarning, showSuccess } from '../utils/toast';
 
 // 統一品牌設定
 const BRAND = {
@@ -17,7 +18,7 @@ const BRAND = {
 };
 
 export default function Register() {
-  const { t, language } = useTranslation();
+  const { t, language, setLanguage } = useTranslation();
   const navigate = useNavigate();
   
   const { register, isLoading, error, clearError, isAuthenticated } = useAuthStore();
@@ -26,6 +27,7 @@ export default function Register() {
     surname: '',
     givenName: '',
     email: '',
+    confirmEmail: '',
     password: '',
     confirmPassword: '',
     language: language,
@@ -36,6 +38,9 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [emailTouched, setEmailTouched] = useState(false);
+  const [confirmEmailTouched, setConfirmEmailTouched] = useState(false);
+  const [isCheckingEmail, setIsCheckingEmail] = useState(false);
   
   // 如果已登入，重定向到首頁
   useEffect(() => {
@@ -49,6 +54,20 @@ export default function Register() {
     return () => clearError();
   }, [clearError]);
   
+  // Email 驗證（更嚴格的格式檢查）
+  const validateEmail = (email: string): string | null => {
+    if (!email) {
+      return t('auth.register.emailRequired');
+    }
+    // 更嚴格的 Email 正則表達式：確保 @ 前後都有內容，且域名部分至少包含一個點和有效的 TLD
+    // 排除 abc@ 這種格式
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!emailRegex.test(email)) {
+      return t('auth.invalidEmail');
+    }
+    return null;
+  };
+  
   // 密碼驗證
   const validatePassword = (password: string): string[] => {
     const errors: string[] = [];
@@ -58,12 +77,34 @@ export default function Register() {
     if (!/[A-Z]/.test(password)) {
       errors.push(t('auth.password.uppercase'));
     }
+    if (!/[0-9]/.test(password)) {
+      errors.push(t('auth.password.number'));
+    }
     return errors;
   };
   
   // 表單驗證
   const validateForm = (): boolean => {
     const errors: Record<string, string> = {};
+    
+    // 用戶名稱驗證（姓或名至少填一個）
+    const fullName = `${formData.surname} ${formData.givenName}`.trim();
+    if (!fullName || fullName.length === 0) {
+      errors.name = t('auth.register.nameRequired');
+    }
+    
+    // Email 驗證
+    const emailError = validateEmail(formData.email);
+    if (emailError) {
+      errors.email = emailError;
+    }
+    
+    // 確認 Email 驗證（雙重檢查）
+    if (!formData.confirmEmail) {
+      errors.confirmEmail = t('auth.register.emailRequired');
+    } else if (formData.email !== formData.confirmEmail) {
+      errors.confirmEmail = t('auth.email.mismatch');
+    }
     
     // 密碼驗證
     const passwordErrors = validatePassword(formData.password);
@@ -101,6 +142,15 @@ export default function Register() {
     });
     
     if (success) {
+      // 從 store 取得最新的 error 狀態（register 完成後可能設置了 warning）
+      const latestError = useAuthStore.getState().error;
+      if (latestError) {
+        showWarning(latestError);
+        // 清除錯誤，因為已經用 toast 顯示了
+        clearError();
+      } else {
+        showSuccess(t('auth.register.success'));
+      }
       setIsSuccess(true);
     }
   };
@@ -111,13 +161,92 @@ export default function Register() {
   
   const handleChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    // 清除該欄位的驗證錯誤
-    if (validationErrors[field]) {
+    
+    // 語言切換時同步更新 UI 語言，並清除舊的驗證訊息（因為它們是已翻譯的字串）
+    if (field === 'language' && typeof value === 'string') {
+      setLanguage(value as 'zh-TW' | 'en' | 'ja');
+      // 清除所有驗證錯誤，因為它們使用了舊語言的翻譯
+      // 用戶下次操作時會自動以新語言重新驗證
+      setValidationErrors({});
+    }
+    
+    // Email 即時驗證（當用戶輸入時）
+    if (field === 'email' && emailTouched) {
+      const emailError = validateEmail(value as string);
       setValidationErrors(prev => {
         const newErrors = { ...prev };
-        delete newErrors[field];
+        if (emailError) {
+          newErrors.email = emailError;
+        } else {
+          delete newErrors.email;
+        }
+        // 同步檢查確認 Email 是否匹配
+        if (confirmEmailTouched && formData.confirmEmail) {
+          if (value !== formData.confirmEmail) {
+            newErrors.confirmEmail = t('auth.email.mismatch');
+          } else {
+            delete newErrors.confirmEmail;
+          }
+        }
         return newErrors;
       });
+    } else if (field === 'confirmEmail' && confirmEmailTouched) {
+      // 確認 Email 即時驗證
+      setValidationErrors(prev => {
+        const newErrors = { ...prev };
+        if (value !== formData.email) {
+          newErrors.confirmEmail = t('auth.email.mismatch');
+        } else {
+          delete newErrors.confirmEmail;
+        }
+        return newErrors;
+      });
+    } else {
+      // 清除該欄位的驗證錯誤
+      if (validationErrors[field]) {
+        setValidationErrors(prev => {
+          const newErrors = { ...prev };
+          delete newErrors[field];
+          return newErrors;
+        });
+      }
+    }
+  };
+  
+  const handleEmailBlur = async (e: React.FocusEvent<HTMLInputElement>) => {
+    setEmailTouched(true);
+    // 直接從 DOM 取得最新值，避免 React state 更新延遲問題
+    const currentEmail = e.target.value.trim();
+    const emailError = validateEmail(currentEmail);
+    
+    // 先檢查格式
+    if (emailError) {
+      setValidationErrors(prev => {
+        const newErrors = { ...prev };
+        newErrors.email = emailError;
+        return newErrors;
+      });
+      return;
+    }
+    
+    // 格式正確後，檢查是否已被註冊
+    setIsCheckingEmail(true);
+    try {
+      const result = await authApi.checkEmailAvailable(currentEmail);
+      setValidationErrors(prev => {
+        const newErrors = { ...prev };
+        if (!result.available && result.message) {
+          newErrors.email = result.message;
+        } else {
+          delete newErrors.email;
+        }
+        return newErrors;
+      });
+    } catch (error) {
+      // 檢查失敗時不顯示錯誤，讓用戶可以繼續嘗試註冊
+      console.error('檢查 Email 可用性失敗:', error);
+    } finally {
+      setIsCheckingEmail(false);
     }
   };
   
@@ -150,7 +279,7 @@ export default function Register() {
             to="/login"
             className="inline-block px-12 py-4 bg-black text-white text-[11px] tracking-[0.2em] uppercase hover:bg-gray-900 transition-colors duration-300"
           >
-            BACK TO LOGIN
+            {t('auth.forgot.backToLogin')}
           </Link>
         </div>
       </div>
@@ -197,7 +326,7 @@ export default function Register() {
               {t('auth.register.title')}
             </h2>
             <p className="text-gray-400 text-xs font-light tracking-[0.1em] uppercase">
-              CREATE YOUR ACCOUNT
+              {t('auth.register.subtitle')}
             </p>
           </div>
           
@@ -233,7 +362,7 @@ export default function Register() {
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
               />
             </svg>
-            CONTINUE WITH GOOGLE
+            {t('auth.register.googleRegister')}
           </button>
           
           {/* 分隔線 */}
@@ -243,7 +372,7 @@ export default function Register() {
             </div>
             <div className="relative flex justify-center">
               <span className="px-6 bg-[#FAF9F7] text-gray-400 text-[10px] tracking-[0.15em] uppercase">
-                OR
+                {t('common.or')}
               </span>
             </div>
           </div>
@@ -255,7 +384,7 @@ export default function Register() {
               {/* 姓 Surname */}
               <div>
                 <label htmlFor="surname" className="block text-[10px] tracking-[0.15em] uppercase text-gray-500 mb-3">
-                  SURNAME
+                  {t('auth.register.surname')}
                 </label>
                 <input
                   id="surname"
@@ -263,7 +392,9 @@ export default function Register() {
                   type="text"
                   value={formData.surname}
                   onChange={(e) => handleChange('surname', e.target.value)}
-                  className="w-full px-0 py-3 bg-transparent border-0 border-b border-gray-200 text-black placeholder-gray-300 focus:outline-none focus:border-black transition-colors duration-300 text-sm tracking-wide"
+                  className={`w-full px-0 py-3 bg-transparent border-0 border-b text-black placeholder-gray-300 focus:outline-none transition-colors duration-300 text-sm tracking-wide ${
+                    validationErrors.name ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-black'
+                  }`}
                   placeholder={t('auth.register.surname')}
                 />
               </div>
@@ -271,7 +402,7 @@ export default function Register() {
               {/* 名 Given Name */}
             <div>
                 <label htmlFor="givenName" className="block text-[10px] tracking-[0.15em] uppercase text-gray-500 mb-3">
-                  GIVEN NAME
+                  {t('auth.register.givenName')}
               </label>
               <input
                   id="givenName"
@@ -279,33 +410,96 @@ export default function Register() {
                 type="text"
                   value={formData.givenName}
                   onChange={(e) => handleChange('givenName', e.target.value)}
-                className="w-full px-0 py-3 bg-transparent border-0 border-b border-gray-200 text-black placeholder-gray-300 focus:outline-none focus:border-black transition-colors duration-300 text-sm tracking-wide"
+                className={`w-full px-0 py-3 bg-transparent border-0 border-b text-black placeholder-gray-300 focus:outline-none transition-colors duration-300 text-sm tracking-wide ${
+                    validationErrors.name ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-black'
+                  }`}
                   placeholder={t('auth.register.givenName')}
               />
               </div>
             </div>
+            {validationErrors.name && (
+              <p className="mt-2 text-[10px] text-red-500 font-light tracking-wide">{validationErrors.name}</p>
+            )}
             
             {/* Email */}
             <div>
               <label htmlFor="email" className="block text-[10px] tracking-[0.15em] uppercase text-gray-500 mb-3">
-                EMAIL
+                {t('auth.register.email')}
+              </label>
+              <div className="relative">
+                <input
+                  id="email"
+                  data-testid="input-register-email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => handleChange('email', e.target.value)}
+                  onBlur={handleEmailBlur}
+                  required
+                  disabled={isCheckingEmail}
+                  className={`w-full px-0 py-3 pr-8 bg-transparent border-0 border-b text-black placeholder-gray-300 focus:outline-none transition-colors duration-300 text-sm tracking-wide ${
+                    validationErrors.email ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-black'
+                  } ${isCheckingEmail ? 'opacity-50' : ''}`}
+                  placeholder={t('auth.register.emailPlaceholder')}
+                />
+                {isCheckingEmail && (
+                  <div className="absolute right-0 top-1/2 -translate-y-1/2">
+                    <svg className="animate-spin h-4 w-4 text-gray-400" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                  </div>
+                )}
+              </div>
+              {validationErrors.email && (
+                <p className="mt-2 text-[10px] text-red-500 font-light tracking-wide">{validationErrors.email}</p>
+              )}
+              {emailTouched && !validationErrors.email && formData.email && !isCheckingEmail && (
+                <p className="mt-2 text-[10px] text-green-600 font-light tracking-wide">✓ {t('auth.register.emailAvailable')}</p>
+              )}
+            </div>
+            
+            {/* 確認 Email（雙重檢查） */}
+            <div>
+              <label htmlFor="confirmEmail" className="block text-[10px] tracking-[0.15em] uppercase text-gray-500 mb-3">
+                {t('auth.register.confirmEmail')}
               </label>
               <input
-                id="email"
-                data-testid="input-register-email"
+                id="confirmEmail"
+                data-testid="input-register-confirm-email"
                 type="email"
-                value={formData.email}
-                onChange={(e) => handleChange('email', e.target.value)}
+                value={formData.confirmEmail}
+                onChange={(e) => handleChange('confirmEmail', e.target.value)}
+                onBlur={() => {
+                  setConfirmEmailTouched(true);
+                  if (formData.confirmEmail && formData.email !== formData.confirmEmail) {
+                    setValidationErrors(prev => ({
+                      ...prev,
+                      confirmEmail: t('auth.email.mismatch')
+                    }));
+                  }
+                }}
+                onPaste={(e) => {
+                  e.preventDefault();
+                  // 禁止貼上，強制手動輸入以確保準確性
+                }}
                 required
-                className="w-full px-0 py-3 bg-transparent border-0 border-b border-gray-200 text-black placeholder-gray-300 focus:outline-none focus:border-black transition-colors duration-300 text-sm tracking-wide"
-                placeholder={t('auth.register.emailPlaceholder')}
+                className={`w-full px-0 py-3 bg-transparent border-0 border-b text-black placeholder-gray-300 focus:outline-none transition-colors duration-300 text-sm tracking-wide ${
+                  validationErrors.confirmEmail ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-black'
+                }`}
+                placeholder={t('auth.register.confirmEmailPlaceholder')}
               />
+              {validationErrors.confirmEmail && (
+                <p className="mt-2 text-[10px] text-red-500 font-light tracking-wide">{validationErrors.confirmEmail}</p>
+              )}
+              {confirmEmailTouched && !validationErrors.confirmEmail && formData.confirmEmail && formData.email === formData.confirmEmail && (
+                <p className="mt-2 text-[10px] text-green-600 font-light tracking-wide">✓ {t('auth.register.confirmEmail')} ✓</p>
+              )}
             </div>
             
             {/* 密碼 */}
             <div>
               <label htmlFor="password" className="block text-[10px] tracking-[0.15em] uppercase text-gray-500 mb-3">
-                PASSWORD
+                {t('auth.register.password')}
               </label>
               <div className="relative">
               <input
@@ -355,6 +549,11 @@ export default function Register() {
                       {/[A-Z]/.test(formData.password) ? '✓' : '○'} {t('auth.password.uppercase')}
                     </span>
                   </div>
+                  <div className="flex items-center gap-2 text-[10px] font-light tracking-wide">
+                    <span className={/[0-9]/.test(formData.password) ? 'text-green-600' : 'text-gray-400'}>
+                      {/[0-9]/.test(formData.password) ? '✓' : '○'} {t('auth.password.number')}
+                    </span>
+                  </div>
                 </div>
               )}
             </div>
@@ -362,7 +561,7 @@ export default function Register() {
             {/* 確認密碼 */}
             <div>
               <label htmlFor="confirmPassword" className="block text-[10px] tracking-[0.15em] uppercase text-gray-500 mb-3">
-                CONFIRM PASSWORD
+                {t('auth.register.confirmPassword')}
               </label>
               <div className="relative">
               <input
@@ -404,7 +603,7 @@ export default function Register() {
             {/* 語言偏好 */}
             <div>
               <label htmlFor="language" className="block text-[10px] tracking-[0.15em] uppercase text-gray-500 mb-3">
-                LANGUAGE PREFERENCE
+                {t('auth.register.language')}
               </label>
               <select
                 id="language"
@@ -472,10 +671,10 @@ export default function Register() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                   </svg>
-                  CREATING...
+                  {t('common.processing')}
                 </span>
               ) : (
-                'CREATE ACCOUNT'
+                t('auth.register.submit')
               )}
             </button>
           </form>

@@ -17,6 +17,8 @@ from app.schemas.image import (
 from app.services.repositories.image_repository import ImageRepository
 from app.services.repositories.topic_repository import TopicRepository
 from app.models.image import ImageSource
+from app.utils.i18n import get_error_message, get_user_language
+from fastapi import Request
 from app.config import settings
 from datetime import datetime
 import logging
@@ -158,17 +160,19 @@ async def proxy_image(
     # 驗證 URL 格式
     if not url or not url.startswith(('http://', 'https://')):
         logger.warning(f"無效的 URL 格式: {url}")
+        language = get_user_language(request=request)
         raise HTTPException(
             status_code=400,
-            detail="無效的 URL 格式，必須以 http:// 或 https:// 開頭"
+            detail=get_error_message("image.invalid_url", language)
         )
     
     # 檢查域名白名單（如果已設定）
     if not is_allowed_domain(url):
         logger.warning(f"URL 不在允許的域名白名單中: {url}")
+        language = get_user_language(request=request)
         raise HTTPException(
             status_code=403,
-            detail="URL 不在允許的域名白名單中"
+            detail=get_error_message("image.domain_not_allowed", language)
         )
     
     logger.info(f"代理圖片請求: {url[:100]}...")  # 只記錄前 100 個字符
@@ -186,9 +190,11 @@ async def proxy_image(
             # 檢查響應狀態碼
             if response.status_code != 200:
                 logger.warning(f"圖片代理請求失敗: status_code={response.status_code}, url={url[:100]}")
+                from app.utils.i18n import get_error_message, get_user_language
+                language = get_user_language(user=current_user, request=request)
                 raise HTTPException(
                     status_code=response.status_code,
-                    detail=f"無法獲取圖片: HTTP {response.status_code}"
+                    detail=get_error_message("image.fetch_failed", language)
                 )
             
             # 驗證 Content-Type
@@ -197,7 +203,7 @@ async def proxy_image(
                 logger.warning(f"響應不是圖片類型: content_type={content_type}, url={url[:100]}")
                 raise HTTPException(
                     status_code=400,
-                    detail=f"響應不是圖片類型: {content_type}"
+                    detail=get_error_message("image.invalid_content_type", get_user_language(user=current_user, request=request))
                 )
             
             # 檢查響應大小（防止過大的文件）
@@ -208,7 +214,7 @@ async def proxy_image(
                     logger.warning(f"圖片文件過大: {size_mb:.2f}MB, url={url[:100]}")
                     raise HTTPException(
                         status_code=413,
-                        detail=f"圖片文件過大: {size_mb:.2f}MB（最大 10MB）"
+                        detail=get_error_message("image.file_too_large", get_user_language(user=current_user, request=request))
                     )
             
             # 返回圖片流
@@ -225,23 +231,29 @@ async def proxy_image(
             
     except httpx.TimeoutException:
         logger.error(f"圖片代理請求超時: url={url[:100]}, timeout={timeout}")
+        from app.utils.i18n import get_error_message, get_user_language
+        language = get_user_language(user=current_user, request=request)
         raise HTTPException(
             status_code=504,
-            detail=f"請求超時（超過 {timeout} 秒）"
+            detail=get_error_message("image.request_timeout", language)
         )
     except httpx.RequestError as e:
         logger.error(f"圖片代理請求錯誤: {e}, url={url[:100]}")
+        from app.utils.i18n import get_error_message, get_user_language
+        language = get_user_language(user=current_user, request=request)
         raise HTTPException(
             status_code=502,
-            detail=f"無法連接到圖片伺服器: {str(e)}"
+            detail=get_error_message("image.server_connection_failed", language)
         )
     except HTTPException:
         raise
     except Exception as e:
         logger.exception(f"圖片代理發生未處理異常: url={url[:100]}")
+        from app.utils.i18n import get_error_message, get_user_language
+        language = get_user_language(user=current_user, request=request)
         raise HTTPException(
             status_code=500,
-            detail=f"伺服器內部錯誤: {str(e)}"
+            detail=get_error_message("image.server_error", language)
         )
 
 
@@ -401,7 +413,7 @@ async def get_topic_images(topic_id: str = Path(..., description="主題 ID")):
         if not topic:
             raise HTTPException(
                 status_code=404,
-                detail=f"主題不存在: {topic_id}"
+                detail=get_error_message("image.topic_not_found", get_user_language(user=current_user, request=request))
             )
         
         images = await image_repo.get_images_by_topic_id(topic_id)
@@ -432,7 +444,7 @@ async def create_image(
         if not topic:
             raise HTTPException(
                 status_code=404,
-                detail=f"主題不存在: {topic_id}"
+                detail=get_error_message("image.topic_not_found", get_user_language(user=current_user, request=request))
             )
         
         # 準備圖片資料
@@ -469,7 +481,7 @@ async def update_image(
         if not image or image.get("topic_id") != topic_id:
             raise HTTPException(
                 status_code=404,
-                detail=f"圖片不存在: {image_id}"
+                detail=get_error_message("image.not_found", get_user_language(user=current_user, request=request))
             )
         
         # 準備更新資料
@@ -478,9 +490,10 @@ async def update_image(
         # 更新圖片
         updated = await image_repo.update_image(image_id, update_dict)
         if not updated:
+            language = get_user_language(request=request)
             raise HTTPException(
                 status_code=500,
-                detail="更新圖片失敗"
+                detail=get_error_message("image.update_failed", language)
             )
         
         return _convert_to_response(updated)
@@ -505,14 +518,15 @@ async def delete_image(
         if not image or image.get("topic_id") != topic_id:
             raise HTTPException(
                 status_code=404,
-                detail=f"圖片不存在: {image_id}"
+                detail=get_error_message("image.not_found", get_user_language(user=current_user, request=request))
             )
         
         success = await image_repo.delete_image(image_id)
         if not success:
+            language = get_user_language(request=request)
             raise HTTPException(
                 status_code=500,
-                detail="刪除圖片失敗"
+                detail=get_error_message("image.delete_failed", language)
             )
         
         # ✅ 更新主題的 preview_images 字段（刪除圖片後也需要更新）
@@ -543,7 +557,7 @@ async def reorder_images(
         if not topic:
             raise HTTPException(
                 status_code=404,
-                detail=f"主題不存在: {topic_id}"
+                detail=get_error_message("image.topic_not_found", get_user_language(user=current_user, request=request))
             )
         
         # 準備排序資料
@@ -555,9 +569,10 @@ async def reorder_images(
         # 重新排序
         success = await image_repo.reorder_images(topic_id, image_orders)
         if not success:
+            language = get_user_language(request=request)
             raise HTTPException(
                 status_code=500,
-                detail="重新排序失敗"
+                detail=get_error_message("image.reorder_failed", language)
             )
         
         return {
@@ -593,7 +608,7 @@ async def match_photos_for_topic(
         if not topic:
             raise HTTPException(
                 status_code=404,
-                detail=f"主題不存在: {topic_id}"
+                detail=get_error_message("image.topic_not_found", get_user_language(user=current_user, request=request))
             )
         
         # 1. 先保存原文圖片（如果有的話）
@@ -651,9 +666,10 @@ async def match_photos_for_topic(
             article_text = content.get("article", "")
         
         if not article_text or not article_text.strip():
+            language = get_user_language(request=request)
             raise HTTPException(
                 status_code=400,
-                detail="文章內容為空，無法進行智能匹配。請先生成完整的文章內容或確保主題有原文內容。"
+                detail=get_error_message("image.content_empty", language)
             )
         
         # 3. 匹配照片（基於原文內容或生成的中文內容）
@@ -724,7 +740,7 @@ async def validate_photo_match(
         if not content:
             raise HTTPException(
                 status_code=404,
-                detail=f"主題內容不存在: {topic_id}"
+                detail=get_error_message("image.topic_content_not_found", get_user_language(user=current_user, request=request))
             )
         
         article_text = content.get("article", "")

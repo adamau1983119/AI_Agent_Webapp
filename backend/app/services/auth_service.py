@@ -84,7 +84,8 @@ class AuthService:
         # 檢查 Email 是否已存在
         existing_user = await self.user_repo.get_user_by_email(user_data.email)
         if existing_user:
-            raise ValueError("此 Email 已被註冊")
+            # 使用 i18n 錯誤訊息（但這裡無法取得語言，會在 API 層處理）
+            raise ValueError("EMAIL_ALREADY_REGISTERED")
         
         # 雜湊密碼
         password_hash = self.get_password_hash(user_data.password)

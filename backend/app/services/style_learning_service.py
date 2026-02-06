@@ -40,24 +40,27 @@ class StyleLearningService:
     async def set_preset_style(
         self,
         user_id: str,
-        preset_style: PresetStyle
+        preset_style: PresetStyle,
+        language: str = "zh-TW"
     ) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
         """設定預設風格"""
+        from app.utils.i18n import get_error_message
         # 確保風格檔案存在
         await self.profile_repo.get_or_create(user_id)
         
         profile = await self.profile_repo.update_preset_style(user_id, preset_style)
         if not profile:
-            return None, "更新風格失敗"
+            return None, get_error_message("style.update_failed", language)
         
         logger.info(f"用戶 {user_id} 設定預設風格: {preset_style.value}")
         return profile, None
     
-    async def reset_profile(self, user_id: str) -> Tuple[bool, Optional[str]]:
+    async def reset_profile(self, user_id: str, language: str = "zh-TW") -> Tuple[bool, Optional[str]]:
         """重置風格檔案"""
+        from app.utils.i18n import get_error_message
         profile = await self.profile_repo.reset_profile(user_id)
         if not profile:
-            return False, "重置失敗"
+            return False, get_error_message("style.reset_failed", language)
         
         # 刪除評分記錄
         deleted_count = await self.rating_repo.delete_user_ratings(user_id)

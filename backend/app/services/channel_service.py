@@ -11,6 +11,7 @@ from app.models.channel import (
     ChannelCategory, ChannelRegion, ChannelStatus, ChannelCollectionStatus,
     DEFAULT_RSS_SOURCES, CATEGORY_FALLBACK_MAP, REGION_LANGUAGE_MAP
 )
+from app.utils.i18n import get_error_message
 import logging
 
 logger = logging.getLogger(__name__)
@@ -25,7 +26,8 @@ class ChannelService:
     async def create_channel(
         self,
         user_id: str,
-        channel_data: ChannelCreate
+        channel_data: ChannelCreate,
+        language: str = "zh-TW"
     ) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
         """
         建立頻道
@@ -33,6 +35,7 @@ class ChannelService:
         Args:
             user_id: 用戶 ID
             channel_data: 頻道資料
+            language: 用戶語言（zh-TW/en/ja）
             
         Returns:
             (頻道資料, 錯誤訊息)
@@ -40,12 +43,12 @@ class ChannelService:
         # 檢查用戶頻道數量
         current_count = await self.channel_repo.count_user_channels(user_id)
         if current_count >= MAX_CHANNELS_PER_USER:
-            return None, f"已達頻道上限（最多 {MAX_CHANNELS_PER_USER} 個）"
+            return None, get_error_message("channel.max_reached_detail", language, max=MAX_CHANNELS_PER_USER)
         
         # 驗證自定義關鍵字
         if channel_data.category == ChannelCategory.OTHER:
             if not channel_data.custom_keywords or len(channel_data.custom_keywords) == 0:
-                return None, "選擇「其他」類別時必須提供自定義關鍵字"
+                return None, get_error_message("channel.custom_keywords_required", language)
         
         # 建立頻道
         channel = await self.channel_repo.create_channel(
@@ -54,7 +57,7 @@ class ChannelService:
         )
         
         if not channel:
-            return None, "建立頻道失敗"
+            return None, get_error_message("channel.create_failed", language)
         
         logger.info(f"用戶 {user_id} 建立頻道: {channel['id']} ({channel_data.category.value})")
         
@@ -79,7 +82,8 @@ class ChannelService:
         self,
         user_id: str,
         channel_id: str,
-        update_data: ChannelUpdate
+        update_data: ChannelUpdate,
+        language: str = "zh-TW"
     ) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
         """
         更新頻道
@@ -88,6 +92,7 @@ class ChannelService:
             user_id: 用戶 ID
             channel_id: 頻道 ID
             update_data: 更新資料
+            language: 用戶語言（zh-TW/en/ja）
             
         Returns:
             (更新後的頻道, 錯誤訊息)
@@ -95,7 +100,7 @@ class ChannelService:
         # 確認頻道存在且屬於用戶
         channel = await self.channel_repo.get_user_channel(user_id, channel_id)
         if not channel:
-            return None, "頻道不存在"
+            return None, get_error_message("channel.not_found", language)
         
         # 過濾空值
         update_dict = {k: v for k, v in update_data.model_dump().items() if v is not None}
@@ -107,7 +112,7 @@ class ChannelService:
         updated = await self.channel_repo.update_channel(channel_id, update_dict)
         
         if not updated:
-            return None, "更新頻道失敗"
+            return None, get_error_message("channel.update_failed", language)
         
         logger.info(f"用戶 {user_id} 更新頻道: {channel_id}")
         
@@ -116,7 +121,8 @@ class ChannelService:
     async def delete_channel(
         self,
         user_id: str,
-        channel_id: str
+        channel_id: str,
+        language: str = "zh-TW"
     ) -> Tuple[bool, Optional[str]]:
         """
         刪除頻道
@@ -124,6 +130,7 @@ class ChannelService:
         Args:
             user_id: 用戶 ID
             channel_id: 頻道 ID
+            language: 用戶語言（zh-TW/en/ja）
             
         Returns:
             (是否成功, 錯誤訊息)
@@ -131,7 +138,7 @@ class ChannelService:
         success = await self.channel_repo.delete_channel(channel_id, user_id)
         
         if not success:
-            return False, "刪除頻道失敗，頻道不存在或無權限"
+            return False, get_error_message("channel.delete_failed", language)
         
         logger.info(f"用戶 {user_id} 刪除頻道: {channel_id}")
         

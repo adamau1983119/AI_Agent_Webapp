@@ -537,7 +537,7 @@ export default function ImageSearch({
             <span>使用來源: <strong>{usedSource}</strong></span>
           )}
           {traceId && diagnosticMode && (
-            <span className="ml-4">追蹤 ID: <code className="text-xs bg-gray-100 px-1 rounded">{traceId}</code></span>
+            <span className="ml-4">{t('imageSearch.traceId')}: <code className="text-xs bg-gray-100 px-1 rounded">{traceId}</code></span>
           )}
         </div>
         <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">

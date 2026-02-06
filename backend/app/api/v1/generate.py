@@ -10,6 +10,8 @@ from app.models.style_profile import OutputFormat
 from app.services.style_learning_service import style_learning_service
 from app.services.ai.ai_service_factory import AIServiceFactory
 from app.middleware.jwt_auth import get_current_user, get_current_user_optional
+from app.utils.i18n import get_error_message, get_user_language
+from fastapi import Request
 import logging
 
 logger = logging.getLogger(__name__)
@@ -40,6 +42,7 @@ class GenerateResponse(BaseModel):
 
 @router.post("", response_model=GenerateResponse)
 async def generate_content(
+    http_request: Request,
     request: GenerateRequest,
     current_user: dict = Depends(get_current_user)
 ):
@@ -84,15 +87,19 @@ async def generate_content(
         generated_content = await ai_service.generate(prompt)
         
         if not generated_content:
+            language = get_user_language(user=current_user, request=http_request)
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="內容生成失敗"
+                detail=get_error_message("generate.failed", language)
             )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"AI 生成失敗: {e}")
+        language = get_user_language(user=current_user, request=http_request)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"生成失敗: {str(e)}"
+            detail=get_error_message("generate.failed", language)
         )
     
     # 提取 Hashtags
@@ -160,6 +167,7 @@ async def preview_generation(
 
 @router.get("/quick")
 async def quick_generate(
+    http_request: Request,
     title: str = Query(..., description="主題標題"),
     format: OutputFormat = Query(OutputFormat.CAPTION, description="輸出格式"),
     language: str = Query("zh-TW", description="語言"),
@@ -193,15 +201,19 @@ async def quick_generate(
         generated_content = await ai_service.generate(prompt)
         
         if not generated_content:
+            language = get_user_language(user=current_user, request=http_request) if current_user else get_user_language(request=http_request)
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="內容生成失敗"
+                detail=get_error_message("generate.failed", language)
             )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"AI 生成失敗: {e}")
+        language = get_user_language(user=current_user, request=http_request) if current_user else get_user_language(request=http_request)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"生成失敗: {str(e)}"
+            detail=get_error_message("generate.failed", language)
         )
     
     hashtags = extract_hashtags(generated_content)

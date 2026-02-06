@@ -104,7 +104,7 @@ class Settings(BaseSettings):
     # ============================================
     # 後端 URL（用於 OAuth 回調）
     BACKEND_URL: str = "http://localhost:8000"
-    FRONTEND_URL: str = "http://localhost:5173"
+    FRONTEND_URL: str = "http://localhost:3000"
     
     # Meta (Instagram + Facebook + Threads)
     META_APP_ID: str = ""

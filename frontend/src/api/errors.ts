@@ -33,20 +33,30 @@ export function handleAPIError(error: unknown): APIError {
     return new APIError(error.message, 0, 'UNKNOWN_ERROR')
   }
 
-  return new APIError('未知錯誤', 0, 'UNKNOWN_ERROR')
+  // 預設錯誤訊息（實際使用時應通過 i18n 轉換）
+  // 注意：這個函數通常在組件外部使用，無法直接使用 i18n
+  // 後端應該已經返回多語言的錯誤訊息
+  return new APIError('Unknown error', 0, 'UNKNOWN_ERROR')
 }
 
 /**
  * 根據 HTTP 狀態碼處理錯誤
  */
+/**
+ * 根據 HTTP 狀態碼處理錯誤
+ * 注意：後端錯誤訊息應該已經使用 i18n，這裡的預設訊息僅作為後備
+ * 預設訊息使用英文，因為這是開發者可見的後備訊息
+ */
 export function handleHTTPError(status: number, errorData?: any): APIError {
-  let message = '請求失敗'
+  // 優先使用後端返回的錯誤訊息（應該已經是多語言的）
+  // 如果後端沒有返回訊息，使用英文作為後備（因為這是開發者可見的）
+  let message = errorData?.message || errorData?.detail || 'Request failed'
   let code = 'HTTP_ERROR'
 
   switch (status) {
     case 400:
       // 優先使用後端返回的 message，如果沒有則使用 detail
-      message = errorData?.message || errorData?.detail || '請求參數錯誤'
+      message = errorData?.message || errorData?.detail || 'Request parameter error'
       // 如果有 suggestion，添加到訊息中
       if (errorData?.suggestion) {
         message = `${message}\n${errorData.suggestion}`
@@ -54,35 +64,35 @@ export function handleHTTPError(status: number, errorData?: any): APIError {
       code = 'BAD_REQUEST'
       break
     case 401:
-      message = '未授權，請重新登入'
+      message = errorData?.message || errorData?.detail || 'Unauthorized, please login again'
       code = 'UNAUTHORIZED'
       break
     case 403:
-      message = '無權限訪問此資源'
+      message = errorData?.message || errorData?.detail || 'Forbidden to access this resource'
       code = 'FORBIDDEN'
       break
     case 404:
-      message = errorData?.detail || '資源不存在'
+      message = errorData?.message || errorData?.detail || 'Resource not found'
       code = 'NOT_FOUND'
       break
     case 422:
-      message = errorData?.detail || '資料驗證失敗'
+      message = errorData?.message || errorData?.detail || 'Data validation failed'
       code = 'VALIDATION_ERROR'
       break
     case 429:
-      message = '請求過於頻繁，請稍後再試'
+      message = errorData?.message || errorData?.detail || 'Too many requests, please try again later'
       code = 'RATE_LIMIT'
       break
     case 500:
-      message = '伺服器內部錯誤'
+      message = errorData?.message || errorData?.detail || 'Internal server error'
       code = 'INTERNAL_ERROR'
       break
     case 503:
-      message = '服務暫時不可用'
+      message = errorData?.message || errorData?.detail || 'Service temporarily unavailable'
       code = 'SERVICE_UNAVAILABLE'
       break
     default:
-      message = errorData?.detail || `HTTP 錯誤: ${status}`
+      message = errorData?.message || errorData?.detail || `HTTP error: ${status}`
       code = `HTTP_${status}`
   }
 

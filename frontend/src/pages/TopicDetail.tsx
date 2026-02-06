@@ -266,18 +266,19 @@ export default function TopicDetail() {
     return (
       <div className="p-6">
         <div className="text-center py-12">
-          <p className="text-gray-500 mb-4">找不到主題</p>
-          <p className="text-sm text-gray-400 mb-4">主題 ID: {id}</p>
+          <p className="text-gray-500 dark:text-gray-400 mb-4">{t('topics.notFound')}</p>
+          <p className="text-sm text-gray-400 dark:text-gray-500 mb-4">{t('topics.topicId')}: {id}</p>
           {topicError && (
-            <p className="text-sm text-red-500">
-              錯誤: {String(topicError)}
+            <p className="text-sm text-red-500 dark:text-red-400">
+              {t('common.error')}: {String(topicError)}
             </p>
           )}
           <button
             onClick={() => navigate('/topics')}
-            className="mt-4 px-4 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+            data-testid="btn-topic-detail-back"
+            className="mt-4 px-4 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary min-h-[44px]"
           >
-            返回主題列表
+            {t('common.back')}
           </button>
         </div>
       </div>
@@ -285,14 +286,15 @@ export default function TopicDetail() {
   }
 
   return (
-    <div className="p-6">
+    <div className="p-4 sm:p-6 min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* 標題和操作按鈕 */}
-      <div className="flex justify-between items-start mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">{topic.title}</h1>
-        <div className="flex gap-2">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white break-words flex-1">{topic.title}</h1>
+        <div className="flex flex-wrap gap-2 w-full sm:w-auto">
           <button
             onClick={() => requireAuth(() => setShowEditor(true))}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+            data-testid="btn-topic-detail-edit"
+            className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary min-h-[44px]"
           >
             {t('common.edit')}
           </button>
@@ -300,14 +302,16 @@ export default function TopicDetail() {
             <button
               onClick={() => requireAuth(() => confirmMutation.mutate())}
               disabled={confirmMutation.isPending}
-              className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              data-testid="btn-topic-detail-confirm"
+              className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
             >
               {confirmMutation.isPending ? t('common.loading') : t('common.confirm')}
             </button>
           )}
           <button
             onClick={() => requireAuth(() => setShowDeleteConfirm(true))}
-            className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+            data-testid="btn-topic-detail-delete"
+            className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 min-h-[44px]"
           >
             {t('common.delete')}
           </button>
@@ -418,19 +422,20 @@ export default function TopicDetail() {
       )}
 
              {/* 三欄式佈局 */}
-             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+             <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
                {/* 左欄：圖片區塊 */}
                <div className="lg:col-span-4">
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 sm:p-6">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="font-semibold text-gray-700">
-                圖片（{images.length} 張）
+              <h3 className="font-semibold text-gray-700 dark:text-gray-200">
+                {t('images.title')}（{images.length} {t('common.count')}）
               </h3>
               <button
                 onClick={() => requireAuth(() => setShowImageSearch(true))}
-                className="px-3 py-1 text-sm font-medium text-primary bg-primary/10 rounded-md hover:bg-primary/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                data-testid="btn-topic-detail-add-image"
+                className="px-3 py-2 text-sm font-medium text-primary bg-primary/10 rounded-md hover:bg-primary/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary min-h-[44px]"
               >
-                + 新增圖片
+                {t('images.upload')}
               </button>
             </div>
             {imagesLoading ? (
@@ -447,16 +452,18 @@ export default function TopicDetail() {
                   <button
                     onClick={() => requireAuth(() => matchPhotosMutation.mutate(8))}
                     disabled={matchPhotosMutation.isPending || !content || !content?.article}
-                    className="flex-1 px-3 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                    data-testid="btn-topic-detail-match-photos"
+                    className="flex-1 px-3 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
                     title={!content || !content?.article ? t('images.generateContentFirst') : t('images.matchPhotosTitle')}
                   >
                     {matchPhotosMutation.isPending ? t('common.matching') : t('images.smartMatchPhotos')}
                   </button>
                   <button
                     onClick={() => requireAuth(() => setShowImageSearch(true))}
-                    className="flex-1 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                    data-testid="btn-topic-detail-search-images"
+                    className="flex-1 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 min-h-[44px]"
                   >
-                    手動搜尋
+                    {t('images.search')}
                   </button>
                 </div>
               </div>
@@ -474,7 +481,7 @@ export default function TopicDetail() {
 
         {/* 中欄：內容區塊 */}
         <div className="col-span-12 lg:col-span-5">
-          <div className="bg-white rounded-lg shadow p-6 space-y-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 sm:p-6 space-y-6">
             {contentLoading ? (
               <LoadingSpinner size="sm" text={t('common.loadingContent')} />
             ) : contentError && (contentError as any)?.status !== 404 ? (
@@ -482,35 +489,36 @@ export default function TopicDetail() {
             ) : content ? (
               <>
                 <div className="flex justify-between items-center mb-4">
-                  <h3 className="font-semibold text-gray-700">內容</h3>
+                  <h3 className="font-semibold text-gray-700 dark:text-gray-200">{t('content.title')}</h3>
                   <button
                     onClick={() => requireAuth(() => regenerateContentMutation.mutate())}
                     disabled={regenerateContentMutation.isPending}
-                    className="px-3 py-1 text-xs font-medium text-primary bg-primary/10 rounded-md hover:bg-primary/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                  data-testid="btn-topic-detail-regenerate"
+                  className="px-3 py-2 text-xs sm:text-sm font-medium text-primary bg-primary/10 rounded-md hover:bg-primary/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
                   >
                     {regenerateContentMutation.isPending ? t('common.regenerating') : `🔄 ${t('common.regenerate')}`}
                   </button>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-700 mb-2">短文</h3>
-                  <div className="bg-gray-50 rounded-lg p-4 max-h-96 overflow-y-auto">
-                    <p className="text-gray-700 whitespace-pre-line text-sm leading-relaxed">
+                  <h3 className="font-semibold text-gray-700 dark:text-gray-200 mb-2">{t('content.article')}</h3>
+                  <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 max-h-96 overflow-y-auto">
+                    <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line text-sm leading-relaxed">
                       {content.article || t('common.noContent')}
                     </p>
                   </div>
-                  <p className="text-xs text-gray-500 mt-2">
-                    字數：{content.wordCount} 字
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                    {t('content.wordCount')}: {content.wordCount} {t('common.words')}
                   </p>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-700 mb-2">腳本</h3>
-                  <div className="bg-gray-50 rounded-lg p-4 max-h-64 overflow-y-auto">
-                    <p className="text-gray-700 whitespace-pre-line text-sm leading-relaxed">
+                  <h3 className="font-semibold text-gray-700 dark:text-gray-200 mb-2">{t('content.script')}</h3>
+                  <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 max-h-64 overflow-y-auto">
+                    <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line text-sm leading-relaxed">
                       {content.script || t('common.noContent')}
                     </p>
                   </div>
-                  <p className="text-xs text-gray-500 mt-2">
-                    時長：約 {content.estimatedDuration} 秒
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                    {t('content.duration')}: {t('common.about')} {content.estimatedDuration} {t('common.seconds')}
                   </p>
                 </div>
               </>
@@ -520,7 +528,8 @@ export default function TopicDetail() {
                 <button
                   onClick={() => requireAuth(() => generateContentMutation.mutate())}
                   disabled={generateContentMutation.isPending}
-                  className="w-full px-4 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                  data-testid="btn-topic-detail-generate"
+                  className="w-full px-4 py-3 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
                 >
                   {generateContentMutation.isPending ? t('common.generating') : t('topics.generateContent')}
                 </button>
@@ -531,10 +540,10 @@ export default function TopicDetail() {
 
         {/* 右欄：資訊區塊 */}
         <div className="col-span-12 lg:col-span-3">
-          <div className="bg-white rounded-lg shadow p-6 space-y-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 sm:p-6 space-y-4">
             {/* 互動按鈕 */}
             <div>
-              <h3 className="font-semibold text-gray-700 mb-3">互動</h3>
+              <h3 className="font-semibold text-gray-700 dark:text-gray-200 mb-3">{t('common.interaction')}</h3>
               <InteractionButtons
                 topicId={id!}
                 articleId={content?.id}
@@ -545,39 +554,39 @@ export default function TopicDetail() {
             </div>
 
             <div>
-              <h3 className="font-semibold text-gray-700 mb-2">分類</h3>
+              <h3 className="font-semibold text-gray-700 dark:text-gray-200 mb-2">{t('topics.category')}</h3>
               <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">
                 {topic.category}
               </span>
             </div>
             <div>
-              <h3 className="font-semibold text-gray-700 mb-2">狀態</h3>
-              <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm">
+              <h3 className="font-semibold text-gray-700 dark:text-gray-200 mb-2">{t('topics.status')}</h3>
+              <span className="px-3 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 rounded-full text-sm">
                 {topic.status}
               </span>
             </div>
             <div>
-              <h3 className="font-semibold text-gray-700 mb-2">來源</h3>
-              <p className="text-sm text-gray-600">{topic.source}</p>
+              <h3 className="font-semibold text-gray-700 dark:text-gray-200 mb-2">{t('topics.source')}</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">{topic.source}</p>
             </div>
             <div>
-              <h3 className="font-semibold text-gray-700 mb-2">生成時間</h3>
-              <p className="text-sm text-gray-600">
-                {new Date(topic.generatedAt).toLocaleString('zh-TW')}
+              <h3 className="font-semibold text-gray-700 dark:text-gray-200 mb-2">{t('topics.generatedAt')}</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                {new Date(topic.generatedAt).toLocaleString()}
               </p>
             </div>
             {content && (
               <div>
-                <h3 className="font-semibold text-gray-700 mb-2">AI 模型</h3>
-                <p className="text-sm text-gray-600">{content.modelUsed}</p>
+                <h3 className="font-semibold text-gray-700 dark:text-gray-200 mb-2">{t('content.model')}</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">{content.modelUsed}</p>
               </div>
             )}
             <div>
-              <h3 className="font-semibold text-gray-700 mb-2">統計</h3>
-              <div className="space-y-1 text-sm text-gray-600">
-                <p>圖片數量：{topic.imageCount} 張</p>
-                <p>字數：{topic.wordCount} 字</p>
-                {content && <p>預計時長：{content.estimatedDuration} 秒</p>}
+              <h3 className="font-semibold text-gray-700 dark:text-gray-200 mb-2">{t('common.statistics')}</h3>
+              <div className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
+                <p>{t('images.count')}: {topic.imageCount} {t('common.count')}</p>
+                <p>{t('content.wordCount')}: {topic.wordCount} {t('common.words')}</p>
+                {content && <p>{t('content.estimatedDuration')}: {content.estimatedDuration} {t('common.seconds')}</p>}
               </div>
             </div>
           </div>

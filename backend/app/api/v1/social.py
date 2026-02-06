@@ -13,6 +13,7 @@ from app.models.social_connection import (
 )
 from app.services.distribution_service import distribution_service
 from app.middleware.jwt_auth import get_current_user
+from app.utils.i18n import get_error_message, get_user_language
 import logging
 import secrets
 
@@ -69,14 +70,17 @@ async def get_available_platforms():
 @router.delete("/connections/{platform}")
 async def disconnect_platform(
     platform: SocialPlatform,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
+    request: Request = None
 ):
     """
     斷開平台連接
     """
+    language = get_user_language(user=current_user, request=request)
     success, error = await distribution_service.disconnect_platform(
         current_user["id"],
-        platform
+        platform,
+        language
     )
     
     if not success:
@@ -119,6 +123,7 @@ async def connect_meta(
 
 @router.get("/meta/callback")
 async def meta_callback(
+    request: Request,
     code: str = Query(...),
     state: str = Query(...)
 ):
@@ -131,14 +136,16 @@ async def meta_callback(
         # 解析 state
         parts = state.split(":")
         if len(parts) != 2:
-            raise HTTPException(status_code=400, detail="無效的 state")
+            language = get_user_language(request=request)
+            raise HTTPException(status_code=400, detail=get_error_message("social.invalid_state", language))
         
         user_id = parts[0]
         
         # TODO: 驗證 state token
         
         # 處理回調
-        result, error = await distribution_service.handle_meta_callback(user_id, code)
+        language = get_user_language(request=request)
+        result, error = await distribution_service.handle_meta_callback(user_id, code, language)
         
         if error:
             # 重定向到前端錯誤頁面
@@ -156,7 +163,7 @@ async def meta_callback(
     except Exception as e:
         logger.error(f"Meta callback error: {e}")
         return RedirectResponse(
-            url=f"/social-connect?error=連接失敗",
+            url=f"/social-connect?error=callback_failed",
             status_code=302
         )
 
@@ -184,6 +191,7 @@ async def connect_tiktok(
 
 @router.get("/tiktok/callback")
 async def tiktok_callback(
+    request: Request,
     code: str = Query(...),
     state: str = Query(...)
 ):
@@ -192,11 +200,12 @@ async def tiktok_callback(
     """
     parts = state.split(":")
     if len(parts) != 2:
-        return RedirectResponse(url="/social-connect?error=無效的 state", status_code=302)
+        return RedirectResponse(url="/social-connect?error=invalid_state", status_code=302)
     
     user_id = parts[0]
     
-    result, error = await distribution_service.handle_tiktok_callback(user_id, code)
+    language = get_user_language(request=request)
+    result, error = await distribution_service.handle_tiktok_callback(user_id, code, language)
     
     if error:
         return RedirectResponse(url=f"/social-connect?error={error}", status_code=302)
@@ -211,7 +220,8 @@ async def tiktok_callback(
 @router.post("/publish", response_model=PublishResponse)
 async def publish_content(
     request: PublishRequest,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
+    http_request: Request = None
 ):
     """
     發布內容到社交平台
@@ -314,6 +324,7 @@ async def get_publish_history(
 @router.get("/publish/{publish_id}")
 async def get_publish_status(
     publish_id: str,
+    request: Request,
     current_user: dict = Depends(get_current_user)
 ):
     """
@@ -325,9 +336,10 @@ async def get_publish_status(
     )
     
     if not job:
+        language = get_user_language(user=current_user, request=request)
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="發布任務不存在"
+            detail=get_error_message("social.publish_task_not_found", language)
         )
     
     return job
