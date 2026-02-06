@@ -14,6 +14,7 @@ from app.models.social_connection import (
     optimize_content_for_platform
 )
 from app.config_module import settings
+from app.utils.i18n import get_error_message
 import logging
 
 logger = logging.getLogger(__name__)
@@ -48,12 +49,13 @@ class DistributionService:
     async def disconnect_platform(
         self,
         user_id: str,
-        platform: SocialPlatform
+        platform: SocialPlatform,
+        language: str = "zh-TW"
     ) -> Tuple[bool, Optional[str]]:
         """斷開平台連接"""
         success = await self.connection_repo.disconnect(user_id, platform)
         if not success:
-            return False, "斷開連接失敗"
+            return False, get_error_message("distribution.disconnect_failed", language)
         
         logger.info(f"用戶 {user_id} 斷開 {platform.value} 連接")
         return True, None
@@ -80,7 +82,8 @@ class DistributionService:
     async def handle_meta_callback(
         self,
         user_id: str,
-        code: str
+        code: str,
+        language: str = "zh-TW"
     ) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
         """處理 Meta OAuth 回調"""
         try:
@@ -98,7 +101,7 @@ class DistributionService:
                 
                 if response.status_code != 200:
                     logger.error(f"Meta token exchange failed: {response.text}")
-                    return None, "Token 交換失敗"
+                    return None, get_error_message("distribution.token_exchange_failed", language)
                 
                 token_data = response.json()
                 access_token = token_data.get("access_token")
@@ -107,7 +110,7 @@ class DistributionService:
                 # 取得用戶資訊
                 user_info = await self._get_meta_user_info(access_token)
                 if not user_info:
-                    return None, "無法取得用戶資訊"
+                    return None, get_error_message("distribution.get_user_info_failed", language)
                 
                 # 取得 Instagram 帳號
                 ig_account = await self._get_instagram_account(access_token)
@@ -261,11 +264,12 @@ class DistributionService:
     async def handle_tiktok_callback(
         self,
         user_id: str,
-        code: str
+        code: str,
+        language: str = "zh-TW"
     ) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
         """處理 TikTok OAuth 回調"""
         # TikTok API 整合（需要 TikTok Developer 帳號）
-        return None, "TikTok API 整合尚未完成"
+        return None, get_error_message("distribution.tiktok_not_implemented", language)
     
     # ============================================
     # 發布功能
@@ -274,7 +278,8 @@ class DistributionService:
     async def publish_content(
         self,
         user_id: str,
-        publish_request: PublishRequest
+        publish_request: PublishRequest,
+        language: str = "zh-TW"
     ) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
         """
         發布內容到多個平台
@@ -282,6 +287,7 @@ class DistributionService:
         Args:
             user_id: 用戶 ID
             publish_request: 發布請求
+            language: 用戶語言
             
         Returns:
             (發布結果, 錯誤訊息)
@@ -296,7 +302,7 @@ class DistributionService:
                 logger.warning(f"用戶 {user_id} 的 {platform.value} 未連接")
         
         if not valid_platforms:
-            return None, "沒有有效的平台連接"
+            return None, get_error_message("distribution.no_valid_connection", language)
         
         # 建立發布任務
         publish_job = await self.publish_repo.create_publish_job(user_id, {

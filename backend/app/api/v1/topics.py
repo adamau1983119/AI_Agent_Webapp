@@ -18,6 +18,7 @@ from app.services.repositories.image_repository import ImageRepository
 from app.services.search_service import SearchService, UserRole
 from app.models.topic import Category, Status
 from app.database import check_connection_from_request, get_database_from_request
+from app.utils.i18n import get_error_message, get_user_language
 from fastapi import Request
 from app.config import settings
 # 使用統一的 exceptions 模組，避免循環導入問題
@@ -164,9 +165,10 @@ async def list_topics(
                 pagination=pagination
             )
         else:
+            language = get_user_language(request=request)
             raise HTTPException(
                 status_code=503,
-                detail="資料庫服務暫時不可用，請稍後再試"
+                detail=get_error_message("topic.database_unavailable", language)
             )
     except Exception as e:
         logger.error(f"取得主題列表失敗: {e}")
@@ -183,9 +185,11 @@ async def get_topic_detail(topic_id: str = Path(..., description="主題 ID")):
     try:
         topic = await topic_repo.get_topic_by_id(topic_id)
         if not topic:
+            from app.utils.i18n import get_error_message, get_user_language
+            language = get_user_language(user=current_user, request=request)
             raise HTTPException(
                 status_code=404,
-                detail=f"主題不存在: {topic_id}"
+                detail=get_error_message("topic.not_found", language)
             )
         
         # 取得內容
@@ -229,7 +233,7 @@ async def get_topic_detail(topic_id: str = Path(..., description="主題 ID")):
                 logger.error(f"主題 {topic_id} 缺少必需欄位: {field}, topic keys: {list(topic.keys())}")
                 raise HTTPException(
                     status_code=500,
-                    detail=f"主題資料不完整，缺少欄位: {field}"
+                    detail=get_error_message("topic.data_incomplete", get_user_language(user=current_user, request=request))
                 )
         
         # 確保有 created_at（如果沒有，使用 generated_at）
@@ -303,7 +307,7 @@ async def get_topic_detail(topic_id: str = Path(..., description="主題 ID")):
             logger.error(f"Traceback: {traceback.format_exc()}")
             raise HTTPException(
                 status_code=500,
-                detail=f"建立主題詳情回應失敗: {str(e)}"
+                detail=get_error_message("topic.detail_response_failed", get_user_language(user=current_user, request=request))
             )
     except HTTPException:
         raise
@@ -324,9 +328,11 @@ async def update_topic(
         # 檢查主題是否存在
         topic = await topic_repo.get_topic_by_id(topic_id)
         if not topic:
+            from app.utils.i18n import get_error_message, get_user_language
+            language = get_user_language(user=current_user, request=request)
             raise HTTPException(
                 status_code=404,
-                detail=f"主題不存在: {topic_id}"
+                detail=get_error_message("topic.not_found", language)
             )
         
         # 準備更新資料（只包含提供的欄位）
@@ -335,9 +341,10 @@ async def update_topic(
         # 更新主題
         updated = await topic_repo.update_topic(topic_id, update_dict)
         if not updated:
+            language = get_user_language(request=request)
             raise HTTPException(
                 status_code=500,
-                detail="更新主題失敗"
+                detail=get_error_message("topic.update_failed", language)
             )
         
         updated.pop("_id", None)
@@ -363,9 +370,11 @@ async def update_topic_status(
             status_update.status
         )
         if not updated:
+            from app.utils.i18n import get_error_message, get_user_language
+            language = get_user_language(user=current_user, request=request)
             raise HTTPException(
                 status_code=404,
-                detail=f"主題不存在: {topic_id}"
+                detail=get_error_message("topic.not_found", language)
             )
         
         updated.pop("_id", None)
@@ -385,9 +394,10 @@ async def delete_all_topics(request: Request):
     try:
         db = get_database_from_request(request)
         if db is None:
+            language = get_user_language(request=request)
             raise HTTPException(
                 status_code=400,
-                detail="資料庫未連接，無法刪除主題"
+                detail=get_error_message("topic.database_not_connected", language)
             )
         
         collection = db["topics"]
@@ -421,9 +431,10 @@ async def delete_today_topics(request: Request):
     try:
         db = get_database_from_request(request)
         if db is None:
+            language = get_user_language(request=request)
             raise HTTPException(
                 status_code=400,
-                detail="資料庫未連接，無法刪除主題"
+                detail=get_error_message("topic.database_not_connected", language)
             )
         
         # 獲取今日日期（UTC）
@@ -472,9 +483,11 @@ async def delete_topic(topic_id: str = Path(..., description="主題 ID")):
     try:
         success = await topic_repo.delete_topic(topic_id)
         if not success:
+            from app.utils.i18n import get_error_message, get_user_language
+            language = get_user_language(user=current_user, request=request)
             raise HTTPException(
                 status_code=404,
-                detail=f"主題不存在: {topic_id}"
+                detail=get_error_message("topic.not_found", language)
             )
         
         return {
@@ -578,13 +591,16 @@ async def search_topics(
                 }
             }
         else:
+            language = get_user_language(request=request)
             raise HTTPException(
                 status_code=503,
-                detail="資料庫服務暫時不可用，請稍後再試"
+                detail=get_error_message("topic.database_unavailable", language)
             )
     except Exception as e:
         logger.error(f"搜尋主題失敗: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"搜尋失敗: {str(e)}")
+        from app.utils.i18n import get_error_message, get_user_language
+        language = get_user_language(request=request)
+        raise HTTPException(status_code=500, detail=get_error_message("topic.search_failed", language))
 
 
 @router.get("/search/check")
@@ -623,13 +639,16 @@ async def check_url_exists(
         if settings.ENVIRONMENT == "development":
             return {"exists": False, "topic": None}
         else:
+            language = get_user_language(request=request)
             raise HTTPException(
                 status_code=503,
-                detail="資料庫服務暫時不可用，請稍後再試"
+                detail=get_error_message("topic.database_unavailable", language)
             )
     except Exception as e:
         logger.error(f"檢查 URL 是否存在失敗: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"檢查失敗: {str(e)}")
+        from app.utils.i18n import get_error_message, get_user_language
+        language = get_user_language(request=request)
+        raise HTTPException(status_code=500, detail=get_error_message("topic.url_check_failed", language))
 
 
 @router.get("/search/hot-queries")
@@ -651,7 +670,9 @@ async def get_hot_queries(
         }
     except Exception as e:
         logger.error(f"獲取熱門查詢失敗: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"獲取熱門查詢失敗: {str(e)}")
+        from app.utils.i18n import get_error_message, get_user_language
+        language = get_user_language(request=request)
+        raise HTTPException(status_code=500, detail=get_error_message("topic.popular_queries_failed", language))
 
 
 @router.delete("/search/cache")
@@ -675,9 +696,10 @@ async def clear_search_cache(
                 pass
         
         if role != UserRole.ADMIN:
+            language = get_user_language(request=request)
             raise HTTPException(
                 status_code=403,
-                detail="無權限清除快取（需要管理員權限）"
+                detail=get_error_message("cache.admin_required", language)
             )
         
         from app.services.cache_service import cache_service
@@ -692,7 +714,9 @@ async def clear_search_cache(
         raise
     except Exception as e:
         logger.error(f"清除快取失敗: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"清除快取失敗: {str(e)}")
+        from app.utils.i18n import get_error_message, get_user_language
+        language = get_user_language(user=current_user, request=request)
+        raise HTTPException(status_code=500, detail=get_error_message("topic.cache_clear_failed", language))
 
 
 @router.get("/search/health")
@@ -739,4 +763,6 @@ async def search_health_check():
         return health_status
     except Exception as e:
         logger.error(f"健康檢查失敗: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"健康檢查失敗: {str(e)}")
+        from app.utils.i18n import get_error_message, get_user_language
+        language = get_user_language(request=request)
+        raise HTTPException(status_code=500, detail=get_error_message("topic.health_check_failed", language))

@@ -2,7 +2,7 @@
  * 建立頻道頁面
  * Phase 3: 內容功能
  */
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '../i18n';
 import { useAuthStore } from '../stores/authStore';
@@ -16,6 +16,7 @@ import {
   categoryIcons,
 } from '../api/channels';
 import toast from 'react-hot-toast';
+import { useTypewriter } from '../hooks/useTypewriter';
 
 const categories: { value: ChannelCategory; label: string; icon: string }[] = [
   { value: 'fashion', label: categoryLabels.fashion, icon: categoryIcons.fashion },
@@ -67,6 +68,13 @@ export default function CreateChannel() {
     clarification_question: string | null;
     recommended_sources: Array<{ name: string; url: string; role: string }>;
   } | null>(null);
+  const [assistMessage, setAssistMessage] = useState<string>('');
+  
+  // 打字效果
+  const { displayedText: typedMessage, isTyping } = useTypewriter({
+    text: assistMessage,
+    speed: 30,
+  });
   
   // 未登入
   if (!isAuthenticated) {
@@ -96,6 +104,18 @@ export default function CreateChannel() {
     }
   };
   
+  // AI 助手：快捷按鈕點擊（類別）
+  const handleQuickCategoryClick = (cat: ChannelCategory) => {
+    setCategory(cat);
+    setAssistInput(t('channels.assist.quickCategory', { category: categoryLabels[cat] }));
+  };
+  
+  // AI 助手：快捷按鈕點擊（地區）
+  const handleQuickRegionClick = (reg: ChannelRegion) => {
+    setRegion(reg);
+    setAssistInput(t('channels.assist.quickRegion', { region: regionLabels[reg] }));
+  };
+  
   // AI 助手：處理用戶輸入
   const handleAssistSubmit = async () => {
     if (!assistInput.trim()) {
@@ -105,23 +125,60 @@ export default function CreateChannel() {
     
     setIsAssisting(true);
     setAssistResult(null);
+    setAssistMessage('');
     
     try {
       const userLanguage = localStorage.getItem('language') || 'zh-TW';
       const result = await channelsApi.assistChannel(assistInput.trim(), userLanguage);
       setAssistResult(result);
       
-      // 如果解析成功且信心度高，自動填入表單
-      if (result.confidence >= 0.7 && result.category && result.region) {
+      // 生成 AI 回覆訊息（打字效果）
+      if (result.clarification_needed) {
+        setAssistMessage(result.clarification_question || t('channels.assist.clarificationDefault'));
+      } else if (result.confidence >= 0.7 && result.category && result.region) {
+        const categoryName = categoryLabels[result.category as ChannelCategory];
+        const regionName = regionLabels[result.region as ChannelRegion];
+        const keywordsText = result.keywords.length > 0 
+          ? t('channels.assist.responseWithKeywords', { 
+              category: categoryName, 
+              region: regionName,
+              keywords: result.keywords.join(', ')
+            })
+          : t('channels.assist.responseWithoutKeywords', { 
+              category: categoryName, 
+              region: regionName
+            });
+        setAssistMessage(keywordsText);
+        
+        // 自動填入表單
         setCategory(result.category as ChannelCategory);
         setRegion(result.region as ChannelRegion);
         if (result.keywords.length > 0) {
           setCustomKeywords(result.keywords);
         }
         toast.success(t('channels.assist.autoFilled'));
+      } else if (result.confidence >= 0.5) {
+        // 中等信心度：顯示結果但提示可能需要更多資訊
+        const categoryName = result.category ? categoryLabels[result.category as ChannelCategory] : '-';
+        const regionName = result.region ? regionLabels[result.region as ChannelRegion] : '-';
+        setAssistMessage(t('channels.assist.responseWithoutKeywords', { 
+          category: categoryName, 
+          region: regionName
+        }));
+      } else {
+        // 低信心度
+        setAssistMessage(t('channels.assist.lowConfidence'));
       }
     } catch (err: any) {
-      toast.error(err.message || t('channels.assist.failed'));
+      // 錯誤處理
+      const errorMessage = err?.response?.data?.detail || err?.message || t('channels.assist.failed');
+      toast.error(errorMessage);
+      setAssistMessage(t('channels.assist.errorMessage'));
+      
+      // 記錄錯誤（開發環境）
+      if (process.env.NODE_ENV === 'development') {
+        console.error('AI Assistant Error:', err);
+      }
     } finally {
       setIsAssisting(false);
     }
@@ -147,6 +204,14 @@ export default function CreateChannel() {
     setShowAssist(false);
     setAssistInput('');
     setAssistResult(null);
+    setAssistMessage('');
+  };
+  
+  // AI 助手：重置對話
+  const handleAssistReset = () => {
+    setAssistInput('');
+    setAssistResult(null);
+    setAssistMessage('');
   };
   
   // 提交表單
@@ -205,13 +270,13 @@ export default function CreateChannel() {
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                {t('channels.create')}
-              </h1>
-              <p className="text-gray-500 dark:text-gray-400 mt-2">
-                {t('channels.createDescription')}
-              </p>
-            </div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            {t('channels.create')}
+          </h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-2">
+            {t('channels.createDescription')}
+          </p>
+        </div>
             {/* AI 助手按鈕 */}
             {step === 1 && (
               <button
@@ -230,7 +295,7 @@ export default function CreateChannel() {
         
         {/* AI 助手對話框 */}
         {showAssist && (
-          <div className="mb-8 bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border-2 border-purple-200 dark:border-purple-800">
+          <div className="mb-8 bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border-2 border-purple-200 dark:border-purple-800">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                 <svg className="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -249,12 +314,66 @@ export default function CreateChannel() {
               </button>
             </div>
             
+            {/* 快捷按鈕區域 */}
+            <div className="mb-4">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                {t('channels.assist.quickButtons')}
+              </p>
+              <div className="space-y-2">
+                {/* 類別快捷按鈕 - 顯示其他類型（非時尚/美食/趨勢） */}
+                <div>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mb-1">
+                    {t('channels.assist.quickCategoryLabel')}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {categories
+                      .filter((cat) => !['fashion', 'food', 'trend'].includes(cat.value))
+                      .map((cat) => (
+                        <button
+                          key={cat.value}
+                          onClick={() => handleQuickCategoryClick(cat.value)}
+                          data-testid={`btn-channels-assist-quick-category-${cat.value}`}
+                          disabled={isAssisting}
+                          className="px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 min-h-[44px]"
+                        >
+                          <span className="text-base sm:text-lg">{cat.icon}</span>
+                          <span className="hidden sm:inline">{cat.label}</span>
+                          <span className="sm:hidden">{cat.label.substring(0, 2)}</span>
+                        </button>
+                      ))}
+                  </div>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-2 px-1">
+                    {t('channels.assist.quickCategoryNote')}
+                  </p>
+                </div>
+                {/* 地區快捷按鈕 */}
+                <div>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mb-1">
+                    {t('channels.assist.quickRegionLabel')}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {regions.slice(0, 4).map((reg) => (
+                      <button
+                        key={reg.value}
+                        onClick={() => handleQuickRegionClick(reg.value)}
+                        data-testid={`btn-channels-assist-quick-region-${reg.value}`}
+                        disabled={isAssisting}
+                        className="px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
+                      >
+                        {reg.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+            
             {/* 輸入區域 */}
             <div className="mb-4">
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
                 {t('channels.assist.prompt')}
               </p>
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <input
                   type="text"
                   value={assistInput}
@@ -268,21 +387,21 @@ export default function CreateChannel() {
                   placeholder={t('channels.assist.placeholder')}
                   data-testid="input-channels-assist"
                   disabled={isAssisting}
-                  className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:opacity-50"
+                  className="flex-1 px-4 py-3 sm:py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:opacity-50 text-sm sm:text-base min-h-[44px]"
                 />
                 <button
                   onClick={handleAssistSubmit}
                   disabled={!assistInput.trim() || isAssisting}
                   data-testid="btn-channels-assist-submit"
-                  className="px-6 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+                  className="px-6 py-3 sm:py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 min-h-[44px] text-sm sm:text-base font-medium"
                 >
                   {isAssisting ? (
                     <>
-                      <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                      <svg className="animate-spin h-4 w-4 sm:h-5 sm:w-5" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                       </svg>
-                      {t('common.loading')}
+                      <span className="hidden sm:inline">{t('common.loading')}</span>
                     </>
                   ) : (
                     t('channels.assist.submit')
@@ -291,26 +410,61 @@ export default function CreateChannel() {
               </div>
             </div>
             
+            {/* AI 回覆訊息（打字效果） */}
+            {typedMessage && (
+              <div className="mb-4 p-3 sm:p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
+                <div className="flex items-start gap-2 sm:gap-3">
+                  <svg className="w-5 h-5 sm:w-6 sm:h-6 text-purple-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                  </svg>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm sm:text-base text-gray-700 dark:text-gray-300 whitespace-pre-line break-words">
+                      {typedMessage}
+                      {isTyping && (
+                        <span className="inline-block w-2 h-4 bg-purple-500 ml-1 animate-pulse" />
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {/* 錯誤訊息顯示 */}
+            {!isAssisting && assistResult && assistResult.confidence < 0.5 && !assistResult.clarification_needed && (
+              <div className="mb-4 p-3 sm:p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                <div className="flex items-start gap-2">
+                  <svg className="w-5 h-5 text-yellow-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  <div className="flex-1">
+                    <p className="text-sm sm:text-base text-yellow-800 dark:text-yellow-200">
+                      {t('channels.assist.lowConfidenceWarning')}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+            
             {/* 結果顯示 */}
             {assistResult && (
-              <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+              <div className="mt-4 p-3 sm:p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                 {assistResult.clarification_needed ? (
                   <div>
-                    <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
+                    <p className="text-sm sm:text-base text-gray-700 dark:text-gray-300 mb-2 break-words">
                       {assistResult.clarification_question}
                     </p>
                   </div>
                 ) : (
-                  <div className="space-y-3">
+                  <div className="space-y-3 sm:space-y-4">
                     <div>
                       <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">{t('channels.assist.category')}</p>
-                      <p className="font-medium text-gray-900 dark:text-white">
+                      <p className="font-medium text-sm sm:text-base text-gray-900 dark:text-white">
                         {assistResult.category ? categoryLabels[assistResult.category as ChannelCategory] : '-'}
                       </p>
                     </div>
                     <div>
                       <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">{t('channels.assist.region')}</p>
-                      <p className="font-medium text-gray-900 dark:text-white">
+                      <p className="font-medium text-sm sm:text-base text-gray-900 dark:text-white">
                         {assistResult.region ? regionLabels[assistResult.region as ChannelRegion] : '-'}
                       </p>
                     </div>
@@ -319,7 +473,7 @@ export default function CreateChannel() {
                         <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">{t('channels.assist.keywords')}</p>
                         <div className="flex flex-wrap gap-2">
                           {assistResult.keywords.map((kw, idx) => (
-                            <span key={idx} className="px-2 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded text-sm">
+                            <span key={idx} className="px-2 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded text-xs sm:text-sm">
                               {kw}
                             </span>
                           ))}
@@ -329,30 +483,62 @@ export default function CreateChannel() {
                     {assistResult.recommended_sources.length > 0 && (
                       <div>
                         <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">{t('channels.assist.sources')}</p>
-                        <div className="space-y-1">
-                          {assistResult.recommended_sources.slice(0, 3).map((source, idx) => (
-                            <p key={idx} className="text-sm text-gray-700 dark:text-gray-300">
-                              • {source.name}
-                            </p>
+                        <div className="space-y-2">
+                          {assistResult.recommended_sources.slice(0, 5).map((source, idx) => (
+                            <div 
+                              key={idx} 
+                              className="p-2 sm:p-3 bg-white dark:bg-gray-600 rounded-lg border border-gray-200 dark:border-gray-500 hover:border-purple-300 dark:hover:border-purple-600 transition-colors"
+                              data-testid={`source-preview-${idx}`}
+                            >
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm sm:text-base font-medium text-gray-900 dark:text-white truncate">
+                                    {source.name}
+                                  </p>
+                                  {source.role && (
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 break-words">
+                                      {t('channels.assist.sourceRole')}: {source.role}
+                                    </p>
+                                  )}
+                                </div>
+                                {source.url && (
+                                  <a
+                                    href={source.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex-shrink-0 p-1.5 sm:p-2 text-gray-400 hover:text-purple-500 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+                                    data-testid={`source-link-${idx}`}
+                                    onClick={(e) => e.stopPropagation()}
+                                    aria-label={t('channels.assist.openSource', { name: source.name })}
+                                  >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                    </svg>
+                                  </a>
+                                )}
+                              </div>
+                            </div>
                           ))}
                         </div>
+                        {assistResult.recommended_sources.length > 5 && (
+                          <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
+                            {t('channels.assist.moreSources', { count: assistResult.recommended_sources.length - 5 })}
+                          </p>
+                        )}
                       </div>
                     )}
-                    <div className="flex gap-2 pt-2">
+                    <div className="flex flex-col sm:flex-row gap-2 pt-2">
                       <button
                         onClick={handleAssistConfirm}
                         data-testid="btn-channels-assist-confirm"
-                        className="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                        className="flex-1 px-4 py-3 sm:py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors min-h-[44px] text-sm sm:text-base font-medium"
                       >
                         {t('channels.assist.confirm')}
                       </button>
                       <button
-                        onClick={() => {
-                          setAssistInput('');
-                          setAssistResult(null);
-                        }}
+                        onClick={handleAssistReset}
                         data-testid="btn-channels-assist-modify"
-                        className="flex-1 px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors"
+                        className="flex-1 px-4 py-3 sm:py-2 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors min-h-[44px] text-sm sm:text-base font-medium"
                       >
                         {t('channels.assist.modify')}
                       </button>

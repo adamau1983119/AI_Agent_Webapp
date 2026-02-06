@@ -13,6 +13,7 @@ import Login from '@/pages/Login'
 import Register from '@/pages/Register'
 import ForgotPassword from '@/pages/ForgotPassword'
 import OAuthCallback from '@/pages/OAuthCallback'
+import VerifyEmail from '@/pages/VerifyEmail'
 import Terms from '@/pages/Terms'
 import Privacy from '@/pages/Privacy'
 // Phase 2: 會員系統頁面
@@ -20,6 +21,8 @@ import Settings from '@/pages/Settings'
 // Phase 3: 內容功能頁面
 import Channels from '@/pages/Channels'
 import CreateChannel from '@/pages/CreateChannel'
+import ChannelDetail from '@/pages/ChannelDetail'
+import ChannelEdit from '@/pages/ChannelEdit'
 import Inspiration from '@/pages/Inspiration'
 // Phase 4: AI 個人化頁面
 import StyleProfile from '@/pages/StyleProfile'
@@ -65,6 +68,7 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/oauth-callback" element={<OAuthCallback />} />
+        <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/terms" element={<Terms />} />
         <Route path="/privacy" element={<Privacy />} />
         
@@ -83,6 +87,8 @@ function App() {
                 {/* Phase 3: 內容功能 */}
                 <Route path="/channels" element={<Channels />} />
                 <Route path="/channels/create" element={<CreateChannel />} />
+                <Route path="/channels/:id" element={<ChannelDetail />} />
+                <Route path="/channels/:id/edit" element={<ChannelEdit />} />
                 <Route path="/inspiration" element={<Inspiration />} />
                 {/* Phase 4: AI 個人化 */}
                 <Route path="/style-profile" element={<StyleProfile />} />

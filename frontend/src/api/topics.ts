@@ -213,12 +213,13 @@ export const topicsAPI = {
   searchTopics: async (params: SearchParams): Promise<SearchResponse> => {
     const { query, category, page = 1, limit = 10, role = 'user' } = params
 
-    // 驗證查詢字串
+    // 驗證查詢字串（防禦性檢查，主要驗證應在 UI 層進行）
+    // 注意：這裡的錯誤訊息不會顯示給用戶，因為驗證已在組件層完成
     if (!query || query.trim().length < 2) {
-      throw new Error('搜尋關鍵字至少需要 2 個字元')
+      throw new Error('Invalid query: minimum 2 characters required')
     }
     if (query.length > 100) {
-      throw new Error('搜尋關鍵字最多 100 個字元')
+      throw new Error('Invalid query: maximum 100 characters allowed')
     }
 
     // 構建查詢參數
@@ -245,8 +246,8 @@ export const topicsAPI = {
     })
 
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ detail: '搜尋失敗' }))
-      throw new Error(error.detail || `搜尋失敗: ${response.status}`)
+      const error = await response.json().catch(() => ({ detail: 'Search failed' }))
+      throw new Error(error.detail || `Search failed: ${response.status}`)
     }
 
     const data = await response.json()

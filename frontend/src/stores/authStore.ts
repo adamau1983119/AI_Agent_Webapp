@@ -61,7 +61,7 @@ export const useAuthStore = create<AuthState>()(
           
           return true;
         } catch (error: any) {
-          const message = error.response?.data?.detail || '登入失敗';
+          const message = error.response?.data?.detail || error.message || 'Login failed';
           set({ error: message, isLoading: false });
           return false;
         }
@@ -72,11 +72,19 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true, error: null });
         
         try {
-          await authApi.register(data);
+          const user = await authApi.register(data);
           set({ isLoading: false });
+          
+          // 檢查是否有警告訊息（例如：郵件發送失敗）
+          if (user.warning) {
+            // 警告訊息會在前端顯示，但不阻止註冊成功
+            // 前端頁面會處理這個警告
+            set({ error: user.warning }); // 使用 error 字段顯示警告（前端會以警告樣式顯示）
+          }
+          
           return true;
         } catch (error: any) {
-          const message = error.response?.data?.detail || '註冊失敗';
+          const message = error.response?.data?.detail || error.message || 'Registration failed';
           set({ error: message, isLoading: false });
           return false;
         }
@@ -177,7 +185,10 @@ export const useAuthStore = create<AuthState>()(
           await get().fetchFeatures();
         } catch (error: any) {
           tokenManager.removeToken();
-          const message = error.response?.data?.detail || 'OAuth 認證失敗';
+          // 注意：這裡無法直接使用 i18n，因為這是 store
+          // 錯誤訊息應該從後端返回，後端已經使用 i18n
+          // 如果後端沒有返回，使用默認訊息
+          const message = error.response?.data?.detail || error.message || 'OAuth authentication failed';
           set({
             user: null,
             isAuthenticated: false,

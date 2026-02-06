@@ -8,6 +8,8 @@ from app.schemas.user_preferences import (
 )
 from app.services.repositories.user_preferences_repository import UserPreferencesRepository
 from app.services.repositories.preference_service import PreferenceService
+from app.utils.i18n import get_error_message, get_user_language
+from fastapi import Request
 import logging
 
 logger = logging.getLogger(__name__)
@@ -66,17 +68,20 @@ async def update_preferences(update_data: UserPreferencesUpdate):
             # 如果所有權重都已提供，驗證總和
             total = fashion + food + trend
             if abs(total - 1.0) > 0.01:
+                from app.utils.i18n import get_error_message, get_user_language
+                language = get_user_language(user=current_user, request=request)
                 raise HTTPException(
                     status_code=422,
-                    detail=f"權重總和必須為 1.0，當前總和為 {total:.2f}"
+                    detail=get_error_message("user.weight_sum_invalid", language, total=f"{total:.2f}")
                 )
         
         # 更新偏好
         updated = await preferences_repo.update_preferences("user_default", update_dict)
         if not updated:
+            language = get_user_language(request=request)
             raise HTTPException(
                 status_code=500,
-                detail="更新偏好失敗"
+                detail=get_error_message("user.preference_update_failed", language)
             )
         
         return _convert_to_response(updated)

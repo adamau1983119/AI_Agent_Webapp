@@ -75,7 +75,9 @@ export const showInfo = (message: string) => {
  * 顯示載入中訊息
  * @returns toast ID，用於後續更新或移除
  */
-export const showLoading = (message: string = '處理中...') => {
+// 注意：這個函數無法直接使用 i18n hook，因為它是工具函數
+// 調用者應該傳入已翻譯的訊息，或使用 i18n 獲取翻譯後再調用
+export const showLoading = (message: string = '處理中...') => { // TODO: 使用 i18n
   return toast.loading(message, {
     position: 'top-right',
   })

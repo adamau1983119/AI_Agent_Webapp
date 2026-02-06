@@ -17,6 +17,7 @@ export interface User {
   google_id?: string;
   created_at: string;
   last_login_at?: string;
+  warning?: string; // 警告訊息（例如：郵件發送失敗）
 }
 
 export interface RegisterRequest {
@@ -53,6 +54,15 @@ export interface FeatureFlags {
 
 // API 函數
 export const authApi = {
+  /**
+   * 檢查 Email 是否可用
+   */
+  checkEmailAvailable: async (email: string): Promise<{ available: boolean; message: string | null }> => {
+    return fetchAPI<{ available: boolean; message: string | null }>(`/auth/check-email?email=${encodeURIComponent(email)}`, {
+      method: 'GET',
+    });
+  },
+
   /**
    * 註冊新用戶
    */

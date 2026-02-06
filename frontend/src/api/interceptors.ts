@@ -36,6 +36,20 @@ export function requestInterceptor(config: RequestConfig): RequestConfig {
   // 3. 添加其他通用請求頭
   headers.set('Accept', 'application/json')
 
+  // 4. 添加用戶選擇的語言（從 i18n store 讀取）
+  try {
+    const i18nRaw = localStorage.getItem('i18n-storage')
+    if (i18nRaw) {
+      const i18nData = JSON.parse(i18nRaw)
+      const lang = i18nData?.state?.language
+      if (lang) {
+        headers.set('X-Language', lang)
+      }
+    }
+  } catch {
+    // 靜默處理，使用後端預設語言
+  }
+
   return {
     ...config,
     headers,

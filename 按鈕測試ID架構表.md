@@ -235,6 +235,57 @@ data-testid="{類型}-{位置}-{功能}"
 | `btn-channels-assist-submit` | 按鈕 | 提交助手輸入 |
 | `btn-channels-assist-confirm` | 按鈕 | 確認應用結果 |
 | `btn-channels-assist-modify` | 按鈕 | 修改輸入 |
+| `btn-channels-assist-quick-category-{category}` | 按鈕 | 快捷選擇類別（finance/sports/tech/entertainment/other） |
+| `btn-channels-assist-quick-region-{region}` | 按鈕 | 快捷選擇地區（global/hong_kong/taiwan/japan等） |
+| `source-preview-{index}` | 卡片 | 來源預覽卡片 |
+| `source-link-{index}` | 連結 | 開啟來源連結 |
+
+### 4.6 頻道詳情頁 (`ChannelDetail.tsx`)
+
+| Test ID | 元素 | 功能 |
+|---------|------|------|
+| `btn-channel-detail-back` | 按鈕 | 返回頻道列表 |
+| `btn-channel-detail-collect` | 按鈕 | 手動觸發收集 |
+| `btn-channel-detail-edit` | 連結 | 跳轉到頻道設定頁 |
+
+### 4.7 頻道設定頁 (`ChannelEdit.tsx`)
+
+| Test ID | 元素 | 功能 |
+|---------|------|------|
+| `btn-channel-edit-back` | 按鈕 | 返回頻道詳情 |
+| `input-channel-edit-name` | 輸入框 | 頻道名稱 |
+| `input-channel-edit-description` | 輸入框 | 頻道描述 |
+| `input-channel-edit-keyword` | 輸入框 | 關鍵字輸入 |
+| `btn-channel-edit-add-keyword` | 按鈕 | 添加關鍵字 |
+| `btn-channel-edit-remove-keyword-{index}` | 按鈕 | 移除關鍵字 |
+| `radio-channel-edit-status-active` | 單選 | 狀態：啟用 |
+| `radio-channel-edit-status-paused` | 單選 | 狀態：暫停 |
+| `btn-channel-edit-submit` | 按鈕 | 儲存變更 |
+| `btn-channel-edit-delete` | 按鈕 | 刪除頻道 |
+| `btn-channel-edit-delete-cancel` | 按鈕 | 取消刪除 |
+| `btn-channel-edit-delete-confirm` | 按鈕 | 確認刪除 |
+
+### 4.8 主題列表頁 (`Topics.tsx`)
+
+| Test ID | 元素 | 功能 |
+|---------|------|------|
+| `btn-topics-view-infinite` | 按鈕 | 切換到無限滾動模式 |
+| `btn-topics-view-pagination` | 按鈕 | 切換到分頁模式 |
+| `topic-card-{topicId}` | 卡片 | 主題卡片（可點擊） |
+
+### 4.9 主題詳情頁 (`TopicDetail.tsx`)
+
+| Test ID | 元素 | 功能 |
+|---------|------|------|
+| `btn-topic-detail-back` | 按鈕 | 返回主題列表 |
+| `btn-topic-detail-edit` | 按鈕 | 編輯主題 |
+| `btn-topic-detail-confirm` | 按鈕 | 確認主題 |
+| `btn-topic-detail-delete` | 按鈕 | 刪除主題 |
+| `btn-topic-detail-generate` | 按鈕 | 生成內容 |
+| `btn-topic-detail-regenerate` | 按鈕 | 重新生成內容 |
+| `btn-topic-detail-add-image` | 按鈕 | 新增圖片 |
+| `btn-topic-detail-match-photos` | 按鈕 | 智能匹配照片 |
+| `btn-topic-detail-search-images` | 按鈕 | 搜尋圖片 |
 
 ---
 

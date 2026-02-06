@@ -3,7 +3,7 @@
 Phase 2: 會員系統
 """
 from typing import Optional
-from fastapi import APIRouter, HTTPException, Request, Depends, status
+from fastapi import APIRouter, HTTPException, Depends, status, Query, Request
 from fastapi.responses import RedirectResponse
 from app.models.user import (
     UserCreate, UserLogin, UserResponse, TokenResponse,
@@ -14,6 +14,7 @@ from app.models.user import (
 from app.services.auth_service import auth_service
 from app.middleware.jwt_auth import get_current_user, jwt_auth
 from app.config_module import settings
+from app.utils.i18n import get_error_message, get_user_language
 import logging
 
 logger = logging.getLogger(__name__)
@@ -21,8 +22,48 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
+@router.get("/check-email")
+async def check_email_available(
+    request: Request,
+    email: str = Query(..., description="要檢查的 Email 地址")
+):
+    """
+    檢查 Email 是否可用（未被註冊）
+    
+    - **email**: Email 地址
+    
+    返回：
+    - available: true/false
+    - message: 提示訊息（如果不可用）
+    """
+    language = get_user_language(request=request)
+    
+    # 基本格式驗證
+    import re
+    email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    if not re.match(email_regex, email):
+        return {
+            "available": False,
+            "message": get_error_message("auth.invalid_email_format", language)
+        }
+    
+    # 檢查 Email 是否已存在
+    existing_user = await auth_service.user_repo.get_user_by_email(email)
+    
+    if existing_user:
+        return {
+            "available": False,
+            "message": get_error_message("auth.email_already_registered", language)
+        }
+    
+    return {
+        "available": True,
+        "message": None
+    }
+
+
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
-async def register(user_data: UserCreate):
+async def register(user_data: UserCreate, request: Request):
     """
     註冊新用戶
     
@@ -39,31 +80,63 @@ async def register(user_data: UserCreate):
         from app.models.user import Language
         
         language = Language(user.get("language", "zh-TW"))
-        await email_service.send_verification_email(
+        user_language = get_user_language(user=user, request=request)
+        
+        # 檢查郵件服務是否配置
+        if not email_service.is_configured():
+            logger.warning(f"郵件服務未配置，無法發送驗證郵件給 {user['email']}")
+            # 註冊成功，但返回警告訊息
+            user_response = UserResponse(**user)
+            user_response.warning = get_error_message("auth.email_not_configured", user_language)
+            return user_response
+        
+        # 嘗試發送驗證郵件
+        email_sent = await email_service.send_verification_email(
             to_email=user["email"],
             verification_token=verification_token,
             language=language
         )
         
-        logger.info(f"用戶註冊成功: {user['email']}")
+        if email_sent:
+            logger.info(f"用戶註冊成功，驗證郵件已發送: {user['email']}")
+        else:
+            logger.warning(f"用戶註冊成功，但驗證郵件發送失敗: {user['email']}")
+            # 註冊成功，但返回警告訊息
+            user_response = UserResponse(**user)
+            user_response.warning = get_error_message("auth.email_send_failed", user_language)
+            return user_response
         
-        return user
+        return UserResponse(**user)
         
     except ValueError as e:
+        language = get_user_language(request=request)
+        error_message = str(e)
+        
+        # 處理特定的錯誤訊息，轉換為 i18n
+        if error_message == "EMAIL_ALREADY_REGISTERED":
+            error_message = get_error_message("auth.email_already_registered", language)
+        elif "測試版名額已滿" in error_message:
+            # 保持原訊息（已包含數字）
+            pass
+        else:
+            # 其他 ValueError 訊息保持原樣
+            pass
+        
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
+            detail=error_message
         )
     except Exception as e:
         logger.error(f"註冊失敗: {e}")
+        language = get_user_language(request=request)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="註冊失敗，請稍後再試"
+            detail=get_error_message("auth.register_failed", language)
         )
 
 
 @router.post("/login", response_model=TokenResponse)
-async def login(login_data: UserLogin):
+async def login(login_data: UserLogin, request: Request):
     """
     用戶登入
     
@@ -75,9 +148,10 @@ async def login(login_data: UserLogin):
     user = await auth_service.authenticate_user(login_data)
     
     if not user:
+        language = get_user_language(request=request)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Email 或密碼錯誤",
+            detail=get_error_message("auth.invalid_credentials", language),
             headers={"WWW-Authenticate": "Bearer"},
         )
     
@@ -108,7 +182,7 @@ async def get_current_user_info(
 
 
 @router.post("/verify-email", response_model=EmailVerificationResponse)
-async def verify_email(token: str):
+async def verify_email(token: str, request: Request):
     """
     驗證 Email
     
@@ -117,34 +191,37 @@ async def verify_email(token: str):
     success = await auth_service.verify_email(token)
     
     if not success:
+        language = get_user_language(request=request)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="驗證連結無效或已過期"
+            detail=get_error_message("auth.verification_invalid", language)
         )
     
+    language = get_user_language(request=request)
     return EmailVerificationResponse(
-        message="Email 驗證成功"
+        message=get_error_message("auth.verification_success", language)
     )
 
 
 @router.post("/resend-verification", response_model=EmailVerificationResponse)
-async def resend_verification_email(request: EmailVerificationRequest):
+async def resend_verification_email(request_data: EmailVerificationRequest, request: Request):
     """
     重新發送驗證郵件
     
     - **email**: Email 地址
     """
-    user = await auth_service.user_repo.get_user_by_email(request.email)
+    user = await auth_service.user_repo.get_user_by_email(request_data.email)
+    language = get_user_language(user=user, request=request)
     
     if not user:
         # 為了安全，即使用戶不存在也返回成功（避免 Email 枚舉攻擊）
         return EmailVerificationResponse(
-            message="如果該 Email 已註冊，驗證郵件已發送"
+            message=get_error_message("auth.verification_sent", language)
         )
     
     if user.get("email_verified"):
         return EmailVerificationResponse(
-            message="Email 已驗證，無需重新驗證"
+            message=get_error_message("auth.already_verified", language)
         )
     
     # 建立驗證 Token
@@ -163,12 +240,12 @@ async def resend_verification_email(request: EmailVerificationRequest):
     )
     
     return EmailVerificationResponse(
-        message="驗證郵件已發送"
+        message=get_error_message("auth.verification_sent", language)
     )
 
 
 @router.post("/forgot-password", response_model=dict)
-async def forgot_password(request: PasswordResetRequest):
+async def forgot_password(request_data: PasswordResetRequest, request: Request):
     """
     忘記密碼
     
@@ -176,7 +253,7 @@ async def forgot_password(request: PasswordResetRequest):
     
     發送密碼重設郵件
     """
-    reset_token = await auth_service.request_password_reset(request.email)
+    reset_token = await auth_service.request_password_reset(request_data.email)
     
     # Phase 2: 發送密碼重設郵件
     if reset_token:
@@ -184,23 +261,24 @@ async def forgot_password(request: PasswordResetRequest):
         from app.models.user import Language
         
         # 取得用戶語言偏好
-        user = await auth_service.user_repo.get_user_by_email(request.email)
+        user = await auth_service.user_repo.get_user_by_email(request_data.email)
         language = Language(user.get("language", "zh-TW")) if user else Language.ZH_TW
         
         await email_service.send_password_reset_email(
-            to_email=request.email,
+            to_email=request_data.email,
             reset_token=reset_token,
             language=language
         )
     
     # 為了安全，即使用戶不存在也返回成功
+    language = get_user_language(request=request)
     return {
-        "message": "如果該 Email 已註冊，密碼重設郵件已發送"
+        "message": get_error_message("auth.verification_sent", language)
     }
 
 
 @router.post("/reset-password", response_model=dict)
-async def reset_password(request: PasswordResetConfirm):
+async def reset_password(request_data: PasswordResetConfirm, request: Request):
     """
     重設密碼
     
@@ -208,30 +286,33 @@ async def reset_password(request: PasswordResetConfirm):
     - **new_password**: 新密碼（至少 8 位，包含至少 1 個大寫字母）
     """
     success = await auth_service.reset_password(
-        request.token,
-        request.new_password
+        request_data.token,
+        request_data.new_password
     )
     
     if not success:
+        language = get_user_language(request=request)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="重設連結無效或已過期"
+            detail=get_error_message("auth.reset_link_invalid", language)
         )
     
+    language = get_user_language(request=request)
     return {
-        "message": "密碼重設成功"
+        "message": get_error_message("auth.reset_success", language)
     }
 
 
 @router.get("/google/login")
-async def google_login():
+async def google_login(request: Request):
     """
     Google OAuth 登入（重定向到 Google 授權頁面）
     """
     if not settings.GOOGLE_OAUTH_CLIENT_ID:
+        language = get_user_language(request=request)
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Google OAuth 未配置"
+            detail=get_error_message("auth.oauth_not_configured", language)
         )
     
     # Google OAuth 授權 URL

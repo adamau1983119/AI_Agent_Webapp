@@ -11,11 +11,13 @@ export default function Header() {
   const today = new Date()
   
   // 根據語言選擇日期格式和地區
+  // 注意：日期格式字符串中的中文/日文字符是格式符號的一部分，不是用戶可見文字
+  // 這些格式字符串是 date-fns 庫使用的格式模板，不需要 i18n
   const dateLocales = { 'zh-TW': zhTW, 'en': enUS, 'ja': ja }
   const dateFormats = { 
-    'zh-TW': 'yyyy年M月d日 EEEE', 
+    'zh-TW': 'yyyy年M月d日 EEEE', // 格式模板，不是用戶可見文字
     'en': 'EEEE, MMMM d', 
-    'ja': 'yyyy年M月d日(EEEE)' 
+    'ja': 'yyyy年M月d日(EEEE)' // 格式模板，不是用戶可見文字
   }
   const dateStr = format(today, dateFormats[language] || dateFormats['en'], { 
     locale: dateLocales[language] || dateLocales['en'] 

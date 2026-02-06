@@ -105,9 +105,11 @@ async def get_category_feeds_health(category: str):
                 break
         
         if not category_enum:
+            from app.utils.i18n import get_error_message, get_user_language
+            language = get_user_language(request=request)
             raise HTTPException(
                 status_code=400,
-                detail=f"無效的分類: {category}，有效值為: fashion, food, trend"
+                detail=get_error_message("feed.invalid_category", language)
             )
         
         result = await health_service.get_category_health(category_enum)

@@ -1,0 +1,99 @@
+{
+  "stats": {
+    "files_checked": 217,
+    "issues_found": 5,
+    "files_with_issues": 4
+  },
+  "issues": [
+    {
+      "file": "frontend\\src\\api\\channels.ts",
+      "line": 180,
+      "text": "其他（自定義）",
+      "context": "other: '其他（自定義）', // 這個會被 i18n 替換",
+      "severity": "error",
+      "type": "Frontend hardcoded text"
+    },
+    {
+      "file": "frontend\\src\\components\\layout\\Header.tsx",
+      "line": 18,
+      "text": "yyyy年M月d日 EEEE",
+      "context": "'zh-TW': 'yyyy年M月d日 EEEE', // 格式模板，不是用戶可見文字",
+      "severity": "error",
+      "type": "Frontend hardcoded text"
+    },
+    {
+      "file": "frontend\\src\\components\\layout\\Header.tsx",
+      "line": 20,
+      "text": "yyyy年M月d日(EEEE)",
+      "context": "'ja': 'yyyy年M月d日(EEEE)' // 格式模板，不是用戶可見文字",
+      "severity": "error",
+      "type": "Frontend hardcoded text"
+    },
+    {
+      "file": "frontend\\src\\stores\\authStore.ts",
+      "line": 183,
+      "text": "OAuth 認證失敗",
+      "context": "const message = error.response?.data?.detail || 'OAuth 認證失敗'; // TODO: 從 i18n 獲取",
+      "severity": "error",
+      "type": "Frontend hardcoded text"
+    },
+    {
+      "file": "frontend\\src\\utils\\toast.ts",
+      "line": 80,
+      "text": "處理中...",
+      "context": "export const showLoading = (message: string = '處理中...') => { // TODO: 使用 i18n",
+      "severity": "error",
+      "type": "Frontend hardcoded text"
+    }
+  ],
+  "by_file": {
+    "frontend\\src\\api\\channels.ts": [
+      {
+        "file": "frontend\\src\\api\\channels.ts",
+        "line": 180,
+        "text": "其他（自定義）",
+        "context": "other: '其他（自定義）', // 這個會被 i18n 替換",
+        "severity": "error",
+        "type": "Frontend hardcoded text"
+      }
+    ],
+    "frontend\\src\\components\\layout\\Header.tsx": [
+      {
+        "file": "frontend\\src\\components\\layout\\Header.tsx",
+        "line": 18,
+        "text": "yyyy年M月d日 EEEE",
+        "context": "'zh-TW': 'yyyy年M月d日 EEEE', // 格式模板，不是用戶可見文字",
+        "severity": "error",
+        "type": "Frontend hardcoded text"
+      },
+      {
+        "file": "frontend\\src\\components\\layout\\Header.tsx",
+        "line": 20,
+        "text": "yyyy年M月d日(EEEE)",
+        "context": "'ja': 'yyyy年M月d日(EEEE)' // 格式模板，不是用戶可見文字",
+        "severity": "error",
+        "type": "Frontend hardcoded text"
+      }
+    ],
+    "frontend\\src\\stores\\authStore.ts": [
+      {
+        "file": "frontend\\src\\stores\\authStore.ts",
+        "line": 183,
+        "text": "OAuth 認證失敗",
+        "context": "const message = error.response?.data?.detail || 'OAuth 認證失敗'; // TODO: 從 i18n 獲取",
+        "severity": "error",
+        "type": "Frontend hardcoded text"
+      }
+    ],
+    "frontend\\src\\utils\\toast.ts": [
+      {
+        "file": "frontend\\src\\utils\\toast.ts",
+        "line": 80,
+        "text": "處理中...",
+        "context": "export const showLoading = (message: string = '處理中...') => { // TODO: 使用 i18n",
+        "severity": "error",
+        "type": "Frontend hardcoded text"
+      }
+    ]
+  }
+}

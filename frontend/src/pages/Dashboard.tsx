@@ -181,7 +181,7 @@ export default function Dashboard() {
   const deleteTodayMutation = useMutation({
     mutationFn: () => topicsAPI.deleteTodayTopics(),
     onSuccess: async (data) => {
-      toast.success(`已刪除 ${data.deleted_count} 個今日主題`, { id: 'delete-today' })
+      toast.success(t('dashboard.deleted').replace('{count}', String(data.deleted_count)), { id: 'delete-today' })
       // 立即刷新數據
       refetchTopics()
       refetchSchedules()
@@ -411,13 +411,13 @@ export default function Dashboard() {
           <div className="flex items-start gap-4">
             <div className="flex-1">
               <h3 className="text-[11px] tracking-[0.15em] uppercase text-gray-800 mb-2">
-                REQUEST LIMIT REACHED
+                {t('dashboard.requestLimitReached')}
               </h3>
               <p className="text-sm text-gray-500 font-light mb-4">
-                後端服務限制了請求頻率，請稍後再試。
+                {t('dashboard.rateLimitMessage')}
                 {(topicsError as any)?.details?.retryAfter && (
                   <span className="block mt-1">
-                    建議等待 {(topicsError as any).details.retryAfter} 秒後再試。
+                    {t('dashboard.rateLimitWait').replace('{seconds}', String((topicsError as any).details.retryAfter))}
                   </span>
                 )}
               </p>
@@ -425,7 +425,7 @@ export default function Dashboard() {
                 onClick={handleRetry}
                 className="px-6 py-3 bg-black text-white text-[11px] tracking-[0.2em] uppercase hover:bg-gray-900 transition-colors"
               >
-                RETRY
+                {t('dashboard.retry')}
               </button>
             </div>
           </div>
@@ -436,13 +436,13 @@ export default function Dashboard() {
       {isLoading && !hasError && (
         <div className="mb-6 bg-white border border-gray-200 p-6">
           <p className="text-[11px] tracking-[0.1em] uppercase text-gray-600 mb-3">
-            ⏳ LOADING — PLEASE WAIT
+            ⏳ {t('dashboard.loadingPleaseWait')}
           </p>
           <button
             onClick={handleRetry}
             className="text-[10px] text-black underline hover:no-underline tracking-[0.1em] uppercase"
           >
-            RETRY
+            {t('dashboard.retry')}
           </button>
         </div>
       )}
@@ -454,7 +454,7 @@ export default function Dashboard() {
             <div className="flex items-center gap-3">
               <div className="animate-spin rounded-full h-4 w-4 border-b border-black"></div>
               <h3 className="text-[11px] tracking-[0.15em] uppercase text-black">
-                GENERATING TOPICS
+                {t('dashboard.generatingTopics')}
               </h3>
             </div>
             <span className="text-sm text-gray-600 font-light">
@@ -469,10 +469,10 @@ export default function Dashboard() {
           </div>
           <p className="text-[10px] text-gray-500 font-light tracking-wide">
             {generationProgress.percentage < 33 
-              ? 'Generating fashion trends (0-10)...' 
+              ? t('dashboard.generatingFashion')
               : generationProgress.percentage < 66
-              ? 'Generating food recommendations (10-20)...'
-              : 'Generating social trends (20-30)...'}
+              ? t('dashboard.generatingFood')
+              : t('dashboard.generatingSocial')}
           </p>
         </div>
       )}
@@ -483,7 +483,7 @@ export default function Dashboard() {
         <div className="relative bg-white border border-gray-100 p-4 hover:border-gray-300 transition-all">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-[10px] tracking-[0.15em] uppercase text-gray-500 font-light">
-              TODAY'S TOPICS
+              {t('dashboard.todaysTopicsCard')}
             </h3>
             <span className="text-[10px] text-gray-400 font-light">
               {Math.round((todayTopics / 30) * 100)}%
@@ -497,7 +497,7 @@ export default function Dashboard() {
           </div>
           <p className="text-xl font-light tracking-wide text-black mb-1">{todayTopics}/30</p>
           <p className="text-[10px] text-gray-400 font-light tracking-wide mb-3">
-            {todayTopics >= 30 ? 'COMPLETED' : 'IN PROGRESS'}
+            {todayTopics >= 30 ? t('dashboard.completed') : t('dashboard.inProgress')}
           </p>
           
           {/* 操作按鈕 */}
@@ -509,7 +509,7 @@ export default function Dashboard() {
                 disabled={deleteTodayMutation.isPending}
                 className="flex-1 py-1.5 text-[10px] tracking-[0.15em] uppercase border border-gray-200 text-gray-600 hover:border-black hover:text-black disabled:opacity-50 transition-all"
               >
-                {deleteTodayMutation.isPending ? '...' : 'DELETE'}
+                {deleteTodayMutation.isPending ? '...' : t('dashboard.delete')}
               </button>
             )}
             {todayTopics < 30 && (
@@ -519,29 +519,29 @@ export default function Dashboard() {
                 disabled={isGenerating}
                 className="flex-1 py-1.5 text-[10px] tracking-[0.2em] uppercase bg-black text-white hover:bg-gray-900 disabled:bg-gray-300 transition-all"
               >
-                {isGenerating ? '...' : 'GENERATE'}
+                {isGenerating ? '...' : t('dashboard.generate')}
               </button>
             )}
           </div>
         </div>
 
         <ProgressCard
-          title="PENDING"
+          title={t('dashboard.pending')}
           value={`${pendingCount}/${totalTopics}`}
           percentage={totalTopics > 0 ? Math.round((pendingCount / totalTopics) * 100) : 0}
-          message="REVIEWING"
+          message={t('dashboard.reviewing')}
         />
         <ProgressCard
-          title="CONFIRMED"
+          title={t('dashboard.confirmed')}
           value={`${confirmedCount}/${totalTopics}`}
           percentage={totalTopics > 0 ? Math.round((confirmedCount / totalTopics) * 100) : 0}
-          message="APPROVED"
+          message={t('dashboard.approved')}
         />
         <ProgressCard
-          title="QUALITY"
+          title={t('dashboard.quality')}
           value={topics.length > 0 ? `${Math.round(topics.reduce((sum, t) => sum + (t.wordCount || 0), 0) / topics.length)}/100` : "0/100"}
           percentage={topics.length > 0 ? Math.min(100, Math.round(topics.reduce((sum, t) => sum + (t.wordCount || 0), 0) / topics.length)) : 0}
-          message={topics.length > 0 ? "GOOD PROGRESS" : "AWAITING DATA"}
+          message={topics.length > 0 ? t('dashboard.goodProgress') : t('dashboard.awaitingData')}
         />
         <UpcomingEvents />
         <RecentActivities />
@@ -549,7 +549,7 @@ export default function Dashboard() {
 
       {/* 快速操作區 - Lane Crawford Style */}
       <div className="mb-8">
-        <h2 className="text-[11px] tracking-[0.15em] uppercase text-gray-500 mb-4">QUICK ACTIONS</h2>
+        <h2 className="text-[11px] tracking-[0.15em] uppercase text-gray-500 mb-4">{t('dashboard.quickActions')}</h2>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <a href="/topics" data-testid="link-dashboard-topics" className="group bg-white border border-gray-100 p-6 text-center hover:border-black transition-all">
             <div className="w-10 h-10 mx-auto mb-3 border border-gray-200 flex items-center justify-center group-hover:border-black transition-all">
@@ -557,7 +557,7 @@ export default function Dashboard() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
               </svg>
             </div>
-            <p className="text-[10px] tracking-[0.15em] uppercase text-gray-600 group-hover:text-black">BROWSE TOPICS</p>
+            <p className="text-[10px] tracking-[0.15em] uppercase text-gray-600 group-hover:text-black">{t('dashboard.browseTopics')}</p>
           </a>
           <a href="/channels" data-testid="link-dashboard-channels" className="group bg-white border border-gray-100 p-6 text-center hover:border-black transition-all">
             <div className="w-10 h-10 mx-auto mb-3 border border-gray-200 flex items-center justify-center group-hover:border-black transition-all">
@@ -565,7 +565,7 @@ export default function Dashboard() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M7 4V2m0 2v2m0-2H5m2 0h2m6 0V2m0 2v2m0-2h-2m2 0h2M5 8h14M5 12h14M5 16h14M5 20h14" />
               </svg>
             </div>
-            <p className="text-[10px] tracking-[0.15em] uppercase text-gray-600 group-hover:text-black">MY CHANNELS</p>
+            <p className="text-[10px] tracking-[0.15em] uppercase text-gray-600 group-hover:text-black">{t('dashboard.myChannels')}</p>
           </a>
           <a href="/inspiration" data-testid="link-dashboard-inspiration" className="group bg-white border border-gray-100 p-6 text-center hover:border-black transition-all">
             <div className="w-10 h-10 mx-auto mb-3 border border-gray-200 flex items-center justify-center group-hover:border-black transition-all">
@@ -573,7 +573,7 @@ export default function Dashboard() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
               </svg>
             </div>
-            <p className="text-[10px] tracking-[0.15em] uppercase text-gray-600 group-hover:text-black">INSPIRATION</p>
+            <p className="text-[10px] tracking-[0.15em] uppercase text-gray-600 group-hover:text-black">{t('dashboard.inspiration')}</p>
           </a>
           <a href="/style-profile" data-testid="link-dashboard-style" className="group bg-white border border-gray-100 p-6 text-center hover:border-black transition-all">
             <div className="w-10 h-10 mx-auto mb-3 border border-gray-200 flex items-center justify-center group-hover:border-black transition-all">
@@ -581,7 +581,7 @@ export default function Dashboard() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
             </div>
-            <p className="text-[10px] tracking-[0.15em] uppercase text-gray-600 group-hover:text-black">STYLE PROFILE</p>
+            <p className="text-[10px] tracking-[0.15em] uppercase text-gray-600 group-hover:text-black">{t('dashboard.styleProfile')}</p>
           </a>
         </div>
       </div>
@@ -599,11 +599,11 @@ export default function Dashboard() {
           {isLoading ? (
             <div className="text-center py-16">
               <div className="inline-block animate-spin rounded-full h-6 w-6 border-b border-black"></div>
-              <p className="mt-4 text-[11px] tracking-[0.1em] uppercase text-gray-500">LOADING...</p>
+              <p className="mt-4 text-[11px] tracking-[0.1em] uppercase text-gray-500">{t('dashboard.loading')}</p>
             </div>
           ) : (
             <>
-              <h3 className="text-[11px] tracking-[0.15em] uppercase text-gray-500 mb-4">TOPIC CARDS</h3>
+              <h3 className="text-[11px] tracking-[0.15em] uppercase text-gray-500 mb-4">{t('dashboard.topicCards')}</h3>
               {(() => {
                 // 顯示主題：優先今日 → 最近 → 全部
                 const now = new Date()
@@ -668,10 +668,10 @@ export default function Dashboard() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                         </svg>
                       </div>
-                      <h4 className="text-sm tracking-[0.15em] uppercase text-black mb-4">AI AGENT COLLECTING</h4>
+                      <h4 className="text-sm tracking-[0.15em] uppercase text-black mb-4">{t('dashboard.aiAgentCollecting')}</h4>
                       <div className="w-12 h-px bg-gray-300 mx-auto mb-4"></div>
-                      <p className="text-gray-500 font-light text-sm mb-2">System updates every 6 hours</p>
-                      <p className="text-[10px] tracking-[0.1em] uppercase text-gray-400">FASHION · FOOD · TRENDS</p>
+                      <p className="text-gray-500 font-light text-sm mb-2">{t('dashboard.systemUpdatesEvery6h')}</p>
+                      <p className="text-[10px] tracking-[0.1em] uppercase text-gray-400">{t('dashboard.categoryList')}</p>
                       <div className="mt-8 flex justify-center gap-3">
                         <span className="inline-block w-1.5 h-1.5 bg-gray-300 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
                         <span className="inline-block w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
@@ -683,9 +683,9 @@ export default function Dashboard() {
                 
                 // 按分類分組
                 const categories = [
-                  { key: 'fashion', label: 'FASHION TRENDS' },
-                  { key: 'food', label: 'FOOD & DINING' },
-                  { key: 'trend', label: 'SOCIAL TRENDS' }
+                  { key: 'fashion', label: t('dashboard.fashionTrends') },
+                  { key: 'food', label: t('dashboard.foodDining') },
+                  { key: 'trend', label: t('dashboard.socialTrends') }
                 ]
                 
                 const topicsByCategory = categories.map(cat => ({
@@ -696,10 +696,10 @@ export default function Dashboard() {
                 return (
                   <>
                     <div className="flex items-center justify-between mb-6">
-                      <p className="text-sm text-gray-500 font-light">{displayTitle} — {displayTopics.length} items</p>
+                      <p className="text-sm text-gray-500 font-light">{displayTitle} — {displayTopics.length} {t('dashboard.items')}</p>
                       {showNotice && (
-                        <span className="text-[10px] tracking-[0.1em] uppercase text-gray-500 border border-gray-200 px-3 py-1">
-                          NEXT UPDATE PENDING
+                          <span className="text-[10px] tracking-[0.1em] uppercase text-gray-500 border border-gray-200 px-3 py-1">
+                          {t('dashboard.nextUpdatePending')}
                         </span>
                       )}
                     </div>
@@ -711,7 +711,7 @@ export default function Dashboard() {
                               {category.label}
                             </h4>
                             <span className="text-[10px] text-gray-400 font-light">
-                              {category.topics.length} topics
+                              {category.topics.length} {t('dashboard.topics')}
                             </span>
                           </div>
                           {category.topics.length > 0 ? (
@@ -724,7 +724,7 @@ export default function Dashboard() {
                             </div>
                           ) : (
                             <div className="text-center py-8 text-[10px] tracking-[0.1em] uppercase text-gray-400 bg-white border border-gray-100">
-                              COLLECTING {category.label}...
+                              {t('dashboard.collecting').replace('{category}', category.label)}
                             </div>
                           )}
                         </div>
@@ -742,7 +742,7 @@ export default function Dashboard() {
           {/* 推薦主題 */}
           {recommendations && recommendations.recommendations.length > 0 && (
             <div className="bg-white border border-gray-100 p-6">
-              <h3 className="text-[11px] tracking-[0.15em] uppercase text-gray-500 mb-4">RECOMMENDED FOR YOU</h3>
+              <h3 className="text-[11px] tracking-[0.15em] uppercase text-gray-500 mb-4">{t('dashboard.recommendedForYou')}</h3>
               <div className="w-8 h-px bg-black mb-6"></div>
               <div className="space-y-4">
                 {recommendations.recommendations.slice(0, 3).map((rec) => (

@@ -167,6 +167,8 @@ export const channelsApi = {
 };
 
 // 類別標籤映射
+// 注意：這個映射現在應該使用 i18n，但為了向後兼容保留
+// 實際使用時應該通過 i18n 系統獲取翻譯
 export const categoryLabels: Record<ChannelCategory, string> = {
   fashion: '時尚',
   food: '美食',
@@ -175,7 +177,7 @@ export const categoryLabels: Record<ChannelCategory, string> = {
   sports: '運動',
   tech: '科技',
   entertainment: '娛樂',
-  other: '其他（自定義）',
+  other: '其他（自定義）', // 這個會被 i18n 替換
 };
 
 // 地區標籤映射
