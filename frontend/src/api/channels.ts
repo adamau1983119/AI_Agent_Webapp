@@ -146,6 +146,24 @@ export const channelsApi = {
       method: 'POST',
     });
   },
+
+  /**
+   * AI 頻道助手 - 解析用戶自然語言輸入
+   */
+  assistChannel: async (userInput: string, language: string = 'zh-TW'): Promise<{
+    category: string | null;
+    region: string | null;
+    keywords: string[];
+    confidence: number;
+    clarification_needed: boolean;
+    clarification_question: string | null;
+    recommended_sources: Array<{ name: string; url: string; role: string }>;
+  }> => {
+    return fetchAPI('/channels/assist', {
+      method: 'POST',
+      body: JSON.stringify({ user_input: userInput, language }),
+    });
+  },
 };
 
 // 類別標籤映射

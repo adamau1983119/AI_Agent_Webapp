@@ -85,14 +85,14 @@ export default function Login() {
         {/* 頂部導航 */}
         <header className="flex items-center justify-between px-8 py-6">
           <Link 
-            to="/language"
+            to="/language" 
             data-testid="btn-login-back"
             className="text-gray-400 hover:text-black transition-colors text-[10px] tracking-[0.15em] uppercase"
           >
             ← {t('common.back')}
           </Link>
           <Link 
-            to="/language"
+            to="/language" 
             data-testid="btn-login-lang"
             className="text-gray-400 hover:text-black transition-colors text-[10px] tracking-[0.15em] uppercase"
           >

@@ -225,6 +225,17 @@ data-testid="{類型}-{位置}-{功能}"
 | `btn-interact-share` | 按鈕 | 分享 |
 | `btn-interact-copy` | 按鈕 | 複製 |
 
+### 4.5 頻道 AI 助手 (`CreateChannel.tsx`)
+
+| Test ID | 元素 | 功能 |
+|---------|------|------|
+| `btn-channels-assist` | 按鈕 | 開啟 AI 助手 |
+| `btn-channels-assist-close` | 按鈕 | 關閉助手對話框 |
+| `input-channels-assist` | 輸入框 | AI 助手輸入 |
+| `btn-channels-assist-submit` | 按鈕 | 提交助手輸入 |
+| `btn-channels-assist-confirm` | 按鈕 | 確認應用結果 |
+| `btn-channels-assist-modify` | 按鈕 | 修改輸入 |
+
 ---
 
 ## 5. 輔助類 (Utility)

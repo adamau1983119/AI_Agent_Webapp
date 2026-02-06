@@ -393,6 +393,22 @@ const zhTW = {
   'channels.validation.categoryRequired': '請選擇類別',
   'channels.validation.keywordsRequired': '選擇「其他」類別時請輸入至少一個關鍵字',
   
+  // AI 頻道助手
+  'channels.assist.title': 'AI 助手',
+  'channels.assist.prompt': '告訴我你想追蹤什麼內容？例如：「我想看日本的潮流穿搭」',
+  'channels.assist.placeholder': '輸入你的需求...',
+  'channels.assist.submit': '分析',
+  'channels.assist.inputRequired': '請輸入你的需求',
+  'channels.assist.failed': 'AI 助手處理失敗',
+  'channels.assist.autoFilled': '已自動填入表單',
+  'channels.assist.applied': '已應用設定',
+  'channels.assist.confirm': '確認應用',
+  'channels.assist.modify': '修改',
+  'channels.assist.category': '類別',
+  'channels.assist.region': '地區',
+  'channels.assist.keywords': '關鍵字',
+  'channels.assist.sources': '推薦來源',
+  
   // 認證 - 擴展
   'auth.sendFailed': '發送失敗，請稍後再試',
   'auth.invalidEmail': '請輸入有效的 Email 地址',
@@ -963,6 +979,22 @@ const en: typeof zhTW = {
   'channels.validation.categoryRequired': 'Please select a category',
   'channels.validation.keywordsRequired': 'Please enter at least one keyword for "Other" category',
   
+  // AI Channel Assistant
+  'channels.assist.title': 'AI Assistant',
+  'channels.assist.prompt': 'Tell me what content you want to track? For example: "I want to see Japanese fashion trends"',
+  'channels.assist.placeholder': 'Enter your requirement...',
+  'channels.assist.submit': 'Analyze',
+  'channels.assist.inputRequired': 'Please enter your requirement',
+  'channels.assist.failed': 'AI assistant processing failed',
+  'channels.assist.autoFilled': 'Form auto-filled',
+  'channels.assist.applied': 'Settings applied',
+  'channels.assist.confirm': 'Confirm & Apply',
+  'channels.assist.modify': 'Modify',
+  'channels.assist.category': 'Category',
+  'channels.assist.region': 'Region',
+  'channels.assist.keywords': 'Keywords',
+  'channels.assist.sources': 'Recommended Sources',
+  
   // Auth - Extended
   'auth.sendFailed': 'Failed to send, please try again later',
   'auth.invalidEmail': 'Please enter a valid email address',
@@ -1532,6 +1564,22 @@ const ja: typeof zhTW = {
   'channels.validation.nameRequired': 'チャンネル名を入力してください',
   'channels.validation.categoryRequired': 'カテゴリを選択してください',
   'channels.validation.keywordsRequired': '「その他」カテゴリの場合、少なくとも1つのキーワードを入力してください',
+  
+  // AI チャンネルアシスタント
+  'channels.assist.title': 'AI アシスタント',
+  'channels.assist.prompt': '追跡したいコンテンツを教えてください。例：「日本のファッショントレンドを見たい」',
+  'channels.assist.placeholder': '要件を入力...',
+  'channels.assist.submit': '分析',
+  'channels.assist.inputRequired': '要件を入力してください',
+  'channels.assist.failed': 'AI アシスタントの処理に失敗しました',
+  'channels.assist.autoFilled': 'フォームが自動入力されました',
+  'channels.assist.applied': '設定が適用されました',
+  'channels.assist.confirm': '確認して適用',
+  'channels.assist.modify': '修正',
+  'channels.assist.category': 'カテゴリ',
+  'channels.assist.region': '地域',
+  'channels.assist.keywords': 'キーワード',
+  'channels.assist.sources': '推奨ソース',
   
   // 認証 - 拡張
   'auth.sendFailed': '送信に失敗しました。後でもう一度お試しください',
