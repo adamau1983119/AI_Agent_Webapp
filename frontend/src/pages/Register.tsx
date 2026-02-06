@@ -269,19 +269,19 @@ export default function Register() {
               </div>
               
               {/* 名 Given Name */}
-              <div>
+            <div>
                 <label htmlFor="givenName" className="block text-[10px] tracking-[0.15em] uppercase text-gray-500 mb-3">
                   GIVEN NAME
-                </label>
-                <input
+              </label>
+              <input
                   id="givenName"
                   data-testid="input-register-given-name"
-                  type="text"
+                type="text"
                   value={formData.givenName}
                   onChange={(e) => handleChange('givenName', e.target.value)}
-                  className="w-full px-0 py-3 bg-transparent border-0 border-b border-gray-200 text-black placeholder-gray-300 focus:outline-none focus:border-black transition-colors duration-300 text-sm tracking-wide"
+                className="w-full px-0 py-3 bg-transparent border-0 border-b border-gray-200 text-black placeholder-gray-300 focus:outline-none focus:border-black transition-colors duration-300 text-sm tracking-wide"
                   placeholder={t('auth.register.givenName')}
-                />
+              />
               </div>
             </div>
             
@@ -308,18 +308,18 @@ export default function Register() {
                 PASSWORD
               </label>
               <div className="relative">
-                <input
-                  id="password"
+              <input
+                id="password"
                   data-testid="input-register-password"
                   type={showPassword ? 'text' : 'password'}
-                  value={formData.password}
-                  onChange={(e) => handleChange('password', e.target.value)}
-                  required
+                value={formData.password}
+                onChange={(e) => handleChange('password', e.target.value)}
+                required
                   className={`w-full px-0 py-3 pr-10 bg-transparent border-0 border-b text-black placeholder-gray-300 focus:outline-none transition-colors duration-300 text-sm tracking-wide ${
-                    validationErrors.password ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-black'
-                  }`}
-                  placeholder={t('auth.register.passwordPlaceholder')}
-                />
+                  validationErrors.password ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-black'
+                }`}
+                placeholder={t('auth.register.passwordPlaceholder')}
+              />
                 {/* 密碼顯示/隱藏按鈕 */}
                 <button
                   type="button"
@@ -365,18 +365,18 @@ export default function Register() {
                 CONFIRM PASSWORD
               </label>
               <div className="relative">
-                <input
-                  id="confirmPassword"
+              <input
+                id="confirmPassword"
                   data-testid="input-register-confirm"
                   type={showConfirmPassword ? 'text' : 'password'}
-                  value={formData.confirmPassword}
-                  onChange={(e) => handleChange('confirmPassword', e.target.value)}
-                  required
+                value={formData.confirmPassword}
+                onChange={(e) => handleChange('confirmPassword', e.target.value)}
+                required
                   className={`w-full px-0 py-3 pr-10 bg-transparent border-0 border-b text-black placeholder-gray-300 focus:outline-none transition-colors duration-300 text-sm tracking-wide ${
-                    validationErrors.confirmPassword ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-black'
-                  }`}
-                  placeholder={t('auth.register.confirmPasswordPlaceholder')}
-                />
+                  validationErrors.confirmPassword ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-black'
+                }`}
+                placeholder={t('auth.register.confirmPasswordPlaceholder')}
+              />
                 {/* 確認密碼顯示/隱藏按鈕 */}
                 <button
                   type="button"

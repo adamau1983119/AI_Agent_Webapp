@@ -11,7 +11,10 @@ from app.models.channel import (
 )
 from app.services.channel_service import channel_service, MAX_CHANNELS_PER_USER
 from app.services.channel_collector import channel_collector
+from app.services.channel_assist_service import channel_assist_service
 from app.middleware.jwt_auth import get_current_user
+from pydantic import BaseModel, Field
+from typing import Optional, List, Dict, Any
 import logging
 
 logger = logging.getLogger(__name__)
@@ -258,4 +261,78 @@ async def trigger_channel_collection(
         "topics_collected": result["topics_collected"],
         "collection_log": result.get("collection_log", {})
     }
+
+
+# ============================================
+# AI 頻道助手 API
+# ============================================
+
+class ChannelAssistRequest(BaseModel):
+    """頻道助手請求"""
+    user_input: str = Field(..., min_length=1, max_length=500, description="用戶自然語言輸入")
+    language: Optional[str] = Field(default="zh-TW", description="用戶語言（zh-TW/en/ja）")
+
+
+class ChannelAssistResponse(BaseModel):
+    """頻道助手回應"""
+    category: Optional[str] = Field(None, description="解析出的類別")
+    region: Optional[str] = Field(None, description="解析出的地區")
+    keywords: List[str] = Field(default=[], description="提取的關鍵字")
+    confidence: float = Field(0.0, ge=0.0, le=1.0, description="解析信心度")
+    clarification_needed: bool = Field(False, description="是否需要澄清")
+    clarification_question: Optional[str] = Field(None, description="澄清問題")
+    recommended_sources: List[Dict[str, Any]] = Field(default=[], description="推薦的 RSS 來源")
+
+
+@router.post("/assist", response_model=ChannelAssistResponse)
+async def assist_channel_creation(
+    request: ChannelAssistRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    AI 頻道助手
+    
+    使用 AI 解析用戶的自然語言輸入，協助建立頻道。
+    
+    - **user_input**: 用戶的自然語言描述（例如：「我想看日本的潮流穿搭」）
+    - **language**: 用戶語言（zh-TW/en/ja）
+    
+    返回：
+    - 解析出的類別、地區、關鍵字
+    - 推薦的 RSS 來源列表
+    - 如果需要澄清，會提供澄清問題
+    """
+    try:
+        # 解析用戶意圖
+        parsed = await channel_assist_service.parse_user_intent(
+            user_input=request.user_input,
+            language=request.language
+        )
+        
+        # 如果解析成功且有類別和地區，推薦來源
+        recommended_sources = []
+        if parsed["category"] and parsed["region"] and parsed["confidence"] >= 0.7:
+            recommended_sources = channel_assist_service.recommend_sources(
+                category=parsed["category"],
+                region=parsed["region"]
+            )
+        
+        logger.info(f"用戶 {current_user['email']} 使用 AI 助手: {request.user_input} -> {parsed['category']}/{parsed['region']}")
+        
+        return ChannelAssistResponse(
+            category=parsed["category"],
+            region=parsed["region"],
+            keywords=parsed["keywords"],
+            confidence=parsed["confidence"],
+            clarification_needed=parsed["clarification_needed"],
+            clarification_question=parsed["clarification_question"],
+            recommended_sources=recommended_sources
+        )
+        
+    except Exception as e:
+        logger.error(f"AI 助手錯誤: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"處理請求時發生錯誤: {str(e)}"
+        )
 

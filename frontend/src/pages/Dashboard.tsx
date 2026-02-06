@@ -493,7 +493,7 @@ export default function Dashboard() {
             <div 
               className="h-full bg-black transition-all duration-500"
               style={{ width: `${Math.round((todayTopics / 30) * 100)}%` }}
-            />
+          />
           </div>
           <p className="text-xl font-light tracking-wide text-black mb-1">{todayTopics}/30</p>
           <p className="text-[10px] text-gray-400 font-light tracking-wide mb-3">
