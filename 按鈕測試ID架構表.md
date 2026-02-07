@@ -235,10 +235,11 @@ data-testid="{類型}-{位置}-{功能}"
 | `btn-channels-assist-submit` | 按鈕 | 提交助手輸入 |
 | `btn-channels-assist-confirm` | 按鈕 | 確認應用結果 |
 | `btn-channels-assist-modify` | 按鈕 | 修改輸入 |
+| `btn-channels-assist-preset-{key}` | 按鈕 | 預設組合按鈕（japanFashion/hkFood/globalTrend等） |
 | `btn-channels-assist-quick-category-{category}` | 按鈕 | 快捷選擇類別（finance/sports/tech/entertainment/other） |
-| `btn-channels-assist-quick-region-{region}` | 按鈕 | 快捷選擇地區（global/hong_kong/taiwan/japan等） |
-| `source-preview-{index}` | 卡片 | 來源預覽卡片 |
-| `source-link-{index}` | 連結 | 開啟來源連結 |
+| `btn-channels-assist-quick-region-{region}` | 按鈕 | 快捷選擇地區（全部 8 個地區） |
+| `source-preview-{index}` | 卡片 | 來源預覽卡片（含 favicon/網域/類型標籤） |
+| `source-link-{index}` | 連結 | 訪問來源按鈕 |
 
 ### 4.6 頻道詳情頁 (`ChannelDetail.tsx`)
 
@@ -286,6 +287,18 @@ data-testid="{類型}-{位置}-{功能}"
 | `btn-topic-detail-add-image` | 按鈕 | 新增圖片 |
 | `btn-topic-detail-match-photos` | 按鈕 | 智能匹配照片 |
 | `btn-topic-detail-search-images` | 按鈕 | 搜尋圖片 |
+
+### 4.10 內容生成面板 (`ContentGenerationPanel.tsx`)
+
+| Test ID | 元素 | 功能 |
+|---------|------|------|
+| `content-generation-panel` | 容器 | 內容生成設定面板 |
+| `btn-content-gen-toggle` | 按鈕 | 展開/收合設定面板 |
+| `btn-content-style-{style}` | 按鈕 | 風格選擇（professional/casual/humorous/storytelling/educational） |
+| `btn-content-format-{format}` | 按鈕 | 輸出格式選擇（article/script/both） |
+| `btn-content-article-length-{length}` | 按鈕 | 文章長度選擇（300/500/800/1200） |
+| `btn-content-script-duration-{duration}` | 按鈕 | 腳本時長選擇（15/30/60/90） |
+| `btn-content-gen-start` | 按鈕 | 開始生成/重新生成 |
 
 ---
 
@@ -405,6 +418,7 @@ test('login flow', async ({ page }) => {
 | 版本 | 日期 | 變更說明 |
 |------|------|----------|
 | v1.0.0 | 2026-02-05 | 初始版本 - 完整按鈕測試 ID 定義 |
+| v1.1.0 | 2026-02-07 | 新增: AI助手預設組合按鈕、來源卡片增強、內容生成面板(風格/格式/長度/時長) |
 
 ---
 

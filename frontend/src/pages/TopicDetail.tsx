@@ -10,6 +10,8 @@ import TopicEditor from '@/components/features/TopicEditor'
 import ImageGallery from '@/components/features/ImageGallery'
 import ImageSearch from '@/components/features/ImageSearch'
 import InteractionButtons from '@/components/features/InteractionButtons'
+import ContentGenerationPanel from '@/components/features/ContentGenerationPanel'
+import type { GenerationSettings } from '@/components/features/ContentGenerationPanel'
 import { usePageTitle } from '@/hooks/usePageTitle'
 import { useAuthStore } from '@/stores/authStore'
 import { useTranslation } from '@/i18n'
@@ -84,14 +86,14 @@ export default function TopicDetail() {
     }
   }, [topic, content, id, viewStartTime])
 
-  // 生成內容的 mutation
+  // 生成內容的 mutation（支援自訂設定）
   const generateContentMutation = useMutation({
-    mutationFn: () => {
-      console.log('🚀 開始生成內容，主題 ID:', id)
+    mutationFn: (settings?: GenerationSettings) => {
+      console.log('🚀 開始生成內容，主題 ID:', id, '設定:', settings)
       return contentsAPI.generateContent(id!, {
-        type: 'both',
-        article_length: 500,
-        script_duration: 30,
+        type: settings?.outputFormat || 'both',
+        article_length: settings?.articleLength || 500,
+        script_duration: settings?.scriptDuration || 30,
       })
     },
     onSuccess: (data) => {
@@ -139,14 +141,14 @@ export default function TopicDetail() {
     },
   })
 
-  // 重新生成內容的 mutation
+  // 重新生成內容的 mutation（支援自訂設定）
   const regenerateContentMutation = useMutation({
-    mutationFn: () => {
-      console.log('🔄 開始重新生成內容，主題 ID:', id)
+    mutationFn: (settings?: GenerationSettings) => {
+      console.log('🔄 開始重新生成內容，主題 ID:', id, '設定:', settings)
       return contentsAPI.regenerateContent(id!, {
-        type: 'both',
-        article_length: 500,
-        script_duration: 30,
+        type: settings?.outputFormat || 'both',
+        article_length: settings?.articleLength || 500,
+        script_duration: settings?.scriptDuration || 30,
       })
     },
     onSuccess: (data) => {
@@ -490,15 +492,14 @@ export default function TopicDetail() {
               <>
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="font-semibold text-gray-700 dark:text-gray-200">{t('content.title')}</h3>
-                  <button
-                    onClick={() => requireAuth(() => regenerateContentMutation.mutate())}
-                    disabled={regenerateContentMutation.isPending}
-                  data-testid="btn-topic-detail-regenerate"
-                  className="px-3 py-2 text-xs sm:text-sm font-medium text-primary bg-primary/10 rounded-md hover:bg-primary/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
-                  >
-                    {regenerateContentMutation.isPending ? t('common.regenerating') : `🔄 ${t('common.regenerate')}`}
-                  </button>
                 </div>
+
+                {/* 重新生成面板 */}
+                <ContentGenerationPanel
+                  onGenerate={(settings) => requireAuth(() => regenerateContentMutation.mutate(settings))}
+                  isGenerating={regenerateContentMutation.isPending}
+                  hasExistingContent={true}
+                />
                 <div>
                   <h3 className="font-semibold text-gray-700 dark:text-gray-200 mb-2">{t('content.article')}</h3>
                   <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 max-h-96 overflow-y-auto">
@@ -523,16 +524,14 @@ export default function TopicDetail() {
                 </div>
               </>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <EmptyState message={t('common.noContent')} size="sm" />
-                <button
-                  onClick={() => requireAuth(() => generateContentMutation.mutate())}
-                  disabled={generateContentMutation.isPending}
-                  data-testid="btn-topic-detail-generate"
-                  className="w-full px-4 py-3 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
-                >
-                  {generateContentMutation.isPending ? t('common.generating') : t('topics.generateContent')}
-                </button>
+                {/* 內容生成設定面板 */}
+                <ContentGenerationPanel
+                  onGenerate={(settings) => requireAuth(() => generateContentMutation.mutate(settings))}
+                  isGenerating={generateContentMutation.isPending}
+                  hasExistingContent={false}
+                />
               </div>
             )}
           </div>

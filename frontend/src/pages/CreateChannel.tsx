@@ -40,6 +40,15 @@ const regions: { value: ChannelRegion; label: string }[] = [
   { value: 'uk', label: regionLabels.uk },
 ];
 
+// 常見組合預設（對應 i18n channels.assist.preset.* 鍵）
+const quickPresets: { key: string; category: ChannelCategory; region: ChannelRegion; icon: string }[] = [
+  { key: 'japanFashion', category: 'fashion', region: 'japan', icon: '👘' },
+  { key: 'hkFood', category: 'food', region: 'hong_kong', icon: '🍜' },
+  { key: 'globalTrend', category: 'trend', region: 'global', icon: '🌐' },
+  { key: 'taiwanTech', category: 'tech', region: 'taiwan', icon: '💻' },
+  { key: 'koreaEntertainment', category: 'entertainment', region: 'korea', icon: '🎬' },
+];
+
 export default function CreateChannel() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -104,16 +113,55 @@ export default function CreateChannel() {
     }
   };
   
+  // AI 助手：預設組合點擊
+  const handlePresetClick = (preset: { key: string; category: ChannelCategory; region: ChannelRegion }) => {
+    setCategory(preset.category);
+    setRegion(preset.region);
+    const catLabel = categoryLabels[preset.category];
+    const regLabel = regionLabels[preset.region];
+    const text = t('channels.assist.quickPreset', { category: catLabel, region: regLabel });
+    setAssistInput(text);
+  };
+
   // AI 助手：快捷按鈕點擊（類別）
   const handleQuickCategoryClick = (cat: ChannelCategory) => {
     setCategory(cat);
-    setAssistInput(t('channels.assist.quickCategory', { category: categoryLabels[cat] }));
+    const text = t('channels.assist.quickCategory', { category: categoryLabels[cat] });
+    setAssistInput(text);
   };
   
   // AI 助手：快捷按鈕點擊（地區）
   const handleQuickRegionClick = (reg: ChannelRegion) => {
     setRegion(reg);
-    setAssistInput(t('channels.assist.quickRegion', { region: regionLabels[reg] }));
+    const text = t('channels.assist.quickRegion', { region: regionLabels[reg] });
+    setAssistInput(text);
+  };
+
+  // AI 助手：預設組合快捷按鈕
+  const quickPresets = [
+    { key: 'japanFashion', category: 'fashion' as ChannelCategory, region: 'japan' as ChannelRegion, icon: '🇯🇵👗' },
+    { key: 'hkFood', category: 'food' as ChannelCategory, region: 'hong_kong' as ChannelRegion, icon: '🇭🇰🍜' },
+    { key: 'globalTrend', category: 'trend' as ChannelCategory, region: 'global' as ChannelRegion, icon: '🌍📊' },
+    { key: 'taiwanTech', category: 'tech' as ChannelCategory, region: 'taiwan' as ChannelRegion, icon: '🇹🇼💻' },
+    { key: 'koreaEntertainment', category: 'entertainment' as ChannelCategory, region: 'korea' as ChannelRegion, icon: '🇰🇷🎬' },
+  ];
+
+  // AI 助手：預設組合點擊
+  const handlePresetClick = (preset: typeof quickPresets[0]) => {
+    setCategory(preset.category);
+    setRegion(preset.region);
+    const label = t(`channels.assist.preset.${preset.key}` as any);
+    setAssistInput(label);
+  };
+
+  // 從 URL 提取網域名
+  const extractDomain = (url: string): string => {
+    try {
+      const u = new URL(url);
+      return u.hostname.replace(/^www\./, '');
+    } catch {
+      return url;
+    }
   };
   
   // AI 助手：處理用戶輸入
@@ -319,10 +367,35 @@ export default function CreateChannel() {
               <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
                 {t('channels.assist.quickButtons')}
               </p>
-              <div className="space-y-2">
+              <div className="space-y-3">
+                {/* 常見組合預設 */}
+                <div>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mb-1.5">
+                    {t('channels.assist.presets')}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {quickPresets.map((preset) => (
+                      <button
+                        key={preset.key}
+                        onClick={() => handlePresetClick(preset)}
+                        data-testid={`btn-channels-assist-preset-${preset.key}`}
+                        disabled={isAssisting}
+                        className={`px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 min-h-[44px] border ${
+                          category === preset.category && region === preset.region
+                            ? 'bg-purple-100 dark:bg-purple-900/30 border-purple-400 dark:border-purple-600 text-purple-700 dark:text-purple-300 ring-1 ring-purple-300 dark:ring-purple-700'
+                            : 'bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-purple-300 dark:hover:border-purple-600 hover:shadow-sm'
+                        }`}
+                      >
+                        <span className="text-sm">{preset.icon}</span>
+                        <span>{t(`channels.assist.preset.${preset.key}` as any)}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 {/* 類別快捷按鈕 - 顯示其他類型（非時尚/美食/趨勢） */}
                 <div>
-                  <p className="text-xs text-gray-400 dark:text-gray-500 mb-1">
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mb-1.5">
                     {t('channels.assist.quickCategoryLabel')}
                   </p>
                   <div className="flex flex-wrap gap-2">
@@ -334,7 +407,11 @@ export default function CreateChannel() {
                           onClick={() => handleQuickCategoryClick(cat.value)}
                           data-testid={`btn-channels-assist-quick-category-${cat.value}`}
                           disabled={isAssisting}
-                          className="px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 min-h-[44px]"
+                          className={`px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 min-h-[44px] border ${
+                            category === cat.value
+                              ? 'bg-purple-100 dark:bg-purple-900/30 border-purple-400 dark:border-purple-600 text-purple-700 dark:text-purple-300 ring-1 ring-purple-300 dark:ring-purple-700'
+                              : 'bg-gray-100 dark:bg-gray-700 border-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                          }`}
                         >
                           <span className="text-base sm:text-lg">{cat.icon}</span>
                           <span className="hidden sm:inline">{cat.label}</span>
@@ -346,19 +423,24 @@ export default function CreateChannel() {
                     {t('channels.assist.quickCategoryNote')}
                   </p>
                 </div>
-                {/* 地區快捷按鈕 */}
+
+                {/* 地區快捷按鈕 - 顯示全部 8 個地區 */}
                 <div>
-                  <p className="text-xs text-gray-400 dark:text-gray-500 mb-1">
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mb-1.5">
                     {t('channels.assist.quickRegionLabel')}
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    {regions.slice(0, 4).map((reg) => (
+                    {regions.map((reg) => (
                       <button
                         key={reg.value}
                         onClick={() => handleQuickRegionClick(reg.value)}
                         data-testid={`btn-channels-assist-quick-region-${reg.value}`}
                         disabled={isAssisting}
-                        className="px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
+                        className={`px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] border ${
+                          region === reg.value
+                            ? 'bg-purple-100 dark:bg-purple-900/30 border-purple-400 dark:border-purple-600 text-purple-700 dark:text-purple-300 ring-1 ring-purple-300 dark:ring-purple-700'
+                            : 'bg-gray-100 dark:bg-gray-700 border-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                        }`}
                       >
                         {reg.label}
                       </button>
@@ -484,44 +566,105 @@ export default function CreateChannel() {
                       <div>
                         <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">{t('channels.assist.sources')}</p>
                         <div className="space-y-2">
-                          {assistResult.recommended_sources.slice(0, 5).map((source, idx) => (
-                            <div 
-                              key={idx} 
-                              className="p-2 sm:p-3 bg-white dark:bg-gray-600 rounded-lg border border-gray-200 dark:border-gray-500 hover:border-purple-300 dark:hover:border-purple-600 transition-colors"
-                              data-testid={`source-preview-${idx}`}
-                            >
-                              <div className="flex items-start justify-between gap-2">
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-sm sm:text-base font-medium text-gray-900 dark:text-white truncate">
-                                    {source.name}
-                                  </p>
-                                  {source.role && (
-                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 break-words">
-                                      {t('channels.assist.sourceRole')}: {source.role}
-                                    </p>
+                          {assistResult.recommended_sources.slice(0, 5).map((source, idx) => {
+                            // 從 URL 解析網域與 favicon
+                            let domain = '';
+                            let faviconUrl = '';
+                            let sourceType: 'rss' | 'web' | 'api' = 'web';
+                            try {
+                              const urlObj = new URL(source.url);
+                              domain = urlObj.hostname.replace(/^www\./, '');
+                              faviconUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
+                              // 猜測來源類型
+                              if (source.url.includes('/rss') || source.url.includes('/feed') || source.url.endsWith('.xml')) {
+                                sourceType = 'rss';
+                              } else if (source.url.includes('/api') || source.url.includes('api.')) {
+                                sourceType = 'api';
+                              }
+                            } catch {
+                              domain = source.url;
+                            }
+
+                            const sourceTypeColors = {
+                              rss: 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400',
+                              web: 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400',
+                              api: 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400',
+                            };
+
+                            return (
+                              <div 
+                                key={idx} 
+                                className="group p-3 sm:p-4 bg-white dark:bg-gray-600 rounded-xl border border-gray-200 dark:border-gray-500 hover:border-purple-300 dark:hover:border-purple-600 hover:shadow-md transition-all duration-200"
+                                data-testid={`source-preview-${idx}`}
+                              >
+                                <div className="flex items-start gap-3">
+                                  {/* Favicon */}
+                                  <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gray-100 dark:bg-gray-500 flex items-center justify-center overflow-hidden">
+                                    {faviconUrl ? (
+                                      <img 
+                                        src={faviconUrl} 
+                                        alt="" 
+                                        className="w-5 h-5 sm:w-6 sm:h-6"
+                                        onError={(e) => {
+                                          (e.target as HTMLImageElement).style.display = 'none';
+                                          (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+                                        }}
+                                      />
+                                    ) : null}
+                                    <svg className={`w-4 h-4 sm:w-5 sm:h-5 text-gray-400 ${faviconUrl ? 'hidden' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                                    </svg>
+                                  </div>
+
+                                  {/* 來源資訊 */}
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2 mb-1">
+                                      <p className="text-sm sm:text-base font-medium text-gray-900 dark:text-white truncate">
+                                        {source.name}
+                                      </p>
+                                      {/* 來源類型標籤 */}
+                                      <span className={`flex-shrink-0 px-1.5 py-0.5 text-[10px] sm:text-xs font-medium rounded ${sourceTypeColors[sourceType]}`}>
+                                        {t(`channels.assist.sourceType.${sourceType}` as any)}
+                                      </span>
+                                    </div>
+                                    {/* 網域 */}
+                                    {domain && (
+                                      <p className="text-xs text-gray-400 dark:text-gray-500 truncate mb-1">
+                                        {domain}
+                                      </p>
+                                    )}
+                                    {/* 角色描述 */}
+                                    {source.role && (
+                                      <p className="text-xs text-gray-500 dark:text-gray-400 break-words line-clamp-2">
+                                        {source.role}
+                                      </p>
+                                    )}
+                                  </div>
+
+                                  {/* 訪問按鈕 */}
+                                  {source.url && (
+                                    <a
+                                      href={source.url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="flex-shrink-0 p-2 text-gray-400 hover:text-purple-500 group-hover:bg-purple-50 dark:group-hover:bg-purple-900/20 rounded-lg transition-all min-w-[44px] min-h-[44px] flex items-center justify-center"
+                                      data-testid={`source-link-${idx}`}
+                                      onClick={(e) => e.stopPropagation()}
+                                      aria-label={t('channels.assist.visitSource')}
+                                      title={t('channels.assist.visitSource')}
+                                    >
+                                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                      </svg>
+                                    </a>
                                   )}
                                 </div>
-                                {source.url && (
-                                  <a
-                                    href={source.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="flex-shrink-0 p-1.5 sm:p-2 text-gray-400 hover:text-purple-500 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
-                                    data-testid={`source-link-${idx}`}
-                                    onClick={(e) => e.stopPropagation()}
-                                    aria-label={t('channels.assist.openSource', { name: source.name })}
-                                  >
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                                    </svg>
-                                  </a>
-                                )}
                               </div>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
                         {assistResult.recommended_sources.length > 5 && (
-                          <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
+                          <p className="text-xs text-gray-400 dark:text-gray-500 mt-2 text-center">
                             {t('channels.assist.moreSources', { count: assistResult.recommended_sources.length - 5 })}
                           </p>
                         )}
