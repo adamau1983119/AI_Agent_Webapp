@@ -199,10 +199,10 @@ def verify_verification_token(token: str) -> Optional[str]:
         Email 地址，如果無效則返回 None
     """
     try:
-        payload = verify_token(token)
-        if payload and payload.get("type") == "email_verification":
-            return payload.get("email")
-        return None
+    payload = verify_token(token)
+    if payload and payload.get("type") == "email_verification":
+        return payload.get("email")
+    return None
     except TokenError:
         return None
 
@@ -218,10 +218,10 @@ def verify_password_reset_token(token: str) -> Optional[str]:
         Email 地址，如果無效或過期則返回 None
     """
     try:
-        payload = verify_token(token)
-        if payload and payload.get("type") == "password_reset":
-            return payload.get("email")
-        return None
+    payload = verify_token(token)
+    if payload and payload.get("type") == "password_reset":
+        return payload.get("email")
+    return None
     except TokenError:
         return None
 
