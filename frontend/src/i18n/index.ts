@@ -454,6 +454,7 @@ const zhTW = {
   'channels.assist.quickRegionLabel': '地區',
   'channels.assist.quickCategory': '我想看{category}的內容',
   'channels.assist.quickRegion': '我想看{region}的內容',
+  'channels.assist.quickPreset': '我想看{region}的{category}內容',
   'channels.assist.quickCategoryNote': '💡 時尚、美食、趨勢是本專案的核心類別，所有用戶都可以使用',
   'channels.assist.responseWithKeywords': '了解！我幫你設定：\n📁 類別：{category}\n🌍 地區：{region}\n🏷️ 關鍵字：{keywords}\n\n這樣對嗎？',
   'channels.assist.responseWithoutKeywords': '了解！我幫你設定：\n📁 類別：{category}\n🌍 地區：{region}\n\n這樣對嗎？',
@@ -747,6 +748,55 @@ const zhTW = {
   'topics.imageCount': '圖片數量',
   'topics.wordCount': '字數',
   'topics.duration': '預計時長',
+
+  // 內容生成設定
+  'content.generateSettings': '生成設定',
+  'content.generateSettingsDesc': '選擇風格和輸出格式，AI 將根據設定為您生成專屬內容',
+  'content.styleSelection': '風格選擇',
+  'content.styleSelectionDesc': '選擇一個風格，AI 將以此風格為您撰寫內容',
+  'content.outputFormat': '輸出格式',
+  'content.outputFormatDesc': '選擇您需要的內容類型',
+  'content.articleLength': '文章長度',
+  'content.articleLengthWords': '約 {count} 字',
+  'content.scriptDuration': '腳本時長',
+  'content.scriptDurationSeconds': '約 {count} 秒',
+  'content.startGenerate': '開始生成',
+
+  // 風格選項
+  'content.style.professional': '專業',
+  'content.style.professional.desc': '正式、嚴謹，適合商業/財經/科技內容',
+  'content.style.casual': '休閒親切',
+  'content.style.casual.desc': '輕鬆自然，適合生活/旅遊/美食內容',
+  'content.style.humorous': '幽默有趣',
+  'content.style.humorous.desc': '風趣幽默，適合娛樂/趣聞/創意內容',
+  'content.style.inspiring': '勵志啟發',
+  'content.style.inspiring.desc': '鼓舞人心，適合勵志/成長/心靈內容',
+  'content.style.storytelling': '故事敘述',
+  'content.style.storytelling.desc': '引人入勝，適合分享經歷/教學/深度內容',
+
+  // 輸出格式選項
+  'content.format.article': '僅文章',
+  'content.format.article.desc': '生成一篇完整的社群貼文',
+  'content.format.script': '僅腳本',
+  'content.format.script.desc': '生成一段影片/短視頻腳本',
+  'content.format.both': '文章 + 腳本',
+  'content.format.both.desc': '同時生成文章和影片腳本',
+
+  // AI 助手快捷預設
+  'channels.assist.presets': '常見組合',
+  'channels.assist.preset.japanFashion': '日本潮流穿搭',
+  'channels.assist.preset.hkFood': '香港美食推薦',
+  'channels.assist.preset.globalTrend': '全球社交趨勢',
+  'channels.assist.preset.taiwanTech': '台灣科技新聞',
+  'channels.assist.preset.koreaEntertainment': '韓國娛樂資訊',
+
+  // 來源預覽卡片
+  'channels.assist.sourceDomain': '網域',
+  'channels.assist.sourceType': '類型',
+  'channels.assist.sourceType.rss': 'RSS 訂閱',
+  'channels.assist.sourceType.web': '網站',
+  'channels.assist.sourceType.api': 'API',
+  'channels.assist.visitSource': '訪問來源',
 };
 
 // 英文翻譯
@@ -1176,6 +1226,7 @@ const en: typeof zhTW = {
   'channels.assist.quickRegionLabel': 'Region',
   'channels.assist.quickCategory': 'I want to see {category} content',
   'channels.assist.quickRegion': 'I want to see {region} content',
+  'channels.assist.quickPreset': 'I want to see {category} content from {region}',
   'channels.assist.quickCategoryNote': '💡 Fashion, Food, and Trend are core categories available to all users',
   'channels.assist.responseWithKeywords': 'Got it! I\'ll set up:\n📁 Category: {category}\n🌍 Region: {region}\n🏷️ Keywords: {keywords}\n\nIs this correct?',
   'channels.assist.responseWithoutKeywords': 'Got it! I\'ll set up:\n📁 Category: {category}\n🌍 Region: {region}\n\nIs this correct?',
@@ -1449,6 +1500,55 @@ const en: typeof zhTW = {
   'topics.imageCount': 'Image count',
   'topics.wordCount': 'Word count',
   'topics.duration': 'Estimated duration',
+
+  // Content Generation Settings
+  'content.generateSettings': 'Generation Settings',
+  'content.generateSettingsDesc': 'Choose style and output format, AI will generate personalized content based on your settings',
+  'content.styleSelection': 'Style Selection',
+  'content.styleSelectionDesc': 'Choose a style for AI to write your content',
+  'content.outputFormat': 'Output Format',
+  'content.outputFormatDesc': 'Choose the content type you need',
+  'content.articleLength': 'Article Length',
+  'content.articleLengthWords': 'About {count} words',
+  'content.scriptDuration': 'Script Duration',
+  'content.scriptDurationSeconds': 'About {count} seconds',
+  'content.startGenerate': 'Start Generating',
+
+  // Style Options
+  'content.style.professional': 'Professional',
+  'content.style.professional.desc': 'Formal, rigorous, suitable for business/finance/tech content',
+  'content.style.casual': 'Casual & Friendly',
+  'content.style.casual.desc': 'Relaxed, natural, suitable for lifestyle/travel/food content',
+  'content.style.humorous': 'Humorous & Fun',
+  'content.style.humorous.desc': 'Witty, humorous, suitable for entertainment/trivia/creative content',
+  'content.style.inspiring': 'Inspiring',
+  'content.style.inspiring.desc': 'Motivational, suitable for inspirational/growth/mindfulness content',
+  'content.style.storytelling': 'Storytelling',
+  'content.style.storytelling.desc': 'Engaging narrative, suitable for experience sharing/teaching/in-depth content',
+
+  // Output Format Options
+  'content.format.article': 'Article Only',
+  'content.format.article.desc': 'Generate a complete social media post',
+  'content.format.script': 'Script Only',
+  'content.format.script.desc': 'Generate a video/short video script',
+  'content.format.both': 'Article + Script',
+  'content.format.both.desc': 'Generate both article and video script',
+
+  // AI Assistant Quick Presets
+  'channels.assist.presets': 'Common Combinations',
+  'channels.assist.preset.japanFashion': 'Japan Fashion Trends',
+  'channels.assist.preset.hkFood': 'Hong Kong Food Picks',
+  'channels.assist.preset.globalTrend': 'Global Social Trends',
+  'channels.assist.preset.taiwanTech': 'Taiwan Tech News',
+  'channels.assist.preset.koreaEntertainment': 'Korea Entertainment',
+
+  // Source Preview Cards
+  'channels.assist.sourceDomain': 'Domain',
+  'channels.assist.sourceType': 'Type',
+  'channels.assist.sourceType.rss': 'RSS Feed',
+  'channels.assist.sourceType.web': 'Website',
+  'channels.assist.sourceType.api': 'API',
+  'channels.assist.visitSource': 'Visit Source',
 };
 
 // 日文翻譯
@@ -1881,6 +1981,7 @@ const ja: typeof zhTW = {
   'channels.assist.quickRegionLabel': '地域',
   'channels.assist.quickCategory': '{category}のコンテンツを見たい',
   'channels.assist.quickRegion': '{region}のコンテンツを見たい',
+  'channels.assist.quickPreset': '{region}の{category}コンテンツを見たい',
   'channels.assist.quickCategoryNote': '💡 ファッション、美食、トレンドは本プロジェクトのコアカテゴリで、すべてのユーザーが利用できます',
   'channels.assist.responseWithKeywords': '了解しました！設定します：\n📁 カテゴリ：{category}\n🌍 地域：{region}\n🏷️ キーワード：{keywords}\n\nこれでよろしいですか？',
   'channels.assist.responseWithoutKeywords': '了解しました！設定します：\n📁 カテゴリ：{category}\n🌍 地域：{region}\n\nこれでよろしいですか？',
@@ -2152,6 +2253,55 @@ const ja: typeof zhTW = {
   'topics.imageCount': '画像数',
   'topics.wordCount': '文字数',
   'topics.duration': '予想時間',
+
+  // コンテンツ生成設定
+  'content.generateSettings': '生成設定',
+  'content.generateSettingsDesc': 'スタイルと出力形式を選択すると、AIが設定に基づいてパーソナライズされたコンテンツを生成します',
+  'content.styleSelection': 'スタイル選択',
+  'content.styleSelectionDesc': 'AIがコンテンツを書くスタイルを選択してください',
+  'content.outputFormat': '出力形式',
+  'content.outputFormatDesc': '必要なコンテンツタイプを選択してください',
+  'content.articleLength': '記事の長さ',
+  'content.articleLengthWords': '約 {count} 文字',
+  'content.scriptDuration': 'スクリプトの長さ',
+  'content.scriptDurationSeconds': '約 {count} 秒',
+  'content.startGenerate': '生成開始',
+
+  // スタイルオプション
+  'content.style.professional': 'プロフェッショナル',
+  'content.style.professional.desc': 'フォーマルで厳密、ビジネス/金融/テクノロジーコンテンツに最適',
+  'content.style.casual': 'カジュアル＆フレンドリー',
+  'content.style.casual.desc': 'リラックスした自然体、ライフスタイル/旅行/グルメコンテンツに最適',
+  'content.style.humorous': 'ユーモラス＆楽しい',
+  'content.style.humorous.desc': 'ウィットに富んだユーモア、エンタメ/トリビア/クリエイティブコンテンツに最適',
+  'content.style.inspiring': 'インスピレーション',
+  'content.style.inspiring.desc': '心を動かすモチベーション、自己成長/マインドフルネスコンテンツに最適',
+  'content.style.storytelling': 'ストーリーテリング',
+  'content.style.storytelling.desc': '引き込まれるナラティブ、体験共有/教育/深堀りコンテンツに最適',
+
+  // 出力形式オプション
+  'content.format.article': '記事のみ',
+  'content.format.article.desc': '完全なSNS投稿を生成',
+  'content.format.script': 'スクリプトのみ',
+  'content.format.script.desc': '動画/ショート動画スクリプトを生成',
+  'content.format.both': '記事 + スクリプト',
+  'content.format.both.desc': '記事と動画スクリプトの両方を生成',
+
+  // AIアシスタント クイックプリセット
+  'channels.assist.presets': 'よく使う組み合わせ',
+  'channels.assist.preset.japanFashion': '日本のファッショントレンド',
+  'channels.assist.preset.hkFood': '香港グルメおすすめ',
+  'channels.assist.preset.globalTrend': 'グローバルソーシャルトレンド',
+  'channels.assist.preset.taiwanTech': '台湾テックニュース',
+  'channels.assist.preset.koreaEntertainment': '韓国エンタメ情報',
+
+  // ソースプレビューカード
+  'channels.assist.sourceDomain': 'ドメイン',
+  'channels.assist.sourceType': 'タイプ',
+  'channels.assist.sourceType.rss': 'RSSフィード',
+  'channels.assist.sourceType.web': 'ウェブサイト',
+  'channels.assist.sourceType.api': 'API',
+  'channels.assist.visitSource': 'ソースを訪問',
 };
 
 // 翻譯對照表
