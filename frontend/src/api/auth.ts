@@ -154,6 +154,16 @@ export const authApi = {
       skipErrorHandler: true,
     });
   },
+
+  /**
+   * 更新用戶個人資料
+   */
+  updateProfile: async (data: { name?: string; language?: string }): Promise<User> => {
+    return fetchAPI<User>('/auth/profile', {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  },
 };
 
 // Token 管理

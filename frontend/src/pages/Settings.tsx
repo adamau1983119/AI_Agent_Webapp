@@ -6,6 +6,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation, languageOptions, Language } from '../i18n';
 import { useAuthStore } from '../stores/authStore';
+import { authApi } from '../api/auth';
+import toast from 'react-hot-toast';
 
 export default function Settings() {
   const { t, language, setLanguage } = useTranslation();
@@ -24,18 +26,25 @@ export default function Settings() {
   
   const handleSaveProfile = async () => {
     setIsSaving(true);
-    // TODO: 實作 API 呼叫
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // 更新語言
-    if (profileData.language !== language) {
-      setLanguage(profileData.language as Language);
+    try {
+      await authApi.updateProfile({
+        name: profileData.name || undefined,
+        language: profileData.language,
+      });
+      
+      // 更新語言
+      if (profileData.language !== language) {
+        setLanguage(profileData.language as Language);
+      }
+      
+      toast.success(t('profile.saved'));
+      setSaveMessage(t('profile.saved'));
+    } catch (err: any) {
+      toast.error(err.message || t('common.failed'));
+    } finally {
+      setIsSaving(false);
+      setTimeout(() => setSaveMessage(''), 3000);
     }
-    
-    setSaveMessage(t('profile.saved'));
-    setIsSaving(false);
-    
-    setTimeout(() => setSaveMessage(''), 3000);
   };
   
   const handleLogout = () => {
