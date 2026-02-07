@@ -5,7 +5,7 @@ Phase 2: 會員系統
 from fastapi import Request, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import Optional, Dict, Any
-from app.utils.jwt import verify_access_token
+from app.utils.jwt import verify_access_token, TokenError
 from app.services.repositories.user_repository import UserRepository
 from app.models.user import UserRole, UserStatus
 import logging
@@ -47,8 +47,25 @@ class JWTAuth(HTTPBearer):
         
         token = credentials.credentials
         
-        # 驗證 Token
-        payload = verify_access_token(token)
+        # 驗證 Token（支援區分過期和無效的錯誤類型）
+        try:
+            payload = verify_access_token(token)
+        except TokenError as e:
+            if self.auto_error:
+                if e.error_type == "expired":
+                    raise HTTPException(
+                        status_code=status.HTTP_401_UNAUTHORIZED,
+                        detail="Token 已過期，請重新登入",
+                        headers={"WWW-Authenticate": "Bearer", "X-Token-Expired": "true"},
+                    )
+                else:
+                    raise HTTPException(
+                        status_code=status.HTTP_401_UNAUTHORIZED,
+                        detail="無效的 Token",
+                        headers={"WWW-Authenticate": "Bearer"},
+                    )
+            return None
+        
         if not payload:
             if self.auto_error:
                 raise HTTPException(

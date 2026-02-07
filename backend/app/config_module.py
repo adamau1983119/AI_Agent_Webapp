@@ -97,7 +97,7 @@ class Settings(BaseSettings):
     # ============================================
     MAX_USERS: int = 100  # 測試版最大用戶數（100 人限制）
     EMAIL_VERIFICATION_EXPIRE_HOURS: int = 24  # Email 驗證連結過期時間（小時）
-    PASSWORD_RESET_EXPIRE_HOURS: int = 24  # 密碼重設連結過期時間（小時）
+    PASSWORD_RESET_EXPIRE_HOURS: int = 1  # 密碼重設連結過期時間（1 小時，安全考量）
     
     # ============================================
     # Phase 5: 社交平台配置
