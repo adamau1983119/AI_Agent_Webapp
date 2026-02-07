@@ -14,7 +14,7 @@ import { useTranslation } from '@/i18n'
 
 export default function Dashboard() {
   usePageTitle()
-  const { t } = useTranslation()
+  const { t, language } = useTranslation()
   const [isGenerating, setIsGenerating] = useState(false)
   
   // 調試：檢查環境變數是否正確讀取（僅在首次掛載時執行）
@@ -129,7 +129,7 @@ export default function Dashboard() {
 
   // 生成今日主題的 mutation
   const generateTodayMutation = useMutation({
-    mutationFn: (force: boolean) => schedulesAPI.generateTodayAllTopics(force),
+    mutationFn: (force: boolean) => schedulesAPI.generateTodayAllTopics(force, language),
     onMutate: () => {
       setIsGenerating(true)
       // 初始化進度狀態

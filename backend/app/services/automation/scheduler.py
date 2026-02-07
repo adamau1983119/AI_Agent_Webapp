@@ -358,7 +358,8 @@ class SchedulerService:
     async def trigger_manual_generation(
         self,
         category: Category,
-        count: int = 10
+        count: int = 10,
+        display_language: str = "zh-TW"
     ) -> List[Dict[str, Any]]:
         """
         手動觸發主題生成（用於測試或立即執行）
@@ -366,18 +367,20 @@ class SchedulerService:
         Args:
             category: 主題分類
             count: 生成數量
+            display_language: 標題顯示語言（zh-TW/en/ja）
             
         Returns:
             建立的主題列表
         """
-        logger.info(f"手動觸發生成 {count} 個 {category.value} 主題")
+        logger.info(f"手動觸發生成 {count} 個 {category.value} 主題 (語言: {display_language})")
         
         try:
             # 收集主題
             topics_data = await self.topic_collector.collect_topics(
                 category=category,
                 count=count,
-                use_fallback=True
+                use_fallback=True,
+                display_language=display_language
             )
             
             created_topics = []
@@ -409,7 +412,8 @@ class SchedulerService:
                         topic_id=topic_id,
                         auto_generate_content=True,
                         auto_search_images=True,
-                        image_count=8  # 改為 8 張照片（符合需求）
+                        image_count=8,  # 改為 8 張照片（符合需求）
+                        language=display_language
                     )
                     
                     logger.info(f"主題 {topic_id} 建立並處理完成")

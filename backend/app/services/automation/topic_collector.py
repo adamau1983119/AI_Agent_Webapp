@@ -122,7 +122,8 @@ class TopicCollector:
         self,
         category: Category,
         count: int = 10,
-        use_fallback: bool = True
+        use_fallback: bool = True,
+        display_language: str = "zh-TW"
     ) -> List[Dict[str, Any]]:
         """
         收集主題（使用角色分配策略 + 去重）
@@ -144,7 +145,7 @@ class TopicCollector:
         try:
             # 使用角色分配策略收集（多收集一些以補償去重損失）
             target_count = int(count * 1.5) if self.enable_dedup else count
-            rss_topics = await self._collect_by_roles(category, target_count)
+            rss_topics = await self._collect_by_roles(category, target_count, display_language=display_language)
             
             # v3.2: 去重過濾
             if self.enable_dedup and self.deduplicator:
@@ -206,7 +207,8 @@ class TopicCollector:
     async def _collect_by_roles(
         self,
         category: Category,
-        count: int
+        count: int,
+        display_language: str = "zh-TW"
     ) -> List[Dict[str, Any]]:
         """
         使用角色分配策略收集主題
@@ -239,7 +241,8 @@ class TopicCollector:
                     category=category,
                     feeds=feeds,
                     count=role_count,
-                    role_name=role_name
+                    role_name=role_name,
+                    display_language=display_language
                 )
                 topics.extend(role_topics)
                 
@@ -254,7 +257,8 @@ class TopicCollector:
         category: Category,
         feeds: List[Tuple[str, str, float]],
         count: int,
-        role_name: str
+        role_name: str,
+        display_language: str = "zh-TW"
     ) -> List[Dict[str, Any]]:
         """
         從單一角色的 Feed 列表收集主題（含健康監控 + Phase 6 整合）
@@ -334,8 +338,8 @@ class TopicCollector:
                     )
                     logger.debug(f"提取到 {len(hashtags)} 個 hashtags: {hashtags[:5]}")
                     
-                    # 翻譯標題並生成摘要
-                    chinese_title, description = await self._translate_title_to_chinese(title, category)
+                    # 翻譯標題並生成摘要（支援多語言）
+                    translated_title, description = await self._translate_title(title, category, display_language)
                     
                     # 提取原文圖片和內容（使用舊版 extractor 作為補充）
                     article_info = await extractor.extract_article_info(link)
@@ -345,7 +349,7 @@ class TopicCollector:
                         "type": "rss",
                         "name": feed_title,
                         "url": link,
-                        "title": chinese_title,
+                        "title": translated_title,
                         "original_title": title,
                         "fetched_at": datetime.utcnow(),
                         "verified": True,
@@ -372,7 +376,7 @@ class TopicCollector:
                     
                     # 計算文章評分
                     article_data = {
-                        "title": chinese_title,
+                        "title": translated_title,
                         "source": source_name,
                         "source_name": source_name,
                         "images": all_images,
@@ -388,7 +392,7 @@ class TopicCollector:
                     
                     # 構建 topic（舊格式，向後兼容）
                     topic = {
-                        "title": chinese_title,
+                        "title": translated_title,
                         "category": category.value,
                         "source": source_name,
                         "source_name": source_name,
@@ -400,6 +404,9 @@ class TopicCollector:
                         # Phase 6: 新增欄位
                         "hashtags": hashtags,
                         "preview_images_v2": preview_images,  # 帶有 photo_id 的完整結構
+                        # Phase 7: 多語言支援
+                        "display_language": display_language,
+                        "original_title": title,
                     }
                     
                     # Phase 6: 雙寫機制
@@ -428,7 +435,7 @@ class TopicCollector:
                             logger.warning(f"雙寫失敗，繼續使用舊格式: {e}")
                     
                     topics.append(topic)
-                    logger.info(f"✅ 收集主題: {chinese_title[:30]}... (score: {score_result['score']:.2f}, hashtags: {len(hashtags)})")
+                    logger.info(f"✅ 收集主題: {translated_title[:30]}... (score: {score_result['score']:.2f}, lang: {display_language}, hashtags: {len(hashtags)})")
                 
                 # 健康監控：記錄成功
                 try:
@@ -556,14 +563,14 @@ class TopicCollector:
                         
                         if title:
                             keywords = self._extract_keywords(title, category)
-                            chinese_title, description = await self._translate_title_to_chinese(title, category)
+                            translated_title, description = await self._translate_title(title, category, "zh-TW")
                             article_info = await extractor.extract_article_info(link)
                             
                             source_info = {
                                 "type": "rss",
                                 "name": feed.feed.get("title", source_name),
                                 "url": link,
-                                "title": chinese_title,
+                                "title": translated_title,
                                 "original_title": title,
                                 "fetched_at": datetime.utcnow(),
                                 "verified": True,
@@ -579,12 +586,14 @@ class TopicCollector:
                                     source_info["style"] = style_info if isinstance(style_info, dict) else style_info
                             
                             topic = {
-                                "title": chinese_title,
+                                "title": translated_title,
                                 "category": category.value,
                                 "source": source_name,
                                 "source_name": source_name,
                                 "description": description,
                                 "sources": [source_info],
+                                "display_language": "zh-TW",
+                                "original_title": title,
                             }
                             topics.append(topic)
                             
@@ -745,23 +754,63 @@ class TopicCollector:
         category: Category
     ) -> tuple[str, Optional[str]]:
         """
-        將英文標題翻譯成中文，並生成30字撮要
+        將英文標題翻譯成中文，並生成30字撮要（向後兼容）
         
         Returns:
             (chinese_title, description) 元組
         """
-        has_english = any(c.isalpha() and ord(c) < 128 for c in english_title)
+        return await self._translate_title(english_title, category, "zh-TW")
+    
+    async def _translate_title(
+        self,
+        source_title: str,
+        category: Category,
+        target_language: str = "zh-TW"
+    ) -> tuple[str, Optional[str]]:
+        """
+        將標題翻譯為指定語言，並生成摘要
         
-        if not has_english:
-            return english_title, None
+        Args:
+            source_title: 原始標題
+            category: 主題分類
+            target_language: 目標語言（zh-TW/en/ja）
+        
+        Returns:
+            (translated_title, description) 元組
+        """
+        lang_labels = {
+            "zh-TW": "繁體中文",
+            "en": "English",
+            "ja": "日本語",
+        }
+        target_lang_label = lang_labels.get(target_language, "繁體中文")
+        
+        # 如果目標語言是英文，且標題已經是英文，直接返回
+        has_english = any(c.isalpha() and ord(c) < 128 for c in source_title)
+        has_cjk = any(ord(c) > 0x3000 for c in source_title)
+        
+        if target_language == "en" and has_english and not has_cjk:
+            return source_title, None
+        
+        # 如果目標語言是中文且標題已經是中文，直接返回
+        if target_language == "zh-TW" and has_cjk and not has_english:
+            return source_title, None
         
         try:
             from app.services.ai.ai_service_factory import AIServiceFactory
             from app.config import settings
-            from app.prompts.title_prompt import build_title_prompt
             
             ai_service = AIServiceFactory.get_service(settings.AI_SERVICE)
-            prompt = build_title_prompt(category, english_title=english_title)
+            
+            # 根據目標語言構建翻譯 prompt
+            if target_language == "zh-TW":
+                # 使用原有的中文翻譯 prompt
+                from app.prompts.title_prompt import build_title_prompt
+                prompt = build_title_prompt(category, english_title=source_title)
+            else:
+                # 為其他語言構建翻譯 prompt
+                prompt = self._build_translation_prompt(source_title, category, target_language, target_lang_label)
+            
             ai_response = await ai_service._call_api(prompt)
             
             title = None
@@ -770,10 +819,10 @@ class TopicCollector:
             lines = ai_response.strip().split('\n')
             for line in lines:
                 line = line.strip()
-                if line.startswith('標題：') or line.startswith('标题：'):
-                    title = line.replace('標題：', '').replace('标题：', '').strip().strip('"').strip("'")
-                elif line.startswith('摘要：') or line.startswith('摘要：'):
-                    description = line.replace('摘要：', '').replace('摘要：', '').strip().strip('"').strip("'")
+                if line.startswith('標題：') or line.startswith('标题：') or line.startswith('Title:') or line.startswith('タイトル：'):
+                    title = line.split('：', 1)[-1].split(':', 1)[-1].strip().strip('"').strip("'")
+                elif line.startswith('摘要：') or line.startswith('Summary:') or line.startswith('要約：'):
+                    description = line.split('：', 1)[-1].split(':', 1)[-1].strip().strip('"').strip("'")
             
             if not title:
                 title = lines[0].strip().strip('"').strip("'")
@@ -787,12 +836,44 @@ class TopicCollector:
             if description:
                 description = description.strip().strip('"').strip("'").strip()
             
-            if title and len(title) > 5:
+            if title and len(title) > 3:
                 return title, description
         except Exception as e:
-            logger.warning(f"翻譯標題失敗: {e}，使用原始標題")
+            logger.warning(f"翻譯標題失敗 (target={target_language}): {e}，使用原始標題")
         
-        return english_title, None
+        return source_title, None
+    
+    def _build_translation_prompt(
+        self,
+        source_title: str,
+        category: Category,
+        target_language: str,
+        target_lang_label: str
+    ) -> str:
+        """構建多語言翻譯 prompt"""
+        category_map = {
+            "fashion": "Fashion/時尚",
+            "food": "Food/美食",
+            "trend": "Trend/趨勢"
+        }
+        cat_label = category_map.get(category.value, category.value)
+        
+        return f"""請將以下標題翻譯為{target_lang_label}，並生成一個約30字的{target_lang_label}摘要。
+
+原始標題：{source_title}
+分類：{cat_label}
+
+請使用以下格式回答（每行一項）：
+標題：（翻譯後的標題）
+摘要：（約30字的摘要）
+
+要求：
+1. 標題必須為{target_lang_label}
+2. 翻譯要自然流暢，符合{target_lang_label}的表達習慣
+3. 保持原始標題的核心含義
+4. 摘要要簡潔有力，吸引讀者
+
+請直接輸出，不要添加任何多餘的說明。"""
     
     def _extract_keywords(
         self,

@@ -574,6 +574,30 @@ export default function TopicDetail() {
                 {new Date(topic.generatedAt).toLocaleString()}
               </p>
             </div>
+            {/* 語言資訊區塊 */}
+            {(topic.displayLanguage || topic.originalTitle) && (
+              <div>
+                <h3 className="font-semibold text-gray-700 dark:text-gray-200 mb-2">{t('topics.languageInfo')}</h3>
+                <div className="space-y-2 text-sm">
+                  {topic.displayLanguage && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-500 dark:text-gray-400">{t('topics.displayLanguage')}:</span>
+                      <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded text-xs font-medium">
+                        {topic.displayLanguage === 'zh-TW' ? '繁體中文' : topic.displayLanguage === 'en' ? 'English' : topic.displayLanguage === 'ja' ? '日本語' : topic.displayLanguage}
+                      </span>
+                    </div>
+                  )}
+                  {topic.originalTitle && topic.originalTitle !== topic.title && (
+                    <div>
+                      <span className="text-gray-500 dark:text-gray-400">{t('topics.originalTitle')}:</span>
+                      <p className="text-gray-600 dark:text-gray-300 mt-1 text-xs italic break-words">
+                        {topic.originalTitle}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
             {content && (
               <div>
                 <h3 className="font-semibold text-gray-700 dark:text-gray-200 mb-2">{t('content.model')}</h3>

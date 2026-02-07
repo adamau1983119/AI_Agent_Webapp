@@ -24,6 +24,9 @@ function convertTopic(apiTopic: any): Topic {
     previewImages: apiTopic.preview_images || [],
     isExpanded: apiTopic.is_expanded || false,
     description: apiTopic.description || undefined,
+    // Phase 7: 多語言支援
+    displayLanguage: apiTopic.display_language || apiTopic.displayLanguage || undefined,
+    originalTitle: apiTopic.original_title || apiTopic.originalTitle || undefined,
   }
 }
 
