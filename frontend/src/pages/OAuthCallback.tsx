@@ -52,9 +52,9 @@ export default function OAuthCallback() {
               </svg>
             </div>
             <h2 className="text-xl font-semibold text-white mb-2">
-              正在處理登入...
+              {t('oauth.processing')}
             </h2>
-            <p className="text-gray-400">請稍候，正在驗證您的帳號</p>
+            <p className="text-gray-400">{t('oauth.verifying')}</p>
           </>
         ) : error ? (
           <>

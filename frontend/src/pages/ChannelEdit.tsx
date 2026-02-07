@@ -12,8 +12,8 @@ import {
   ChannelUpdateRequest,
   ChannelCategory,
   ChannelRegion,
-  categoryLabels,
-  regionLabels,
+  categoryI18nKeys,
+  regionI18nKeys,
   categoryIcons,
 } from '../api/channels';
 import toast from 'react-hot-toast';
@@ -192,13 +192,13 @@ export default function ChannelEdit() {
             <div>
               <p className="text-sm text-gray-500 dark:text-gray-400">{t('channels.category')}</p>
               <p className="font-medium text-gray-900 dark:text-white">
-                {categoryLabels[channel.category as ChannelCategory]}
+                {t(categoryI18nKeys[channel.category as ChannelCategory])}
               </p>
             </div>
             <div>
               <p className="text-sm text-gray-500 dark:text-gray-400">{t('channels.region')}</p>
               <p className="font-medium text-gray-900 dark:text-white">
-                {regionLabels[channel.region as ChannelRegion]}
+                {t(regionI18nKeys[channel.region as ChannelRegion])}
               </p>
             </div>
           </div>

@@ -70,6 +70,7 @@ class ManualGenerationRequest(BaseModel):
 class GenerateTodayRequest(BaseModel):
     """生成今日所有主題請求"""
     force: bool = False  # 是否強制重新生成
+    language: str = "zh-TW"  # 標題/內容的目標語言（zh-TW/en/ja）
 
 
 @router.get("", response_model=List[ScheduleResponse])
@@ -356,21 +357,23 @@ async def generate_today_all_topics(
             }
         
         # 5. 在背景任務中執行生成
+        target_language = request_body.language
         async def generate_all_task():
             """背景任務：生成所有主題"""
             try:
                 logger.info("=" * 60)
-                logger.info("🚀 背景任務開始：生成今日所有主題")
+                logger.info(f"🚀 背景任務開始：生成今日所有主題 (語言: {target_language})")
                 logger.info("=" * 60)
                 results = {}
                 total_generated = 0
                 
                 for category in [Category.FASHION, Category.FOOD, Category.TREND]:
                     try:
-                        logger.info(f"📝 開始生成 {category.value} 主題（目標：10 個）...")
+                        logger.info(f"📝 開始生成 {category.value} 主題（目標：10 個, 語言: {target_language}）...")
                         topics = await scheduler_service.trigger_manual_generation(
                             category=category,
-                            count=10
+                            count=10,
+                            display_language=target_language
                         )
                         generated_count = len(topics) if topics else 0
                         total_generated += generated_count
@@ -410,7 +413,8 @@ async def generate_today_all_topics(
             "message": "生成任務已提交，請稍後查看結果",
             "categories": ["fashion", "food", "trend"],
             "expected_count": 30,
-            "existing_count": len(existing_topics)
+            "existing_count": len(existing_topics),
+            "language": target_language
         }
         
     except ConnectionFailure as e:

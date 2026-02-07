@@ -15,6 +15,7 @@ from app.services.auth_service import auth_service
 from app.middleware.jwt_auth import get_current_user, jwt_auth
 from app.config_module import settings
 from app.utils.i18n import get_error_message, get_user_language
+from pydantic import BaseModel, Field
 import logging
 
 logger = logging.getLogger(__name__)
@@ -476,4 +477,61 @@ async def google_callback(
         return RedirectResponse(
             url=f"{settings.FRONTEND_URL}/login?error=oauth_failed"
         )
+
+
+# ============================================
+# 用戶個人資料更新
+# ============================================
+
+class ProfileUpdateRequest(BaseModel):
+    """更新個人資料請求"""
+    name: Optional[str] = Field(None, min_length=1, max_length=100, description="顯示名稱")
+    language: Optional[str] = Field(None, description="語言偏好 (zh-TW/en/ja)")
+
+
+@router.patch("/profile", response_model=UserResponse)
+async def update_profile(
+    request: Request,
+    update_data: ProfileUpdateRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    更新用戶個人資料
+    
+    - **name**: 顯示名稱（可選）
+    - **language**: 語言偏好（可選，zh-TW/en/ja）
+    """
+    language = get_user_language(request)
+    
+    update_dict = {}
+    if update_data.name is not None:
+        update_dict["name"] = update_data.name
+    if update_data.language is not None:
+        valid_languages = ["zh-TW", "en", "ja"]
+        if update_data.language not in valid_languages:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=get_error_message("validation.invalid_language", language)
+            )
+        update_dict["language"] = update_data.language
+    
+    if not update_dict:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=get_error_message("validation.no_fields", language)
+        )
+    
+    updated_user = await auth_service.user_repo.update_user(
+        current_user["id"],
+        update_dict
+    )
+    
+    if not updated_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=get_error_message("auth.user_not_found", language)
+        )
+    
+    logger.info(f"用戶 {current_user['id']} 更新個人資料: {list(update_dict.keys())}")
+    return UserResponse(**updated_user)
 

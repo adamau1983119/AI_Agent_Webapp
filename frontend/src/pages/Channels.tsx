@@ -11,8 +11,8 @@ import {
   Channel,
   ChannelCategory,
   ChannelRegion,
-  categoryLabels,
-  regionLabels,
+  categoryI18nKeys,
+  regionI18nKeys,
   categoryIcons,
 } from '../api/channels';
 import toast from 'react-hot-toast';
@@ -220,7 +220,7 @@ function ChannelCard({
               {channel.name}
             </h3>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              {categoryLabels[channel.category as ChannelCategory]} · {regionLabels[channel.region as ChannelRegion]}
+              {t(categoryI18nKeys[channel.category as ChannelCategory])} · {t(regionI18nKeys[channel.region as ChannelRegion])}
             </p>
           </div>
         </div>

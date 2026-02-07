@@ -398,7 +398,7 @@ def get_password_reset_email_template(
     {reset_url}
 </p>
 <p style="margin: 0 0 8px; color: #999999; font-size: 12px; font-weight: 300;">
-    此連結將在 24 小時後過期。
+    此連結將在 1 小時後過期。
 </p>
 <div style="margin: 24px 0; padding: 16px; border: 1px solid #e5e5e5;">
     <p style="margin: 0; color: #666666; font-size: 12px; font-weight: 300; line-height: 1.6;">
@@ -432,7 +432,7 @@ def get_password_reset_email_template(
     {reset_url}
 </p>
 <p style="margin: 0 0 8px; color: #999999; font-size: 12px; font-weight: 300;">
-    This link will expire in 24 hours.
+    This link will expire in 1 hour.
 </p>
 <div style="margin: 24px 0; padding: 16px; border: 1px solid #e5e5e5;">
     <p style="margin: 0; color: #666666; font-size: 12px; font-weight: 300; line-height: 1.6;">
@@ -466,7 +466,7 @@ def get_password_reset_email_template(
     {reset_url}
 </p>
 <p style="margin: 0 0 8px; color: #999999; font-size: 12px; font-weight: 300;">
-    このリンクは 24 時間後に期限切れになります。
+    このリンクは 1 時間後に期限切れになります。
 </p>
 <div style="margin: 24px 0; padding: 16px; border: 1px solid #e5e5e5;">
     <p style="margin: 0; color: #666666; font-size: 12px; font-weight: 300; line-height: 1.6;">
@@ -479,17 +479,17 @@ def get_password_reset_email_template(
         Language.ZH_TW: {
             "subject": "INFLUENCERS — 重設密碼",
             "html": _lane_crawford_base(zh_body, "'Noto Sans TC', Arial, 'Helvetica Neue', sans-serif"),
-            "text": f"INFLUENCERS — 重設密碼\n\n我們收到了重設您密碼的請求。請點擊以下連結設定新密碼：\n\n{reset_url}\n\n此連結將在 24 小時後過期。\n如果您沒有請求重設密碼，請忽略此郵件。\n\n© 2026 INFLUENCERS"
+            "text": f"INFLUENCERS — 重設密碼\n\n我們收到了重設您密碼的請求。請點擊以下連結設定新密碼：\n\n{reset_url}\n\n此連結將在 1 小時後過期。\n如果您沒有請求重設密碼，請忽略此郵件。\n\n© 2026 INFLUENCERS"
         },
         Language.EN: {
             "subject": "INFLUENCERS — Reset Password",
             "html": _lane_crawford_base(en_body),
-            "text": f"INFLUENCERS — Reset Password\n\nWe received a request to reset your password. Click the link below:\n\n{reset_url}\n\nThis link will expire in 24 hours.\nIf you didn't request a password reset, please ignore this email.\n\n© 2026 INFLUENCERS"
+            "text": f"INFLUENCERS — Reset Password\n\nWe received a request to reset your password. Click the link below:\n\n{reset_url}\n\nThis link will expire in 1 hour.\nIf you didn't request a password reset, please ignore this email.\n\n© 2026 INFLUENCERS"
         },
         Language.JA: {
             "subject": "INFLUENCERS — パスワードのリセット",
             "html": _lane_crawford_base(ja_body, "'Noto Sans JP', Arial, 'Helvetica Neue', sans-serif"),
-            "text": f"INFLUENCERS — パスワードのリセット\n\nパスワードリセットのリクエストを受け取りました。以下のリンクをクリックしてください：\n\n{reset_url}\n\nこのリンクは 24 時間後に期限切れになります。\nリクエストしていない場合は、このメールを無視してください。\n\n© 2026 INFLUENCERS"
+            "text": f"INFLUENCERS — パスワードのリセット\n\nパスワードリセットのリクエストを受け取りました。以下のリンクをクリックしてください：\n\n{reset_url}\n\nこのリンクは 1 時間後に期限切れになります。\nリクエストしていない場合は、このメールを無視してください。\n\n© 2026 INFLUENCERS"
         }
     }
     

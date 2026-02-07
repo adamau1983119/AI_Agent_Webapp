@@ -141,28 +141,28 @@ export const styleProfileApi = {
   },
 };
 
-// 預設風格標籤映射
-export const presetStyleLabels: Record<PresetStyle, string> = {
-  professional: '專業正式',
-  casual: '輕鬆隨性',
-  humorous: '幽默風趣',
-  inspiring: '激勵人心',
-  storytelling: '故事敘述',
+// 預設風格 i18n 鍵映射（使用 t() 渲染）
+export const presetStyleI18nKeys: Record<PresetStyle, string> = {
+  professional: 'style.preset.professional',
+  casual: 'style.preset.casual',
+  humorous: 'style.preset.humorous',
+  inspiring: 'style.preset.inspiring',
+  storytelling: 'style.preset.storytelling',
 };
 
-// 輸出格式標籤映射
-export const outputFormatLabels: Record<OutputFormat, string> = {
-  full_article: '完整文章',
-  social_post: '社交貼文',
-  caption: 'Caption',
-  script: '腳本',
+// 輸出格式 i18n 鍵映射（使用 t() 渲染）
+export const outputFormatI18nKeys: Record<OutputFormat, string> = {
+  full_article: 'style.format.full_article',
+  social_post: 'style.format.social_post',
+  caption: 'style.format.caption',
+  script: 'style.format.script',
 };
 
-// 學習階段標籤映射
-export const learningStageLabels: Record<LearningStage, string> = {
-  cold_start: '冷啟動',
-  learning: '學習中',
-  mature: '已成熟',
+// 學習階段 i18n 鍵映射（使用 t() 渲染）
+export const learningStageI18nKeys: Record<LearningStage, string> = {
+  cold_start: 'style.stage.cold_start',
+  learning: 'style.stage.learning',
+  mature: 'style.stage.mature',
 };
 
 // 學習階段進度

@@ -77,7 +77,7 @@ export async function responseInterceptor(
     let error: APIError
     if (response.status === 400) {
       // 400 錯誤：通常是資料庫未連接或用戶操作錯誤
-      const message = errorData?.message || errorData?.detail || '請求參數錯誤'
+      const message = errorData?.message || errorData?.detail || 'Bad request'
       const suggestion = errorData?.suggestion || ''
       error = new APIError(
         suggestion ? `${message}\n${suggestion}` : message,
@@ -87,9 +87,9 @@ export async function responseInterceptor(
       )
     } else if (response.status === 500) {
       // 500 錯誤：系統內部錯誤
-      const message = errorData?.message || errorData?.detail || '伺服器內部錯誤'
+      const message = errorData?.message || errorData?.detail || 'Internal server error'
       error = new APIError(
-        `${message}\n請查看後端日誌獲取詳細資訊`,
+        message,
         response.status,
         'INTERNAL_ERROR',
         errorData

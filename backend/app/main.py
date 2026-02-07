@@ -12,6 +12,7 @@ from app.database import connect_to_mongo, close_mongo_connection, check_connect
 from app.middleware.auth import APIKeyMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 from app.middleware.rate_limit import RateLimitMiddleware
+from app.middleware.csrf import CSRFMiddleware
 from app.utils.logger import setup_logging
 
 logger = logging.getLogger(__name__)
@@ -358,14 +359,17 @@ logger.info(f"解析後的 CORS_ORIGINS: {cors_origins_list}")
 if settings.API_KEY:
     app.add_middleware(APIKeyMiddleware)
 
-# 2. 添加請求限流中間件（第二個執行）
+# 2. 添加 CSRF 防護中間件（Phase 2: 安全功能）
+app.add_middleware(CSRFMiddleware)
+
+# 3. 添加請求限流中間件（第三個執行）
 app.add_middleware(
     RateLimitMiddleware,
     requests_per_minute=settings.RATE_LIMIT_PER_MINUTE,
     requests_per_hour=settings.RATE_LIMIT_PER_HOUR,
 )
 
-# 3. 添加標準 CORS 中間件（FastAPI 內建，最後執行，確保所有響應都有 CORS header）
+# 4. 添加標準 CORS 中間件（FastAPI 內建，最後執行，確保所有響應都有 CORS header）
 app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_origins_list if cors_origins_list else ["*"],  # 如果為空，允許所有來源

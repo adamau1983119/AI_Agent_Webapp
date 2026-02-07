@@ -12,7 +12,8 @@ def build_article_prompt(
     original_content: Optional[str] = None,
     source_urls: Optional[List[str]] = None,
     original_language: Optional[str] = None,
-    style_info: Optional[dict] = None
+    style_info: Optional[dict] = None,
+    target_language: Optional[str] = None
 ) -> str:
     """
     建立短文生成 Prompt（改進版：基於原文內容改寫）
@@ -26,10 +27,19 @@ def build_article_prompt(
         source_urls: 來源 URL 列表（可選）
         original_language: 原文語言（可選）
         style_info: 原文風格資訊（可選）
+        target_language: 目標輸出語言（可選，預設中文）
         
     Returns:
         Prompt 字串
     """
+    # 語言標籤映射
+    lang_labels = {
+        "zh-TW": "繁體中文",
+        "en": "English",
+        "ja": "日本語",
+    }
+    target_lang_label = lang_labels.get(target_language, "繁體中文") if target_language else "繁體中文"
+    
     category_map = {
         "fashion": "時尚",
         "food": "美食",
@@ -54,7 +64,7 @@ def build_article_prompt(
             tone_cn = tone_map.get(style_info.get("tone"), "自然")
             style_requirements = f"\n**風格要求**：\n- 語調：{tone_cn}\n- 結構：保持原文的段落風格\n- 詞彙：保持原文的專業程度\n"
         
-        prompt = f"""請基於以下來源內容，改寫為適合社群媒體的中文短文：
+        prompt = f"""請基於以下來源內容，改寫為適合社群媒體的{target_lang_label}短文：
 
 **來源內容**（{original_language or "原文"}）：
 {original_content[:2000]}  # 限制長度避免 token 過多
@@ -71,11 +81,12 @@ def build_article_prompt(
 1. **必須基於來源內容改寫**，不要自行創作或添加未在原文中的資訊
 2. **必須在文章中引用原文連結**，格式如：「根據原文報導 ({source_urls[0] if source_urls else "來源連結"})，...」
 3. 內容生動有趣，適合小紅書/Instagram 風格
-4. 語言自然流暢，符合中文表達習慣
-5. 長度控制在 {target_length} 字左右
-6. 使用 emoji 增加趣味性（適度使用）
-7. 結構清晰，有開頭、主體、結尾
-8. **保持原文的核心資訊和事實**，不要改變或誇大
+4. 語言自然流暢，符合{target_lang_label}表達習慣
+5. **輸出語言必須為{target_lang_label}**
+6. 長度控制在 {target_length} 字左右
+7. 使用 emoji 增加趣味性（適度使用）
+8. 結構清晰，有開頭、主體、結尾
+9. **保持原文的核心資訊和事實**，不要改變或誇大
 
 **風格**：
 - 親切自然，像朋友分享
@@ -92,20 +103,22 @@ def build_article_prompt(
 請直接輸出改寫後的短文內容，不要包含標題、說明文字或其他格式標記。"""
     else:
         # 沒有原文內容時，使用原來的生成模式
-        prompt = f"""請為以下主題生成一篇適合社群媒體的短文：
+        prompt = f"""請為以下主題生成一篇適合社群媒體的{target_lang_label}短文：
 
 **主題**：{topic_title}
 **分類**：{category_cn}
 **關鍵字**：{keywords_str}
 **目標長度**：約 {target_length} 字
+**輸出語言**：{target_lang_label}
 
 **要求**：
 1. 內容生動有趣，適合小紅書/Instagram 風格
-2. 語言自然流暢，符合目標受眾
+2. 語言自然流暢，符合{target_lang_label}表達習慣
 3. 包含實用資訊或觀點
-4. 長度控制在 {target_length} 字左右
-5. 使用 emoji 增加趣味性（適度使用）
-6. 結構清晰，有開頭、主體、結尾
+4. **輸出語言必須為{target_lang_label}**
+5. 長度控制在 {target_length} 字左右
+6. 使用 emoji 增加趣味性（適度使用）
+7. 結構清晰，有開頭、主體、結尾
 
 **風格**：
 - 親切自然，像朋友分享

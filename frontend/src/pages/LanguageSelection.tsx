@@ -17,7 +17,7 @@ const BRAND = {
 
 export default function LanguageSelection() {
   const navigate = useNavigate();
-  const { setLanguage } = useTranslation();
+  const { t, setLanguage } = useTranslation();
   const [selectedLang, setSelectedLang] = useState<Language | null>(null);
 
   const handleLanguageSelect = (lang: Language) => {
@@ -75,10 +75,10 @@ export default function LanguageSelection() {
           {/* 標題 */}
           <div className="text-center mb-12">
             <h2 className="font-display text-2xl tracking-[0.1em] font-light text-black mb-3">
-              選擇您的語言
+              {t('language.selectTitle')}
             </h2>
             <p className="text-gray-400 text-xs font-light tracking-[0.1em]">
-              SELECT YOUR LANGUAGE
+              {t('language.selectSubtitle')}
             </p>
           </div>
 
@@ -108,9 +108,7 @@ export default function LanguageSelection() {
                       <div className={`text-[10px] mt-1 tracking-[0.1em] uppercase ${
                         selectedLang === option.code ? 'text-white/60' : 'text-gray-400'
                       }`}>
-                        {option.code === 'zh-TW' && 'TRADITIONAL CHINESE'}
-                        {option.code === 'en' && 'ENGLISH'}
-                        {option.code === 'ja' && 'JAPANESE'}
+                        {t(`language.${option.code}.english`)}
                       </div>
                     </div>
                   </div>

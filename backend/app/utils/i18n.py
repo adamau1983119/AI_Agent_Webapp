@@ -479,7 +479,24 @@ class I18nErrorMessages:
             "zh-TW": "重置失敗",
             "en": "Reset failed",
             "ja": "リセットに失敗しました"
-        }
+        },
+        
+        # 驗證相關
+        "validation.invalid_language": {
+            "zh-TW": "不支援的語言選項",
+            "en": "Unsupported language option",
+            "ja": "サポートされていない言語オプション"
+        },
+        "validation.no_fields": {
+            "zh-TW": "請提供至少一個要更新的欄位",
+            "en": "Please provide at least one field to update",
+            "ja": "少なくとも1つの更新フィールドを指定してください"
+        },
+        "auth.user_not_found": {
+            "zh-TW": "找不到使用者",
+            "en": "User not found",
+            "ja": "ユーザーが見つかりません"
+        },
     }
     
     @classmethod

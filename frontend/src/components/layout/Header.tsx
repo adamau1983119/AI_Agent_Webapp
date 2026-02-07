@@ -95,7 +95,7 @@ export default function Header() {
             data-testid="btn-header-menu"
             onClick={toggleSidebar}
             className="lg:hidden p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg"
-            aria-label="Toggle sidebar"
+            aria-label={t('common.toggleSidebar')}
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path>
@@ -151,7 +151,7 @@ export default function Header() {
               data-testid="btn-header-lang"
               onClick={() => setShowLangMenu(!showLangMenu)}
               className="flex items-center gap-1.5 px-2 py-1.5 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
-              title="Change Language"
+              title={t('common.changeLanguage')}
             >
               <span className="text-lg font-medium">{currentLangOption.icon}</span>
               <span className="hidden sm:inline text-sm font-medium">{currentLangOption.shortName}</span>

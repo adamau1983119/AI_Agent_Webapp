@@ -117,7 +117,7 @@ export default function TopicDetail() {
       if (error?.status === 400) {
         // 處理 API Key 未設定的錯誤
         const errorDetail = error?.details?.detail || error?.message || ''
-        if (typeof errorDetail === 'string' && (errorDetail.includes('API Key') || errorDetail.includes('未設定'))) {
+        if (typeof errorDetail === 'string' && (errorDetail.includes('API Key') || errorDetail.includes('not configured') || errorDetail.includes('not set'))) {
           errorMessage = t('error.apiKeyNotSet')
         } else if (error?.details?.suggestion) {
           errorMessage = error?.message || error?.details?.detail || t('error.badRequest')
@@ -378,29 +378,29 @@ export default function TopicDetail() {
                 </svg>
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                {t('auth.loginRequired') || '需要登入'}
+                {t('auth.loginRequired')}
               </h3>
               <p className="text-gray-600 mb-6">
-                {t('auth.loginRequiredMessage') || '此功能需要登入才能使用。請先登入或註冊帳號。'}
+                {t('auth.loginRequiredMessage')}
               </p>
               <div className="flex gap-3 justify-center">
                 <button
                   onClick={() => setShowLoginPrompt(false)}
                   className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
                 >
-                  {t('common.cancel') || '取消'}
+                  {t('common.cancel')}
                 </button>
                 <button
                   onClick={() => navigate('/login')}
                   className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
                 >
-                  {t('auth.login.title') || '登入'}
+                  {t('auth.login.title')}
                 </button>
                 <button
                   onClick={() => navigate('/register')}
                   className="px-4 py-2 text-sm font-medium text-primary bg-primary/10 rounded-md hover:bg-primary/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
                 >
-                  {t('auth.register.title') || '註冊'}
+                  {t('auth.register.title')}
                 </button>
               </div>
             </div>
@@ -574,6 +574,30 @@ export default function TopicDetail() {
                 {new Date(topic.generatedAt).toLocaleString()}
               </p>
             </div>
+            {/* 語言資訊區塊 */}
+            {(topic.displayLanguage || topic.originalTitle) && (
+              <div>
+                <h3 className="font-semibold text-gray-700 dark:text-gray-200 mb-2">{t('topics.languageInfo')}</h3>
+                <div className="space-y-2 text-sm">
+                  {topic.displayLanguage && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-500 dark:text-gray-400">{t('topics.displayLanguage')}:</span>
+                      <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded text-xs font-medium">
+                        {t(`language.${topic.displayLanguage}`)}
+                      </span>
+                    </div>
+                  )}
+                  {topic.originalTitle && topic.originalTitle !== topic.title && (
+                    <div>
+                      <span className="text-gray-500 dark:text-gray-400">{t('topics.originalTitle')}:</span>
+                      <p className="text-gray-600 dark:text-gray-300 mt-1 text-xs italic break-words">
+                        {topic.originalTitle}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
             {content && (
               <div>
                 <h3 className="font-semibold text-gray-700 dark:text-gray-200 mb-2">{t('content.model')}</h3>

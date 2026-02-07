@@ -11,9 +11,10 @@ import {
   SocialConnection,
   SocialPlatform,
   PublishResponse,
+  
   platformLabels,
   platformIcons,
-  publishStatusLabels,
+  publishStatusI18nKeys,
   publishStatusColors,
 } from '../api/social';
 import toast from 'react-hot-toast';
@@ -173,10 +174,10 @@ export default function Publish() {
               </svg>
             </div>
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-              尚未連接任何平台
+              {t('publish.noPlatform')}
             </h3>
             <p className="text-gray-500 dark:text-gray-400 mb-4">
-              請先連接您的社交媒體帳號
+              {t('publish.connectFirst')}
             </p>
             <button
               onClick={() => navigate('/social-connect')}
@@ -192,7 +193,7 @@ export default function Publish() {
               {/* 內容輸入 */}
               <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                  發布內容
+                  {t('publish.content')}
                 </h2>
                 <textarea
                   value={content}
@@ -202,7 +203,7 @@ export default function Publish() {
                   className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 resize-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 />
                 <p className="mt-2 text-sm text-gray-500 dark:text-gray-400 text-right">
-                  {content.length} 字
+                  {content.length} {t('common.characters')}
                 </p>
               </div>
 
@@ -249,7 +250,7 @@ export default function Publish() {
               {/* 圖片 */}
               <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                  圖片（Instagram 必須）
+                  {t('publish.images')}
                 </h2>
                 <div className="flex gap-2 mb-4">
                   <input
@@ -272,7 +273,7 @@ export default function Publish() {
                       <div key={index} className="relative">
                         <img
                           src={url}
-                          alt={`圖片 ${index + 1}`}
+                          alt={`${t('publish.image')} ${index + 1}`}
                           className="w-full h-24 object-cover rounded-lg"
                           onError={(e) => {
                             (e.target as HTMLImageElement).src = 'https://via.placeholder.com/150?text=Invalid';
@@ -298,7 +299,7 @@ export default function Publish() {
               {/* 選擇平台 */}
               <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                  選擇平台
+                  {t('publish.selectPlatform')}
                 </h2>
                 <div className="space-y-3">
                   {connections.map((connection) => {
@@ -349,14 +350,14 @@ export default function Publish() {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                     </svg>
-                    發布中...
+                    {t('publish.publishing')}
                   </>
                 ) : (
                   <>
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                     </svg>
-                    發布到 {selectedPlatforms.length} 個平台
+                    {t('publish.publishTo', { count: selectedPlatforms.length })}
                   </>
                 )}
               </button>
@@ -365,7 +366,7 @@ export default function Publish() {
               {publishResult && (
                 <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                    發布結果
+                    {t('publish.results')}
                   </h3>
                   <div className="space-y-3">
                     {publishResult.results.map((result, index) => (
@@ -383,7 +384,7 @@ export default function Publish() {
                             {platformLabels[result.platform as SocialPlatform]}
                           </span>
                           <span className={`ml-auto text-sm px-2 py-0.5 rounded-full ${publishStatusColors[result.status]}`}>
-                            {publishStatusLabels[result.status]}
+                            {t(publishStatusI18nKeys[result.status])}
                           </span>
                         </div>
                         {result.post_url && (
@@ -393,7 +394,7 @@ export default function Publish() {
                             rel="noopener noreferrer"
                             className="text-sm text-purple-500 hover:text-purple-600 mt-1 block"
                           >
-                            查看貼文 →
+                            {t('publish.viewPost')} →
                           </a>
                         )}
                         {result.error_message && (

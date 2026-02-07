@@ -74,21 +74,25 @@ export const schedulesAPI = {
 
   /**
    * 立即生成今日所有主題
+   * @param force 是否強制重新生成
+   * @param language 目標語言（zh-TW/en/ja）- 標題和內容的語言
    */
-  generateTodayAllTopics: async (force: boolean = false): Promise<{
+  generateTodayAllTopics: async (force: boolean = false, language: string = 'zh-TW'): Promise<{
     message: string
     categories: string[]
     expected_count: number
     existing_count: number
+    language?: string
   }> => {
     return await fetchAPI<{
       message: string
       categories: string[]
       expected_count: number
       existing_count: number
+      language?: string
     }>('/schedules/generate-today', {
       method: 'POST',
-      body: JSON.stringify({ force: force }),
+      body: JSON.stringify({ force, language }),
       headers: {
         'Content-Type': 'application/json',
       },

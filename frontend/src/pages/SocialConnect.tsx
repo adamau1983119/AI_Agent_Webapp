@@ -140,10 +140,10 @@ export default function SocialConnect() {
                 </div>
                 <div>
                   <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                    Meta 平台
+                    {t('social.metaPlatform')}
                   </h2>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Instagram、Facebook、Threads 一次連接
+                    {t('social.metaDesc')}
                   </p>
                 </div>
               </div>
@@ -238,7 +238,7 @@ export default function SocialConnect() {
                     TikTok
                   </h2>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    發布影片內容到 TikTok
+                    {t('social.tiktokDesc')}
                   </p>
                 </div>
               </div>
@@ -306,7 +306,7 @@ export default function SocialConnect() {
                     Twitter/X
                   </h2>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    即將推出（API 成本較高）
+                    {t('social.twitterDesc')}
                   </p>
                 </div>
                 <span className="px-3 py-1 bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 text-sm rounded-full">

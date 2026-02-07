@@ -106,22 +106,22 @@ export const ratingsApi = {
   },
 };
 
-// 評分原因標籤
-export const ratingReasonLabels: Record<RatingReason, string> = {
-  tone_good: '語氣很好',
-  content_relevant: '內容相關',
-  creative: '有創意',
-  professional: '很專業',
-  engaging: '很吸引人',
-  length_perfect: '長度剛好',
-  tone_bad: '語氣不對',
-  content_irrelevant: '內容不相關',
-  too_generic: '太普通',
-  too_long: '太長',
-  too_short: '太短',
-  boring: '無聊',
-  inaccurate: '不準確',
-  other: '其他',
+// 評分原因 i18n 鍵映射（使用 t() 渲染）
+export const ratingReasonI18nKeys: Record<RatingReason, string> = {
+  tone_good: 'rating.reason.tone_good',
+  content_relevant: 'rating.reason.content_relevant',
+  creative: 'rating.reason.creative',
+  professional: 'rating.reason.professional',
+  engaging: 'rating.reason.engaging',
+  length_perfect: 'rating.reason.length_perfect',
+  tone_bad: 'rating.reason.tone_bad',
+  content_irrelevant: 'rating.reason.content_irrelevant',
+  too_generic: 'rating.reason.too_generic',
+  too_long: 'rating.reason.too_long',
+  too_short: 'rating.reason.too_short',
+  boring: 'rating.reason.boring',
+  inaccurate: 'rating.reason.inaccurate',
+  other: 'rating.reason.other',
 };
 
 // 正面原因

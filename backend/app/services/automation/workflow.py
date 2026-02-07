@@ -88,7 +88,7 @@ class AutomationWorkflow:
             # 2. 生成內容（使用結構化錯誤回報）
             if auto_generate_content:
                 try:
-                    await self._generate_content(topic)
+                    await self._generate_content(topic, target_language=language)
                     result["content_generated"] = True
                 except ValueError as e:
                     # 配置錯誤（如 API Key 未設定）
@@ -157,8 +157,8 @@ class AutomationWorkflow:
         config=RetryConfig(max_attempts=3, initial_delay=1.0, max_delay=10.0),
         service_name="AI_Service"
     )
-    async def _generate_content(self, topic: Dict[str, Any]) -> None:
-        """生成內容（帶重試機制）"""
+    async def _generate_content(self, topic: Dict[str, Any], target_language: str = "zh-TW") -> None:
+        """生成內容（帶重試機制，支援多語言）"""
         topic_id = topic["id"]
         topic_title = topic["title"]
         topic_category = topic["category"]
@@ -203,7 +203,8 @@ class AutomationWorkflow:
             original_content=original_content,
             source_urls=source_urls,
             original_language=original_language,
-            style_info=style_info
+            style_info=style_info,
+            target_language=target_language
         )
         article = await ai_service._call_api(article_prompt)
         script = await ai_service.generate_script(

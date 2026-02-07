@@ -10,8 +10,8 @@ import {
   styleProfileApi,
   StyleAnalysis,
   PresetStyle,
-  presetStyleLabels,
-  learningStageLabels,
+  presetStyleI18nKeys,
+  learningStageI18nKeys,
   getLearningProgress,
 } from '../api/styleProfile';
 import toast from 'react-hot-toast';
@@ -62,7 +62,7 @@ export default function StyleProfile() {
     try {
       await styleProfileApi.setPresetStyle(style);
       setSelectedStyle(style);
-      toast.success(`已切換為「${presetStyleLabels[style]}」風格`);
+      toast.success(t('style.switchedTo', { style: t(presetStyleI18nKeys[style]) }));
       loadAnalysis();
     } catch (err: any) {
       toast.error(err.message || t('common.failed'));
@@ -116,7 +116,7 @@ export default function StyleProfile() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                學習進度
+                {t('style.learningProgress')}
               </h2>
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 {analysis?.learning_stage_label || t('style.coldStart')} · {t('style.totalRatingsCount', { count: analysis?.total_ratings || 0 })}
@@ -129,7 +129,7 @@ export default function StyleProfile() {
                 ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400'
                 : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
             }`}>
-              {learningStageLabels[analysis?.learning_stage || 'cold_start']}
+              {t(learningStageI18nKeys[analysis?.learning_stage || 'cold_start'])}
             </div>
           </div>
 
@@ -189,7 +189,7 @@ export default function StyleProfile() {
         {analysis?.style_traits && analysis.style_traits.length > 0 && (
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg mb-6">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-              您的風格特徵
+              {t('style.yourTraits')}
             </h2>
             <div className="flex flex-wrap gap-2">
               {analysis.style_traits.map((trait, index) => (
@@ -207,10 +207,10 @@ export default function StyleProfile() {
         {/* 預設風格選擇 */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg mb-6">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            預設風格
+              {t('style.presetStyle')}
           </h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-            選擇一個基礎風格，系統會在此基礎上學習您的偏好
+            {t('style.presetStyleDesc')}
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -232,11 +232,11 @@ export default function StyleProfile() {
                       ? 'text-purple-600 dark:text-purple-400'
                       : 'text-gray-700 dark:text-gray-200'
                   }`}>
-                    {presetStyleLabels[style.value]}
+                    {t(presetStyleI18nKeys[style.value])}
                   </span>
                 </div>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {style.description}
+                  {t(style.descriptionKey)}
                 </p>
               </button>
             ))}
@@ -247,7 +247,7 @@ export default function StyleProfile() {
         {analysis?.tone && (
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg mb-6">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-              語氣偏好
+              {t('style.tonePreferences')}
             </h2>
             <div className="space-y-4">
               <ToneBar label={t('style.formalLevel')} value={analysis.tone.formal_score} />
@@ -261,16 +261,16 @@ export default function StyleProfile() {
         {/* 重置按鈕 */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-            重置風格檔案
+            {t('style.resetProfile')}
           </h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-            清除所有學習記錄，重新開始。此操作無法復原。
+            {t('style.resetDescription')}
           </p>
           <button
             onClick={() => setShowResetConfirm(true)}
             className="px-4 py-2 text-red-600 dark:text-red-400 border border-red-300 dark:border-red-700 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
           >
-            重置風格檔案
+            {t('style.resetProfile')}
           </button>
         </div>
 
@@ -279,10 +279,10 @@ export default function StyleProfile() {
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
             <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-md mx-4">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                確認重置？
+                {t('style.confirmReset')}
               </h3>
               <p className="text-gray-500 dark:text-gray-400 mb-6">
-                這將清除所有學習記錄和評分歷史。您的預設風格將被保留。
+                {t('style.resetWarning')}
               </p>
               <div className="flex gap-4">
                 <button

@@ -27,33 +27,36 @@ function getProxyImageUrl(imageUrl: string): string {
 /**
  * 占位符 SVG（用於圖片載入失敗時）
  */
-const PlaceholderSVG = ({ className }: { className?: string }) => (
-  <svg
-    className={className || 'w-full h-full'}
-    viewBox="0 0 400 400"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <rect width="400" height="400" fill="#F3F4F6" />
-    <path
-      d="M150 150L200 200L250 150L300 200V300H100V200L150 150Z"
-      stroke="#9CA3AF"
-      strokeWidth="2"
+const PlaceholderSVG = ({ className }: { className?: string }) => {
+  const { t } = useTranslation()
+  return (
+    <svg
+      className={className || 'w-full h-full'}
+      viewBox="0 0 400 400"
       fill="none"
-    />
-    <circle cx="150" cy="150" r="20" fill="#9CA3AF" />
-    <text
-      x="200"
-      y="250"
-      textAnchor="middle"
-      fill="#9CA3AF"
-      fontSize="16"
-      fontFamily="Arial, sans-serif"
+      xmlns="http://www.w3.org/2000/svg"
     >
-      圖片無法載入
-    </text>
-  </svg>
-)
+      <rect width="400" height="400" fill="#F3F4F6" />
+      <path
+        d="M150 150L200 200L250 150L300 200V300H100V200L150 150Z"
+        stroke="#9CA3AF"
+        strokeWidth="2"
+        fill="none"
+      />
+      <circle cx="150" cy="150" r="20" fill="#9CA3AF" />
+      <text
+        x="200"
+        y="250"
+        textAnchor="middle"
+        fill="#9CA3AF"
+        fontSize="16"
+        fontFamily="Arial, sans-serif"
+      >
+        {t('image.loadFailed')}
+      </text>
+    </svg>
+  )
+}
 
 interface ImageSearchProps {
   topicId: string
@@ -77,6 +80,7 @@ function ImageItem({
   onSelect: () => void
   isPending: boolean
 }) {
+  const { t } = useTranslation()
   const [imageError, setImageError] = useState(false)
   const [imageLoading, setImageLoading] = useState(true)
   const [retryCount, setRetryCount] = useState(0)
@@ -140,18 +144,18 @@ function ImageItem({
             <PlaceholderSVG />
           </div>
           <div className="text-xs text-gray-500 text-center mb-1 font-medium">
-            ⚠️ 圖片無法載入
+            {t('image.cannotLoad')}
           </div>
           {diagnosticMode && (
             <>
               <div className="text-xs text-gray-400 text-center truncate w-full px-2" title={image.url}>
-                原始 URL: {image.url.length > 40 ? `${image.url.substring(0, 40)}...` : image.url}
+                {t('image.originalUrl')}: {image.url.length > 40 ? `${image.url.substring(0, 40)}...` : image.url}
               </div>
               <div className="text-xs text-gray-400 text-center truncate w-full px-2 mt-1" title={proxyUrl}>
-                代理 URL: {proxyUrl.length > 40 ? `${proxyUrl.substring(0, 40)}...` : proxyUrl}
+                {t('image.proxyUrl')}: {proxyUrl.length > 40 ? `${proxyUrl.substring(0, 40)}...` : proxyUrl}
               </div>
               <div className="text-xs text-gray-400 mt-1">
-                可能原因: CORS 限制、URL 無效或伺服器錯誤
+                {t('image.possibleCause')}
               </div>
             </>
           )}
@@ -534,7 +538,7 @@ export default function ImageSearch({
       <div className="mb-4 flex items-center justify-between">
         <div className="text-sm text-gray-600">
           {usedSource && (
-            <span>使用來源: <strong>{usedSource}</strong></span>
+            <span>{t('image.usedSource')}: <strong>{usedSource}</strong></span>
           )}
           {traceId && diagnosticMode && (
             <span className="ml-4">{t('imageSearch.traceId')}: <code className="text-xs bg-gray-100 px-1 rounded">{traceId}</code></span>
@@ -562,20 +566,20 @@ export default function ImageSearch({
           {/* 顯示 attempts 資訊 */}
           {attempts.length > 0 && (
             <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-              <h4 className="text-sm font-semibold text-gray-700 mb-2">搜尋嘗試記錄：</h4>
+              <h4 className="text-sm font-semibold text-gray-700 mb-2">{t('image.searchAttempts')}:</h4>
               <ul className="space-y-2">
                 {attempts.map((attempt: any, idx: number) => (
                   <li key={idx} className="text-sm text-gray-600">
                     <span className="font-medium">{attempt.source}:</span>{' '}
                     {attempt.status === 'success' && (
-                      <span className="text-green-600">成功 ({attempt.count} 張)</span>
+                      <span className="text-green-600">{t('common.success')} ({attempt.count})</span>
                     )}
                     {attempt.status === 'no_results' && (
-                      <span className="text-yellow-600">無結果</span>
+                      <span className="text-yellow-600">{t('image.noResults')}</span>
                     )}
                     {attempt.status === 'error' && (
                       <span className="text-red-600">
-                        錯誤 ({attempt.code}): {attempt.message}
+                        {t('common.error')} ({attempt.code}): {attempt.message}
                         {diagnosticMode && attempt.details && (
                           <pre className="mt-1 text-xs bg-white p-2 rounded overflow-auto">
                             {JSON.stringify(attempt.details, null, 2)}
@@ -584,11 +588,11 @@ export default function ImageSearch({
                       </span>
                     )}
                     {attempt.status === 'unavailable' && (
-                      <span className="text-gray-500">不可用 ({attempt.message})</span>
+                      <span className="text-gray-500">{t('image.unavailable')} ({attempt.message})</span>
                     )}
                     {attempt.status === 'exception' && (
                       <span className="text-red-600">
-                        異常: {attempt.message}
+                        {t('image.exception')}: {attempt.message}
                         {diagnosticMode && attempt.exception_type && (
                           <span className="ml-2 text-xs">({attempt.exception_type})</span>
                         )}

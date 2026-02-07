@@ -81,6 +81,10 @@ class Topic(BaseModel):
     is_expanded: bool = Field(default=False, description="是否已展開（用戶是否已點擊生成完整內容）")
     generation_config: Optional[Dict[str, Any]] = Field(default=None, description="生成配置（用於記錄生成時的參數）")
     description: Optional[str] = Field(None, max_length=200, description="主題內容摘要（約30字）")
+    
+    # Phase 7：多語言支援
+    display_language: Optional[str] = Field(default="zh-TW", description="標題/摘要的顯示語言（zh-TW/en/ja）")
+    original_title: Optional[str] = Field(None, description="原始標題（來源語言，通常為英文/日文）")
 
     class Config:
         """Pydantic 配置"""

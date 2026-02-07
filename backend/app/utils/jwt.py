@@ -117,6 +117,14 @@ def create_password_reset_token(
     return encoded_jwt
 
 
+class TokenError(Exception):
+    """Token 驗證錯誤（含錯誤類型）"""
+    def __init__(self, error_type: str, message: str):
+        self.error_type = error_type
+        self.message = message
+        super().__init__(message)
+
+
 def verify_token(token: str) -> Optional[Dict[str, Any]]:
     """
     驗證 JWT Token
@@ -126,6 +134,9 @@ def verify_token(token: str) -> Optional[Dict[str, Any]]:
         
     Returns:
         解碼後的資料，如果無效則返回 None
+        
+    Raises:
+        TokenError: 如果 Token 過期或無效（含詳細錯誤類型）
     """
     try:
         payload = jwt.decode(
@@ -134,8 +145,27 @@ def verify_token(token: str) -> Optional[Dict[str, Any]]:
             algorithms=[settings.JWT_ALGORITHM]
         )
         return payload
+    except jwt.ExpiredSignatureError:
+        logger.warning("JWT Token 已過期")
+        raise TokenError("expired", "Token 已過期，請重新登入")
     except JWTError as e:
         logger.warning(f"JWT 驗證失敗: {e}")
+        raise TokenError("invalid", "無效的 Token")
+
+
+def verify_token_safe(token: str) -> Optional[Dict[str, Any]]:
+    """
+    安全版本的 verify_token（不拋出異常，返回 None）
+    
+    Args:
+        token: JWT Token 字串
+        
+    Returns:
+        解碼後的資料，如果無效則返回 None
+    """
+    try:
+        return verify_token(token)
+    except TokenError:
         return None
 
 
@@ -148,11 +178,14 @@ def verify_access_token(token: str) -> Optional[Dict[str, Any]]:
         
     Returns:
         解碼後的資料，如果無效則返回 None
+        
+    Raises:
+        TokenError: 如果 Token 過期或無效
     """
     payload = verify_token(token)
     if payload and payload.get("type") == "access":
         return payload
-    return None
+    raise TokenError("invalid", "無效的 Access Token")
 
 
 def verify_verification_token(token: str) -> Optional[str]:
@@ -165,24 +198,30 @@ def verify_verification_token(token: str) -> Optional[str]:
     Returns:
         Email 地址，如果無效則返回 None
     """
+    try:
     payload = verify_token(token)
     if payload and payload.get("type") == "email_verification":
         return payload.get("email")
     return None
+    except TokenError:
+        return None
 
 
 def verify_password_reset_token(token: str) -> Optional[str]:
     """
-    驗證密碼重設 Token
+    驗證密碼重設 Token（有效期 1 小時）
     
     Args:
         token: 密碼重設 Token
         
     Returns:
-        Email 地址，如果無效則返回 None
+        Email 地址，如果無效或過期則返回 None
     """
+    try:
     payload = verify_token(token)
     if payload and payload.get("type") == "password_reset":
         return payload.get("email")
     return None
+    except TokenError:
+        return None
 

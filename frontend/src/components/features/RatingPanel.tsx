@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react';
 import {
   ratingsApi,
   RatingReason,
-  ratingReasonLabels,
+  ratingReasonI18nKeys,
   positiveReasons,
   negativeReasons,
 } from '../../api/ratings';
@@ -105,14 +105,14 @@ export default function RatingPanel({
       {/* 評分標題 */}
       <div className="flex items-center justify-between mb-4">
         <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
-          這個內容對您有幫助嗎？
+          {t('rating.helpfulQuestion')}
         </span>
         {hasRated && (
           <span className="text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
-            已評分
+            {t('rating.rated')}
           </span>
         )}
       </div>
@@ -129,7 +129,7 @@ export default function RatingPanel({
           } ${hasRated ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
           <span className="text-2xl">👍</span>
-          <span>喜歡</span>
+          <span>{t('rating.like')}</span>
         </button>
 
         <button
@@ -142,7 +142,7 @@ export default function RatingPanel({
           } ${hasRated ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
           <span className="text-2xl">👎</span>
-          <span>不喜歡</span>
+          <span>{t('rating.dislike')}</span>
         </button>
       </div>
 
@@ -150,7 +150,7 @@ export default function RatingPanel({
       {showReasons && !hasRated && (
         <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
-            告訴我們原因（可選多個）
+            {t('rating.selectReasons')}
           </p>
 
           <div className="flex flex-wrap gap-2 mb-4">
@@ -166,7 +166,7 @@ export default function RatingPanel({
                     : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                 }`}
               >
-                {ratingReasonLabels[reason]}
+                {t(ratingReasonI18nKeys[reason])}
               </button>
             ))}
           </div>

@@ -156,7 +156,7 @@ async def generate_content(
         
         # 生成內容（改進版：基於原文內容）
         if request.type == "article":
-            # 構建改進的 prompt
+            # 構建改進的 prompt（使用主題的 display_language）
             from app.prompts.article_prompt import build_article_prompt
             prompt = build_article_prompt(
                 topic_title=topic["title"],
@@ -166,7 +166,8 @@ async def generate_content(
                 original_content=original_content,
                 source_urls=source_urls,
                 original_language=original_language,
-                style_info=style_info
+                style_info=style_info,
+                target_language=topic.get("display_language", "zh-TW")
             )
             article = await ai_service._call_api(prompt)
             script = None
@@ -179,7 +180,7 @@ async def generate_content(
             )
             article = None
         else:  # both
-            # 構建改進的 prompt（僅用於文章）
+            # 構建改進的 prompt（僅用於文章，使用主題的 display_language）
             from app.prompts.article_prompt import build_article_prompt
             article_prompt = build_article_prompt(
                 topic_title=topic["title"],
@@ -189,7 +190,8 @@ async def generate_content(
                 original_content=original_content,
                 source_urls=source_urls,
                 original_language=original_language,
-                style_info=style_info
+                style_info=style_info,
+                target_language=topic.get("display_language", "zh-TW")
             )
             article = await ai_service._call_api(article_prompt)
             script = await ai_service.generate_script(

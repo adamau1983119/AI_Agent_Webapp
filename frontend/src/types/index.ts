@@ -18,6 +18,11 @@ export interface Topic {
   preview_images?: string[]  // 預覽圖片 URL 列表（後端格式）
   isExpanded?: boolean      // 是否已展開
   description?: string      // 主題內容摘要（約30字）
+  // Phase 7: 多語言支援
+  displayLanguage?: string  // 標題顯示語言（zh-TW/en/ja）
+  display_language?: string // 後端格式
+  originalTitle?: string    // 原始標題（來源語言）
+  original_title?: string   // 後端格式
 }
 
 // 內容類型
