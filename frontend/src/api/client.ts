@@ -45,7 +45,7 @@ async function fetchAPI<T>(
     } catch (fetchError: any) {
       clearTimeout(timeoutId)
       if (fetchError.name === 'AbortError') {
-        throw new Error(`請求超時（${timeout}ms）：${endpoint}`)
+        throw new Error(`Request timeout (${timeout}ms): ${endpoint}`)
       }
       throw fetchError
     }
@@ -70,7 +70,7 @@ async function fetchAPI<T>(
     // 網路錯誤提供診斷建議
     if (apiError.message.includes('Failed to fetch') || 
         apiError.message.includes('NetworkError') ||
-        apiError.message.includes('請求超時') ||
+        apiError.message.includes('Request timeout') ||
         apiError.status === 0) {
       console.error('💡 診斷建議：')
       console.error('  1. 檢查後端服務是否運行：', API_BASE_URL.replace('/api/v1', '/health'))

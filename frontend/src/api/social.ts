@@ -184,12 +184,12 @@ export const platformIcons: Record<SocialPlatform, string> = {
 };
 
 // 發布狀態標籤
-export const publishStatusLabels: Record<PublishStatus, string> = {
-  pending: '等待中',
-  publishing: '發布中',
-  published: '已發布',
-  failed: '失敗',
-  retry: '重試中',
+export const publishStatusI18nKeys: Record<PublishStatus, string> = {
+  pending: 'publish.status.pending',
+  publishing: 'publish.status.publishing',
+  published: 'publish.status.published',
+  failed: 'publish.status.failed',
+  retry: 'publish.status.retry',
 };
 
 // 發布狀態顏色

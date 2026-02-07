@@ -166,30 +166,28 @@ export const channelsApi = {
   },
 };
 
-// 類別標籤映射
-// 注意：這個映射現在應該使用 i18n，但為了向後兼容保留
-// 實際使用時應該通過 i18n 系統獲取翻譯
-export const categoryLabels: Record<ChannelCategory, string> = {
-  fashion: '時尚',
-  food: '美食',
-  trend: '趨勢',
-  finance: '財經',
-  sports: '運動',
-  tech: '科技',
-  entertainment: '娛樂',
-  other: '其他（自定義）', // 這個會被 i18n 替換
+// 類別 i18n 鍵映射（使用 t() 渲染）
+export const categoryI18nKeys: Record<ChannelCategory, string> = {
+  fashion: 'channels.category.fashion',
+  food: 'channels.category.food',
+  trend: 'channels.category.trend',
+  finance: 'channels.category.finance',
+  sports: 'channels.category.sports',
+  tech: 'channels.category.tech',
+  entertainment: 'channels.category.entertainment',
+  other: 'channels.category.other',
 };
 
-// 地區標籤映射
-export const regionLabels: Record<ChannelRegion, string> = {
-  hong_kong: '香港',
-  taiwan: '台灣',
-  japan: '日本',
-  korea: '韓國',
-  china: '中國大陸',
-  usa: '美國',
-  uk: '英國',
-  global: '全球',
+// 地區 i18n 鍵映射（使用 t() 渲染）
+export const regionI18nKeys: Record<ChannelRegion, string> = {
+  hong_kong: 'channels.region.hong_kong',
+  taiwan: 'channels.region.taiwan',
+  japan: 'channels.region.japan',
+  korea: 'channels.region.korea',
+  china: 'channels.region.china',
+  usa: 'channels.region.usa',
+  uk: 'channels.region.uk',
+  global: 'channels.region.global',
 };
 
 // 類別圖標映射

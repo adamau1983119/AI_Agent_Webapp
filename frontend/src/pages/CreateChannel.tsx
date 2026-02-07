@@ -11,33 +11,33 @@ import {
   ChannelCategory,
   ChannelRegion,
   ChannelCreateRequest,
-  categoryLabels,
-  regionLabels,
+  categoryI18nKeys,
+  regionI18nKeys,
   categoryIcons,
 } from '../api/channels';
 import toast from 'react-hot-toast';
 import { useTypewriter } from '../hooks/useTypewriter';
 
 const categories: { value: ChannelCategory; label: string; icon: string }[] = [
-  { value: 'fashion', label: categoryLabels.fashion, icon: categoryIcons.fashion },
-  { value: 'food', label: categoryLabels.food, icon: categoryIcons.food },
-  { value: 'trend', label: categoryLabels.trend, icon: categoryIcons.trend },
-  { value: 'finance', label: categoryLabels.finance, icon: categoryIcons.finance },
-  { value: 'sports', label: categoryLabels.sports, icon: categoryIcons.sports },
-  { value: 'tech', label: categoryLabels.tech, icon: categoryIcons.tech },
-  { value: 'entertainment', label: categoryLabels.entertainment, icon: categoryIcons.entertainment },
-  { value: 'other', label: categoryLabels.other, icon: categoryIcons.other },
+  { value: 'fashion', label: categoryI18nKeys.fashion, icon: categoryIcons.fashion },
+  { value: 'food', label: categoryI18nKeys.food, icon: categoryIcons.food },
+  { value: 'trend', label: categoryI18nKeys.trend, icon: categoryIcons.trend },
+  { value: 'finance', label: categoryI18nKeys.finance, icon: categoryIcons.finance },
+  { value: 'sports', label: categoryI18nKeys.sports, icon: categoryIcons.sports },
+  { value: 'tech', label: categoryI18nKeys.tech, icon: categoryIcons.tech },
+  { value: 'entertainment', label: categoryI18nKeys.entertainment, icon: categoryIcons.entertainment },
+  { value: 'other', label: categoryI18nKeys.other, icon: categoryIcons.other },
 ];
 
 const regions: { value: ChannelRegion; label: string }[] = [
-  { value: 'global', label: regionLabels.global },
-  { value: 'hong_kong', label: regionLabels.hong_kong },
-  { value: 'taiwan', label: regionLabels.taiwan },
-  { value: 'japan', label: regionLabels.japan },
-  { value: 'korea', label: regionLabels.korea },
-  { value: 'china', label: regionLabels.china },
-  { value: 'usa', label: regionLabels.usa },
-  { value: 'uk', label: regionLabels.uk },
+  { value: 'global', label: regionI18nKeys.global },
+  { value: 'hong_kong', label: regionI18nKeys.hong_kong },
+  { value: 'taiwan', label: regionI18nKeys.taiwan },
+  { value: 'japan', label: regionI18nKeys.japan },
+  { value: 'korea', label: regionI18nKeys.korea },
+  { value: 'china', label: regionI18nKeys.china },
+  { value: 'usa', label: regionI18nKeys.usa },
+  { value: 'uk', label: regionI18nKeys.uk },
 ];
 
 // 常見組合預設（對應 i18n channels.assist.preset.* 鍵）
@@ -117,8 +117,8 @@ export default function CreateChannel() {
   const handlePresetClick = (preset: { key: string; category: ChannelCategory; region: ChannelRegion }) => {
     setCategory(preset.category);
     setRegion(preset.region);
-    const catLabel = categoryLabels[preset.category];
-    const regLabel = regionLabels[preset.region];
+    const catLabel = categoryI18nKeys[preset.category];
+    const regLabel = regionI18nKeys[preset.region];
     const text = t('channels.assist.quickPreset', { category: catLabel, region: regLabel });
     setAssistInput(text);
   };
@@ -126,14 +126,14 @@ export default function CreateChannel() {
   // AI 助手：快捷按鈕點擊（類別）
   const handleQuickCategoryClick = (cat: ChannelCategory) => {
     setCategory(cat);
-    const text = t('channels.assist.quickCategory', { category: categoryLabels[cat] });
+    const text = t('channels.assist.quickCategory', { category: categoryI18nKeys[cat] });
     setAssistInput(text);
   };
   
   // AI 助手：快捷按鈕點擊（地區）
   const handleQuickRegionClick = (reg: ChannelRegion) => {
     setRegion(reg);
-    const text = t('channels.assist.quickRegion', { region: regionLabels[reg] });
+    const text = t('channels.assist.quickRegion', { region: regionI18nKeys[reg] });
     setAssistInput(text);
   };
 
@@ -184,8 +184,8 @@ export default function CreateChannel() {
       if (result.clarification_needed) {
         setAssistMessage(result.clarification_question || t('channels.assist.clarificationDefault'));
       } else if (result.confidence >= 0.7 && result.category && result.region) {
-        const categoryName = categoryLabels[result.category as ChannelCategory];
-        const regionName = regionLabels[result.region as ChannelRegion];
+        const categoryName = categoryI18nKeys[result.category as ChannelCategory];
+        const regionName = regionI18nKeys[result.region as ChannelRegion];
         const keywordsText = result.keywords.length > 0 
           ? t('channels.assist.responseWithKeywords', { 
               category: categoryName, 
@@ -207,8 +207,8 @@ export default function CreateChannel() {
         toast.success(t('channels.assist.autoFilled'));
       } else if (result.confidence >= 0.5) {
         // 中等信心度：顯示結果但提示可能需要更多資訊
-        const categoryName = result.category ? categoryLabels[result.category as ChannelCategory] : '-';
-        const regionName = result.region ? regionLabels[result.region as ChannelRegion] : '-';
+        const categoryName = result.category ? categoryI18nKeys[result.category as ChannelCategory] : '-';
+        const regionName = result.region ? regionI18nKeys[result.region as ChannelRegion] : '-';
         setAssistMessage(t('channels.assist.responseWithoutKeywords', { 
           category: categoryName, 
           region: regionName
@@ -541,13 +541,13 @@ export default function CreateChannel() {
                     <div>
                       <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">{t('channels.assist.category')}</p>
                       <p className="font-medium text-sm sm:text-base text-gray-900 dark:text-white">
-                        {assistResult.category ? categoryLabels[assistResult.category as ChannelCategory] : '-'}
+                        {assistResult.category ? categoryI18nKeys[assistResult.category as ChannelCategory] : '-'}
                       </p>
                     </div>
                     <div>
                       <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">{t('channels.assist.region')}</p>
                       <p className="font-medium text-sm sm:text-base text-gray-900 dark:text-white">
-                        {assistResult.region ? regionLabels[assistResult.region as ChannelRegion] : '-'}
+                        {assistResult.region ? regionI18nKeys[assistResult.region as ChannelRegion] : '-'}
                       </p>
                     </div>
                     {assistResult.keywords.length > 0 && (
@@ -933,7 +933,7 @@ export default function CreateChannel() {
                       {name || t('channels.unnamed')}
                     </p>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {category && categoryLabels[category]} · {regionLabels[region]}
+                      {category && categoryI18nKeys[category]} · {t(regionI18nKeys[region])}
                     </p>
                   </div>
                 </div>

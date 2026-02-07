@@ -159,7 +159,7 @@ export default function Pagination({
                   ? 'bg-primary text-white hover:bg-primary-dark'
                   : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
               }`}
-              aria-label={`第 ${pageNum} 頁`}
+              aria-label={`${t('common.page')} ${pageNum}`}
               aria-current={isActive ? 'page' : undefined}
             >
               {pageNum}

@@ -6,7 +6,7 @@
  */
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useTranslation, Language } from '../i18n';
+import { useTranslation, languageOptions, Language } from '../i18n';
 import { authApi } from '../api/auth';
 
 // 統一品牌設定
@@ -66,12 +66,8 @@ export default function ForgotPassword() {
     }
   };
   
-  // 語言選項
-  const languageLabels: Record<Language, string> = {
-    'zh-TW': '繁中',
-    'en': 'EN',
-    'ja': '日本語'
-  };
+  // 語言選項 - 使用 languageOptions 的 shortName
+  const currentLangOption = languageOptions.find(opt => opt.code === language) || languageOptions[0];
   
   // 成功畫面
   if (isSuccess) {
@@ -105,7 +101,7 @@ export default function ForgotPassword() {
             to="/login"
             className="inline-block px-12 py-4 bg-black text-white text-[11px] tracking-[0.2em] uppercase hover:bg-gray-900 transition-colors duration-300"
           >
-            BACK TO LOGIN
+            {t('auth.forgot.backToLogin').toUpperCase()}
           </Link>
           
           <p className="mt-8 text-[10px] text-gray-400 tracking-wide">
@@ -155,7 +151,7 @@ export default function ForgotPassword() {
             }}
             className="text-gray-400 hover:text-black transition-colors text-[10px] tracking-[0.15em] uppercase"
           >
-            {languageLabels[language]}
+            {currentLangOption.shortName}
           </button>
         </header>
         
@@ -179,7 +175,7 @@ export default function ForgotPassword() {
                 {t('auth.forgot.title')}
               </h2>
               <p className="text-gray-400 text-xs font-light tracking-[0.1em] uppercase">
-                RESET YOUR PASSWORD
+                {t('auth.forgot.resetSubtitle')}
               </p>
             </div>
             
@@ -200,7 +196,7 @@ export default function ForgotPassword() {
               {/* Email 輸入框 */}
               <div>
                 <label htmlFor="email" className="block text-[10px] tracking-[0.15em] uppercase text-gray-500 mb-3">
-                  EMAIL
+                  {t('common.email')}
                 </label>
                 <input
                   id="email"
@@ -233,10 +229,10 @@ export default function ForgotPassword() {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none" />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                     </svg>
-                    SENDING...
+                    {t('common.sending')}
                   </span>
                 ) : (
-                  'SEND RESET LINK'
+                  t('auth.forgot.sendLink')
                 )}
               </button>
             </form>
@@ -251,7 +247,7 @@ export default function ForgotPassword() {
                 to="/login"
                 className="text-black underline hover:no-underline transition-all"
               >
-                Sign In
+                {t('auth.login.submit')}
               </Link>
             </p>
             

@@ -48,7 +48,7 @@ const PlaceholderSVG = ({ className }: { className?: string }) => (
       fontSize="16"
       fontFamily="Arial, sans-serif"
     >
-      圖片無法載入
+      ⚠
     </text>
   </svg>
 )
@@ -77,6 +77,7 @@ function ImageGalleryItem({
   onMoveDown: (index: number) => void
   isLast: boolean
 }) {
+  const { t } = useTranslation()
   const [imageError, setImageError] = useState(false)
   const [imageLoading, setImageLoading] = useState(true)
   const proxyUrl = useMemo(() => getProxyImageUrl(image.url), [image.url])
@@ -105,7 +106,7 @@ function ImageGalleryItem({
       {/* 圖片 */}
       <img
         src={proxyUrl}
-        alt={`Image ${image.order}`}
+        alt={`${t('images.title')} ${image.order}`}
         className="w-full h-full object-cover pointer-events-none"
         onLoad={() => {
           setImageLoading(false)
@@ -168,7 +169,7 @@ function ImageGalleryItem({
             onMouseDown={(e) => e.stopPropagation()}
             className="px-3 py-1 bg-white/90 text-gray-800 rounded text-xs font-medium hover:bg-white transition-colors pointer-events-auto"
           >
-            預覽
+            {t('common.preview')}
           </button>
           <button
             onClick={(e) => {
