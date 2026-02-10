@@ -30,10 +30,10 @@ export default function Login() {
   // 處理 OAuth 錯誤
   const oauthError = searchParams.get('error');
   
-  // 如果已登入，重定向到首頁
+  // 如果已登入，重定向到 Dashboard
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/');
+      navigate('/dashboard');
     }
   }, [isAuthenticated, navigate]);
   
@@ -48,7 +48,7 @@ export default function Login() {
     
     const success = await login({ email, password });
     if (success) {
-      navigate('/');
+      navigate('/dashboard');
     }
   };
   

@@ -49,7 +49,7 @@ class JWTAuth(HTTPBearer):
         
         # 驗證 Token（支援區分過期和無效的錯誤類型）
         try:
-        payload = verify_access_token(token)
+            payload = verify_access_token(token)
         except TokenError as e:
             if self.auto_error:
                 if e.error_type == "expired":

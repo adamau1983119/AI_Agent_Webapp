@@ -113,16 +113,6 @@ export default function CreateChannel() {
     }
   };
   
-  // AI 助手：預設組合點擊
-  const handlePresetClick = (preset: { key: string; category: ChannelCategory; region: ChannelRegion }) => {
-    setCategory(preset.category);
-    setRegion(preset.region);
-    const catLabel = categoryI18nKeys[preset.category];
-    const regLabel = regionI18nKeys[preset.region];
-    const text = t('channels.assist.quickPreset', { category: catLabel, region: regLabel });
-    setAssistInput(text);
-  };
-
   // AI 助手：快捷按鈕點擊（類別）
   const handleQuickCategoryClick = (cat: ChannelCategory) => {
     setCategory(cat);
