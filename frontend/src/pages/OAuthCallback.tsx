@@ -26,9 +26,14 @@ export default function OAuthCallback() {
       }
       
       try {
+        // 等待 OAuth 回調處理完成，確保狀態已更新
         await handleOAuthCallback(token);
-        // 成功後重定向到主題列表（與訪客模式相同的頁面）
-        navigate('/topics');
+        
+        // 短暫延遲確保狀態已同步到 localStorage
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        // 成功後重定向到 Dashboard
+        navigate('/dashboard');
       } catch (err) {
         // 失敗後重定向到登入頁面
         navigate('/login?error=oauth_failed');

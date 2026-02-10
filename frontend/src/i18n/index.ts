@@ -2748,6 +2748,8 @@ export const useI18n = create<I18nState>()(
         set({ language: lang });
         // 更新 HTML lang 屬性
         document.documentElement.lang = lang;
+        // 同步更新 preferred-language 到 localStorage
+        localStorage.setItem('preferred-language', lang);
       },
       
       t: (key: TranslationKey, params?: Record<string, string>) => {
