@@ -268,20 +268,33 @@ class InspirationService:
         Returns:
             熱門主題列表
         """
-        # 根據類別和地區建構搜尋詞
-        search_terms = {
-            "fashion": "最新時尚趨勢",
-            "food": "美食推薦",
-            "tech": "科技新聞",
-            "finance": "財經新聞",
-            "sports": "體育新聞",
-            "entertainment": "娛樂新聞",
-            "general": "熱門話題",
-        }
-        
-        query = search_terms.get(category, "熱門話題")
-        
-        return await self.search_inspiration(query, language, limit)
+        try:
+            # 根據類別和地區建構搜尋詞
+            search_terms = {
+                "fashion": "最新時尚趨勢",
+                "food": "美食推薦",
+                "tech": "科技新聞",
+                "finance": "財經新聞",
+                "sports": "體育新聞",
+                "entertainment": "娛樂新聞",
+                "general": "熱門話題",
+            }
+            
+            query = search_terms.get(category, "熱門話題")
+            
+            # 嘗試搜尋，如果失敗則使用 AI 生成 fallback
+            results = await self.search_inspiration(query, language, limit)
+            
+            # 如果結果為空且 Google API 未配置，使用 AI 生成
+            if not results and (not self.google_api_key or not self.google_cse_id):
+                logger.info("Google API 未配置，使用 AI 生成熱門話題")
+                results = await self._ai_generate_inspiration(query, language, limit)
+            
+            return results
+        except Exception as e:
+            logger.error(f"取得熱門話題失敗: {e}")
+            # 如果所有方法都失敗，返回空列表（前端會顯示空狀態）
+            return []
 
 
 # 建立全域實例

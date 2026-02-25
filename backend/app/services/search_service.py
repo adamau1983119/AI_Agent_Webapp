@@ -23,30 +23,31 @@ class UserRole(str, Enum):
     ADMIN = "admin"
 
 
-def sanitize_query(query: str) -> str:
+def sanitize_query(query: str, error_key_prefix: str = "topic") -> str:
     """
     清理和驗證查詢字串
     
     Args:
         query: 原始查詢字串
-        
+        error_key_prefix: 錯誤訊息鍵前綴（用於 i18n）
+    
     Returns:
         清理後的查詢字串
-        
+    
     Raises:
-        ValueError: 如果查詢字串無效
+        ValueError: 如果查詢字串無效（錯誤訊息為 i18n 鍵）
     """
     if not query or not isinstance(query, str):
-        raise ValueError("查詢字串不能為空")
+        raise ValueError(f"{error_key_prefix}.invalid_query:error=Query string cannot be empty")
     
     # 移除前後空白
     query = query.strip()
     
     # 驗證長度
     if len(query) < 2:
-        raise ValueError("查詢字串至少需要 2 個字元")
+        raise ValueError(f"{error_key_prefix}.query_too_short")
     if len(query) > 100:
-        raise ValueError("查詢字串最多 100 個字元")
+        raise ValueError(f"{error_key_prefix}.query_too_long")
     
     # 移除危險字符（MongoDB 正則表達式特殊字符需要轉義，但這裡我們先清理明顯的危險字符）
     # 保留中文字符、英文字母、數字、空格和常見標點符號
@@ -151,15 +152,19 @@ class SearchService:
         """
         # 清理和驗證查詢字串
         try:
-            query = sanitize_query(query)
+            query = sanitize_query(query, "topic")
         except ValueError as e:
-            raise ValueError(f"查詢字串無效: {str(e)}")
+            # 如果錯誤訊息是 i18n 鍵，直接傳遞；否則包裝為通用錯誤
+            error_msg = str(e)
+            if not error_msg.startswith("topic."):
+                raise ValueError(f"topic.invalid_query:error={error_msg}")
+            raise
         
         # 驗證分頁參數
         if page < 1 or page > 100:
-            raise ValueError("頁碼必須在 1-100 之間")
+            raise ValueError("topic.page_invalid")
         if limit < 1 or limit > 50:
-            raise ValueError("每頁數量必須在 1-50 之間")
+            raise ValueError("topic.limit_invalid")
         
         category_str = category.value if category and hasattr(category, 'value') else (category if category else None)
         role_str = role.value if hasattr(role, 'value') else role
@@ -243,8 +248,15 @@ class SearchService:
                 
                 logger.info(f"MongoDB 搜尋成功: '{query}', 找到 {total} 筆結果")
             except Exception as e:
-                logger.error(f"MongoDB 搜尋失敗: {e}")
-                raise Exception(f"搜尋失敗: {str(e)}")
+                logger.error(f"MongoDB 搜尋失敗: {e}", exc_info=True)
+                # 如果資料庫連接失敗，返回空結果而不是拋出異常
+                if "connection" in str(e).lower() or "timeout" in str(e).lower():
+                    logger.warning(f"資料庫連接問題，返回空搜尋結果: {e}")
+                    topics = []
+                    total = 0
+                else:
+                    # 將錯誤訊息包裝為 i18n 鍵
+                    raise Exception(f"topic.search_error:error={str(e)}")
         
         # 3. 根據角色過濾結果
         filtered_topics = filter_results_by_role(topics, role)

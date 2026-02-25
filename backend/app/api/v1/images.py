@@ -722,6 +722,7 @@ async def match_photos_for_topic(
 
 @router.post("/validate-match")
 async def validate_photo_match(
+    request: Request,
     topic_id: str = Body(..., description="主題 ID"),
     article_id: Optional[str] = Body(None, description="文章 ID")
 ):
@@ -738,9 +739,11 @@ async def validate_photo_match(
         # 取得文章內容
         content = await content_repo.get_content_by_topic_id(topic_id)
         if not content:
+            from app.utils.i18n import get_user_language
+            language = get_user_language(request=request)
             raise HTTPException(
                 status_code=404,
-                detail=get_error_message("image.topic_content_not_found", get_user_language(user=current_user, request=request))
+                detail=get_error_message("image.topic_content_not_found", language)
             )
         
         article_text = content.get("article", "")
@@ -763,9 +766,16 @@ async def validate_photo_match(
             
             mentioned_item = None
             for feature in core_features:
-                if feature.lower() in str(image.get("keywords", [])).lower():
-                    mentioned_item = feature
-                    break
+                # 檢查 feature 是否為 None 或空字串
+                if feature and isinstance(feature, str) and feature.strip():
+                    try:
+                        if feature.lower() in str(image.get("keywords", [])).lower():
+                            mentioned_item = feature
+                            break
+                    except AttributeError:
+                        # 如果 feature 不是字串類型，跳過
+                        logger.warning(f"特徵值類型錯誤: {type(feature)}, 值: {feature}")
+                        continue
             
             validation_results.append({
                 "mentioned_item": mentioned_item or "未提及",

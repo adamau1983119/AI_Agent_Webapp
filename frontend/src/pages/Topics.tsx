@@ -73,6 +73,8 @@ export default function Topics() {
 
   // 判斷是否使用新的搜尋端點（當有搜尋關鍵字時）
   const useSearchEndpoint = Boolean(filters.search && filters.search.trim().length >= 2)
+  // 判斷是否有搜尋條件（用於隱藏時間分組）
+  const hasSearchQuery = Boolean(filters.search && filters.search.trim().length >= 2)
 
   // 使用新的搜尋端點
   const {
@@ -198,7 +200,10 @@ export default function Topics() {
                 pageSize={pagination.limit}
                 totalItems={pagination.total}
                 onPageChange={(page) => {
-                  setFilters({ ...filters, page })
+                  // 更新 filters 並觸發查詢
+                  const newFilters = { ...filters, page }
+                  setFilters(newFilters)
+                  // 確保查詢會重新執行（React Query 會根據 queryKey 自動觸發）
                 }}
               />
             </div>
@@ -219,7 +224,7 @@ export default function Topics() {
         sort: filters.sort,
         order: filters.order,
       }}
-      showTimeGroups={!filters.search} // 搜尋時不顯示時間分組
+      showTimeGroups={!hasSearchQuery} // 搜尋時不顯示時間分組
       pageSize={20}
       emptyMessage={filters.search ? t('topics.noSearchResults') : t('topics.noTopics')}
     />

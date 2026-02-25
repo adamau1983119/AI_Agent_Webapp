@@ -126,14 +126,33 @@ async def get_current_user(request: Request) -> Dict[str, Any]:
     Raises:
         HTTPException: 如果用戶未認證
     """
-    if not hasattr(request.state, "user"):
+    # 如果已經設置了 user，直接返回（避免重複驗證）
+    if hasattr(request.state, "user") and request.state.user:
+        return request.state.user
+    
+    # 否則，調用 jwt_auth 驗證 token 並設置 user
+    # 使用 auto_error=True 確保驗證失敗時拋出異常
+    jwt_auth_instance = JWTAuth(auto_error=True)
+    try:
+        user = await jwt_auth_instance(request)
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="未認證",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        return user
+    except HTTPException:
+        # 重新拋出 HTTPException（jwt_auth 已經設置了正確的錯誤訊息）
+        raise
+    except Exception as e:
+        # 處理其他異常
+        logger.error(f"JWT 驗證過程中發生錯誤: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="未認證",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    
-    return request.state.user
 
 
 async def get_current_user_optional(request: Request) -> Optional[Dict[str, Any]]:

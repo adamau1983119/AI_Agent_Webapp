@@ -20,7 +20,7 @@ export default function TopicDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const { t } = useTranslation()
+  const { t, language } = useTranslation()  // 獲取用戶語言偏好
   const { isAuthenticated } = useAuthStore()
   const [showEditor, setShowEditor] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
@@ -90,10 +90,13 @@ export default function TopicDetail() {
   const generateContentMutation = useMutation({
     mutationFn: (settings?: GenerationSettings) => {
       console.log('🚀 開始生成內容，主題 ID:', id, '設定:', settings)
+      // 獲取用戶當前語言偏好
+      const userLanguage = language || 'zh-TW'
       return contentsAPI.generateContent(id!, {
         type: settings?.outputFormat || 'both',
         article_length: settings?.articleLength || 500,
         script_duration: settings?.scriptDuration || 30,
+        language: userLanguage,  // 傳遞用戶語言偏好
       })
     },
     onSuccess: (data) => {
@@ -145,10 +148,14 @@ export default function TopicDetail() {
   const regenerateContentMutation = useMutation({
     mutationFn: (settings?: GenerationSettings) => {
       console.log('🔄 開始重新生成內容，主題 ID:', id, '設定:', settings)
+      // 獲取用戶當前語言偏好
+      const userLanguage = language || 'zh-TW'
+      // 內容生成可能需要更長時間，已在 contentsAPI.regenerateContent 中設置 60 秒超時
       return contentsAPI.regenerateContent(id!, {
         type: settings?.outputFormat || 'both',
         article_length: settings?.articleLength || 500,
         script_duration: settings?.scriptDuration || 30,
+        language: userLanguage,  // 傳遞用戶語言偏好
       })
     },
     onSuccess: (data) => {
@@ -348,6 +355,7 @@ export default function TopicDetail() {
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setShowDeleteConfirm(false)}
+                data-testid="btn-delete-cancel"
                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
               >
                 {t('common.cancel')}
@@ -358,6 +366,7 @@ export default function TopicDetail() {
                   setShowDeleteConfirm(false)
                 }}
                 disabled={deleteMutation.isPending}
+                data-testid="btn-delete-confirm"
                 className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {deleteMutation.isPending ? t('common.loading') : t('common.confirmDelete')}
@@ -566,7 +575,22 @@ export default function TopicDetail() {
             </div>
             <div>
               <h3 className="font-semibold text-gray-700 dark:text-gray-200 mb-2">{t('topics.source')}</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">{topic.source}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{topic.source}</p>
+              {/* 原始文章連結 */}
+              {topic.sources && topic.sources.length > 0 && topic.sources[0]?.url && (
+                <a
+                  href={topic.sources[0].url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-sm text-primary hover:text-primary-dark underline"
+                  data-testid="link-topic-detail-original-article"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                  {t('topics.viewOriginalArticle')}
+                </a>
+              )}
             </div>
             <div>
               <h3 className="font-semibold text-gray-700 dark:text-gray-200 mb-2">{t('topics.generatedAt')}</h3>

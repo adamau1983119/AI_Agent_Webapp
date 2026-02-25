@@ -26,7 +26,9 @@ class InteractionRepository(BaseRepository):
         photo_id: Optional[str] = None,
         script_id: Optional[str] = None,
         duration: Optional[int] = None,
-        category: Optional[str] = None
+        category: Optional[str] = None,
+        reasons: Optional[List[str]] = None,
+        comment: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         建立互動記錄
@@ -54,6 +56,8 @@ class InteractionRepository(BaseRepository):
             "action": action.value if hasattr(action, 'value') else action,
             "duration": duration,
             "category": category,
+            "reasons": reasons,  # 原因列表
+            "comment": comment,  # 評論
             "created_at": datetime.utcnow()
         }
         

@@ -71,8 +71,9 @@ export default function InfiniteScroll({
 
     observerRef.current = new IntersectionObserver(handleObserver, options)
 
-    if (loadMoreRef.current) {
-      observerRef.current.observe(loadMoreRef.current)
+    const currentRef = loadMoreRef.current
+    if (currentRef) {
+      observerRef.current.observe(currentRef)
     }
 
     return () => {
@@ -80,7 +81,7 @@ export default function InfiniteScroll({
         observerRef.current.disconnect()
       }
     }
-  }, [handleObserver, threshold])
+  }, [handleObserver, threshold, hasMore, isLoading, error])
 
   const defaultLoader = (
     <div className="flex justify-center items-center py-8">
@@ -117,8 +118,14 @@ export default function InfiniteScroll({
     <div className={className}>
       {children}
 
-      {/* 載入觸發點 */}
-      <div ref={loadMoreRef} />
+      {/* 載入觸發點 - 添加最小高度確保 IntersectionObserver 能正確觸發 */}
+      {hasMore && (
+        <div 
+          ref={loadMoreRef} 
+          className="h-1 w-full"
+          aria-hidden="true"
+        />
+      )}
 
       {/* 載入中狀態 */}
       {isLoading && (loader || defaultLoader)}

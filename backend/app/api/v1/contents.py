@@ -167,7 +167,7 @@ async def generate_content(
                 source_urls=source_urls,
                 original_language=original_language,
                 style_info=style_info,
-                target_language=topic.get("display_language", "zh-TW")
+                target_language=request.language or topic.get("display_language", "zh-TW")
             )
             article = await ai_service._call_api(prompt)
             script = None
@@ -191,7 +191,7 @@ async def generate_content(
                 source_urls=source_urls,
                 original_language=original_language,
                 style_info=style_info,
-                target_language=topic.get("display_language", "zh-TW")
+                target_language=request.language or topic.get("display_language", "zh-TW")
             )
             article = await ai_service._call_api(article_prompt)
             script = await ai_service.generate_script(

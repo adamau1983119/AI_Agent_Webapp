@@ -199,49 +199,95 @@ function ImageItem({
 }
 
 /**
- * 從內容中提取關鍵字（改進版：提取簡潔、適合搜尋的關鍵字）
+ * 從內容中提取關鍵字（改進版：提取與主題相關的準確關鍵字）
  */
 function extractKeywords(topic: Topic | null | undefined, content: Content | null | undefined): string[] {
   const keywords: Set<string> = new Set()
   
-  // 停用詞列表（移除這些詞以獲得更好的搜尋結果）
+  // 擴展停用詞列表（移除這些詞以獲得更好的搜尋結果）
   const stopWords = new Set([
+    // 代詞和助詞
     '對我而言', '他', '她', '它', '的', '是', '在', '有', '和', '與', '及', '或',
+    '一個', '一種', '這個', '那個', '這些', '那些', '什麼', '如何', '為何',
+    // 形容詞和修飾詞
     '近乎', '傳奇', '回憶', '巨匠', '大師', '設計師', '時尚', '品牌',
     '大', '必', '吃', '平民', '美食', '推薦', '介紹', '分享', '體驗',
-    '一個', '一種', '這個', '那個', '這些', '那些'
+    '經典', '傳統', '特色', '招牌', '街頭', '優雅', '浪漫', '現代',
+    '休閒', '正式', '奢華', '復古', '前衛', '自然', '精緻', '大氣',
+    // 動詞
+    '可以', '應該', '能夠', '如果', '但是', '然而', '因為', '所以',
+    '讓', '會', '要', '能', '可', '為', '了', '而', '但', '卻', '只', '還', '更',
+    // 其他無關詞彙
+    'top', '排行榜', '第1', '第2', '第3', '第一', '第二', '第三'
   ])
   
-  // 從主題標題提取關鍵字
+  // 分類特定的關鍵字提取規則
+  const category = topic?.category || 'trend'
+  
+  // 從主題標題提取關鍵字（優先提取核心實體）
   if (topic?.title) {
     const title = topic.title.trim()
     
-    // 1. 提取英文專有名詞（大寫字母開頭的單詞）
+    // 1. 提取英文專有名詞（大寫字母開頭的單詞，優先級最高）
     const englishNames = title.match(/\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*\b/g)
     if (englishNames) {
       englishNames.forEach(name => {
         const cleanName = name.trim()
         // 只保留長度適中的專有名詞（2-50字符）
-        if (cleanName.length >= 2 && cleanName.length <= 50) {
+        if (cleanName.length >= 2 && cleanName.length <= 50 && !stopWords.has(cleanName.toLowerCase())) {
           keywords.add(cleanName)
         }
       })
     }
     
-    // 2. 提取簡潔的中文關鍵字（移除停用詞）
+    // 2. 提取品牌名稱（時尚類別）
+    if (category === 'fashion') {
+      const fashionBrands = [
+        'Dior', 'Gucci', 'Chanel', 'LV', 'Prada', 'Valentino', 'Alessandro Michele',
+        'Hermès', 'Burberry', 'Versace', 'Armani', 'Balenciaga', 'Saint Laurent',
+        'Yves Saint Laurent', 'Givenchy', 'Fendi', 'Bottega Veneta', 'Loewe'
+      ]
+      fashionBrands.forEach(brand => {
+        if (title.includes(brand)) {
+          keywords.add(brand)
+        }
+      })
+    }
+    
+    // 3. 提取地點名稱（包含「店」、「餐廳」、「地址」等關鍵字後的名稱）
+    const locationPatterns = [
+      /([\u4e00-\u9fa5]{2,8})(店|餐廳|地址|地點)/g,
+      /([\u4e00-\u9fa5]{2,6})(區|市|縣|鎮|街|路)/g,
+    ]
+    locationPatterns.forEach(pattern => {
+      const matches = title.match(pattern)
+      if (matches) {
+        matches.forEach(match => {
+          const location = match.replace(/(店|餐廳|地址|地點|區|市|縣|鎮|街|路)/g, '').trim()
+          if (location.length >= 2 && location.length <= 8 && !stopWords.has(location)) {
+            keywords.add(location)
+          }
+        })
+      }
+    })
+    
+    // 4. 提取具體名詞（2-4字，排除停用詞）
     let chineseText = title
       .replace(/[A-Za-z0-9]/g, ' ') // 移除英文和數字
-      .replace(/[、，,。！？：；]/g, ' ') // 移除標點
+      .replace(/[、，,。！？：；()（）【】「」『』]/g, ' ') // 移除標點
       .split(/\s+/)
       .filter(w => w.length > 0)
     
     // 提取2-4字的中文詞組（適合圖片搜尋）
     chineseText.forEach((word, index) => {
-      // 單個詞（2-4字）
+      // 單個詞（2-4字，且不是停用詞）
       if (word.length >= 2 && word.length <= 4 && !stopWords.has(word)) {
+        // 優先提取名詞（常見名詞後綴）
+        if (!word.match(/^(的|是|在|有|和|與|及|或|讓|會|要|能|可|為|了|而|但|卻|只|還|更)$/)) {
         keywords.add(word)
+        }
       }
-      // 兩個詞的組合（2+2字或2+3字）
+      // 兩個詞的組合（2+2字或2+3字，但只在兩個詞都不是停用詞時）
       if (index < chineseText.length - 1) {
         const nextWord = chineseText[index + 1]
         if (word.length >= 2 && nextWord.length >= 2 && 
@@ -252,10 +298,13 @@ function extractKeywords(topic: Topic | null | undefined, content: Content | nul
       }
     })
     
-    // 3. 如果標題較短，直接使用簡化版本
+    // 5. 如果標題較短且沒有提取到關鍵字，使用簡化版本（移除所有停用詞）
     if (title.length <= 30 && keywords.size === 0) {
-      const simplified = title
-        .replace(/[對我而言他近乎傳奇回憶巨匠大師設計師時尚品牌]/g, '')
+      let simplified = title
+        .replace(/[A-Za-z0-9、，,。！？：；()（）【】「」『』]/g, ' ')
+        .split(/\s+/)
+        .filter(w => w.length > 0 && !stopWords.has(w))
+        .join(' ')
         .trim()
       if (simplified.length >= 2 && simplified.length <= 30) {
         keywords.add(simplified)
@@ -263,52 +312,76 @@ function extractKeywords(topic: Topic | null | undefined, content: Content | nul
     }
   }
   
-  // 從文章內容提取關鍵字
+  // 從文章內容提取關鍵字（補充標題中未提取到的關鍵字）
   if (content?.article) {
     const article = content.article
     
-    // 提取英文專有名詞
+    // 1. 提取英文專有名詞（如果標題中沒有）
     const articleEnglishNames = article.match(/\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*\b/g)
     if (articleEnglishNames) {
       articleEnglishNames.forEach(name => {
         const cleanName = name.trim()
-        if (cleanName.length >= 2 && cleanName.length <= 50) {
+        if (cleanName.length >= 2 && cleanName.length <= 50 && !stopWords.has(cleanName.toLowerCase())) {
           keywords.add(cleanName)
         }
       })
     }
     
-    // 提取常見的食物名稱（中文）
+    // 2. 根據分類提取特定關鍵字
+    if (category === 'food') {
+      // 提取具體食物名稱（優先級高）
     const foodKeywords = [
       '老婆餅', '雞蛋仔', '腸粉', '燒賣', '叉燒包', '蝦餃', '燒鵝', '燒肉',
       '雲吞', '魚蛋', '牛腩', '煲仔飯', '車仔麵', '絲襪奶茶', '菠蘿包',
       '蛋撻', '燒餅', '油條', '豆漿', '小籠包', '生煎包', '鍋貼', '餃子',
       '拉麵', '烏冬', '壽司', '刺身', '天婦羅', '章魚燒', '大阪燒',
       '漢堡', '披薩', '義大利麵', '牛排', '沙拉', '三明治', '熱狗',
-      '蛋糕', '餅乾', '巧克力', '冰淇淋', '布丁', '馬卡龍', '可頌'
+        '蛋糕', '餅乾', '巧克力', '冰淇淋', '布丁', '馬卡龍', '可頌',
+        '一蘭拉麵', '元朗', '澀谷', '東京', '香港', '台灣', '日本'
     ]
     
     foodKeywords.forEach(keyword => {
+        if (article.includes(keyword) && !stopWords.has(keyword)) {
+          keywords.add(keyword)
+        }
+      })
+      
+      // 提取餐廳名稱（包含「餐廳」、「店」等後綴）
+      const restaurantPattern = /([\u4e00-\u9fa5]{2,8})(餐廳|店|館|食堂)/g
+      const restaurantMatches = article.match(restaurantPattern)
+      if (restaurantMatches) {
+        restaurantMatches.forEach(match => {
+          const restaurant = match.replace(/(餐廳|店|館|食堂)/g, '').trim()
+          if (restaurant.length >= 2 && restaurant.length <= 8 && !stopWords.has(restaurant)) {
+            keywords.add(restaurant)
+          }
+        })
+      }
+    } else if (category === 'fashion') {
+      // 提取時尚相關關鍵字
+      const fashionKeywords = [
+        'Alessandro Michele', 'Valentino', 'Dior', 'Gucci', 'Chanel',
+        'Hermès', 'Burberry', 'Versace', 'Armani', 'Balenciaga'
+      ]
+      
+      fashionKeywords.forEach(keyword => {
       if (article.includes(keyword)) {
         keywords.add(keyword)
       }
     })
+    }
     
-    // 提取常見的形容詞+名詞組合
-    const patterns = [
-      /傳統[\u4e00-\u9fa5]+/g,  // 傳統XX
-      /街頭[\u4e00-\u9fa5]+/g,  // 街頭XX
-      /經典[\u4e00-\u9fa5]+/g,  // 經典XX
-      /特色[\u4e00-\u9fa5]+/g,  // 特色XX
-      /招牌[\u4e00-\u9fa5]+/g,  // 招牌XX
+    // 3. 提取具體名詞（移除形容詞前綴）
+    const nounPatterns = [
+      /(傳統|街頭|經典|特色|招牌|優雅|浪漫|現代|休閒|正式|奢華|復古|前衛|自然|精緻|大氣)([\u4e00-\u9fa5]{2,6})/g,
     ]
     
-    patterns.forEach(pattern => {
+    nounPatterns.forEach(pattern => {
       const matches = article.match(pattern)
       if (matches) {
         matches.forEach(match => {
-          const keyword = match.replace(/傳統|街頭|經典|特色|招牌/g, '').trim()
-          if (keyword.length >= 2 && keyword.length <= 10) {
+          const keyword = match.replace(/(傳統|街頭|經典|特色|招牌|優雅|浪漫|現代|休閒|正式|奢華|復古|前衛|自然|精緻|大氣)/g, '').trim()
+          if (keyword.length >= 2 && keyword.length <= 10 && !stopWords.has(keyword)) {
             keywords.add(keyword)
           }
         })

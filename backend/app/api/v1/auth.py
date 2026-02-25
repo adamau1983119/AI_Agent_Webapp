@@ -461,6 +461,14 @@ async def google_callback(
         # 更新最後登入時間
         await auth_service.user_repo.update_last_login(user["id"])
         
+        # 3.1 確保 avatar_url 已保存（如果 Google 提供了頭像但資料庫中沒有）
+        if avatar_url and not user.get("avatar_url"):
+            await auth_service.user_repo.update_user(user["id"], {
+                "avatar_url": avatar_url
+            })
+            # 重新獲取用戶資料以確保包含最新的 avatar_url
+            user = await auth_service.user_repo.get_user_by_id(user["id"])
+        
         # 4. 建立 JWT Token
         jwt_token = await auth_service.create_access_token_for_user(user)
         

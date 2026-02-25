@@ -2,6 +2,8 @@ import { Link } from 'react-router-dom'
 import type { Topic } from '@/types'
 import { API_BASE_URL } from '@/api/client'
 import { useTranslation } from '@/i18n'
+import { formatDistanceToNow } from 'date-fns'
+import { zhTW, enUS, ja } from 'date-fns/locale'
 
 /**
  * 生成圖片代理 URL（如果需要）
@@ -28,10 +30,33 @@ const gradientClasses = {
 }
 
 export default function TopicCard({ topic }: TopicCardProps) {
-  const { t } = useTranslation()
+  const { t, language } = useTranslation()
   // 從 topic 數據計算進度
   const contentProgress = (topic.wordCount || 0) > 0 ? Math.min(100, ((topic.wordCount || 0) / 500) * 100) : 0
   const imageProgress = (topic.imageCount || 0) >= 8 ? 100 : Math.min(100, ((topic.imageCount || 0) / 8) * 100)
+  
+  // 格式化時間顯示（幾小時前）
+  const formatTimeAgo = (dateValue: string | Date | undefined): string => {
+    if (!dateValue) return ''
+    try {
+      const date = typeof dateValue === 'string' ? new Date(dateValue) : dateValue
+      if (isNaN(date.getTime())) return ''
+      
+      const locales = { 'zh-TW': zhTW, 'en': enUS, 'ja': ja }
+      const locale = locales[language as keyof typeof locales] || enUS
+      
+      return formatDistanceToNow(date, { 
+        addSuffix: true,
+        locale 
+      })
+    } catch (e) {
+      return ''
+    }
+  }
+  
+  // 獲取生成時間（優先使用 generatedAt，然後是 generated_at，最後是 createdAt）
+  const generatedTime = topic.generatedAt || (topic as any).generated_at || topic.createdAt || (topic as any).created_at
+  const timeAgo = formatTimeAgo(generatedTime)
   
   // 階段 1：優先使用預覽圖片，如果沒有則使用漸層背景
   // 同時支持 previewImages（前端格式）和 preview_images（後端格式）
@@ -79,6 +104,10 @@ export default function TopicCard({ topic }: TopicCardProps) {
           {/* 標題 */}
           <div className="flex-1 min-w-0">
             <h3 className="font-bold text-sm md:text-base lg:text-lg line-clamp-2 leading-tight">{topic.title}</h3>
+            {/* 時間顯示 */}
+            {timeAgo && (
+              <p className="text-xs text-gray-500 mt-1">{timeAgo}</p>
+            )}
           </div>
         </div>
         
