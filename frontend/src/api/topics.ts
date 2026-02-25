@@ -16,6 +16,7 @@ function convertTopic(apiTopic: any): Topic {
     category: apiTopic.category,
     status: apiTopic.status,
     source: apiTopic.source || '',
+    sources: apiTopic.sources || [],  // 保留來源列表（包含原始文章連結）
     generatedAt: apiTopic.generated_at || apiTopic.generatedAt,
     updatedAt: apiTopic.updated_at || apiTopic.updatedAt,
     imageCount: apiTopic.image_count || 0,

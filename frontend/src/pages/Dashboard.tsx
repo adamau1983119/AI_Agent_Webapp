@@ -91,14 +91,18 @@ export default function Dashboard() {
   
   // 計算今日主題數量（統一使用 UTC 日期比較）
   const getTodayTopicsCount = () => {
+    if (!topics || topics.length === 0) return 0
+    
     const now = new Date()
     const todayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()))
     const today = todayUTC.toISOString().split('T')[0]
     
     return topics.filter((t) => {
       try {
-        const dateValue = (t as any).generated_at || (t as any).generatedAt || 
-                         (t as any).created_at || (t as any).createdAt
+        // 優先使用 generatedAt（前端轉換後的欄位），其次使用 generated_at（後端原始欄位）
+        // 如果都沒有，使用 created_at 或 createdAt
+        const dateValue = (t as any).generatedAt || (t as any).generated_at || 
+                         (t as any).createdAt || (t as any).created_at
         if (!dateValue) return false
         
         let date: Date
@@ -112,6 +116,7 @@ export default function Dashboard() {
         
         if (isNaN(date.getTime())) return false
         
+        // 使用 UTC 日期比較，避免時區問題
         const topicDateUTC = new Date(Date.UTC(
           date.getUTCFullYear(),
           date.getUTCMonth(),
@@ -119,7 +124,9 @@ export default function Dashboard() {
         ))
         const topicDate = topicDateUTC.toISOString().split('T')[0]
         return topicDate === today
-      } catch {
+      } catch (error) {
+        // 調試：記錄無法解析的日期
+        console.warn('無法解析主題日期:', t, error)
         return false
       }
     }).length
@@ -512,16 +519,7 @@ export default function Dashboard() {
                 {deleteTodayMutation.isPending ? '...' : t('dashboard.delete')}
               </button>
             )}
-            {todayTopics < 30 && (
-              <button
-                data-testid="btn-dashboard-generate"
-                onClick={handleGenerateToday}
-                disabled={isGenerating}
-                className="flex-1 py-1.5 text-[10px] tracking-[0.2em] uppercase bg-black text-white hover:bg-gray-900 disabled:bg-gray-300 transition-all"
-              >
-                {isGenerating ? '...' : t('dashboard.generate')}
-              </button>
-            )}
+            {/* 移除「立即生成」按鈕 - 後台已實現自動生成（2026-02-07） */}
           </div>
         </div>
 

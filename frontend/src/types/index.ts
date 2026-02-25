@@ -1,3 +1,10 @@
+// 來源資訊類型
+export interface SourceInfo {
+  url?: string
+  name?: string
+  type?: string
+}
+
 // 主題類型
 export interface Topic {
   id: string
@@ -5,6 +12,7 @@ export interface Topic {
   category: 'fashion' | 'food' | 'trend'
   status: 'pending' | 'confirmed' | 'deleted'
   source: string
+  sources?: SourceInfo[]  // 來源列表（包含原始文章連結）
   generatedAt?: string  // 可選，後端可能使用 generated_at
   generated_at?: string  // 後端格式
   createdAt?: string  // 可選，後端可能使用 created_at

@@ -103,5 +103,78 @@ export const inspirationApi = {
   getSuggestions: async (query: string): Promise<SearchSuggestionsResponse> => {
     return fetchAPI<SearchSuggestionsResponse>(`/inspiration/suggestions?q=${encodeURIComponent(query)}`);
   },
+
+  /**
+   * AI 助手：開始對話
+   */
+  assistantStart: async (topic: string, language?: string): Promise<AssistantStartResponse> => {
+    return fetchAPI<AssistantStartResponse>('/inspiration/assistant/start', {
+      method: 'POST',
+      body: JSON.stringify({ topic, language: language || 'zh-TW' }),
+    });
+  },
+
+  /**
+   * AI 助手：生成內容
+   */
+  assistantGenerate: async (sessionId: string, answers: Record<string, any>): Promise<AssistantGenerateResponse> => {
+    return fetchAPI<AssistantGenerateResponse>('/inspiration/assistant/generate', {
+      method: 'POST',
+      body: JSON.stringify({ session_id: sessionId, answers }),
+    });
+  },
+
+  /**
+   * 取得偏好
+   */
+  getPreferences: async (): Promise<any> => {
+    return fetchAPI<any>('/inspiration/preferences');
+  },
+
+  /**
+   * 更新偏好
+   */
+  updatePreferences: async (preferences: Record<string, any>): Promise<any> => {
+    return fetchAPI<any>('/inspiration/preferences', {
+      method: 'PUT',
+      body: JSON.stringify(preferences),
+    });
+  },
 };
+
+// AI 助手相關類型
+export interface QuestionOption {
+  question_id: string;
+  question: string;
+  type: string;
+  options: string[];
+  required: boolean;
+}
+
+export interface AssistantStartResponse {
+  session_id: string;
+  conversation_id: string;
+  questions: QuestionOption[];
+  preferences_applied?: Record<string, any>;
+}
+
+export interface AssistantGenerateResponse {
+  state: string;
+  content: string;
+  verification_status?: {
+    status: string;
+    confidence: number;
+    sources: Array<{
+      url: string;
+      credibility_score: number;
+      verification_status: string;
+    }>;
+  };
+  modules_included: string[];
+  sources: Array<{
+    url: string;
+    title: string;
+    type: string;
+  }>;
+}
 

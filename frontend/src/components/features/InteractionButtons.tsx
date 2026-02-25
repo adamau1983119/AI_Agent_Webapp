@@ -8,6 +8,7 @@ import { interactionsAPI } from '@/api/client'
 import { ThumbsUp, ThumbsDown, Pencil, Image as ImageIcon, History } from 'lucide-react'
 import { useTranslation } from '@/i18n'
 import toast from 'react-hot-toast'
+import { RatingReason, positiveReasons, negativeReasons, ratingReasonI18nKeys } from '@/api/ratings'
 
 interface InteractionButtonsProps {
   topicId: string
@@ -32,20 +33,30 @@ export default function InteractionButtons({
   const queryClient = useQueryClient()
   const [isLiked, setIsLiked] = useState(false)
   const [isDisliked, setIsDisliked] = useState(false)
+  const [showReasonPanel, setShowReasonPanel] = useState(false)
+  const [selectedAction, setSelectedAction] = useState<'like' | 'dislike' | null>(null)
+  const [selectedReasons, setSelectedReasons] = useState<RatingReason[]>([])
+  const [comment, setComment] = useState('')
 
   // Like mutation
   const likeMutation = useMutation({
-    mutationFn: () =>
+    mutationFn: (reasons?: RatingReason[], commentText?: string) =>
       interactionsAPI.createInteraction({
         user_id: userId,
         topic_id: topicId,
         article_id: articleId,
         script_id: scriptId,
         action: 'like',
+        reasons: reasons,  // 添加原因參數
+        comment: commentText,  // 添加評論參數
       }),
     onSuccess: () => {
       setIsLiked(true)
       setIsDisliked(false)
+      setShowReasonPanel(false)
+      setSelectedAction(null)
+      setSelectedReasons([])
+      setComment('')
       toast.success(t('common.success'))
       // 更新偏好模型
       queryClient.invalidateQueries({ queryKey: ['user', 'preferences'] })
@@ -57,17 +68,23 @@ export default function InteractionButtons({
 
   // Dislike mutation
   const dislikeMutation = useMutation({
-    mutationFn: () =>
+    mutationFn: (reasons?: RatingReason[], commentText?: string) =>
       interactionsAPI.createInteraction({
         user_id: userId,
         topic_id: topicId,
         article_id: articleId,
         script_id: scriptId,
         action: 'dislike',
+        reasons: reasons,  // 添加原因參數
+        comment: commentText,  // 添加評論參數
       }),
     onSuccess: () => {
       setIsDisliked(true)
       setIsLiked(false)
+      setShowReasonPanel(false)
+      setSelectedAction(null)
+      setSelectedReasons([])
+      setComment('')
       toast.success(t('common.success'))
       // 更新偏好模型
       queryClient.invalidateQueries({ queryKey: ['user', 'preferences'] })
@@ -79,16 +96,104 @@ export default function InteractionButtons({
 
   const handleLike = () => {
     if (isLiked) return
-    likeMutation.mutate()
+    // 顯示原因選擇面板
+    setSelectedAction('like')
+    setShowReasonPanel(true)
+    setSelectedReasons([])
+    setComment('')
   }
 
   const handleDislike = () => {
     if (isDisliked) return
-    dislikeMutation.mutate()
+    // 顯示原因選擇面板
+    setSelectedAction('dislike')
+    setShowReasonPanel(true)
+    setSelectedReasons([])
+    setComment('')
   }
+
+  const toggleReason = (reason: RatingReason) => {
+    setSelectedReasons((prev) =>
+      prev.includes(reason)
+        ? prev.filter((r) => r !== reason)
+        : [...prev, reason]
+    )
+  }
+
+  const handleSubmitReason = () => {
+    if (selectedAction === 'like') {
+      likeMutation.mutate(selectedReasons, comment.trim() || undefined)
+    } else if (selectedAction === 'dislike') {
+      dislikeMutation.mutate(selectedReasons, comment.trim() || undefined)
+    }
+  }
+
+  const handleCancelReason = () => {
+    setShowReasonPanel(false)
+    setSelectedAction(null)
+    setSelectedReasons([])
+    setComment('')
+  }
+
+  const reasons = selectedAction === 'like' ? positiveReasons : negativeReasons
 
   return (
     <div className="flex flex-wrap gap-2">
+      {/* 原因選擇面板 */}
+      {showReasonPanel && selectedAction && (
+        <div className="w-full mb-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+          <div className="mb-3">
+            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              {selectedAction === 'like' ? t('interaction.selectLikeReasons') : t('interaction.selectDislikeReasons')}
+            </h4>
+            <div className="flex flex-wrap gap-2 mb-3">
+              {reasons.map((reason) => (
+                <button
+                  key={reason}
+                  onClick={() => toggleReason(reason)}
+                  className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                    selectedReasons.includes(reason)
+                      ? selectedAction === 'like'
+                        ? 'bg-green-500 text-white'
+                        : 'bg-red-500 text-white'
+                      : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                  }`}
+                >
+                  {t(ratingReasonI18nKeys[reason])}
+                </button>
+              ))}
+            </div>
+            <textarea
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              placeholder={t('interaction.additionalComments')}
+              className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+              rows={2}
+            />
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={handleSubmitReason}
+              disabled={likeMutation.isPending || dislikeMutation.isPending}
+              className={`px-4 py-2 text-sm font-medium text-white rounded-md transition-colors ${
+                selectedAction === 'like'
+                  ? 'bg-green-600 hover:bg-green-700'
+                  : 'bg-red-600 hover:bg-red-700'
+              } disabled:opacity-50 disabled:cursor-not-allowed`}
+            >
+              {t('common.submit')}
+            </button>
+            <button
+              onClick={handleCancelReason}
+              disabled={likeMutation.isPending || dislikeMutation.isPending}
+              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {t('common.cancel')}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* 桌面版：水平排列 */}
       <div className="hidden lg:flex gap-2">
         <button

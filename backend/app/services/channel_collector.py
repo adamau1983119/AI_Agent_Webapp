@@ -70,6 +70,11 @@ class ChannelCollector:
             # 取得 RSS 來源
             sources = self.channel_service.get_rss_sources_for_channel(channel)
             
+            # 確保 sources 不為 None
+            if not sources:
+                sources = []
+                logger.warning(f"頻道 {channel_id} 沒有可用的 RSS 來源，將使用 AI 生成")
+            
             # Layer 1: 主要來源
             layer1_sources = [s for s in sources if s.get("layer") == 1]
             for source in layer1_sources:
@@ -78,9 +83,13 @@ class ChannelCollector:
                     items = await self._fetch_rss(source["url"])
                     if items:
                         collection_log["layer_1"]["success"] += 1
-                        collection_log["layer_1"]["sources"].append(source["name"])
+                        collection_log["layer_1"]["sources"].append(source.get("name", "未知來源"))
                         for item in items[:3]:  # 每個來源取 3 個
-                            topics.append(self._create_topic_from_rss(item, source, channel))
+                            try:
+                                topics.append(self._create_topic_from_rss(item, source, channel))
+                            except Exception as e:
+                                logger.warning(f"建立主題失敗: {e}, 跳過此項目")
+                                continue
                 except Exception as e:
                     logger.warning(f"Layer 1 RSS 失敗: {source['name']} - {e}")
             
@@ -95,10 +104,14 @@ class ChannelCollector:
                         items = await self._fetch_rss(source["url"])
                         if items:
                             collection_log["layer_2"]["success"] += 1
-                            collection_log["layer_2"]["sources"].append(source["name"])
+                            collection_log["layer_2"]["sources"].append(source.get("name", "未知來源"))
                             for item in items[:2]:  # 每個備用來源取 2 個
                                 if len(topics) < TOPICS_PER_CHANNEL:
-                                    topics.append(self._create_topic_from_rss(item, source, channel))
+                                    try:
+                                        topics.append(self._create_topic_from_rss(item, source, channel))
+                                    except Exception as e:
+                                        logger.warning(f"建立主題失敗: {e}, 跳過此項目")
+                                        continue
                     except Exception as e:
                         logger.warning(f"Layer 2 RSS 失敗: {source['name']} - {e}")
             
@@ -134,14 +147,24 @@ class ChannelCollector:
             
         except Exception as e:
             logger.error(f"頻道收集失敗: {channel_id} - {e}")
+            import traceback
+            logger.error(f"完整錯誤堆疊: {traceback.format_exc()}")
             
             # 更新收集狀態為失敗
-            await self.channel_repo.update_collection_status(
-                channel_id,
-                ChannelCollectionStatus.FAILED
-            )
+            try:
+                await self.channel_repo.update_collection_status(
+                    channel_id,
+                    ChannelCollectionStatus.FAILED
+                )
+            except Exception as update_error:
+                logger.error(f"更新收集狀態失敗: {update_error}")
             
-            return {"success": False, "error": str(e)}
+            return {
+                "success": False,
+                "error": str(e),
+                "error_type": type(e).__name__,
+                "channel_id": channel_id
+            }
     
     async def _fetch_rss(self, url: str) -> List[Dict[str, Any]]:
         """取得 RSS 內容"""
@@ -196,19 +219,23 @@ class ChannelCollector:
         channel: Dict[str, Any]
     ) -> Dict[str, Any]:
         """從 RSS item 建立主題"""
-        return {
-            "title": item["title"],
-            "summary": item["summary"][:500] if item["summary"] else "",
-            "source_url": item["link"],
-            "source_name": source["name"],
-            "source_layer": source.get("layer", 1),
-            "image_url": item.get("image"),
-            "channel_id": channel["id"],
-            "category": channel["category"],
-            "region": channel["region"],
-            "collected_at": datetime.utcnow().isoformat(),
-            "is_ai_generated": False,
-        }
+        try:
+            return {
+                "title": item.get("title", "無標題"),
+                "summary": (item.get("summary", "") or "")[:500],
+                "source_url": item.get("link", ""),
+                "source_name": source.get("name", "未知來源"),
+                "source_layer": source.get("layer", 1),
+                "image_url": item.get("image"),
+                "channel_id": channel.get("id", ""),
+                "category": channel.get("category", "trend"),
+                "region": channel.get("region", "global"),
+                "collected_at": datetime.utcnow().isoformat(),
+                "is_ai_generated": False,
+            }
+        except Exception as e:
+            logger.error(f"建立主題失敗: {e}, item={item}, source={source}, channel={channel}")
+            raise
     
     async def _generate_ai_topics(
         self,

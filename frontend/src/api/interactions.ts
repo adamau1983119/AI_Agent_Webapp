@@ -22,6 +22,8 @@ export interface CreateInteractionRequest {
   script_id?: string
   action: InteractionAction
   duration?: number
+  reasons?: string[]  // 原因列表（可選）
+  comment?: string  // 評論（可選）
 }
 
 /**

@@ -176,7 +176,10 @@ async def list_topics(
 
 
 @router.get("/{topic_id}", response_model=TopicDetailResponse)
-async def get_topic_detail(topic_id: str = Path(..., description="主題 ID")):
+async def get_topic_detail(
+    topic_id: str = Path(..., description="主題 ID"),
+    request: Request
+):
     """
     取得主題詳情
     
@@ -186,7 +189,7 @@ async def get_topic_detail(topic_id: str = Path(..., description="主題 ID")):
         topic = await topic_repo.get_topic_by_id(topic_id)
         if not topic:
             from app.utils.i18n import get_error_message, get_user_language
-            language = get_user_language(user=current_user, request=request)
+            language = get_user_language(request=request)
             raise HTTPException(
                 status_code=404,
                 detail=get_error_message("topic.not_found", language)
@@ -233,7 +236,7 @@ async def get_topic_detail(topic_id: str = Path(..., description="主題 ID")):
                 logger.error(f"主題 {topic_id} 缺少必需欄位: {field}, topic keys: {list(topic.keys())}")
                 raise HTTPException(
                     status_code=500,
-                    detail=get_error_message("topic.data_incomplete", get_user_language(user=current_user, request=request))
+                    detail=get_error_message("topic.data_incomplete", get_user_language(request=request))
                 )
         
         # 確保有 created_at（如果沒有，使用 generated_at）
@@ -307,7 +310,7 @@ async def get_topic_detail(topic_id: str = Path(..., description="主題 ID")):
             logger.error(f"Traceback: {traceback.format_exc()}")
             raise HTTPException(
                 status_code=500,
-                detail=get_error_message("topic.detail_response_failed", get_user_language(user=current_user, request=request))
+                detail=get_error_message("topic.detail_response_failed", get_user_language(request=request))
             )
     except HTTPException:
         raise
@@ -576,7 +579,29 @@ async def search_topics(
     except ValueError as e:
         # 輸入驗證錯誤
         logger.warning(f"搜尋請求驗證失敗: {e}")
-        raise HTTPException(status_code=400, detail=str(e))
+        # 檢查錯誤訊息是否為 i18n 鍵
+        error_msg = str(e)
+        language = get_user_language(request=request)
+        
+        # 解析 i18n 鍵和參數
+        if error_msg.startswith("topic."):
+            # 提取 i18n 鍵和參數
+            if ":" in error_msg:
+                error_key, params_str = error_msg.split(":", 1)
+                # 解析參數（例如：error=xxx）
+                params = {}
+                for param in params_str.split(","):
+                    if "=" in param:
+                        key, value = param.split("=", 1)
+                        params[key.strip()] = value.strip()
+                detail = get_error_message(error_key, language, **params)
+            else:
+                detail = get_error_message(error_msg, language)
+        else:
+            # 如果不是 i18n 鍵，使用通用錯誤訊息
+            detail = get_error_message("common.validation_error", language)
+        
+        raise HTTPException(status_code=400, detail=detail)
     except ConnectionFailure as e:
         logger.error(f"資料庫連接失敗: {e}")
         if settings.ENVIRONMENT == "development":
@@ -598,9 +623,19 @@ async def search_topics(
             )
     except Exception as e:
         logger.error(f"搜尋主題失敗: {e}", exc_info=True)
-        from app.utils.i18n import get_error_message, get_user_language
         language = get_user_language(request=request)
-        raise HTTPException(status_code=500, detail=get_error_message("topic.search_failed", language))
+        # 檢查錯誤訊息是否為 i18n 鍵
+        error_msg = str(e)
+        if error_msg.startswith("topic.search_error:"):
+            # 解析參數
+            if "error=" in error_msg:
+                error_detail = error_msg.split("error=", 1)[1]
+                detail = get_error_message("topic.search_error", language, error=error_detail)
+            else:
+                detail = get_error_message("topic.search_error", language, error=error_msg)
+        else:
+            detail = get_error_message("topic.search_failed", language)
+        raise HTTPException(status_code=500, detail=detail)
 
 
 @router.get("/search/check")

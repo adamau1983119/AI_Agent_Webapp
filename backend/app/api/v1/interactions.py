@@ -50,7 +50,9 @@ async def create_interaction(interaction_data: InteractionCreate):
             photo_id=interaction_data.photo_id,
             script_id=interaction_data.script_id,
             duration=interaction_data.duration,
-            category=category
+            category=category,
+            reasons=interaction_data.reasons,  # 原因列表
+            comment=interaction_data.comment  # 評論
         )
         
         return _convert_to_response(created)

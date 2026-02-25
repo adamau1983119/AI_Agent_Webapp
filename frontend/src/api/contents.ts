@@ -34,6 +34,7 @@ export interface GenerateContentParams {
   type: ContentType
   article_length?: number
   script_duration?: number
+  language?: string  // 用戶語言偏好（zh-TW/en/ja）
 }
 
 /**
@@ -79,6 +80,7 @@ export const contentsAPI = {
         type: params.type,
         article_length: params.article_length || 500,
         script_duration: params.script_duration || 30,
+        language: params.language || 'zh-TW',  // 傳遞用戶語言偏好
       }),
     })
 
@@ -115,13 +117,16 @@ export const contentsAPI = {
     topicId: string,
     params: GenerateContentParams
   ): Promise<Content> => {
+    // 內容生成可能需要更長時間，設置 60 秒超時
     const content = await fetchAPI<any>(`/contents/${topicId}/regenerate`, {
       method: 'POST',
       body: JSON.stringify({
         type: params.type,
         article_length: params.article_length || 500,
         script_duration: params.script_duration || 30,
+        language: params.language || 'zh-TW',  // 傳遞用戶語言偏好
       }),
+      timeout: 60000, // 60 秒超時（內容生成需要更長時間）
     })
 
     return convertContent(content)

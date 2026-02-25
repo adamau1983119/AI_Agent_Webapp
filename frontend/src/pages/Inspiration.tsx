@@ -6,7 +6,13 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '../i18n';
 import { useAuthStore } from '../stores/authStore';
-import { inspirationApi, InspirationItem } from '../api/inspiration';
+import { 
+  inspirationApi, 
+  InspirationItem,
+  AssistantStartResponse,
+  AssistantGenerateResponse,
+  QuestionOption
+} from '../api/inspiration';
 import toast from 'react-hot-toast';
 
 export default function Inspiration() {
@@ -30,6 +36,16 @@ export default function Inspiration() {
   const [isSearching, setIsSearching] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  
+  // AI 助手狀態
+  const [mode, setMode] = useState<'search' | 'assistant'>('search');
+  const [assistantTopic, setAssistantTopic] = useState('');
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [questions, setQuestions] = useState<QuestionOption[]>([]);
+  const [answers, setAnswers] = useState<Record<string, any>>({});
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedContent, setGeneratedContent] = useState<AssistantGenerateResponse | null>(null);
   
   // 載入熱門趨勢
   useEffect(() => {
@@ -65,8 +81,13 @@ export default function Inspiration() {
         limit: 10,
       });
       setResults(response.topics);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to load trending:', err);
+      // 顯示錯誤提示給用戶
+      const errorMessage = err?.message || t('common.failed');
+      toast.error(errorMessage);
+      // 如果 API 失敗，清空結果列表
+      setResults([]);
     } finally {
       setIsSearching(false);
     }
@@ -104,6 +125,97 @@ export default function Inspiration() {
     handleSearch(suggestion);
   };
   
+  const handleUseInspiration = (item: InspirationItem) => {
+    // 導航到 AI 頻道助手頁面，傳遞靈感資訊作為初始輸入
+    // 如果沒有 AI 頻道助手頁面，則導航到主題列表頁面並顯示提示
+    if (isAuthenticated) {
+      // 已登入：導航到 AI 頻道助手（如果有的話）或主題列表
+      // 暫時導航到主題列表，並在 localStorage 中保存靈感資訊供後續使用
+      const inspirationData = {
+        title: item.title,
+        description: item.description,
+        url: item.url,
+        source: item.source,
+      };
+      localStorage.setItem('pendingInspiration', JSON.stringify(inspirationData));
+      navigate('/topics');
+      toast.success(t('inspiration.inspirationSaved') || '靈感已保存，請在主題列表中使用');
+    } else {
+      // 未登入：提示用戶登入
+      toast.error(t('auth.loginRequired') || '請先登入以使用此功能');
+      navigate('/login');
+    }
+  };
+  
+  // AI 助手功能
+  const handleStartAssistant = async () => {
+    if (!assistantTopic.trim()) {
+      toast.error('請輸入主題');
+      return;
+    }
+    
+    if (!isAuthenticated) {
+      toast.error(t('auth.loginRequired') || '請先登入以使用此功能');
+      navigate('/login');
+      return;
+    }
+    
+    try {
+      setIsSearching(true);
+      const response = await inspirationApi.assistantStart(
+        assistantTopic,
+        user?.language || 'zh-TW'
+      );
+      
+      setSessionId(response.session_id);
+      setQuestions(response.questions);
+      setCurrentQuestionIndex(0);
+      setAnswers({});
+      setGeneratedContent(null);
+      setMode('assistant');
+    } catch (err: any) {
+      toast.error(err?.message || t('inspiration.assistant.startFailed'));
+    } finally {
+      setIsSearching(false);
+    }
+  };
+  
+  const handleAnswerQuestion = (questionId: string, answer: string) => {
+    setAnswers({ ...answers, [questionId]: answer });
+  };
+  
+  const handleNextQuestion = () => {
+    if (currentQuestionIndex < questions.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+    } else {
+      handleGenerateContent();
+    }
+  };
+  
+  const handleGenerateContent = async () => {
+    if (!sessionId) return;
+    
+    try {
+      setIsGenerating(true);
+      const response = await inspirationApi.assistantGenerate(sessionId, answers);
+      setGeneratedContent(response);
+    } catch (err: any) {
+      toast.error(err?.message || t('inspiration.assistant.generateFailed'));
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+  
+  const handleResetAssistant = () => {
+    setMode('search');
+    setAssistantTopic('');
+    setSessionId(null);
+    setQuestions([]);
+    setAnswers({});
+    setCurrentQuestionIndex(0);
+    setGeneratedContent(null);
+  };
+  
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -117,6 +229,253 @@ export default function Inspiration() {
           </p>
         </div>
         
+        {/* 模式切換 */}
+        <div className="flex gap-4 mb-8 justify-center">
+          <button
+            onClick={() => setMode('search')}
+            className={`px-6 py-3 rounded-full font-medium transition-all ${
+              mode === 'search'
+                ? 'bg-purple-500 text-white'
+                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'
+            }`}
+            data-testid="btn-inspiration-mode-search"
+          >
+            🔍 {t('common.search')}
+          </button>
+          {isAuthenticated && (
+            <button
+              onClick={() => {
+                setMode('assistant');
+                if (!sessionId) {
+                  setAssistantTopic('');
+                }
+              }}
+              className={`px-6 py-3 rounded-full font-medium transition-all ${
+                mode === 'assistant'
+                  ? 'bg-purple-500 text-white'
+                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'
+              }`}
+              data-testid="btn-inspiration-mode-assistant"
+            >
+              🤖 {t('inspiration.assistant.title')}
+            </button>
+          )}
+        </div>
+        
+        {/* AI 助手模式 */}
+        {mode === 'assistant' && (
+          <div className="mb-8">
+            {!sessionId ? (
+              // 開始對話
+              <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                  {t('inspiration.assistant.title')}
+                </h2>
+                <p className="text-gray-500 dark:text-gray-400 mb-6">
+                  {t('inspiration.assistant.subtitle')}
+                </p>
+                <div className="flex gap-4">
+                  <input
+                    type="text"
+                    value={assistantTopic}
+                    onChange={(e) => setAssistantTopic(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleStartAssistant()}
+                    placeholder={t('inspiration.assistant.topicPlaceholder')}
+                    className="flex-1 px-5 py-4 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    data-testid="input-assistant-topic"
+                  />
+                  <button
+                    onClick={handleStartAssistant}
+                    disabled={!assistantTopic.trim() || isSearching}
+                    className="px-8 py-4 bg-gradient-to-r from-purple-500 to-cyan-500 text-white font-medium rounded-xl hover:from-purple-600 hover:to-cyan-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                    data-testid="btn-assistant-start"
+                  >
+                    {t('inspiration.assistant.startConversation')}
+                  </button>
+                </div>
+              </div>
+            ) : generatedContent ? (
+              // 顯示生成的內容
+              <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                    {t('inspiration.assistant.contentReady')}
+                  </h2>
+                  <button
+                    onClick={handleResetAssistant}
+                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                  >
+                    {t('common.close')}
+                  </button>
+                </div>
+                
+                {/* 驗證狀態 */}
+                {generatedContent.verification_status && (
+                  <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                        generatedContent.verification_status.status === 'verified'
+                          ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                          : generatedContent.verification_status.status === 'partially_verified'
+                          ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                          : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                      }`}>
+                        {generatedContent.verification_status.status === 'verified' && '✅ '}
+                        {generatedContent.verification_status.status === 'partially_verified' && '⚠️ '}
+                        {generatedContent.verification_status.status === 'unverified' && '❌ '}
+                        {t(`inspiration.verification.${generatedContent.verification_status.status}`)}
+                      </span>
+                      <span className="text-sm text-gray-500 dark:text-gray-400">
+                        {Math.round(generatedContent.verification_status.confidence * 100)}% 可信度
+                      </span>
+                    </div>
+                  </div>
+                )}
+                
+                {/* 內容 */}
+                <div className="mb-6 p-6 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                  <pre className="whitespace-pre-wrap text-gray-900 dark:text-white font-sans">
+                    {generatedContent.content}
+                  </pre>
+                </div>
+                
+                {/* 來源 */}
+                {generatedContent.sources && generatedContent.sources.length > 0 && (
+                  <div className="mb-6">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+                      參考來源
+                    </h3>
+                    <div className="space-y-2">
+                      {generatedContent.sources.map((source, index) => (
+                        <a
+                          key={index}
+                          href={source.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="block p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                        >
+                          <div className="font-medium text-gray-900 dark:text-white">
+                            {source.title}
+                          </div>
+                          <div className="text-sm text-gray-500 dark:text-gray-400">
+                            {source.url}
+                          </div>
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* 操作按鈕 */}
+                <div className="flex gap-4">
+                  <button
+                    onClick={() => {
+                      // 使用此內容（可以導航到內容生成頁面）
+                      toast.success('內容已保存');
+                      handleResetAssistant();
+                    }}
+                    className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-500 to-cyan-500 text-white font-medium rounded-xl hover:from-purple-600 hover:to-cyan-600 transition-all"
+                    data-testid="btn-assistant-use-content"
+                  >
+                    {t('inspiration.assistant.useContent')}
+                  </button>
+                  <button
+                    onClick={handleGenerateContent}
+                    disabled={isGenerating}
+                    className="px-6 py-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 font-medium rounded-xl hover:bg-gray-50 dark:hover:bg-gray-600 transition-all disabled:opacity-50"
+                    data-testid="btn-assistant-regenerate"
+                  >
+                    {t('inspiration.assistant.regenerate')}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              // 問答流程
+              <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                  {t('inspiration.assistant.askQuestion')}
+                </h2>
+                
+                {questions.length > 0 && currentQuestionIndex < questions.length && (
+                  <div>
+                    <div className="mb-6">
+                      <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+                        問題 {currentQuestionIndex + 1} / {questions.length}
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                        {questions[currentQuestionIndex].question}
+                      </h3>
+                      
+                      {/* 快速選擇選項 */}
+                      {questions[currentQuestionIndex].options && questions[currentQuestionIndex].options.length > 0 && (
+                        <div className="grid grid-cols-2 gap-3 mb-4">
+                          {questions[currentQuestionIndex].options.map((option, idx) => (
+                            <button
+                              key={idx}
+                              onClick={() => handleAnswerQuestion(
+                                questions[currentQuestionIndex].question_id,
+                                option
+                              )}
+                              className={`p-4 rounded-xl border-2 transition-all ${
+                                answers[questions[currentQuestionIndex].question_id] === option
+                                  ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300'
+                                  : 'border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:border-purple-300 dark:hover:border-purple-600'
+                              }`}
+                              data-testid={`btn-assistant-option-${idx}`}
+                            >
+                              {option}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      
+                      {/* 自定義輸入 */}
+                      {questions[currentQuestionIndex].options && questions[currentQuestionIndex].options.length === 0 && (
+                        <input
+                          type="text"
+                          value={answers[questions[currentQuestionIndex].question_id] || ''}
+                          onChange={(e) => handleAnswerQuestion(
+                            questions[currentQuestionIndex].question_id,
+                            e.target.value
+                          )}
+                          onKeyDown={(e) => e.key === 'Enter' && handleNextQuestion()}
+                          placeholder={t('inspiration.assistant.answer')}
+                          className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                          data-testid="input-assistant-answer"
+                        />
+                      )}
+                    </div>
+                    
+                    <div className="flex gap-4">
+                      {currentQuestionIndex > 0 && (
+                        <button
+                          onClick={() => setCurrentQuestionIndex(currentQuestionIndex - 1)}
+                          className="px-6 py-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 font-medium rounded-xl hover:bg-gray-50 dark:hover:bg-gray-600 transition-all"
+                        >
+                          {t('common.back')}
+                        </button>
+                      )}
+                      <button
+                        onClick={handleNextQuestion}
+                        disabled={
+                          !answers[questions[currentQuestionIndex].question_id] ||
+                          (currentQuestionIndex === questions.length - 1 && isGenerating)
+                        }
+                        className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-500 to-cyan-500 text-white font-medium rounded-xl hover:from-purple-600 hover:to-cyan-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                        data-testid="btn-assistant-next"
+                      >
+                        {currentQuestionIndex === questions.length - 1
+                          ? (isGenerating ? t('inspiration.assistant.generating') : t('inspiration.assistant.generate'))
+                          : t('inspiration.assistant.next')}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+        
         {/* 搜尋欄 */}
         <div className="relative mb-8">
           <div className="flex gap-4">
@@ -128,6 +487,7 @@ export default function Inspiration() {
                 onKeyDown={handleKeyDown}
                 onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
                 placeholder={t('inspiration.searchPlaceholder')}
+                data-testid="input-inspiration-search"
                 className="w-full px-5 py-4 pl-12 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               />
               <svg
@@ -151,6 +511,7 @@ export default function Inspiration() {
                       <button
                         key={index}
                         onClick={() => handleSuggestionClick(suggestion)}
+                        data-testid={`btn-inspiration-suggestion-${index}`}
                         className="w-full px-4 py-3 text-left text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                       >
                         <span className="flex items-center gap-2">
@@ -169,6 +530,7 @@ export default function Inspiration() {
             <button
               onClick={() => handleSearch()}
               disabled={!searchQuery.trim() || isSearching}
+              data-testid="btn-inspiration-search"
               className="px-8 py-4 bg-gradient-to-r from-purple-500 to-cyan-500 text-white font-medium rounded-2xl hover:from-purple-600 hover:to-cyan-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
               {t('common.search')}
@@ -185,6 +547,7 @@ export default function Inspiration() {
                 setSelectedCategory(cat.value);
                 setSearchQuery('');
               }}
+              data-testid={`btn-inspiration-category-${cat.value}`}
               className={`px-4 py-2 rounded-full font-medium transition-all ${
                 selectedCategory === cat.value
                   ? 'bg-purple-500 text-white'
@@ -233,6 +596,8 @@ export default function Inspiration() {
 
 // 靈感卡片組件
 function InspirationCard({ item }: { item: InspirationItem }) {
+  const { t } = useTranslation();
+  
   return (
     <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-200">
       <div className="flex gap-4">
@@ -292,6 +657,8 @@ function InspirationCard({ item }: { item: InspirationItem }) {
         {/* 操作按鈕 */}
         <div className="flex-shrink-0">
           <button
+            data-testid="btn-inspiration-use-this"
+            onClick={() => handleUseInspiration(item)}
             className="p-2 text-gray-400 hover:text-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-lg transition-colors"
             title={t('inspiration.useThis')}
           >

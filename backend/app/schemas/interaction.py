@@ -18,6 +18,8 @@ class InteractionCreate(BaseModel):
     script_id: Optional[str] = Field(None, description="劇本 ID（可選）")
     action: InteractionAction = Field(..., description="互動類型")
     duration: Optional[int] = Field(None, ge=0, description="停留時間（秒）")
+    reasons: Optional[List[str]] = Field(None, description="原因列表（可選，用於 like/dislike）")
+    comment: Optional[str] = Field(None, description="評論（可選）")
 
 
 class InteractionResponse(BaseModel):
@@ -31,6 +33,8 @@ class InteractionResponse(BaseModel):
     action: InteractionAction = Field(..., description="互動類型")
     duration: Optional[int] = Field(None, description="停留時間（秒）")
     category: Optional[str] = Field(None, description="主題分類")
+    reasons: Optional[List[str]] = Field(None, description="原因列表（可選）")
+    comment: Optional[str] = Field(None, description="評論（可選）")
     created_at: datetime = Field(..., description="建立時間")
 
     class Config:

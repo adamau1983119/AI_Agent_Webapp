@@ -40,6 +40,11 @@ class EnhancedPhotoMatcher:
         # 提取核心與非核心要素
         core_features = self._extract_core_features(article_text)
         non_core_features = self._extract_non_core_features(article_text)
+        
+        # 過濾掉 None 和空字串
+        core_features = [f for f in core_features if f and isinstance(f, str) and f.strip()]
+        non_core_features = [f for f in non_core_features if f and isinstance(f, str) and f.strip()]
+        
         logger.info(f"[{topic_id}] 核心要素: {core_features}")
         logger.info(f"[{topic_id}] 非核心要素: {non_core_features}")
         
@@ -256,16 +261,23 @@ class EnhancedPhotoMatcher:
         total = len(core_features)
         
         for feature in core_features:
-            f = feature.lower()
-            # 標題匹配權重最高
-            if f in photo_title:
-                matches += 1.5
-            # 描述匹配
-            elif f in photo_desc:
-                matches += 1.0
-            # 關鍵字匹配
-            elif any(f in kw.lower() for kw in photo_keywords):
-                matches += 0.8
+            # 檢查 feature 是否為 None 或空字串
+            if not feature or not isinstance(feature, str) or not feature.strip():
+                continue
+            try:
+                f = feature.lower()
+                # 標題匹配權重最高
+                if f in photo_title:
+                    matches += 1.5
+                # 描述匹配
+                elif f in photo_desc:
+                    matches += 1.0
+                # 關鍵字匹配
+                elif any(f in kw.lower() for kw in photo_keywords if kw and isinstance(kw, str)):
+                    matches += 0.8
+            except (AttributeError, TypeError) as e:
+                logger.warning(f"處理特徵值時發生錯誤: {e}, feature: {feature}")
+                continue
         
         # 計算匹配比例
         match_ratio = matches / total if total > 0 else 0.0
@@ -291,9 +303,16 @@ class EnhancedPhotoMatcher:
         total = len(non_core_features)
         
         for feature in non_core_features:
-            f = feature.lower()
-            if f in photo_desc or any(f in kw.lower() for kw in photo_keywords):
-                matches += 1
+            # 檢查 feature 是否為 None 或空字串
+            if not feature or not isinstance(feature, str) or not feature.strip():
+                continue
+            try:
+                f = feature.lower()
+                if f in photo_desc or any(f in kw.lower() for kw in photo_keywords if kw and isinstance(kw, str)):
+                    matches += 1
+            except (AttributeError, TypeError) as e:
+                logger.warning(f"處理非核心特徵值時發生錯誤: {e}, feature: {feature}")
+                continue
         
         # 計算匹配比例
         match_ratio = matches / total if total > 0 else 0.0
@@ -312,10 +331,17 @@ class EnhancedPhotoMatcher:
         photo_keywords = photo.get("keywords", [])
         
         for feature in core_features:
-            feature_lower = feature.lower()
-            if (feature_lower in photo_title or
-                feature_lower in photo_description or
-                any(feature_lower in kw.lower() for kw in photo_keywords)):
-                return feature
+            # 檢查 feature 是否為 None 或空字串
+            if not feature or not isinstance(feature, str) or not feature.strip():
+                continue
+            try:
+                feature_lower = feature.lower()
+                if (feature_lower in photo_title or
+                    feature_lower in photo_description or
+                    any(feature_lower in kw.lower() for kw in photo_keywords if kw and isinstance(kw, str))):
+                    return feature
+            except (AttributeError, TypeError) as e:
+                logger.warning(f"查找匹配項時發生錯誤: {e}, feature: {feature}")
+                continue
         
         return None

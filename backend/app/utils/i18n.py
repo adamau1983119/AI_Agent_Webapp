@@ -149,6 +149,43 @@ class I18nErrorMessages:
             "en": "Data validation failed",
             "ja": "データ検証に失敗しました"
         },
+        
+        # 靈感策劃 AI 助手相關
+        "inspiration.assistant.start_failed": {
+            "zh-TW": "開始對話失敗，請稍後再試",
+            "en": "Failed to start conversation, please try again later",
+            "ja": "会話の開始に失敗しました。後でもう一度お試しください"
+        },
+        "inspiration.assistant.generate_failed": {
+            "zh-TW": "生成內容失敗，請稍後再試",
+            "en": "Failed to generate content, please try again later",
+            "ja": "コンテンツの生成に失敗しました。後でもう一度お試しください"
+        },
+        "inspiration.session.not_found": {
+            "zh-TW": "會話不存在或已過期",
+            "en": "Session not found or expired",
+            "ja": "セッションが見つからないか、期限切れです"
+        },
+        "inspiration.preferences.get_failed": {
+            "zh-TW": "取得偏好失敗，請稍後再試",
+            "en": "Failed to get preferences, please try again later",
+            "ja": "設定の取得に失敗しました。後でもう一度お試しください"
+        },
+        "inspiration.preferences.update_failed": {
+            "zh-TW": "更新偏好失敗，請稍後再試",
+            "en": "Failed to update preferences, please try again later",
+            "ja": "設定の更新に失敗しました。後でもう一度お試しください"
+        },
+        "inspiration.cost_limit_exceeded": {
+            "zh-TW": "Token 使用量已達上限，請稍後再試",
+            "en": "Token usage limit exceeded, please try again later",
+            "ja": "トークン使用量が上限に達しました。後でもう一度お試しください"
+        },
+        "inspiration.cost.get_failed": {
+            "zh-TW": "取得成本資訊失敗，請稍後再試",
+            "en": "Failed to get cost information, please try again later",
+            "ja": "コスト情報の取得に失敗しました。後でもう一度お試しください"
+        },
         "common.server_error": {
             "zh-TW": "伺服器內部錯誤",
             "en": "Internal server error",
@@ -397,6 +434,36 @@ class I18nErrorMessages:
             "zh-TW": "檢查失敗",
             "en": "Check failed",
             "ja": "チェックに失敗しました"
+        },
+        "topic.query_too_short": {
+            "zh-TW": "查詢字串至少需要 2 個字元",
+            "en": "Query string must be at least 2 characters",
+            "ja": "クエリ文字列は少なくとも2文字である必要があります"
+        },
+        "topic.query_too_long": {
+            "zh-TW": "查詢字串最多 100 個字元",
+            "en": "Query string must be at most 100 characters",
+            "ja": "クエリ文字列は最大100文字である必要があります"
+        },
+        "topic.invalid_query": {
+            "zh-TW": "查詢字串無效: {error}",
+            "en": "Invalid query string: {error}",
+            "ja": "無効なクエリ文字列: {error}"
+        },
+        "topic.page_invalid": {
+            "zh-TW": "頁碼必須在 1-100 之間",
+            "en": "Page number must be between 1 and 100",
+            "ja": "ページ番号は1〜100の間である必要があります"
+        },
+        "topic.limit_invalid": {
+            "zh-TW": "每頁數量必須在 1-50 之間",
+            "en": "Items per page must be between 1 and 50",
+            "ja": "1ページあたりの項目数は1〜50の間である必要があります"
+        },
+        "topic.search_error": {
+            "zh-TW": "搜尋失敗: {error}",
+            "en": "Search failed: {error}",
+            "ja": "検索に失敗しました: {error}"
         },
         "topic.popular_queries_failed": {
             "zh-TW": "獲取熱門查詢失敗",

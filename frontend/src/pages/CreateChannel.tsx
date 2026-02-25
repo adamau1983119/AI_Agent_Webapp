@@ -116,14 +116,18 @@ export default function CreateChannel() {
   // AI 助手：快捷按鈕點擊（類別）
   const handleQuickCategoryClick = (cat: ChannelCategory) => {
     setCategory(cat);
-    const text = t('channels.assist.quickCategory', { category: categoryI18nKeys[cat] });
+    // 先翻譯 i18n 鍵，再傳入模板
+    const categoryText = t(categoryI18nKeys[cat]);
+    const text = t('channels.assist.quickCategory', { category: categoryText });
     setAssistInput(text);
   };
   
   // AI 助手：快捷按鈕點擊（地區）
   const handleQuickRegionClick = (reg: ChannelRegion) => {
     setRegion(reg);
-    const text = t('channels.assist.quickRegion', { region: regionI18nKeys[reg] });
+    // 先翻譯 i18n 鍵，再傳入模板
+    const regionText = t(regionI18nKeys[reg]);
+    const text = t('channels.assist.quickRegion', { region: regionText });
     setAssistInput(text);
   };
 
@@ -404,8 +408,8 @@ export default function CreateChannel() {
                           }`}
                         >
                           <span className="text-base sm:text-lg">{cat.icon}</span>
-                          <span className="hidden sm:inline">{cat.label}</span>
-                          <span className="sm:hidden">{cat.label.substring(0, 2)}</span>
+                          <span className="hidden sm:inline">{t(cat.label)}</span>
+                          <span className="sm:hidden">{t(cat.label).substring(0, 2)}</span>
                         </button>
                       ))}
                   </div>
@@ -432,7 +436,7 @@ export default function CreateChannel() {
                             : 'bg-gray-100 dark:bg-gray-700 border-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                         }`}
                       >
-                        {reg.label}
+                        {t(reg.label)}
                       </button>
                     ))}
                   </div>
@@ -561,13 +565,18 @@ export default function CreateChannel() {
                             let domain = '';
                             let faviconUrl = '';
                             let sourceType: 'rss' | 'web' | 'api' = 'web';
+                            let websiteUrl = source.url; // 預設使用原始 URL
+                            
                             try {
                               const urlObj = new URL(source.url);
                               domain = urlObj.hostname.replace(/^www\./, '');
                               faviconUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
+                              
                               // 猜測來源類型
                               if (source.url.includes('/rss') || source.url.includes('/feed') || source.url.endsWith('.xml')) {
                                 sourceType = 'rss';
+                                // 如果是 RSS feed URL，提取網站首頁 URL
+                                websiteUrl = `${urlObj.protocol}//${urlObj.hostname}`;
                               } else if (source.url.includes('/api') || source.url.includes('api.')) {
                                 sourceType = 'api';
                               }
@@ -632,9 +641,9 @@ export default function CreateChannel() {
                                   </div>
 
                                   {/* 訪問按鈕 */}
-                                  {source.url && (
+                                  {websiteUrl && (
                                     <a
-                                      href={source.url}
+                                      href={websiteUrl}
                                       target="_blank"
                                       rel="noopener noreferrer"
                                       className="flex-shrink-0 p-2 text-gray-400 hover:text-purple-500 group-hover:bg-purple-50 dark:group-hover:bg-purple-900/20 rounded-lg transition-all min-w-[44px] min-h-[44px] flex items-center justify-center"
@@ -744,7 +753,7 @@ export default function CreateChannel() {
                         ? 'text-purple-600 dark:text-purple-400'
                         : 'text-gray-700 dark:text-gray-200'
                     }`}>
-                      {cat.label}
+                      {t(cat.label)}
                     </span>
                   </button>
                 ))}
@@ -788,7 +797,7 @@ export default function CreateChannel() {
                         ? 'text-purple-600 dark:text-purple-400'
                         : 'text-gray-700 dark:text-gray-200'
                     }`}>
-                      {reg.label}
+                      {t(reg.label)}
                     </span>
                   </button>
                 ))}

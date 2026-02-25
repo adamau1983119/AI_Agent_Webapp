@@ -25,6 +25,14 @@ export function requestInterceptor(config: RequestConfig): RequestConfig {
     const token = localStorage.getItem('auth_token')
     if (token) {
       headers.set('Authorization', `Bearer ${token}`)
+    } else if (import.meta.env.DEV) {
+      // 調試：記錄缺少 token 的情況（僅在開發環境）
+      console.warn('⚠️ API 請求缺少 auth_token', {
+        localStorage: {
+          auth_token: localStorage.getItem('auth_token'),
+          auth_storage: localStorage.getItem('auth-storage'),
+        }
+      })
     }
   }
 

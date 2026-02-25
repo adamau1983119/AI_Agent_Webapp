@@ -172,6 +172,15 @@ export const useAuthStore = create<AuthState>()(
           // 儲存 Token
           tokenManager.setToken(token);
           
+          // 驗證 token 是否成功存儲
+          const storedToken = tokenManager.getToken();
+          if (!storedToken || storedToken !== token) {
+            throw new Error('Token 存儲失敗');
+          }
+          
+          // 短暫延遲確保 localStorage 已同步
+          await new Promise(resolve => setTimeout(resolve, 50));
+          
           // 取得用戶資訊
           const user = await authApi.getCurrentUser();
           
@@ -184,6 +193,7 @@ export const useAuthStore = create<AuthState>()(
           // 取得功能列表
           await get().fetchFeatures();
         } catch (error: any) {
+          console.error('OAuth callback error:', error);
           tokenManager.removeToken();
           // 注意：這裡無法直接使用 i18n，因為這是 store
           // 錯誤訊息應該從後端返回，後端已經使用 i18n
@@ -195,6 +205,7 @@ export const useAuthStore = create<AuthState>()(
             error: message,
             isLoading: false,
           });
+          throw error; // 重新拋出錯誤，讓調用方知道失敗
         }
       },
     }),

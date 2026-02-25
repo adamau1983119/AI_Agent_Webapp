@@ -80,12 +80,24 @@ function ImageGalleryItem({
   const { t } = useTranslation()
   const [imageError, setImageError] = useState(false)
   const [imageLoading, setImageLoading] = useState(true)
+  const [showActions, setShowActions] = useState(false)  // 手機版：點擊顯示操作按鈕
   const proxyUrl = useMemo(() => getProxyImageUrl(image.url), [image.url])
 
   return (
     <div
       className="relative group aspect-square rounded-lg overflow-hidden bg-gray-100 cursor-pointer"
-      onClick={() => !isReordering && onPreview()}
+      onClick={() => {
+        if (!isReordering) {
+          // 手機版：點擊切換操作按鈕顯示
+          // 桌面版：直接預覽（通過 hover）
+          const isMobile = window.matchMedia('(max-width: 768px)').matches
+          if (isMobile) {
+            setShowActions(!showActions)
+          } else {
+            onPreview()
+          }
+        }
+      }}
     >
       {/* 載入指示器 */}
       {imageLoading && !imageError && (
@@ -159,26 +171,36 @@ function ImageGalleryItem({
       {/* 懸停時顯示的操作按鈕（非排序模式） */}
       {!isReordering && (
         <div 
-          className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-all duration-200 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 pointer-events-none"
+          className={`absolute inset-0 transition-all duration-200 flex items-center justify-center gap-2 pointer-events-none ${
+            // 手機版：根據 showActions 狀態顯示/隱藏（md 以下）
+            // 桌面版：使用 hover 顯示（md 以上）
+            showActions
+              ? 'bg-black/50 opacity-100 md:opacity-0 md:group-hover:opacity-100 md:bg-black/0 md:group-hover:bg-black/50'
+              : 'bg-black/0 opacity-0 md:opacity-0 md:group-hover:opacity-100 md:group-hover:bg-black/50'
+          }`}
         >
           <button
             onClick={(e) => {
               e.stopPropagation()
+              setShowActions(false)
               onPreview()
             }}
             onMouseDown={(e) => e.stopPropagation()}
-            className="px-3 py-1 bg-white/90 text-gray-800 rounded text-xs font-medium hover:bg-white transition-colors pointer-events-auto"
+            onTouchStart={(e) => e.stopPropagation()}
+            className="px-3 py-1 bg-white/90 text-gray-800 rounded text-xs font-medium hover:bg-white transition-colors pointer-events-auto min-h-[44px] min-w-[44px] flex items-center justify-center"
           >
             {t('common.preview')}
           </button>
           <button
             onClick={(e) => {
               e.stopPropagation()
+              setShowActions(false)
               onDelete(image.id)
             }}
             onMouseDown={(e) => e.stopPropagation()}
+            onTouchStart={(e) => e.stopPropagation()}
             disabled={deletingId === image.id}
-            className="px-3 py-1 bg-red-500/90 text-white rounded text-xs font-medium hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed pointer-events-auto"
+            className="px-3 py-1 bg-red-500/90 text-white rounded text-xs font-medium hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed pointer-events-auto min-h-[44px] min-w-[44px] flex items-center justify-center"
           >
             {deletingId === image.id ? t('common.deleting') : t('common.delete')}
           </button>
@@ -234,17 +256,27 @@ export default function ImageGallery({
 
   // 驗證匹配度
   const validateMutation = useMutation({
-    mutationFn: () => imagesAPI.validateMatch(topicId),
+    mutationFn: () => {
+      // 獲取當前內容的 article_id（如果有的話）
+      // 注意：validateMatch API 需要 topic_id 和可選的 article_id
+      return imagesAPI.validateMatch(topicId, undefined)  // article_id 可選，傳遞 undefined
+    },
     onSuccess: (data) => {
       if (data.overall_match) {
         showSuccess(t('common.success'))
       } else {
-        showError(t('common.failed'))
+        const warningMsg = data.warnings && data.warnings.length > 0 
+          ? `${t('common.failed')}: ${data.warnings.join(', ')}`
+          : t('common.failed')
+        showError(warningMsg)
         console.warn('匹配問題:', data.warnings)
       }
     },
     onError: (error: any) => {
-      showError(error?.message || t('common.failed'))
+      // 顯示更詳細的錯誤訊息
+      const errorMsg = error?.details?.detail || error?.message || t('common.failed')
+      showError(errorMsg)
+      console.error('驗證匹配失敗:', error)
     },
   })
   const [previewImage, setPreviewImage] = useState<Image | null>(null)

@@ -33,6 +33,7 @@ class GenerateContentRequest(BaseModel):
     )
     article_length: int = Field(default=500, ge=100, le=2000, description="短文長度（字）")
     script_duration: int = Field(default=30, ge=10, le=120, description="腳本時長（秒）")
+    language: Optional[str] = Field(default="zh-TW", description="目標語言（zh-TW/en/ja）")
 
 
 class ContentVersionResponse(BaseModel):
