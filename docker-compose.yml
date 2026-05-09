@@ -1,0 +1,23 @@
+# 本機 MongoDB（供 backend MONGODB_URL=mongodb://localhost:27017 使用）
+# Redis：供快取與 feeds validate／search 多機共享限流（REDIS_HOST=localhost）
+# 需已安裝 Docker Desktop：在專案根目錄執行 docker compose up -d
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - influencers_mongo_data:/data/db
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - influencers_redis_data:/data
+
+volumes:
+  influencers_mongo_data:
+  influencers_redis_data:
