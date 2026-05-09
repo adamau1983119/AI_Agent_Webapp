@@ -55,11 +55,6 @@ class ArticleResponse(BaseModel):
     images: ArticleImagesResponse
     score: float = 0.0
     collected_at: Optional[datetime] = None
-    
-    class Config:
-        json_encoders = {
-            datetime: lambda v: v.isoformat() if v else None
-        }
 
 
 class ArticleListResponse(BaseModel):

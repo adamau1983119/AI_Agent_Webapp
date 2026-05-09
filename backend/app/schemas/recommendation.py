@@ -4,7 +4,7 @@ Recommendation Schemas
 """
 from typing import List, Optional, Dict, Any
 from datetime import datetime
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from app.models.topic import Category
 
 
@@ -20,11 +20,7 @@ class RecommendationResponse(BaseModel):
     interaction_result: Optional[Dict[str, Any]] = Field(None, description="互動結果")
     effectiveness: Optional[str] = Field(None, description="推薦效果")
 
-    class Config:
-        from_attributes = True
-        json_encoders = {
-            datetime: lambda v: v.isoformat()
-        }
+    model_config = ConfigDict(from_attributes=True)
 
 
 class RecommendationListResponse(BaseModel):

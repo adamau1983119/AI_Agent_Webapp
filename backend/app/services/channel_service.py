@@ -144,6 +144,14 @@ class ChannelService:
         
         return True, None
     
+    def list_default_primary_feeds(
+        self,
+        category: ChannelCategory,
+        region: ChannelRegion,
+    ) -> List[Dict[str, Any]]:
+        """建立頻道 Step 2：回傳該類別＋地區之預設 RSS 候選（與 Layer 1 相同列表）"""
+        return [dict(s) for s in self._get_primary_sources(category, region)]
+    
     def get_rss_sources_for_channel(
         self,
         channel: Dict[str, Any]
@@ -155,6 +163,8 @@ class ChannelService:
         Layer 2: 備用來源（相近類別 + 同地區）
         Layer 3: AI 生成（當 RSS 全部失敗時）
         
+        若頻道存有 **selected_feeds**（建立時使用者選取），Layer 1 僅使用該列表。
+        
         Args:
             channel: 頻道資料
             
@@ -165,6 +175,37 @@ class ChannelService:
         region = ChannelRegion(channel.get("region", ChannelRegion.GLOBAL.value))
         
         sources = []
+        raw_selected = channel.get("selected_feeds") or []
+
+        if raw_selected:
+            for feed in raw_selected[:10]:
+                if not isinstance(feed, dict):
+                    continue
+                url = (feed.get("url") or "").strip()
+                if not url.startswith(("http://", "https://")):
+                    continue
+                name = (feed.get("name") or "").strip() or "RSS"
+                role = (feed.get("role") or "").strip() or "selected"
+                sources.append({
+                    "name": name,
+                    "url": url,
+                    "role": role,
+                    "layer": 1,
+                    "category": category.value,
+                    "region": region.value,
+                })
+            if sources:
+                fallback_categories = CATEGORY_FALLBACK_MAP.get(category, [])
+                for fallback_cat in fallback_categories:
+                    fallback_sources = self._get_primary_sources(fallback_cat, region)
+                    for source in fallback_sources[:2]:
+                        s = dict(source)
+                        s["layer"] = 2
+                        s["category"] = fallback_cat.value
+                        s["region"] = region.value
+                        sources.append(s)
+                return sources
+            # selected_feeds 鍵存在但無有效 URL：改走下方預設邏輯
         
         # Layer 1: 主要來源
         primary_sources = self._get_primary_sources(category, region)

@@ -6,7 +6,7 @@ Phase 4: AI 個人化
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 from enum import Enum
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 
 class LearningStage(str, Enum):
@@ -97,9 +97,8 @@ class StyleProfileResponse(StyleProfileBase):
     confidence_score: float = 0.0
     last_updated_at: datetime
     created_at: datetime
-    
-    class Config:
-        from_attributes = True
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class StyleProfileStats(BaseModel):

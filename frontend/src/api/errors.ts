@@ -47,10 +47,33 @@ export function handleAPIError(error: unknown): APIError {
  * 注意：後端錯誤訊息應該已經使用 i18n，這裡的預設訊息僅作為後備
  * 預設訊息使用英文，因為這是開發者可見的後備訊息
  */
+function normalizeDetailMessage(detail: unknown): string | undefined {
+  if (typeof detail === 'string') return detail
+  if (detail && typeof detail === 'object' && 'message' in (detail as object)) {
+    const m = (detail as { message?: unknown }).message
+    return typeof m === 'string' ? m : undefined
+  }
+  return undefined
+}
+
+/** 後端 FastAPI HTTPException(detail={ code }) 時位於 body.detail.code */
+export function getErrorDetailCode(errorData?: { detail?: unknown }): string | undefined {
+  const d = errorData?.detail
+  if (d && typeof d === 'object' && 'code' in (d as object)) {
+    const c = (d as { code?: unknown }).code
+    return typeof c === 'string' ? c : undefined
+  }
+  return undefined
+}
+
 export function handleHTTPError(status: number, errorData?: any): APIError {
   // 優先使用後端返回的錯誤訊息（應該已經是多語言的）
   // 如果後端沒有返回訊息，使用英文作為後備（因為這是開發者可見的）
-  let message = errorData?.message || errorData?.detail || 'Request failed'
+  let message =
+    errorData?.message ||
+    normalizeDetailMessage(errorData?.detail) ||
+    (typeof errorData?.detail === 'string' ? errorData.detail : undefined) ||
+    'Request failed'
   let code = 'HTTP_ERROR'
 
   switch (status) {
@@ -79,10 +102,18 @@ export function handleHTTPError(status: number, errorData?: any): APIError {
       message = errorData?.message || errorData?.detail || 'Data validation failed'
       code = 'VALIDATION_ERROR'
       break
-    case 429:
-      message = errorData?.message || errorData?.detail || 'Too many requests, please try again later'
-      code = 'RATE_LIMIT'
+    case 429: {
+      const biz =
+        getErrorDetailCode(errorData) ||
+        (typeof errorData?.detail === 'string' ? errorData.detail : undefined)
+      message =
+        errorData?.message ||
+        normalizeDetailMessage(errorData?.detail) ||
+        (typeof errorData?.detail === 'string' ? errorData.detail : undefined) ||
+        'Too many requests, please try again later'
+      code = biz || 'RATE_LIMIT'
       break
+    }
     case 500:
       message = errorData?.message || errorData?.detail || 'Internal server error'
       code = 'INTERNAL_ERROR'

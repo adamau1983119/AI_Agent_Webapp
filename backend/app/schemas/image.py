@@ -4,7 +4,7 @@ Image Schemas
 """
 from typing import List, Optional
 from datetime import datetime
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from app.models.image import ImageSource
 from app.schemas.common import PaginationResponse
 
@@ -53,11 +53,7 @@ class ImageResponse(BaseModel):
     height: Optional[int] = Field(None, description="高度")
     fetched_at: datetime = Field(..., description="取得時間")
 
-    class Config:
-        from_attributes = True
-        json_encoders = {
-            datetime: lambda v: v.isoformat()
-        }
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ImageSearchAttempt(BaseModel):

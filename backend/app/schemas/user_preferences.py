@@ -4,7 +4,7 @@ UserPreferences Schemas
 """
 from typing import List, Optional
 from datetime import datetime
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, model_validator, ConfigDict
 from app.models.user_preferences import SourcePreferences
 
 
@@ -39,8 +39,4 @@ class UserPreferencesResponse(BaseModel):
     source_preferences: SourcePreferences = Field(..., description="來源偏好")
     updated_at: Optional[datetime] = Field(None, description="更新時間")
 
-    class Config:
-        from_attributes = True
-        json_encoders = {
-            datetime: lambda v: v.isoformat()
-        }
+    model_config = ConfigDict(from_attributes=True)

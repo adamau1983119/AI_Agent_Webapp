@@ -3,7 +3,7 @@ AuditLog 資料模型
 """
 from typing import Optional, Dict, Any
 from datetime import datetime
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from enum import Enum
 
 
@@ -46,9 +46,4 @@ class AuditLog(BaseModel):
     changes: Optional[Changes] = Field(None, description="變更內容")
     source: Optional[SourceInfo] = Field(None, description="來源資訊")
 
-    class Config:
-        """Pydantic 配置"""
-        json_encoders = {
-            datetime: lambda v: v.isoformat()
-        }
-        use_enum_values = True
+    model_config = ConfigDict(use_enum_values=True)

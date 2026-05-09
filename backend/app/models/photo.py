@@ -4,7 +4,7 @@ Photo 資料模型 (Phase 6)
 """
 from typing import List, Optional
 from datetime import datetime
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from enum import Enum
 import uuid
 import hashlib
@@ -107,14 +107,10 @@ class Photo(BaseModel):
     # 統計
     match_count: int = Field(default=0, ge=0, description="被匹配次數")
     last_matched_at: Optional[datetime] = Field(None, description="最後匹配時間")
-    
-    class Config:
-        """Pydantic 配置"""
-        json_encoders = {
-            datetime: lambda v: v.isoformat() if v else None
-        }
-        use_enum_values = True
-        json_schema_extra = {
+
+    model_config = ConfigDict(
+        use_enum_values=True,
+        json_schema_extra={
             "example": {
                 "photo_id": "P1001",
                 "keywords": ["Valentino", "Paris Fashion Week", "runway"],
@@ -126,10 +122,11 @@ class Photo(BaseModel):
                 "photo_type": "original",
                 "quality_score": 0.9,
                 "width": 1920,
-                "height": 1080
+                "height": 1080,
             }
-        }
-    
+        },
+    )
+
     def is_original(self) -> bool:
         """是否為原文照片"""
         return self.article_id is not None and self.photo_type == PhotoType.ORIGINAL

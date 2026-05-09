@@ -75,9 +75,3 @@ class UserPreferences(BaseModel):
         if abs(total - 1.0) > 0.01:  # 允許小數點誤差
             raise ValueError(f'權重總和必須為 1.0，當前總和為 {total:.2f}')
         return self
-
-    class Config:
-        """Pydantic 配置"""
-        json_encoders = {
-            datetime: lambda v: v.isoformat()
-        }

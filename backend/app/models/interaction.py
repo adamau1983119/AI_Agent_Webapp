@@ -4,7 +4,7 @@ Interaction 資料模型
 """
 from typing import Optional
 from datetime import datetime
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from enum import Enum
 
 
@@ -30,10 +30,5 @@ class Interaction(BaseModel):
     category: Optional[str] = Field(None, description="主題分類")
     created_at: datetime = Field(default_factory=datetime.utcnow, description="建立時間")
 
-    class Config:
-        """Pydantic 配置"""
-        json_encoders = {
-            datetime: lambda v: v.isoformat()
-        }
-        use_enum_values = True
+    model_config = ConfigDict(use_enum_values=True)
 

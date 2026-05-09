@@ -4,7 +4,7 @@ Recommendation 資料模型
 """
 from typing import Optional, Dict, Any
 from datetime import datetime
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from app.models.topic import Category
 
 
@@ -20,10 +20,5 @@ class Recommendation(BaseModel):
     interaction_result: Optional[Dict[str, Any]] = Field(None, description="互動結果")
     effectiveness: Optional[str] = Field(None, description="推薦效果（high/medium/low）")
 
-    class Config:
-        """Pydantic 配置"""
-        json_encoders = {
-            datetime: lambda v: v.isoformat()
-        }
-        use_enum_values = True
+    model_config = ConfigDict(use_enum_values=True)
 

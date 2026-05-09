@@ -218,6 +218,10 @@ async def lifespan(app: FastAPI):
             logger.warning("⚠️ 注意：資料庫相關功能將無法使用")
             app.state.mongo_client = None
             app.state.mongo_db = None
+            app.state.db = None
+            import app.database as db_module
+            db_module.client = None
+            db_module.database = None
         else:
             # 生產環境必須有資料庫連接
             logger.critical(f"🚨 MongoDB 連接失敗，阻止系統啟動: {e}")

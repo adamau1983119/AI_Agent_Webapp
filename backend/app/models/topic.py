@@ -3,7 +3,7 @@ Topic 資料模型
 """
 from typing import List, Optional, Dict, Any
 from datetime import datetime
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from enum import Enum
 
 
@@ -86,9 +86,4 @@ class Topic(BaseModel):
     display_language: Optional[str] = Field(default="zh-TW", description="標題/摘要的顯示語言（zh-TW/en/ja）")
     original_title: Optional[str] = Field(None, description="原始標題（來源語言，通常為英文/日文）")
 
-    class Config:
-        """Pydantic 配置"""
-        json_encoders = {
-            datetime: lambda v: v.isoformat()
-        }
-        use_enum_values = True
+    model_config = ConfigDict(use_enum_values=True)

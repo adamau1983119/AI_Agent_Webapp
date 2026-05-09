@@ -12,9 +12,23 @@ class TestFeedHealthService:
     
     def setup_method(self):
         """每個測試前初始化"""
-        # 創建 mock repository
         self.mock_repo = MagicMock()
-        self.service = FeedHealthService(self.mock_repo)
+        self.mock_source_list = MagicMock()
+        # 非同步方法須為 AsyncMock，否則 await 會對 MagicMock 報錯
+        self.mock_repo.get_feed_stats = AsyncMock(
+            return_value={"total": 0, "failures": 0, "successes": 0}
+        )
+        self.mock_repo.get_consecutive_failures = AsyncMock(return_value=0)
+        self.mock_repo.record_success = AsyncMock()
+        self.mock_repo.record_failure = AsyncMock()
+        self.mock_repo.is_paused = AsyncMock(return_value=False)
+        self.mock_repo.get_reliability_score = AsyncMock(return_value=0.92)
+        self.mock_repo.get_health_report = AsyncMock(return_value=[])
+        self.mock_source_list.get_whitelist_urls = AsyncMock(return_value=[])
+        self.mock_source_list.get_blacklist_urls = AsyncMock(return_value=[])
+        self.mock_source_list.get_greylist_urls = AsyncMock(return_value=[])
+
+        self.service = FeedHealthService(self.mock_repo, self.mock_source_list)
     
     def test_calculate_health_score_healthy(self):
         """測試健康 Feed 的分數計算"""
@@ -76,8 +90,6 @@ class TestFeedHealthService:
     @pytest.mark.asyncio
     async def test_record_fetch_result_success(self):
         """測試記錄成功抓取結果"""
-        self.mock_repo.record_success = AsyncMock()
-        
         await self.service.record_fetch_result(
             feed_url="https://vogue.com/feed",
             source_name="Vogue",
@@ -92,8 +104,6 @@ class TestFeedHealthService:
     @pytest.mark.asyncio
     async def test_record_fetch_result_failure(self):
         """測試記錄失敗抓取結果"""
-        self.mock_repo.record_failure = AsyncMock()
-        
         await self.service.record_fetch_result(
             feed_url="https://vogue.com/feed",
             source_name="Vogue",
@@ -111,7 +121,7 @@ class TestFeedHealthService:
     async def test_should_skip_feed_paused(self):
         """測試暫停的 Feed 應該被跳過"""
         self.mock_repo.is_paused = AsyncMock(return_value=True)
-        
+
         result = await self.service.should_skip_feed("https://vogue.com/feed")
         
         assert result == True
@@ -120,7 +130,7 @@ class TestFeedHealthService:
     async def test_should_skip_feed_active(self):
         """測試活躍的 Feed 不應該被跳過"""
         self.mock_repo.is_paused = AsyncMock(return_value=False)
-        
+
         result = await self.service.should_skip_feed("https://vogue.com/feed")
         
         assert result == False
@@ -128,10 +138,6 @@ class TestFeedHealthService:
     @pytest.mark.asyncio
     async def test_get_feed_health(self):
         """測試獲取單一 Feed 健康狀態"""
-        self.mock_repo.is_paused = AsyncMock(return_value=False)
-        self.mock_repo.get_reliability_score = AsyncMock(return_value=0.92)
-        self.mock_repo.get_health_report = AsyncMock(return_value=[])
-        
         result = await self.service.get_feed_health("https://vogue.com/feed")
         
         assert "feed_url" in result

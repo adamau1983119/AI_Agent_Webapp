@@ -4,7 +4,7 @@ Topic Schemas
 """
 from typing import List, Optional, Dict, Any
 from datetime import datetime
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from app.models.topic import Category, Status, SourceInfo
 from app.schemas.content import ContentResponse
 from app.schemas.image import ImageResponse
@@ -56,11 +56,7 @@ class TopicResponse(BaseModel):
     display_language: Optional[str] = Field(None, description="標題/摘要的顯示語言（zh-TW/en/ja）")
     original_title: Optional[str] = Field(None, description="原始標題（來源語言）")
 
-    class Config:
-        from_attributes = True
-        json_encoders = {
-            datetime: lambda v: v.isoformat()
-        }
+    model_config = ConfigDict(from_attributes=True)
 
 
 class TopicDetailResponse(BaseModel):
@@ -85,11 +81,7 @@ class TopicDetailResponse(BaseModel):
     display_language: Optional[str] = Field(None, description="標題/摘要的顯示語言（zh-TW/en/ja）")
     original_title: Optional[str] = Field(None, description="原始標題（來源語言）")
 
-    class Config:
-        from_attributes = True
-        json_encoders = {
-            datetime: lambda v: v.isoformat()
-        }
+    model_config = ConfigDict(from_attributes=True)
 
 
 class TopicListResponse(BaseModel):
