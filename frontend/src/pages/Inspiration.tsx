@@ -139,10 +139,10 @@ export default function Inspiration() {
       };
       localStorage.setItem('pendingInspiration', JSON.stringify(inspirationData));
       navigate('/topics');
-      toast.success(t('inspiration.inspirationSaved') || '靈感已保存，請在主題列表中使用');
+      toast.success(t('inspiration.inspirationSaved'));
     } else {
       // 未登入：提示用戶登入
-      toast.error(t('auth.loginRequired') || '請先登入以使用此功能');
+      toast.error(t('auth.loginRequired'));
       navigate('/login');
     }
   };
@@ -150,12 +150,12 @@ export default function Inspiration() {
   // AI 助手功能
   const handleStartAssistant = async () => {
     if (!assistantTopic.trim()) {
-      toast.error('請輸入主題');
+      toast.error(t('inspiration.assistant.topicRequired'));
       return;
     }
     
     if (!isAuthenticated) {
-      toast.error(t('auth.loginRequired') || '請先登入以使用此功能');
+      toast.error(t('auth.loginRequired'));
       navigate('/login');
       return;
     }
@@ -371,7 +371,7 @@ export default function Inspiration() {
                   <button
                     onClick={() => {
                       // 使用此內容（可以導航到內容生成頁面）
-                      toast.success('內容已保存');
+                      toast.success(t('inspiration.assistant.contentSavedToast'));
                       handleResetAssistant();
                     }}
                     className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-500 to-cyan-500 text-white font-medium rounded-xl hover:from-purple-600 hover:to-cyan-600 transition-all"

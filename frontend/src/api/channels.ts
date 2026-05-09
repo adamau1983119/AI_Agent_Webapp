@@ -5,6 +5,12 @@
 import { fetchAPI } from './client';
 
 // 類型定義
+export interface ChannelFeedEntry {
+  name: string;
+  url: string;
+  role: string;
+}
+
 export interface Channel {
   id: string;
   user_id: string;
@@ -13,6 +19,7 @@ export interface Channel {
   region: ChannelRegion;
   custom_keywords: string[];
   description?: string;
+  selected_feeds?: ChannelFeedEntry[];
   status: 'active' | 'paused' | 'deleted';
   topic_count: number;
   last_collected_at?: string;
@@ -47,6 +54,8 @@ export interface ChannelCreateRequest {
   region?: ChannelRegion;
   custom_keywords?: string[];
   description?: string;
+  /** Step 2 選取之來源（≤10）；省略或空陣列表示使用後端預設 RSS 池 */
+  selected_feeds?: ChannelFeedEntry[];
 }
 
 export interface ChannelUpdateRequest {
@@ -132,6 +141,19 @@ export const channelsApi = {
   },
 
   /**
+   * 建立頻道 Step 2：該類別＋地區之系統預設 RSS 候選（需登入）
+   */
+  getDefaultRssSources: async (
+    category: ChannelCategory,
+    region: ChannelRegion
+  ): Promise<{ sources: ChannelFeedEntry[] }> => {
+    const q = new URLSearchParams({ category, region });
+    return fetchAPI<{ sources: ChannelFeedEntry[] }>(
+      `/channels/defaults/rss-sources?${q.toString()}`
+    );
+  },
+
+  /**
    * 取得頻道 RSS 來源
    */
   getChannelSources: async (channelId: string): Promise<any> => {
@@ -149,8 +171,14 @@ export const channelsApi = {
 
   /**
    * AI 頻道助手 - 解析用戶自然語言輸入
+   * @param conversationHistory 先前對話（由舊到新，不含本次 userInput）
    */
-  assistChannel: async (userInput: string, language: string = 'zh-TW'): Promise<{
+  assistChannel: async (
+    userInput: string,
+    language: string = 'zh-TW',
+    conversationHistory: { role: 'user' | 'assistant'; content: string }[] = [],
+    excludeUrls: string[] = []
+  ): Promise<{
     category: string | null;
     region: string | null;
     keywords: string[];
@@ -158,11 +186,83 @@ export const channelsApi = {
     clarification_needed: boolean;
     clarification_question: string | null;
     recommended_sources: Array<{ name: string; url: string; role: string }>;
+    suggested_channel_name: string | null;
+    suggested_channel_description: string | null;
   }> => {
     return fetchAPI('/channels/assist', {
       method: 'POST',
-      body: JSON.stringify({ user_input: userInput, language }),
+      body: JSON.stringify({
+        user_input: userInput,
+        language,
+        conversation_history: conversationHistory,
+        exclude_urls: excludeUrls.slice(0, 50),
+      }),
+      skipErrorHandler: true,
     });
+  },
+
+  /**
+   * 驗證使用者貼上之 Feed URL（SSRF 防護 + RSS 粗判）
+   */
+  validateFeedUrl: async (
+    url: string
+  ): Promise<{
+    valid: boolean;
+    title: string | null;
+    suggested_name: string | null;
+    error_code: string | null;
+  }> => {
+    return fetchAPI('/channels/feeds/validate', {
+      method: 'POST',
+      body: JSON.stringify({ url: url.trim() }),
+    });
+  },
+
+  /**
+   * 建立頻道精靈：後端結構化選項（檢索 MVP＝站內 RSS 白名單）
+   * @see docs/channel_create_ai_guided_spec.md
+   */
+  getAssistWizardOptions: async (params: {
+    step: 1 | 2 | 3;
+    category?: ChannelCategory;
+    region?: ChannelRegion;
+    excludeUrls?: string[];
+    language?: string;
+    customKeywords?: string[];
+  }): Promise<{
+    step: number;
+    retrieval_mvp: string;
+    quick_options: Array<{ kind: 'category' | 'region'; value: string; label_key: string }>;
+    feed_options: Array<{ kind: 'feed'; name: string; url: string; role: string }>;
+    suggested_channel_name: string | null;
+    suggested_channel_description: string | null;
+  }> => {
+    return fetchAPI('/channels/assist/wizard-options', {
+      method: 'POST',
+      body: JSON.stringify({
+        step: params.step,
+        category: params.category,
+        region: params.region,
+        exclude_urls: params.excludeUrls ?? [],
+        language: params.language ?? 'zh-TW',
+        custom_keywords: params.customKeywords ?? [],
+      }),
+      skipErrorHandler: true,
+    });
+  },
+
+  /**
+   * 站內 RSS 白名單關鍵字搜尋
+   */
+  searchWhitelistFeeds: async (
+    q: string,
+    limit: number = 30
+  ): Promise<{
+    query: string;
+    results: Array<{ name: string; url: string; role: string; category: string; region: string }>;
+  }> => {
+    const params = new URLSearchParams({ q: q.trim(), limit: String(limit) });
+    return fetchAPI(`/channels/feeds/search?${params.toString()}`);
   },
 };
 

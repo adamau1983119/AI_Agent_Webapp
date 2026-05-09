@@ -2,7 +2,7 @@
  * 建立頻道頁面
  * Phase 3: 內容功能
  */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '../i18n';
 import { useAuthStore } from '../stores/authStore';
@@ -11,12 +11,158 @@ import {
   ChannelCategory,
   ChannelRegion,
   ChannelCreateRequest,
+  ChannelFeedEntry,
   categoryI18nKeys,
   regionI18nKeys,
   categoryIcons,
 } from '../api/channels';
 import toast from 'react-hot-toast';
-import { useTypewriter } from '../hooks/useTypewriter';
+import { APIError } from '../api/errors';
+
+const MAX_STEP2_SELECTED_FEEDS = 10;
+
+/** 依後端 429 body.detail.code 選 i18n（見 feed_validate_rate_limit.py） */
+function rateLimitToastI18nKey(err: unknown): string {
+  const code = err instanceof APIError ? err.code : undefined;
+  if (code === 'feed_search_rate_limit') return 'channels.feedSearch.rateLimited';
+  if (code === 'feed_validate_rate_limit_minute' || code === 'feed_validate_rate_limit_hour') {
+    return 'channels.feedValidate.rateLimited';
+  }
+  return 'channels.rateLimit.generic';
+}
+
+/** assist／wizard 429 或網路／逾時時選 i18n（Phase C） */
+function assistFailureI18nKey(err: unknown): string {
+  if (err instanceof APIError) {
+    if (err.status === 429) {
+      return rateLimitToastI18nKey(err);
+    }
+  }
+  const msg = err instanceof Error ? err.message : '';
+  if (
+    msg.includes('timeout') ||
+    msg.includes('Failed to fetch') ||
+    msg.includes('NetworkError') ||
+    msg.includes('Request timeout')
+  ) {
+    return 'channels.assist.networkOrTimeout';
+  }
+  return 'channels.assist.failed';
+}
+
+function mergeFeedsByUrl(primary: ChannelFeedEntry[], secondary: ChannelFeedEntry[]): ChannelFeedEntry[] {
+  const seen = new Set<string>();
+  const out: ChannelFeedEntry[] = [];
+  for (const list of [primary, secondary]) {
+    for (const s of list) {
+      const u = (s.url || '').trim();
+      if (!u || seen.has(u)) continue;
+      seen.add(u);
+      out.push({
+        name: s.name || '',
+        url: u,
+        role: s.role || '',
+      });
+    }
+  }
+  return out;
+}
+
+type AssistChatTurn = {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+};
+
+function CreateChannelSummaryPanel(props: {
+  t: (key: string, options?: Record<string, string>) => string;
+  name: string;
+  description: string;
+  category: ChannelCategory | null;
+  region: ChannelRegion;
+  step: number;
+  selectedCount: number;
+  maxFeeds: number;
+}) {
+  const { t, name, description, category, region, step, selectedCount, maxFeeds } = props;
+  return (
+    <div
+      className="mb-6 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800/80 p-4 shadow-sm"
+      data-testid="panel-channels-create-summary"
+    >
+      <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-3">{t('channels.phaseB.summaryTitle')}</p>
+      <dl className="space-y-2 text-sm text-gray-700 dark:text-gray-200">
+        <div>
+          <dt className="text-xs text-gray-500">{t('channels.channelName')}</dt>
+          <dd className="font-medium break-words">{name.trim() || t('channels.phaseB.summaryEmpty')}</dd>
+        </div>
+        <div>
+          <dt className="text-xs text-gray-500">{t('channels.channelDescription')}</dt>
+          <dd className="break-words whitespace-pre-line">{description.trim() || t('channels.phaseB.summaryEmpty')}</dd>
+        </div>
+        <div>
+          <dt className="text-xs text-gray-500">{t('channels.phaseB.summaryCategory')}</dt>
+          <dd>{category ? t(categoryI18nKeys[category]) : t('channels.phaseB.summaryCategoryUnset')}</dd>
+        </div>
+        <div>
+          <dt className="text-xs text-gray-500">{t('channels.phaseB.summaryRegion')}</dt>
+          <dd>{t(regionI18nKeys[region])}</dd>
+        </div>
+        <div>
+          <dt className="text-xs text-gray-500">{t('channels.phaseB.summaryFeeds')}</dt>
+          <dd>
+            {step < 2
+              ? t('channels.phaseB.summaryFeedsHint')
+              : t('channels.phaseB.summaryFeedsCount', {
+                  count: String(selectedCount),
+                  max: String(maxFeeds),
+                })}
+          </dd>
+        </div>
+      </dl>
+    </div>
+  );
+}
+
+function CreateChannelStepNav(props: {
+  step: number;
+  t: (key: string) => string;
+}) {
+  const { step, t } = props;
+  return (
+    <nav aria-label={t('channels.phaseC.stepsNavAria')} className="mb-8">
+      <ol className="flex items-center justify-center list-none p-0 m-0">
+        {[1, 2, 3].map((s) => (
+          <li key={s} className="flex items-center" aria-current={step === s ? 'step' : undefined}>
+            <div
+              className={`w-10 h-10 rounded-full flex items-center justify-center font-medium transition-all ${
+                s < step
+                  ? 'bg-green-500 text-white'
+                  : s === step
+                    ? 'bg-purple-500 text-white'
+                    : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
+              }`}
+            >
+              {s < step ? (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              ) : (
+                s
+              )}
+            </div>
+            {s < 3 && (
+              <div
+                className={`w-20 h-1 ${s < step ? 'bg-green-500' : 'bg-gray-200 dark:bg-gray-700'}`}
+                aria-hidden="true"
+              />
+            )}
+          </li>
+        ))}
+      </ol>
+    </nav>
+  );
+}
 
 const categories: { value: ChannelCategory; label: string; icon: string }[] = [
   { value: 'fashion', label: categoryI18nKeys.fashion, icon: categoryIcons.fashion },
@@ -40,15 +186,6 @@ const regions: { value: ChannelRegion; label: string }[] = [
   { value: 'uk', label: regionI18nKeys.uk },
 ];
 
-// 常見組合預設（對應 i18n channels.assist.preset.* 鍵）
-const quickPresets: { key: string; category: ChannelCategory; region: ChannelRegion; icon: string }[] = [
-  { key: 'japanFashion', category: 'fashion', region: 'japan', icon: '👘' },
-  { key: 'hkFood', category: 'food', region: 'hong_kong', icon: '🍜' },
-  { key: 'globalTrend', category: 'trend', region: 'global', icon: '🌐' },
-  { key: 'taiwanTech', category: 'tech', region: 'taiwan', icon: '💻' },
-  { key: 'koreaEntertainment', category: 'entertainment', region: 'korea', icon: '🎬' },
-];
-
 export default function CreateChannel() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -63,9 +200,33 @@ export default function CreateChannel() {
   const [keywordInput, setKeywordInput] = useState('');
   const [description, setDescription] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  // AI 助手狀態
-  const [showAssist, setShowAssist] = useState(false);
+
+  /** Step 2：候選池（系統預設 + AI 推薦合併）；建立時送出的選取以 selectedReferenceSourceUrls 為準 */
+  const [step2PoolSources, setStep2PoolSources] = useState<ChannelFeedEntry[]>([]);
+  const [step2PoolLoading, setStep2PoolLoading] = useState(false);
+  const [step2PoolError, setStep2PoolError] = useState(false);
+  const [step2PasteUrl, setStep2PasteUrl] = useState('');
+  const [step2PasteValidating, setStep2PasteValidating] = useState(false);
+  const [step2PastedValidated, setStep2PastedValidated] = useState<{
+    name: string;
+    url: string;
+  } | null>(null);
+  const [step2WhitelistQuery, setStep2WhitelistQuery] = useState('');
+  const [step2WhitelistSearching, setStep2WhitelistSearching] = useState(false);
+  const [step3Wizard, setStep3Wizard] = useState<{
+    suggested_channel_name: string | null;
+    suggested_channel_description: string | null;
+  } | null>(null);
+  /** 最近一次 assist 回傳之 AI 建議命名（#32/#33） */
+  const [assistAiNaming, setAssistAiNaming] = useState<{ name: string; desc: string } | null>(null);
+  const [selectedReferenceSourceUrls, setSelectedReferenceSourceUrls] = useState<Set<string>>(() => new Set());
+  /** AI「確認應用」時併入候選池頂部（手動從 Step 1 進 Step 2 時清空） */
+  const assistPoolBoostRef = useRef<ChannelFeedEntry[]>([]);
+  /** 上一輪 assist 已展示之推薦 URL，供「再分析」時 exclude，換一批白名單候選 */
+  const assistShownSourceUrlsRef = useRef<string[]>([]);
+
+  // AI 助手狀態（§E Phase B：進頁預設開啟助手為主舞台）
+  const [showAssist, setShowAssist] = useState(true);
   const [assistInput, setAssistInput] = useState('');
   const [isAssisting, setIsAssisting] = useState(false);
   const [assistResult, setAssistResult] = useState<{
@@ -76,14 +237,229 @@ export default function CreateChannel() {
     clarification_needed: boolean;
     clarification_question: string | null;
     recommended_sources: Array<{ name: string; url: string; role: string }>;
+    suggested_channel_name: string | null;
+    suggested_channel_description: string | null;
   } | null>(null);
-  const [assistMessage, setAssistMessage] = useState<string>('');
-  
-  // 打字效果
-  const { displayedText: typedMessage, isTyping } = useTypewriter({
-    text: assistMessage,
-    speed: 30,
-  });
+  /** 多輪對話紀錄（畫面保留 + 送後端上下文） */
+  const [assistHistory, setAssistHistory] = useState<AssistChatTurn[]>([]);
+  const assistChatEndRef = useRef<HTMLDivElement>(null);
+
+  /** 後端精靈結構化選項（檢索 MVP：RSS 白名單）；Step 1＝類別，Step 2＝地區＋扣已選後之 feed */
+  const [guidedOptions, setGuidedOptions] = useState<{
+    step: number;
+    retrieval_mvp: string;
+    quick_options: Array<{ kind: 'category' | 'region'; value: string; label_key: string }>;
+    feed_options: Array<{ kind: 'feed'; name: string; url: string; role: string }>;
+    suggested_channel_name?: string | null;
+    suggested_channel_description?: string | null;
+  } | null>(null);
+  const [guidedLoading, setGuidedLoading] = useState(false);
+  /** Phase C：精靈載入失敗時顯示助手內重試 */
+  const [guidedLoadError, setGuidedLoadError] = useState(false);
+  const [guidedRetryToken, setGuidedRetryToken] = useState(0);
+  /** Phase C：分析失敗時助手內橫幅（與 toast 並列） */
+  const [assistRequestError, setAssistRequestError] = useState<string | null>(null);
+  /** Phase C：表單區（RSS 池／白名單搜尋／驗證／建立）錯誤同步顯示於助手內 */
+  const [feedActionBanner, setFeedActionBanner] = useState<string | null>(null);
+  const [mobileSummaryOpen, setMobileSummaryOpen] = useState(false);
+  /** Phase B：大螢幕且助手開啟時，表單預設收合（進階）；關閉助手時一律展開 */
+  const [desktopFormExpanded, setDesktopFormExpanded] = useState(false);
+  const showAssistRef = useRef(showAssist);
+  const mobileSummaryDrawerRef = useRef<HTMLDivElement>(null);
+  const mobileSummaryTriggerRef = useRef<HTMLButtonElement>(null);
+
+  const selectedUrlsSignature = [...selectedReferenceSourceUrls].sort().join('|');
+  const customKeywordsSig = customKeywords.join('\u0001');
+
+  useEffect(() => {
+    showAssistRef.current = showAssist;
+  }, [showAssist]);
+
+  useEffect(() => {
+    if (!showAssist) {
+      setDesktopFormExpanded(true);
+    } else {
+      setDesktopFormExpanded(false);
+    }
+  }, [showAssist]);
+
+  /** Step 3 須使用表單送出：大螢幕＋助手開啟時自動展開，避免收合狀態無法按「建立」 */
+  useEffect(() => {
+    if (showAssist && step === 3) {
+      setDesktopFormExpanded(true);
+    }
+  }, [showAssist, step]);
+
+  useEffect(() => {
+    if (!showAssist) return;
+    assistChatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [showAssist, assistHistory, isAssisting]);
+
+  useEffect(() => {
+    setFeedActionBanner(null);
+    setMobileSummaryOpen(false);
+  }, [step]);
+
+  useEffect(() => {
+    if (!mobileSummaryOpen || !showAssist) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setMobileSummaryOpen(false);
+        window.setTimeout(() => mobileSummaryTriggerRef.current?.focus(), 0);
+        return;
+      }
+      if (e.key !== 'Tab') return;
+      const drawer = mobileSummaryDrawerRef.current;
+      if (!drawer) return;
+      const nodes = drawer.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      );
+      const list = Array.from(nodes).filter((el) => drawer.contains(el));
+      if (list.length === 0) return;
+      const first = list[0];
+      const last = list[list.length - 1];
+      const active = document.activeElement as Node | null;
+      if (e.shiftKey) {
+        if (active === first || !drawer.contains(active as Node)) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else if (active === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [mobileSummaryOpen, showAssist]);
+
+  useEffect(() => {
+    if (!showAssist) {
+      setGuidedOptions(null);
+      setGuidedLoadError(false);
+      setAssistRequestError(null);
+      setFeedActionBanner(null);
+      setMobileSummaryOpen(false);
+      return;
+    }
+    let cancelled = false;
+    setGuidedLoadError(false);
+    setGuidedLoading(true);
+    (async () => {
+      try {
+        const lang = localStorage.getItem('language') || 'zh-TW';
+        const data =
+          step === 3 && category
+            ? await channelsApi.getAssistWizardOptions({
+                step: 3,
+                category,
+                region,
+                language: lang,
+                customKeywords: customKeywords,
+              })
+            : step === 2 && category
+            ? await channelsApi.getAssistWizardOptions({
+                step: 2,
+                category,
+                region,
+                excludeUrls: Array.from(selectedReferenceSourceUrls),
+                language: lang,
+              })
+            : await channelsApi.getAssistWizardOptions({ step: 1, language: lang });
+        if (!cancelled) {
+          setGuidedOptions(data);
+          setGuidedLoadError(false);
+        }
+      } catch {
+        if (!cancelled) {
+          setGuidedOptions(null);
+          setGuidedLoadError(true);
+          toast.error(t('channels.guided.loadFailed'));
+        }
+      } finally {
+        if (!cancelled) setGuidedLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    showAssist,
+    step,
+    category,
+    region,
+    selectedUrlsSignature,
+    customKeywordsSig,
+    guidedRetryToken,
+    t,
+  ]);
+
+  useEffect(() => {
+    if (step !== 3 || !category) {
+      setStep3Wizard(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const lang = localStorage.getItem('language') || 'zh-TW';
+        const data = await channelsApi.getAssistWizardOptions({
+          step: 3,
+          category,
+          region,
+          language: lang,
+          customKeywords: customKeywords,
+        });
+        if (!cancelled) setStep3Wizard(data);
+      } catch {
+        if (!cancelled) setStep3Wizard(null);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [step, category, region, customKeywordsSig]);
+
+  useEffect(() => {
+    if (step !== 2 || !category) return;
+    let cancelled = false;
+    setStep2PoolLoading(true);
+    setStep2PoolError(false);
+    (async () => {
+      try {
+        const { sources } = await channelsApi.getDefaultRssSources(category, region);
+        if (cancelled) return;
+        const boost = assistPoolBoostRef.current;
+        const merged = mergeFeedsByUrl(boost, sources);
+        setStep2PoolSources(merged);
+        if (showAssistRef.current) setFeedActionBanner(null);
+        setSelectedReferenceSourceUrls((prev) => {
+          const poolUrls = new Set(merged.map((s) => s.url));
+          const boostUrls = boost.map((s) => s.url).filter((u) => poolUrls.has(u));
+          if (boostUrls.length > 0) {
+            return new Set(boostUrls.slice(0, MAX_STEP2_SELECTED_FEEDS));
+          }
+          const kept = [...prev].filter((u) => poolUrls.has(u)).slice(0, MAX_STEP2_SELECTED_FEEDS);
+          if (kept.length > 0) return new Set(kept);
+          const n = Math.min(MAX_STEP2_SELECTED_FEEDS, merged.length);
+          return new Set(merged.slice(0, n).map((s) => s.url));
+        });
+      } catch {
+        if (!cancelled) {
+          setStep2PoolError(true);
+          setStep2PoolSources([]);
+          if (showAssistRef.current) {
+            setFeedActionBanner(t('channels.step2.poolLoadError'));
+          }
+        }
+      } finally {
+        if (!cancelled) setStep2PoolLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [step, category, region]);
   
   // 未登入
   if (!isAuthenticated) {
@@ -114,21 +490,28 @@ export default function CreateChannel() {
   };
   
   // AI 助手：快捷按鈕點擊（類別）
+  // 若已選「非全球」地區，輸入框改為類別+地區一句話，避免先選類別再選地區時被覆寫成只剩地區。
   const handleQuickCategoryClick = (cat: ChannelCategory) => {
     setCategory(cat);
-    // 先翻譯 i18n 鍵，再傳入模板
     const categoryText = t(categoryI18nKeys[cat]);
-    const text = t('channels.assist.quickCategory', { category: categoryText });
-    setAssistInput(text);
+    const regionText = t(regionI18nKeys[region]);
+    if (region !== 'global') {
+      setAssistInput(t('channels.assist.quickPreset', { category: categoryText, region: regionText }));
+    } else {
+      setAssistInput(t('channels.assist.quickCategory', { category: categoryText }));
+    }
   };
-  
+
   // AI 助手：快捷按鈕點擊（地區）
   const handleQuickRegionClick = (reg: ChannelRegion) => {
     setRegion(reg);
-    // 先翻譯 i18n 鍵，再傳入模板
     const regionText = t(regionI18nKeys[reg]);
-    const text = t('channels.assist.quickRegion', { region: regionText });
-    setAssistInput(text);
+    const categoryText = category ? t(categoryI18nKeys[category]) : '';
+    if (category !== null) {
+      setAssistInput(t('channels.assist.quickPreset', { category: categoryText, region: regionText }));
+    } else {
+      setAssistInput(t('channels.assist.quickRegion', { region: regionText }));
+    }
   };
 
   // AI 助手：預設組合快捷按鈕
@@ -140,59 +523,92 @@ export default function CreateChannel() {
     { key: 'koreaEntertainment', category: 'entertainment' as ChannelCategory, region: 'korea' as ChannelRegion, icon: '🇰🇷🎬' },
   ];
 
-  // AI 助手：預設組合點擊
-  const handlePresetClick = (preset: typeof quickPresets[0]) => {
+  // AI 助手：預設組合點擊（插入翻譯後描述，供後端解析）
+  const handlePresetClick = (preset: (typeof quickPresets)[0]) => {
     setCategory(preset.category);
     setRegion(preset.region);
-    const label = t(`channels.assist.preset.${preset.key}` as any);
-    setAssistInput(label);
+    const categoryText = t(categoryI18nKeys[preset.category]);
+    const regionText = t(regionI18nKeys[preset.region]);
+    setAssistInput(
+      t('channels.assist.quickPreset', { category: categoryText, region: regionText })
+    );
   };
 
-  // 從 URL 提取網域名
-  const extractDomain = (url: string): string => {
-    try {
-      const u = new URL(url);
-      return u.hostname.replace(/^www\./, '');
-    } catch {
-      return url;
-    }
-  };
-  
-  // AI 助手：處理用戶輸入
+  // AI 助手：處理用戶輸入（多輪：保留對話並附帶 conversation_history）
   const handleAssistSubmit = async () => {
     if (!assistInput.trim()) {
       toast.error(t('channels.assist.inputRequired'));
       return;
     }
-    
+
+    const userText = assistInput.trim();
+    const conversationHistory = assistHistory.map(({ role, content }) => ({ role, content }));
+    if (conversationHistory.length === 0) {
+      assistShownSourceUrlsRef.current = [];
+    }
+    const excludeSet = new Set<string>();
+    selectedReferenceSourceUrls.forEach((u) => excludeSet.add(u));
+    assistShownSourceUrlsRef.current.forEach((u) => excludeSet.add(u));
+    const excludeUrls = [...excludeSet].slice(0, 50);
+
+    const userId = `u-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+
+    setAssistHistory((prev) => [...prev, { id: userId, role: 'user', content: userText }]);
+    setAssistInput('');
     setIsAssisting(true);
     setAssistResult(null);
-    setAssistMessage('');
-    
+    setAssistRequestError(null);
+    setFeedActionBanner(null);
+
+    let replyText = '';
+
     try {
       const userLanguage = localStorage.getItem('language') || 'zh-TW';
-      const result = await channelsApi.assistChannel(assistInput.trim(), userLanguage);
+      const result = await channelsApi.assistChannel(
+        userText,
+        userLanguage,
+        conversationHistory,
+        excludeUrls
+      );
       setAssistResult(result);
-      
-      // 生成 AI 回覆訊息（打字效果）
+
+      if (result.recommended_sources?.length) {
+        assistShownSourceUrlsRef.current = result.recommended_sources
+          .map((s) => (s.url || '').trim())
+          .filter(Boolean);
+      }
+
       if (result.clarification_needed) {
-        setAssistMessage(result.clarification_question || t('channels.assist.clarificationDefault'));
+        setAssistAiNaming(null);
+      } else if (
+        result.confidence >= 0.7 &&
+        result.category &&
+        result.region &&
+        (result.suggested_channel_name?.trim() || result.suggested_channel_description?.trim())
+      ) {
+        setAssistAiNaming({
+          name: (result.suggested_channel_name || '').trim().slice(0, 50),
+          desc: (result.suggested_channel_description || '').trim().slice(0, 200),
+        });
+      }
+
+      if (result.clarification_needed) {
+        replyText = result.clarification_question || t('channels.assist.clarificationDefault');
       } else if (result.confidence >= 0.7 && result.category && result.region) {
-        const categoryName = categoryI18nKeys[result.category as ChannelCategory];
-        const regionName = regionI18nKeys[result.region as ChannelRegion];
-        const keywordsText = result.keywords.length > 0 
-          ? t('channels.assist.responseWithKeywords', { 
-              category: categoryName, 
-              region: regionName,
-              keywords: result.keywords.join(', ')
-            })
-          : t('channels.assist.responseWithoutKeywords', { 
-              category: categoryName, 
-              region: regionName
-            });
-        setAssistMessage(keywordsText);
-        
-        // 自動填入表單
+        const categoryName = t(categoryI18nKeys[result.category as ChannelCategory]);
+        const regionName = t(regionI18nKeys[result.region as ChannelRegion]);
+        replyText =
+          result.keywords.length > 0
+            ? t('channels.assist.responseWithKeywords', {
+                category: categoryName,
+                region: regionName,
+                keywords: result.keywords.join(', '),
+              })
+            : t('channels.assist.responseWithoutKeywords', {
+                category: categoryName,
+                region: regionName,
+              });
+
         setCategory(result.category as ChannelCategory);
         setRegion(result.region as ChannelRegion);
         if (result.keywords.length > 0) {
@@ -200,60 +616,162 @@ export default function CreateChannel() {
         }
         toast.success(t('channels.assist.autoFilled'));
       } else if (result.confidence >= 0.5) {
-        // 中等信心度：顯示結果但提示可能需要更多資訊
-        const categoryName = result.category ? categoryI18nKeys[result.category as ChannelCategory] : '-';
-        const regionName = result.region ? regionI18nKeys[result.region as ChannelRegion] : '-';
-        setAssistMessage(t('channels.assist.responseWithoutKeywords', { 
-          category: categoryName, 
-          region: regionName
-        }));
+        const categoryName = result.category ? t(categoryI18nKeys[result.category as ChannelCategory]) : '-';
+        const regionName = result.region ? t(regionI18nKeys[result.region as ChannelRegion]) : '-';
+        replyText = t('channels.assist.responseWithoutKeywords', {
+          category: categoryName,
+          region: regionName,
+        });
       } else {
-        // 低信心度
-        setAssistMessage(t('channels.assist.lowConfidence'));
+        replyText = t('channels.assist.lowConfidence');
       }
-    } catch (err: any) {
-      // 錯誤處理
-      const errorMessage = err?.response?.data?.detail || err?.message || t('channels.assist.failed');
-      toast.error(errorMessage);
-      setAssistMessage(t('channels.assist.errorMessage'));
-      
-      // 記錄錯誤（開發環境）
+    } catch (err: unknown) {
+      const key = assistFailureI18nKey(err);
+      const msg = t(key as any);
+      setAssistRequestError(msg);
+      toast.error(msg);
+      replyText = msg;
+
       if (process.env.NODE_ENV === 'development') {
         console.error('AI Assistant Error:', err);
       }
     } finally {
+      const assistantId = `a-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+      setAssistHistory((prev) => [...prev, { id: assistantId, role: 'assistant', content: replyText }]);
       setIsAssisting(false);
     }
   };
   
-  // AI 助手：確認並應用結果
+  // AI 助手：確認並應用結果 → 先進 Step 2（推薦來源為核心），使用者按下一步再到 Step 3
   const handleAssistConfirm = () => {
     if (assistResult && assistResult.category && assistResult.region) {
+      const rec = assistResult.recommended_sources || [];
+      assistPoolBoostRef.current = rec.map((s) => ({
+        name: s.name || '',
+        url: (s.url || '').trim(),
+        role: s.role || '',
+      }));
       setCategory(assistResult.category as ChannelCategory);
       setRegion(assistResult.region as ChannelRegion);
       if (assistResult.keywords.length > 0) {
         setCustomKeywords(assistResult.keywords);
       }
+      setStep(2);
       setShowAssist(false);
       setAssistInput('');
       setAssistResult(null);
+      setAssistHistory([]);
+      setAssistRequestError(null);
+      setFeedActionBanner(null);
       toast.success(t('channels.assist.applied'));
     }
   };
   
   // AI 助手：關閉
   const handleAssistClose = () => {
+    assistPoolBoostRef.current = [];
+    assistShownSourceUrlsRef.current = [];
+    setAssistAiNaming(null);
+    setAssistRequestError(null);
+    setFeedActionBanner(null);
     setShowAssist(false);
     setAssistInput('');
     setAssistResult(null);
-    setAssistMessage('');
+    setAssistHistory([]);
   };
   
   // AI 助手：重置對話
   const handleAssistReset = () => {
+    assistShownSourceUrlsRef.current = [];
+    setAssistAiNaming(null);
+    setAssistRequestError(null);
+    setFeedActionBanner(null);
     setAssistInput('');
     setAssistResult(null);
-    setAssistMessage('');
+    setAssistHistory([]);
+  };
+
+  const handleStep2WhitelistSearch = async () => {
+    const q = step2WhitelistQuery.trim();
+    if (!q) {
+      toast.error(t('channels.step2.whitelistSearchRequired'));
+      return;
+    }
+    setStep2WhitelistSearching(true);
+    try {
+      const { results } = await channelsApi.searchWhitelistFeeds(q, 30);
+      if (!results.length) {
+        toast(t('channels.step2.whitelistNoResults'));
+        return;
+      }
+      const asFeeds: ChannelFeedEntry[] = results.map((r) => ({
+        name: r.name || 'RSS',
+        url: r.url.trim(),
+        role: r.role || '',
+      }));
+      setStep2PoolSources((prev) => mergeFeedsByUrl(asFeeds, prev));
+      toast.success(t('channels.step2.whitelistSearchOk', { count: String(results.length) }));
+      if (showAssist) setFeedActionBanner(null);
+    } catch (err: unknown) {
+      const st = err instanceof APIError ? err.status : undefined;
+      let msg: string;
+      if (st === 429) {
+        msg = t(rateLimitToastI18nKey(err));
+      } else if (err instanceof APIError) {
+        msg = err.message;
+      } else if (err && typeof err === 'object' && 'message' in err && typeof (err as { message?: unknown }).message === 'string') {
+        msg = (err as { message: string }).message;
+      } else {
+        msg = t('channels.step2.whitelistSearchFailed');
+      }
+      toast.error(msg);
+      if (showAssist) setFeedActionBanner(msg);
+    } finally {
+      setStep2WhitelistSearching(false);
+    }
+  };
+
+  const handleStep2ValidatePastedUrl = async () => {
+    const raw = step2PasteUrl.trim();
+    if (!raw) {
+      toast.error(t('channels.step2.pasteUrlRequired'));
+      return;
+    }
+    setStep2PasteValidating(true);
+    setStep2PastedValidated(null);
+    try {
+      const res = await channelsApi.validateFeedUrl(raw);
+      if (res.valid) {
+        const name = (res.suggested_name || res.title || 'RSS').slice(0, 120);
+        const url = raw.split(/\s/)[0].trim();
+        setStep2PastedValidated({ name, url });
+        toast.success(t('channels.feedValidate.success'));
+        if (showAssist) setFeedActionBanner(null);
+      } else {
+        const code = res.error_code || 'unknown';
+        const msgKey = `channels.feedValidate.${code}` as const;
+        const msg = t(msgKey as any);
+        const resolved = msg !== msgKey ? msg : t('channels.feedValidate.unknown');
+        toast.error(resolved);
+        if (showAssist) setFeedActionBanner(resolved);
+      }
+    } catch (err: unknown) {
+      const st = err instanceof APIError ? err.status : undefined;
+      let msg: string;
+      if (st === 429) {
+        msg = t(rateLimitToastI18nKey(err));
+      } else if (err instanceof APIError) {
+        msg = err.message;
+      } else if (err && typeof err === 'object' && 'message' in err && typeof (err as { message?: unknown }).message === 'string') {
+        msg = (err as { message: string }).message;
+      } else {
+        msg = t('channels.feedValidate.unknown');
+      }
+      toast.error(msg);
+      if (showAssist) setFeedActionBanner(msg);
+    } finally {
+      setStep2PasteValidating(false);
+    }
   };
   
   // 提交表單
@@ -276,31 +794,101 @@ export default function CreateChannel() {
     setIsSubmitting(true);
     
     try {
+      const selectedFeeds = step2PoolSources
+        .filter((s) => selectedReferenceSourceUrls.has(s.url))
+        .slice(0, MAX_STEP2_SELECTED_FEEDS)
+        .map((s) => ({
+          name: s.name || 'RSS',
+          url: s.url,
+          role: s.role || '',
+        }));
+
       const data: ChannelCreateRequest = {
         name: name.trim(),
         category,
         region,
         custom_keywords: customKeywords,
         description: description.trim() || undefined,
+        ...(selectedFeeds.length > 0 ? { selected_feeds: selectedFeeds } : {}),
       };
-      
+
       await channelsApi.createChannel(data);
+      assistPoolBoostRef.current = [];
       toast.success(t('channels.createSuccess'));
       navigate('/channels');
-    } catch (err: any) {
-      toast.error(err.message || t('common.failed'));
+    } catch (err: unknown) {
+      const msg =
+        err instanceof APIError
+          ? err.message
+          : err instanceof Error
+            ? err.message
+            : t('common.failed');
+      toast.error(msg);
+      if (showAssist) setFeedActionBanner(msg);
     } finally {
       setIsSubmitting(false);
     }
   };
-  
+
+  const addFeedToSelected = (url: string) => {
+    setSelectedReferenceSourceUrls((prev) => {
+      if (prev.has(url)) return prev;
+      if (prev.size >= MAX_STEP2_SELECTED_FEEDS) {
+        toast.error(t('channels.step2.maxFeedsToast', { max: String(MAX_STEP2_SELECTED_FEEDS) }));
+        return prev;
+      }
+      const next = new Set(prev);
+      next.add(url);
+      return next;
+    });
+  };
+
+  const removeFeedFromSelected = (url: string) => {
+    setSelectedReferenceSourceUrls((prev) => {
+      const next = new Set(prev);
+      next.delete(url);
+      return next;
+    });
+  };
+
+  /** 精靈建議的 RSS：若尚未在候選池，先併入再勾選 */
+  const addGuidedFeedToPoolAndSelected = (feed: { name: string; url: string; role: string }) => {
+    const entry: ChannelFeedEntry = {
+      name: feed.name || 'RSS',
+      url: (feed.url || '').trim(),
+      role: feed.role || '',
+    };
+    if (!entry.url) return;
+    setStep2PoolSources((prev) => mergeFeedsByUrl([entry], prev));
+    addFeedToSelected(entry.url);
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+    <main className="relative min-h-screen bg-gray-50 py-8 dark:bg-gray-900">
+      <a
+        href="#channel-create-form"
+        data-testid="link-channels-phasec-skip-to-form"
+        onClick={(e) => {
+          e.preventDefault();
+          const el = document.getElementById('channel-create-form') as HTMLElement | null;
+          el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          window.setTimeout(() => el?.focus({ preventScroll: true }), 200);
+        }}
+        className="fixed left-4 top-0 z-[70] -translate-y-full rounded-lg bg-white px-4 py-3 text-sm font-semibold text-gray-900 shadow-lg ring-2 ring-purple-500 transition-transform focus:translate-y-4 focus:outline-none dark:bg-gray-800 dark:text-white"
+      >
+        {t('channels.phaseC.skipToForm')}
+      </a>
+      <div
+        className={`mx-auto px-4 sm:px-6 lg:px-8 ${
+          showAssist ? 'max-w-6xl pb-28 lg:pb-8' : 'max-w-2xl'
+        }`}
+      >
         {/* 返回按鈕 */}
         <button
+          type="button"
+          data-testid="btn-channels-create-back"
           onClick={() => navigate('/channels')}
-          className="flex items-center gap-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 mb-6"
+          className="mb-6 flex items-center gap-2 rounded-lg text-gray-500 hover:text-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-50 dark:text-gray-400 dark:hover:text-gray-200 dark:focus-visible:ring-offset-gray-900"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -319,44 +907,311 @@ export default function CreateChannel() {
             {t('channels.createDescription')}
           </p>
         </div>
-            {/* AI 助手按鈕 */}
-            {step === 1 && (
+            {/* AI 助手按鈕：Step 1／Step 2 可開（Step 2 同步精靈地區與尚可加入之 RSS） */}
+            {(step === 1 || step === 2 || step === 3) && (
               <button
-                onClick={() => setShowAssist(true)}
-                data-testid="btn-channels-assist"
-                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-cyan-500 text-white rounded-lg hover:from-purple-600 hover:to-cyan-600 transition-all shadow-lg"
+                type="button"
+                onClick={() => setShowAssist((open) => !open)}
+                data-testid={showAssist ? 'btn-channels-assist-minimize' : 'btn-channels-assist'}
+                className={
+                  showAssist
+                    ? 'flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-gray-700 transition-all hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700 dark:focus-visible:ring-offset-gray-900'
+                    : 'flex items-center gap-2 rounded-lg bg-gradient-to-r from-purple-500 to-cyan-500 px-4 py-2 text-white shadow-lg transition-all hover:from-purple-600 hover:to-cyan-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-50 dark:focus-visible:ring-offset-gray-900'
+                }
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                 </svg>
-                <span className="font-medium">{t('channels.assist.title')}</span>
+                <span className="font-medium">
+                  {showAssist ? t('channels.assist.minimizePanel') : t('channels.assist.title')}
+                </span>
               </button>
             )}
           </div>
         </div>
         
-        {/* AI 助手對話框 */}
+        {/* AI 助手對話框 + 表單欄（Phase B：大螢幕並排，助手為主欄） */}
+        <div className={showAssist ? 'flex flex-col lg:flex-row lg:gap-8 lg:items-start' : ''}>
         {showAssist && (
-          <div className="mb-8 bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border-2 border-purple-200 dark:border-purple-800">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+          <div className="mb-8 lg:mb-0 w-full lg:flex-[1.15] min-w-0">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border-2 border-purple-200 dark:border-purple-800 lg:h-full flex flex-col max-h-[min(88vh,760px)] lg:max-h-[calc(100vh-10rem)]">
+            <div className="flex items-center justify-between mb-4 shrink-0">
+              <h3
+                id="channels-assist-panel-title"
+                className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2"
+              >
                 <svg className="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                 </svg>
                 {t('channels.assist.title')}
               </h3>
               <button
+                type="button"
                 onClick={handleAssistClose}
                 data-testid="btn-channels-assist-close"
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 dark:hover:bg-gray-700 dark:hover:text-gray-200"
+                aria-label={t('channels.assist.closePanelAria')}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
+
+            {assistRequestError && (
+              <div
+                role="alert"
+                className="mb-3 flex flex-col gap-2 rounded-lg border border-amber-200 dark:border-amber-700 bg-amber-50/90 dark:bg-amber-950/30 px-3 py-2 text-amber-950 dark:text-amber-100 sm:flex-row sm:items-center sm:justify-between"
+                data-testid="panel-channels-assist-request-error"
+              >
+                <p className="text-sm min-w-0">{assistRequestError}</p>
+                <button
+                  type="button"
+                  onClick={() => setAssistRequestError(null)}
+                  className="shrink-0 text-sm font-medium text-amber-900 dark:text-amber-200 underline min-h-[44px] sm:min-h-0 px-1 text-left sm:text-right"
+                  data-testid="btn-channels-assist-error-dismiss"
+                >
+                  {t('channels.assist.dismissError')}
+                </button>
+              </div>
+            )}
+
+            {feedActionBanner && (
+              <div
+                role="alert"
+                className="mb-3 flex flex-col gap-2 rounded-lg border border-red-200 bg-red-50/90 px-3 py-2 text-red-950 dark:border-red-800 dark:bg-red-950/30 dark:text-red-100 sm:flex-row sm:items-center sm:justify-between"
+                data-testid="panel-channels-assist-feed-action-error"
+              >
+                <p className="min-w-0 text-sm">{feedActionBanner}</p>
+                <div className="flex shrink-0 flex-col gap-2 sm:flex-row sm:items-center">
+                  <button
+                    type="button"
+                    onClick={() => setFeedActionBanner(null)}
+                    className="min-h-[44px] px-1 text-left text-sm font-medium text-red-900 underline dark:text-red-200 sm:min-h-0 sm:text-right"
+                    data-testid="btn-channels-assist-feed-error-dismiss"
+                  >
+                    {t('channels.assist.dismissError')}
+                  </button>
+                  <a
+                    href="#channel-create-form"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setMobileSummaryOpen(false);
+                      const el = document.getElementById('channel-create-form') as HTMLElement | null;
+                      el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      window.setTimeout(() => el?.focus({ preventScroll: true }), 200);
+                    }}
+                    className="min-h-[44px] text-sm font-medium text-red-800 underline dark:text-red-200 sm:min-h-0"
+                    data-testid="link-channels-assist-go-to-form"
+                  >
+                    {t('channels.phaseC.goToForm')}
+                  </a>
+                </div>
+              </div>
+            )}
+
+            <div
+              className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden space-y-1 pr-0.5"
+              role="region"
+              aria-labelledby="channels-assist-panel-title"
+            >
+
+            {guidedLoading && (
+              <p
+                className="text-sm text-gray-500 dark:text-gray-400 mb-3"
+                data-testid="text-channels-guided-loading"
+              >
+                {t('channels.guided.loading')}
+              </p>
+            )}
+            {guidedLoadError && !guidedLoading && (
+              <div
+                role="alert"
+                className="mb-3 rounded-lg border border-red-200 dark:border-red-800 bg-red-50/90 dark:bg-red-950/25 px-3 py-3 text-sm text-red-900 dark:text-red-100"
+                data-testid="panel-channels-guided-load-error"
+              >
+                <p className="mb-2">{t('channels.guided.loadFailed')}</p>
+                <button
+                  type="button"
+                  onClick={() => setGuidedRetryToken((n) => n + 1)}
+                  className="font-medium text-red-800 dark:text-red-200 underline min-h-[44px]"
+                  data-testid="btn-channels-guided-retry"
+                >
+                  {t('channels.guided.retry')}
+                </button>
+              </div>
+            )}
+            {!guidedLoading && guidedOptions && guidedOptions.step === 1 && guidedOptions.quick_options.length > 0 && (
+              <div
+                className="mb-4 rounded-xl border border-dashed border-purple-200 dark:border-purple-700 bg-purple-50/50 dark:bg-purple-950/20 p-3 sm:p-4"
+                data-testid="panel-channels-guided"
+              >
+                <p className="text-sm text-gray-700 dark:text-gray-200 mb-2">{t('channels.guided.intro')}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                  {t('channels.guided.serverSyncTitle')}
+                </p>
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {guidedOptions.quick_options
+                    .filter((o) => o.kind === 'category')
+                    .map((o) => (
+                      <button
+                        key={o.value}
+                        type="button"
+                        data-testid={`btn-channels-guided-category-${o.value}`}
+                        disabled={isAssisting}
+                        onClick={() => handleQuickCategoryClick(o.value as ChannelCategory)}
+                        className={`px-3 py-1.5 text-xs sm:text-sm rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] border flex items-center gap-1 ${
+                          category === o.value
+                            ? 'bg-purple-100 dark:bg-purple-900/30 border-purple-400 dark:border-purple-600 text-purple-700 dark:text-purple-300 ring-1 ring-purple-300 dark:ring-purple-700'
+                            : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 text-gray-800 dark:text-gray-100 hover:border-purple-300 dark:hover:border-purple-600'
+                        }`}
+                      >
+                        <span className="text-base sm:text-lg">
+                          {categoryIcons[o.value as ChannelCategory] ?? '•'}
+                        </span>
+                        <span>{t(o.label_key as any)}</span>
+                      </button>
+                    ))}
+                </div>
+                <button
+                  type="button"
+                  data-testid="btn-channels-guided-escape"
+                  onClick={handleAssistClose}
+                  className="text-xs text-purple-600 dark:text-purple-400 hover:underline"
+                >
+                  {t('channels.guided.escapeAdvanced')}
+                </button>
+              </div>
+            )}
+
+            {!guidedLoading && guidedOptions && guidedOptions.step === 2 && (
+              <div
+                className="mb-4 rounded-xl border border-dashed border-purple-200 dark:border-purple-700 bg-purple-50/50 dark:bg-purple-950/20 p-3 sm:p-4"
+                data-testid="panel-channels-guided-step2"
+              >
+                <p className="text-sm text-gray-700 dark:text-gray-200 mb-2">{t('channels.guided.introStep2')}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                  {t('channels.guided.serverSyncTitleStep2')}
+                </p>
+                {guidedOptions.quick_options.filter((o) => o.kind === 'region').length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {guidedOptions.quick_options
+                      .filter((o) => o.kind === 'region')
+                      .map((o) => (
+                        <button
+                          key={o.value}
+                          type="button"
+                          data-testid={`btn-channels-guided-region-${o.value}`}
+                          disabled={isAssisting}
+                          onClick={() => handleQuickRegionClick(o.value as ChannelRegion)}
+                          className={`px-3 py-1.5 text-xs sm:text-sm rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] border ${
+                            region === o.value
+                              ? 'bg-purple-100 dark:bg-purple-900/30 border-purple-400 dark:border-purple-600 text-purple-700 dark:text-purple-300 ring-1 ring-purple-300 dark:ring-purple-700'
+                              : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 text-gray-800 dark:text-gray-100 hover:border-purple-300 dark:hover:border-purple-600'
+                          }`}
+                        >
+                          {t(o.label_key as any)}
+                        </button>
+                      ))}
+                  </div>
+                )}
+                {guidedOptions.feed_options.length > 0 && (
+                  <div className="mb-3">
+                    <p className="text-xs font-medium text-gray-600 dark:text-gray-300 mb-2">
+                      {t('channels.guided.suggestedFeedsTitle')}
+                    </p>
+                    <ul className="space-y-2 max-h-48 overflow-y-auto">
+                      {guidedOptions.feed_options.map((f, idx) => (
+                        <li
+                          key={`${f.url}-${idx}`}
+                          className="flex items-start justify-between gap-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-white/80 dark:bg-gray-800/80 p-2"
+                        >
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{f.name}</p>
+                            <p className="text-xs text-gray-500 truncate" title={f.url}>
+                              {f.url}
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            data-testid={`btn-channels-guided-feed-add-${idx}`}
+                            disabled={isAssisting || selectedReferenceSourceUrls.has(f.url.trim())}
+                            onClick={() => addGuidedFeedToPoolAndSelected(f)}
+                            className="shrink-0 px-2 py-1.5 text-xs font-medium rounded-lg bg-purple-100 dark:bg-purple-900/40 text-purple-800 dark:text-purple-200 hover:bg-purple-200 dark:hover:bg-purple-800/50 disabled:opacity-50 min-h-[44px] md:min-h-0"
+                          >
+                            {t('channels.guided.addSuggestedFeed')}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {guidedOptions.feed_options.length === 0 && (
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">{t('channels.guided.noMoreFeedsHint')}</p>
+                )}
+                <button
+                  type="button"
+                  data-testid="btn-channels-guided-escape-step2"
+                  onClick={handleAssistClose}
+                  className="text-xs text-purple-600 dark:text-purple-400 hover:underline"
+                >
+                  {t('channels.guided.escapeAdvanced')}
+                </button>
+              </div>
+            )}
+
+            {!guidedLoading && guidedOptions && guidedOptions.step === 3 && category && (
+              <div
+                className="mb-4 rounded-xl border border-dashed border-purple-200 dark:border-purple-700 bg-purple-50/50 dark:bg-purple-950/20 p-3 sm:p-4"
+                data-testid="panel-channels-guided-step3"
+              >
+                <p className="text-sm text-gray-700 dark:text-gray-200 mb-2">{t('channels.guided.introStep3')}</p>
+                {(guidedOptions.suggested_channel_name || guidedOptions.suggested_channel_description) && (
+                  <div className="rounded-lg border border-gray-200 dark:border-gray-600 bg-white/80 dark:bg-gray-800/80 p-3 mb-3 space-y-2">
+                    {guidedOptions.suggested_channel_name ? (
+                      <p className="text-sm text-gray-900 dark:text-white">
+                        <span className="text-xs text-gray-500 block">{t('channels.channelName')}</span>
+                        {guidedOptions.suggested_channel_name}
+                      </p>
+                    ) : null}
+                    {guidedOptions.suggested_channel_description ? (
+                      <p className="text-sm text-gray-700 dark:text-gray-200 whitespace-pre-wrap">
+                        <span className="text-xs text-gray-500 block">{t('channels.channelDescription')}</span>
+                        {guidedOptions.suggested_channel_description}
+                      </p>
+                    ) : null}
+                    <button
+                      type="button"
+                      data-testid="btn-channels-guided-step3-apply"
+                      disabled={isAssisting}
+                      onClick={() => {
+                        if (guidedOptions.suggested_channel_name) {
+                          setName(guidedOptions.suggested_channel_name.slice(0, 50));
+                        }
+                        if (guidedOptions.suggested_channel_description) {
+                          setDescription(guidedOptions.suggested_channel_description.slice(0, 200));
+                        }
+                        toast.success(t('channels.step3.applyWizardOk'));
+                      }}
+                      className="w-full sm:w-auto px-4 py-2 text-sm font-medium rounded-lg bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50 min-h-[44px]"
+                    >
+                      {t('channels.step3.applyWizardNaming')}
+                    </button>
+                  </div>
+                )}
+                <button
+                  type="button"
+                  data-testid="btn-channels-guided-escape-step3"
+                  onClick={handleAssistClose}
+                  className="text-xs text-purple-600 dark:text-purple-400 hover:underline"
+                >
+                  {t('channels.guided.escapeAdvanced')}
+                </button>
+              </div>
+            )}
             
-            {/* 快捷按鈕區域 */}
+            {/* 快捷按鈕區域（Step 2／3 開助手時隱藏） */}
+            {!((step === 2 || step === 3) && showAssist) && (
             <div className="mb-4">
               <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
                 {t('channels.assist.quickButtons')}
@@ -443,6 +1298,44 @@ export default function CreateChannel() {
                 </div>
               </div>
             </div>
+            )}
+            
+            {/* 對話紀錄（保留多輪，與後端 conversation_history 對齊） */}
+            <div className="mb-4">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                {t('channels.assist.chatHistory')}
+              </p>
+              <div
+                className="max-h-64 overflow-y-auto rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50/90 dark:bg-gray-900/50 p-3 space-y-3"
+                aria-live="polite"
+                aria-relevant="additions text"
+              >
+                {assistHistory.map((turn) => (
+                  <div
+                    key={turn.id}
+                    className={`flex ${turn.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div
+                      className={`max-w-[88%] rounded-2xl px-3 py-2 text-sm sm:text-base break-words whitespace-pre-line ${
+                        turn.role === 'user'
+                          ? 'bg-purple-600 text-white'
+                          : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-600'
+                      }`}
+                    >
+                      {turn.content}
+                    </div>
+                  </div>
+                ))}
+                {isAssisting && (
+                  <div className="flex justify-start">
+                    <div className="rounded-2xl px-3 py-2 text-sm text-gray-500 dark:text-gray-400 border border-dashed border-gray-300 dark:border-gray-600">
+                      {t('common.loading')}…
+                    </div>
+                  </div>
+                )}
+                <div ref={assistChatEndRef} />
+              </div>
+            </div>
             
             {/* 輸入區域 */}
             <div className="mb-4">
@@ -486,25 +1379,6 @@ export default function CreateChannel() {
               </div>
             </div>
             
-            {/* AI 回覆訊息（打字效果） */}
-            {typedMessage && (
-              <div className="mb-4 p-3 sm:p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
-                <div className="flex items-start gap-2 sm:gap-3">
-                  <svg className="w-5 h-5 sm:w-6 sm:h-6 text-purple-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                  </svg>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm sm:text-base text-gray-700 dark:text-gray-300 whitespace-pre-line break-words">
-                      {typedMessage}
-                      {isTyping && (
-                        <span className="inline-block w-2 h-4 bg-purple-500 ml-1 animate-pulse" />
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-            
             {/* 錯誤訊息顯示 */}
             {!isAssisting && assistResult && assistResult.confidence < 0.5 && !assistResult.clarification_needed && (
               <div className="mb-4 p-3 sm:p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
@@ -525,23 +1399,19 @@ export default function CreateChannel() {
             {assistResult && (
               <div className="mt-4 p-3 sm:p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                 {assistResult.clarification_needed ? (
-                  <div>
-                    <p className="text-sm sm:text-base text-gray-700 dark:text-gray-300 mb-2 break-words">
-                      {assistResult.clarification_question}
-                    </p>
-                  </div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{t('channels.assist.continueConversation')}</p>
                 ) : (
                   <div className="space-y-3 sm:space-y-4">
                     <div>
                       <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">{t('channels.assist.category')}</p>
                       <p className="font-medium text-sm sm:text-base text-gray-900 dark:text-white">
-                        {assistResult.category ? categoryI18nKeys[assistResult.category as ChannelCategory] : '-'}
+                        {assistResult.category ? t(categoryI18nKeys[assistResult.category as ChannelCategory]) : '-'}
                       </p>
                     </div>
                     <div>
                       <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">{t('channels.assist.region')}</p>
                       <p className="font-medium text-sm sm:text-base text-gray-900 dark:text-white">
-                        {assistResult.region ? regionI18nKeys[assistResult.region as ChannelRegion] : '-'}
+                        {assistResult.region ? t(regionI18nKeys[assistResult.region as ChannelRegion]) : '-'}
                       </p>
                     </div>
                     {assistResult.keywords.length > 0 && (
@@ -554,6 +1424,38 @@ export default function CreateChannel() {
                             </span>
                           ))}
                         </div>
+                      </div>
+                    )}
+                    {(assistResult.suggested_channel_name?.trim() ||
+                      assistResult.suggested_channel_description?.trim()) && (
+                      <div className="rounded-lg border border-emerald-200 dark:border-emerald-800 p-3 bg-emerald-50/60 dark:bg-emerald-950/25">
+                        <p className="text-xs font-medium text-emerald-800 dark:text-emerald-200 mb-2">
+                          {t('channels.assist.suggestedNamingTitle')}
+                        </p>
+                        {assistResult.suggested_channel_name?.trim() ? (
+                          <p className="text-sm text-gray-900 dark:text-white mb-1">
+                            {assistResult.suggested_channel_name.trim()}
+                          </p>
+                        ) : null}
+                        {assistResult.suggested_channel_description?.trim() ? (
+                          <p className="text-xs text-gray-600 dark:text-gray-300 whitespace-pre-wrap mb-2">
+                            {assistResult.suggested_channel_description.trim()}
+                          </p>
+                        ) : null}
+                        <button
+                          type="button"
+                          data-testid="btn-channels-assist-apply-naming"
+                          onClick={() => {
+                            const n = assistResult.suggested_channel_name?.trim();
+                            const d = assistResult.suggested_channel_description?.trim();
+                            if (n) setName(n.slice(0, 50));
+                            if (d) setDescription(d.slice(0, 200));
+                            toast.success(t('channels.step3.applyAssistOk'));
+                          }}
+                          className="text-sm px-3 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 min-h-[44px]"
+                        >
+                          {t('channels.step3.applyAssistNaming')}
+                        </button>
                       </div>
                     )}
                     {assistResult.recommended_sources.length > 0 && (
@@ -689,43 +1591,84 @@ export default function CreateChannel() {
                 )}
               </div>
             )}
+            </div>
+          </div>
           </div>
         )}
-        
-        {/* 步驟指示器 */}
-        <div className="flex items-center justify-center mb-8">
-          {[1, 2, 3].map((s) => (
-            <div key={s} className="flex items-center">
-              <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center font-medium transition-all ${
-                  s < step
-                    ? 'bg-green-500 text-white'
-                    : s === step
-                    ? 'bg-purple-500 text-white'
-                    : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
-                }`}
-              >
-                {s < step ? (
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                ) : (
-                  s
-                )}
-              </div>
-              {s < 3 && (
-                <div
-                  className={`w-20 h-1 ${
-                    s < step ? 'bg-green-500' : 'bg-gray-200 dark:bg-gray-700'
-                  }`}
+
+        <div className={`min-w-0 ${showAssist ? 'lg:flex-1 lg:max-w-md xl:max-w-lg' : 'w-full'}`}>
+          <div className={showAssist ? 'hidden lg:block' : ''}>
+            {showAssist && (
+              <>
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                  {t('channels.phaseB.formColumnTitle')}
+                </p>
+                <CreateChannelSummaryPanel
+                  t={t}
+                  name={name}
+                  description={description}
+                  category={category}
+                  region={region}
+                  step={step}
+                  selectedCount={selectedReferenceSourceUrls.size}
+                  maxFeeds={MAX_STEP2_SELECTED_FEEDS}
                 />
-              )}
+              </>
+            )}
+            <CreateChannelStepNav step={step} t={t} />
+            {showAssist && (
+              <p
+                className="mx-auto mb-6 max-w-lg px-2 text-center text-xs text-gray-500 dark:text-gray-400"
+                data-testid="text-channels-phasec-step-hint"
+              >
+                {t('channels.phaseC.stepHint')}
+              </p>
+            )}
+          </div>
+
+        {/* 表單內容：lg＋助手開啟時預設收合（進階），符合 §E 表單收斂 */}
+        <div
+          id="channel-create-form"
+          tabIndex={-1}
+          className="outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-50 dark:focus-visible:ring-offset-gray-900"
+        >
+          {showAssist && !desktopFormExpanded ? (
+            <div
+              className="mb-6 hidden rounded-2xl border-2 border-dashed border-purple-200 bg-purple-50/50 p-6 text-center dark:border-purple-800 dark:bg-purple-950/20 lg:block"
+              data-testid="panel-channels-form-collapsed-hint"
+            >
+              <p className="mb-4 text-sm text-gray-600 dark:text-gray-300">
+                {t('channels.phaseB.expandFormHint')}
+              </p>
+              <button
+                type="button"
+                data-testid="btn-channels-expand-wizard-form"
+                onClick={() => setDesktopFormExpanded(true)}
+                className="min-h-[44px] rounded-lg bg-purple-600 px-4 py-3 text-sm font-semibold text-white hover:bg-purple-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400"
+              >
+                {t('channels.phaseB.expandForm')}
+              </button>
             </div>
-          ))}
-        </div>
-        
-        {/* 表單內容 */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg">
+          ) : null}
+
+          <div
+            data-testid="panel-channels-create-form"
+            className={`rounded-2xl bg-white p-8 shadow-lg dark:bg-gray-800 ${
+              showAssist && !desktopFormExpanded ? 'lg:hidden' : ''
+            }`}
+          >
+            {showAssist && desktopFormExpanded && step < 3 ? (
+              <div className="mb-6 hidden justify-end lg:flex">
+                <button
+                  type="button"
+                  data-testid="btn-channels-collapse-wizard-form"
+                  onClick={() => setDesktopFormExpanded(false)}
+                  className="min-h-[44px] px-1 text-sm font-medium text-purple-600 underline hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300"
+                >
+                  {t('channels.phaseB.collapseForm')}
+                </button>
+              </div>
+            ) : null}
           {/* 步驟 1: 選擇類別 */}
           {step === 1 && (
             <div>
@@ -740,6 +1683,8 @@ export default function CreateChannel() {
                 {categories.map((cat) => (
                   <button
                     key={cat.value}
+                    type="button"
+                    data-testid={`btn-channels-step1-category-${cat.value}`}
                     onClick={() => setCategory(cat.value)}
                     className={`p-4 rounded-xl border-2 transition-all duration-200 flex items-center gap-3 ${
                       category === cat.value
@@ -761,7 +1706,13 @@ export default function CreateChannel() {
               
               <div className="mt-8 flex justify-end">
                 <button
-                  onClick={() => category && setStep(2)}
+                  type="button"
+                  data-testid="btn-channels-step1-next"
+                  onClick={() => {
+                    if (!category) return;
+                    assistPoolBoostRef.current = [];
+                    setStep(2);
+                  }}
                   disabled={!category}
                   className="px-6 py-3 bg-purple-500 text-white font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-purple-600 transition-colors"
                 >
@@ -771,7 +1722,7 @@ export default function CreateChannel() {
             </div>
           )}
           
-          {/* 步驟 2: 選擇地區 */}
+          {/* 步驟 2: 地區與內容來源 */}
           {step === 2 && (
             <div>
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
@@ -780,11 +1731,13 @@ export default function CreateChannel() {
               <p className="text-gray-500 dark:text-gray-400 mb-6">
                 {t('channels.step2.description')}
               </p>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 {regions.map((reg) => (
                   <button
                     key={reg.value}
+                    type="button"
+                    data-testid={`btn-channels-step2-region-${reg.value}`}
                     onClick={() => setRegion(reg.value)}
                     className={`p-4 rounded-xl border-2 transition-all duration-200 ${
                       region === reg.value
@@ -802,7 +1755,7 @@ export default function CreateChannel() {
                   </button>
                 ))}
               </div>
-              
+
               {/* 自定義關鍵字（當類別為 other 時） */}
               {category === 'other' && (
                 <div className="mt-6">
@@ -812,6 +1765,7 @@ export default function CreateChannel() {
                   <div className="flex gap-2">
                     <input
                       type="text"
+                      data-testid="input-channels-step2-keyword"
                       value={keywordInput}
                       onChange={(e) => setKeywordInput(e.target.value)}
                       onKeyDown={handleKeywordKeyDown}
@@ -819,6 +1773,8 @@ export default function CreateChannel() {
                       className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
                     <button
+                      type="button"
+                      data-testid="btn-channels-step2-keyword-add"
                       onClick={addKeyword}
                       disabled={!keywordInput.trim() || customKeywords.length >= 5}
                       className="px-4 py-2 bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -826,7 +1782,7 @@ export default function CreateChannel() {
                       {t('common.add')}
                     </button>
                   </div>
-                  
+
                   {customKeywords.length > 0 && (
                     <div className="mt-3 flex flex-wrap gap-2">
                       {customKeywords.map((keyword, index) => (
@@ -836,6 +1792,8 @@ export default function CreateChannel() {
                         >
                           {keyword}
                           <button
+                            type="button"
+                            data-testid={`btn-channels-step2-keyword-remove-${index}`}
                             onClick={() => removeKeyword(index)}
                             className="hover:text-purple-800 dark:hover:text-purple-200"
                           >
@@ -847,21 +1805,213 @@ export default function CreateChannel() {
                       ))}
                     </div>
                   )}
-                  
+
                   <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
                     {t('channels.keywordsMax')} ({customKeywords.length}/5)
                   </p>
                 </div>
               )}
-              
+
+              <div className="mt-8 border-t border-gray-200 dark:border-gray-600 pt-8">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+                  {t('channels.step2.feedSourcesSection')}
+                </h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+                  {t('channels.step2.feedSourcesHint')}
+                </p>
+                <p className="text-xs text-purple-600 dark:text-purple-400 mb-4">
+                  {t('channels.step2.maxFeedsHint', {
+                    max: String(MAX_STEP2_SELECTED_FEEDS),
+                    count: String(selectedReferenceSourceUrls.size),
+                  })}
+                </p>
+
+                <div className="mb-6 rounded-xl border border-dashed border-gray-300 dark:border-gray-600 p-4 bg-gray-50/80 dark:bg-gray-900/30">
+                  <h4 className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-1">
+                    {t('channels.step2.pasteUrlSection')}
+                  </h4>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+                    {t('channels.step2.pasteUrlHint')}
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <input
+                      type="url"
+                      inputMode="url"
+                      value={step2PasteUrl}
+                      onChange={(e) => {
+                        setStep2PasteUrl(e.target.value);
+                        setStep2PastedValidated(null);
+                      }}
+                      placeholder={t('channels.step2.pasteUrlPlaceholder')}
+                      data-testid="input-channels-step2-paste-url"
+                      disabled={step2PasteValidating}
+                      className="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white min-h-[44px]"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleStep2ValidatePastedUrl}
+                      disabled={step2PasteValidating || !step2PasteUrl.trim()}
+                      data-testid="btn-channels-step2-validate-url"
+                      className="px-4 py-2 text-sm font-medium rounded-lg bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-900 disabled:opacity-50 min-h-[44px]"
+                    >
+                      {step2PasteValidating ? t('common.loading') : t('channels.step2.pasteUrlValidate')}
+                    </button>
+                  </div>
+                  {step2PastedValidated && (
+                    <div className="mt-3 flex flex-col sm:flex-row sm:items-center gap-2 rounded-lg border border-green-200 dark:border-green-800 bg-green-50/80 dark:bg-green-950/30 p-3">
+                      <p className="text-sm text-gray-800 dark:text-gray-100 flex-1 min-w-0">
+                        <span className="font-medium">{step2PastedValidated.name}</span>
+                        <span className="block text-xs text-gray-500 truncate" title={step2PastedValidated.url}>
+                          {step2PastedValidated.url}
+                        </span>
+                      </p>
+                      <button
+                        type="button"
+                        data-testid="btn-channels-step2-add-pasted-url"
+                        onClick={() => {
+                          addGuidedFeedToPoolAndSelected({
+                            name: step2PastedValidated.name,
+                            url: step2PastedValidated.url,
+                            role: 'custom',
+                          });
+                          setStep2PastedValidated(null);
+                          setStep2PasteUrl('');
+                          toast.success(t('channels.step2.pasteUrlAdded'));
+                        }}
+                        className="shrink-0 px-4 py-2 text-sm font-medium rounded-lg bg-green-600 text-white hover:bg-green-700 min-h-[44px]"
+                      >
+                        {t('channels.step2.pasteUrlAdd')}
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                <div className="mb-6 rounded-xl border border-gray-200 dark:border-gray-600 p-4 bg-white dark:bg-gray-800/40">
+                  <h4 className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-1">
+                    {t('channels.step2.whitelistSearchTitle')}
+                  </h4>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+                    {t('channels.step2.whitelistSearchHint')}
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <input
+                      type="search"
+                      value={step2WhitelistQuery}
+                      onChange={(e) => setStep2WhitelistQuery(e.target.value)}
+                      placeholder={t('channels.step2.whitelistSearchPlaceholder')}
+                      data-testid="input-channels-step2-whitelist-search"
+                      disabled={step2WhitelistSearching}
+                      className="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white min-h-[44px]"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleStep2WhitelistSearch}
+                      disabled={step2WhitelistSearching || !step2WhitelistQuery.trim()}
+                      data-testid="btn-channels-step2-whitelist-search"
+                      className="px-4 py-2 text-sm font-medium rounded-lg bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50 min-h-[44px]"
+                    >
+                      {step2WhitelistSearching ? t('common.loading') : t('channels.step2.whitelistSearchButton')}
+                    </button>
+                  </div>
+                </div>
+
+                {step2PoolLoading && (
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('common.loading')}</p>
+                )}
+                {step2PoolError && !step2PoolLoading && (
+                  <p className="text-sm text-red-600 dark:text-red-400">{t('channels.step2.poolLoadError')}</p>
+                )}
+                {!step2PoolLoading && !step2PoolError && step2PoolSources.length === 0 && (
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('channels.step2.poolEmpty')}</p>
+                )}
+
+                {!step2PoolLoading && step2PoolSources.length > 0 && (
+                  <div className="grid gap-6 md:grid-cols-2">
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                        {t('channels.step2.candidatePool')}
+                      </h4>
+                      <div className="space-y-2 max-h-[min(320px,50vh)] overflow-y-auto pr-1">
+                        {step2PoolSources
+                          .filter((s) => !selectedReferenceSourceUrls.has(s.url))
+                          .map((src, idx) => (
+                            <div
+                              key={src.url}
+                              className="flex gap-2 items-start rounded-lg border border-gray-200 dark:border-gray-600 p-3 bg-white dark:bg-gray-800/50"
+                            >
+                              <div className="min-w-0 flex-1">
+                                <p className="font-medium text-gray-900 dark:text-white text-sm">{src.name}</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 truncate" title={src.url}>
+                                  {src.url}
+                                </p>
+                                {src.role ? (
+                                  <p className="text-xs text-purple-600 dark:text-purple-400 mt-0.5">{src.role}</p>
+                                ) : null}
+                              </div>
+                              <button
+                                type="button"
+                                data-testid={`btn-channels-step2-pool-add-${idx}`}
+                                onClick={() => addFeedToSelected(src.url)}
+                                className="shrink-0 px-3 py-1.5 text-xs font-medium rounded-lg bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-800/50 min-h-[44px] md:min-h-0"
+                              >
+                                {t('channels.step2.addToSelected')}
+                              </button>
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                        {t('channels.step2.selectedFeedsTitle', {
+                          count: String(selectedReferenceSourceUrls.size),
+                          max: String(MAX_STEP2_SELECTED_FEEDS),
+                        })}
+                      </h4>
+                      <div className="space-y-2 max-h-[min(320px,50vh)] overflow-y-auto pr-1">
+                        {step2PoolSources
+                          .filter((s) => selectedReferenceSourceUrls.has(s.url))
+                          .map((src, idx) => (
+                            <div
+                              key={src.url}
+                              className="flex gap-2 items-start rounded-lg border-2 border-purple-300 dark:border-purple-700 p-3 bg-purple-50/80 dark:bg-purple-900/20"
+                            >
+                              <div className="min-w-0 flex-1">
+                                <p className="font-medium text-gray-900 dark:text-white text-sm">{src.name}</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 truncate" title={src.url}>
+                                  {src.url}
+                                </p>
+                                {src.role ? (
+                                  <p className="text-xs text-purple-600 dark:text-purple-400 mt-0.5">{src.role}</p>
+                                ) : null}
+                              </div>
+                              <button
+                                type="button"
+                                data-testid={`btn-channels-step2-selected-remove-${idx}`}
+                                onClick={() => removeFeedFromSelected(src.url)}
+                                className="shrink-0 px-3 py-1.5 text-xs font-medium rounded-lg bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-500 min-h-[44px] md:min-h-0"
+                              >
+                                {t('channels.step2.removeFromSelected')}
+                              </button>
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <div className="mt-8 flex justify-between">
                 <button
+                  type="button"
+                  data-testid="btn-channels-step2-prev"
                   onClick={() => setStep(1)}
                   className="px-6 py-3 text-gray-600 dark:text-gray-300 font-medium hover:text-gray-800 dark:hover:text-white"
                 >
                   {t('common.previous')}
                 </button>
                 <button
+                  type="button"
+                  data-testid="btn-channels-step2-next"
                   onClick={() => setStep(3)}
                   disabled={category === 'other' && customKeywords.length === 0}
                   className="px-6 py-3 bg-purple-500 text-white font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-purple-600 transition-colors"
@@ -881,6 +2031,70 @@ export default function CreateChannel() {
               <p className="text-gray-500 dark:text-gray-400 mb-6">
                 {t('channels.step3.description')}
               </p>
+
+              {assistAiNaming && (assistAiNaming.name || assistAiNaming.desc) && (
+                <div
+                  className="mb-6 rounded-xl border border-emerald-200 dark:border-emerald-800 p-4 bg-emerald-50/50 dark:bg-emerald-950/20"
+                  data-testid="panel-channels-step3-assist-naming"
+                >
+                  <h3 className="text-sm font-medium text-emerald-900 dark:text-emerald-100 mb-2">
+                    {t('channels.step3.assistNamingCard')}
+                  </h3>
+                  {assistAiNaming.name ? (
+                    <p className="text-sm text-gray-900 dark:text-white mb-1">{assistAiNaming.name}</p>
+                  ) : null}
+                  {assistAiNaming.desc ? (
+                    <p className="text-xs text-gray-600 dark:text-gray-300 mb-3 whitespace-pre-wrap">{assistAiNaming.desc}</p>
+                  ) : null}
+                  <button
+                    type="button"
+                    data-testid="btn-channels-step3-apply-assist-naming"
+                    onClick={() => {
+                      if (assistAiNaming.name) setName(assistAiNaming.name.slice(0, 50));
+                      if (assistAiNaming.desc) setDescription(assistAiNaming.desc.slice(0, 200));
+                      toast.success(t('channels.step3.applyAssistOk'));
+                    }}
+                    className="px-4 py-2 text-sm font-medium rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 min-h-[44px]"
+                  >
+                    {t('channels.step3.applyAssistNaming')}
+                  </button>
+                </div>
+              )}
+
+              {(step3Wizard?.suggested_channel_name || step3Wizard?.suggested_channel_description) && (
+                <div
+                  className="mb-6 rounded-xl border border-purple-200 dark:border-purple-800 p-4 bg-purple-50/50 dark:bg-purple-950/20"
+                  data-testid="panel-channels-step3-wizard-naming"
+                >
+                  <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-2">
+                    {t('channels.step3.wizardNamingCard')}
+                  </h3>
+                  {step3Wizard.suggested_channel_name ? (
+                    <p className="text-sm text-gray-900 dark:text-white mb-1">{step3Wizard.suggested_channel_name}</p>
+                  ) : null}
+                  {step3Wizard.suggested_channel_description ? (
+                    <p className="text-xs text-gray-600 dark:text-gray-300 mb-3 whitespace-pre-wrap">
+                      {step3Wizard.suggested_channel_description}
+                    </p>
+                  ) : null}
+                  <button
+                    type="button"
+                    data-testid="btn-channels-step3-apply-wizard-naming"
+                    onClick={() => {
+                      if (step3Wizard.suggested_channel_name) {
+                        setName(step3Wizard.suggested_channel_name.slice(0, 50));
+                      }
+                      if (step3Wizard.suggested_channel_description) {
+                        setDescription(step3Wizard.suggested_channel_description.slice(0, 200));
+                      }
+                      toast.success(t('channels.step3.applyWizardOk'));
+                    }}
+                    className="px-4 py-2 text-sm font-medium rounded-lg bg-purple-600 text-white hover:bg-purple-700 min-h-[44px]"
+                  >
+                    {t('channels.step3.applyWizardNaming')}
+                  </button>
+                </div>
+              )}
               
               <div className="space-y-6">
                 <div>
@@ -889,6 +2103,7 @@ export default function CreateChannel() {
                   </label>
                   <input
                     type="text"
+                    data-testid="input-channels-step3-name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder={t('channels.channelNamePlaceholder')}
@@ -905,6 +2120,7 @@ export default function CreateChannel() {
                     {t('channels.channelDescription')}
                   </label>
                   <textarea
+                    data-testid="input-channels-step3-description"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder={t('channels.channelDescriptionPlaceholder')}
@@ -919,7 +2135,10 @@ export default function CreateChannel() {
               </div>
               
               {/* 預覽 */}
-              <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
+              <div
+                className="mt-6 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl"
+                data-testid="panel-channels-step3-preview"
+              >
                 <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">
                   {t('channels.preview')}
                 </h3>
@@ -932,7 +2151,7 @@ export default function CreateChannel() {
                       {name || t('channels.unnamed')}
                     </p>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {category && categoryI18nKeys[category]} · {t(regionI18nKeys[region])}
+                      {category && t(categoryI18nKeys[category])} · {t(regionI18nKeys[region])}
                     </p>
                   </div>
                 </div>
@@ -940,12 +2159,16 @@ export default function CreateChannel() {
               
               <div className="mt-8 flex justify-between">
                 <button
+                  type="button"
+                  data-testid="btn-channels-step3-prev"
                   onClick={() => setStep(2)}
                   className="px-6 py-3 text-gray-600 dark:text-gray-300 font-medium hover:text-gray-800 dark:hover:text-white"
                 >
                   {t('common.previous')}
                 </button>
                 <button
+                  type="button"
+                  data-testid="btn-channels-step3-submit"
                   onClick={handleSubmit}
                   disabled={!name.trim() || isSubmitting}
                   className="px-8 py-3 bg-gradient-to-r from-purple-500 to-cyan-500 text-white font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:from-purple-600 hover:to-cyan-600 transition-all flex items-center gap-2"
@@ -965,9 +2188,107 @@ export default function CreateChannel() {
               </div>
             </div>
           )}
+          </div>
         </div>
+        </div>
+        </div>
+
+        {showAssist && (
+          <>
+            <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2 lg:hidden">
+              <div className="pointer-events-auto">
+                <button
+                  ref={mobileSummaryTriggerRef}
+                  type="button"
+                  data-testid="btn-channels-mobile-summary-drawer"
+                  onClick={() => setMobileSummaryOpen(true)}
+                  className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-900 shadow-lg dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                >
+                  {t('channels.phaseC.openSummaryDrawer')}
+                </button>
+              </div>
+            </div>
+
+            {mobileSummaryOpen ? (
+              <div className="fixed inset-0 z-50 flex flex-col justify-end lg:hidden" role="presentation">
+                <button
+                  type="button"
+                  tabIndex={-1}
+                  className="absolute inset-0 bg-black/50"
+                  aria-label={t('channels.phaseC.closeDrawer')}
+                  data-testid="btn-channels-mobile-drawer-backdrop"
+                  onClick={() => {
+                    setMobileSummaryOpen(false);
+                    window.setTimeout(() => mobileSummaryTriggerRef.current?.focus(), 0);
+                  }}
+                />
+                <div
+                  ref={mobileSummaryDrawerRef}
+                  className="relative z-10 max-h-[min(85vh,640px)] overflow-y-auto rounded-t-2xl border border-gray-200 bg-white p-4 pb-8 shadow-xl dark:border-gray-600 dark:bg-gray-900"
+                  role="dialog"
+                  aria-modal="true"
+                  aria-labelledby="mobile-channel-summary-drawer-title"
+                >
+                  <div className="mb-4 flex items-start justify-between gap-2">
+                    <h2
+                      id="mobile-channel-summary-drawer-title"
+                      className="text-base font-semibold text-gray-900 dark:text-white"
+                    >
+                      {t('channels.phaseC.drawerTitle')}
+                    </h2>
+                    <button
+                      type="button"
+                      autoFocus
+                      data-testid="btn-channels-mobile-drawer-close"
+                      onClick={() => {
+                        setMobileSummaryOpen(false);
+                        window.setTimeout(() => mobileSummaryTriggerRef.current?.focus(), 0);
+                      }}
+                      className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 dark:hover:bg-gray-800 dark:hover:text-gray-200"
+                      aria-label={t('channels.phaseC.closeDrawer')}
+                    >
+                      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                  <CreateChannelSummaryPanel
+                    t={t}
+                    name={name}
+                    description={description}
+                    category={category}
+                    region={region}
+                    step={step}
+                    selectedCount={selectedReferenceSourceUrls.size}
+                    maxFeeds={MAX_STEP2_SELECTED_FEEDS}
+                  />
+                  <CreateChannelStepNav step={step} t={t} />
+                  <p
+                    className="mx-auto mb-4 max-w-lg px-2 text-center text-xs text-gray-500 dark:text-gray-400"
+                    data-testid="text-channels-mobile-drawer-step-hint"
+                  >
+                    {t('channels.phaseC.stepHint')}
+                  </p>
+                  <button
+                    type="button"
+                    data-testid="btn-channels-mobile-drawer-go-form"
+                    onClick={() => {
+                      setMobileSummaryOpen(false);
+                      const el = document.getElementById('channel-create-form') as HTMLElement | null;
+                      el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      window.setTimeout(() => el?.focus({ preventScroll: true }), 150);
+                    }}
+                    className="w-full rounded-lg border border-purple-200 bg-purple-50 px-4 py-3 text-sm font-semibold text-purple-900 dark:border-purple-800 dark:bg-purple-950/40 dark:text-purple-100"
+                  >
+                    {t('channels.phaseC.goToForm')}
+                  </button>
+                </div>
+              </div>
+            ) : null}
+          </>
+        )}
       </div>
-    </div>
+    </main>
   );
 }
 

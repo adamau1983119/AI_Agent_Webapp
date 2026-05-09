@@ -316,6 +316,7 @@ function getOAuthErrorMessage(error: string | null, t: (key: string) => string):
     'no_code': t('error.oauth.noCode'),
     'token_exchange_failed': t('error.oauth.tokenFailed'),
     'user_info_failed': t('error.oauth.userInfoFailed'),
+    'database_unavailable': t('error.oauth.databaseUnavailable'),
     'max_users_reached': t('error.maxUsers'),
     'oauth_failed': t('error.oauth.failed'),
   };
