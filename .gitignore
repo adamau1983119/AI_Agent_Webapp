@@ -22,6 +22,11 @@ yarn-error.log*
 .env
 .env.local
 .env.*.local
+.env.backup
+
+# 本機 HTTPS 憑證（由腳本產生，切勿提交至版本庫）
+backend/certs/*.pem
+backend/certs/*.key
 
 # IDE
 .vscode/
@@ -44,6 +49,8 @@ logs/
 *.backup
 backup_version*/
 backup_*/
+# 本機／寫檔前快照（可含大檔，勿提交）
+docs/backups/
 
 # 測試結果
 *_result.json
