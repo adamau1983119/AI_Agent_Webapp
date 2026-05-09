@@ -16,6 +16,12 @@ from app.middleware.jwt_auth import get_current_user, jwt_auth
 from app.config_module import settings
 from app.utils.i18n import get_error_message, get_user_language
 from pydantic import BaseModel, Field
+from app.exceptions import (
+    ConnectionFailure,
+    ServerSelectionTimeoutError,
+    ConfigurationError,
+    OperationFailure,
+)
 import logging
 
 logger = logging.getLogger(__name__)
@@ -396,10 +402,21 @@ async def google_callback(
             
             google_user = user_response.json()
         
-        google_id = google_user.get("id")
-        email = google_user.get("email")
-        name = google_user.get("name", "")
+        # Google userinfo：v2 多為 id；OIDC 風格可能為 sub；email 在部分帳號可能缺漏
+        google_id = google_user.get("id") or google_user.get("sub")
+        raw_email = (google_user.get("email") or "").strip()
+        email = raw_email.lower() if raw_email else None
+        name = google_user.get("name", "") or ""
         avatar_url = google_user.get("picture")
+        
+        if not google_id or not email:
+            logger.error(
+                "Google OAuth: 缺少 google_id 或 email，userinfo keys=%s",
+                list(google_user.keys()),
+            )
+            return RedirectResponse(
+                url=f"{settings.FRONTEND_URL}/login?error=user_info_failed"
+            )
         
         # 3. 建立或更新用戶
         # 先檢查是否已有 Google ID 關聯的帳號
@@ -434,7 +451,7 @@ async def google_callback(
                 
                 new_user = {
                     "id": user_id,
-                    "email": email.lower(),
+                    "email": email,
                     "name": name,
                     "google_id": google_id,
                     "avatar_url": avatar_url,
@@ -451,12 +468,18 @@ async def google_callback(
                 await auth_service.user_repo.create(new_user)
                 user = new_user
                 
-                # 發送歡迎郵件
-                await email_service.send_welcome_email(
-                    to_email=email,
-                    user_name=name or email.split("@")[0],
-                    language=Language.ZH_TW
-                )
+                # 歡迎郵件失敗不應阻斷登入（SMTP 未設定或暫時錯誤）
+                try:
+                    await email_service.send_welcome_email(
+                        to_email=email,
+                        user_name=name or email.split("@")[0],
+                        language=Language.ZH_TW
+                    )
+                except Exception as mail_err:
+                    logger.warning(
+                        "Google OAuth 新用戶歡迎郵件略過（不影響登入）: %s",
+                        mail_err,
+                    )
         
         # 更新最後登入時間
         await auth_service.user_repo.update_last_login(user["id"])
@@ -477,6 +500,35 @@ async def google_callback(
             url=f"{settings.FRONTEND_URL}/oauth-callback?token={jwt_token}"
         )
         
+    except (ConnectionFailure, ServerSelectionTimeoutError, ConfigurationError) as db_err:
+        # Google 已成功；失敗原因為 MongoDB 無法連線（常見：MONGODB_URL 錯誤、Atlas 叢集已刪、本機未啟動）
+        logger.error("Google OAuth 中斷：資料庫無法連線（請檢查 MONGODB_URL）: %s", db_err)
+        return RedirectResponse(
+            url=f"{settings.FRONTEND_URL}/login?error=database_unavailable"
+        )
+    except OperationFailure as op_err:
+        # Atlas 密碼錯誤、REPLACE_ME 未換、使用者無權限等，過去會落入 oauth_failed，與 Google 無關易誤判
+        err_low = str(op_err).lower()
+        if any(
+            phrase in err_low
+            for phrase in (
+                "authentication failed",
+                "bad auth",
+                "unable to authenticate",
+                "not authorized on",
+            )
+        ):
+            logger.error(
+                "Google OAuth 中斷：MongoDB 認證／授權失敗（請檢查 MONGODB_URL 帳密、Atlas Network Access）: %s",
+                op_err,
+            )
+            return RedirectResponse(
+                url=f"{settings.FRONTEND_URL}/login?error=database_unavailable"
+            )
+        logger.error("Google OAuth callback MongoDB OperationFailure: %s", op_err)
+        return RedirectResponse(
+            url=f"{settings.FRONTEND_URL}/login?error=oauth_failed"
+        )
     except Exception as e:
         import traceback
         logger.error(f"Google OAuth callback error: {e}")

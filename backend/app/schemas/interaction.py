@@ -4,7 +4,7 @@ Interaction Schemas
 """
 from typing import List, Optional
 from datetime import datetime
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from app.models.interaction import InteractionAction
 from app.schemas.common import PaginationResponse
 
@@ -37,11 +37,7 @@ class InteractionResponse(BaseModel):
     comment: Optional[str] = Field(None, description="評論（可選）")
     created_at: datetime = Field(..., description="建立時間")
 
-    class Config:
-        from_attributes = True
-        json_encoders = {
-            datetime: lambda v: v.isoformat()
-        }
+    model_config = ConfigDict(from_attributes=True)
 
 
 class InteractionListResponse(BaseModel):

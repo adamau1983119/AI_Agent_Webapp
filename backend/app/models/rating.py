@@ -6,7 +6,7 @@ Phase 4: AI 個人化
 from typing import Optional, List
 from datetime import datetime
 from enum import Enum
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 
 class RatingValue(str, Enum):
@@ -69,9 +69,8 @@ class RatingResponse(BaseModel):
     content_length: Optional[int]
     topic_category: Optional[str]
     created_at: datetime
-    
-    class Config:
-        from_attributes = True
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class RatingStats(BaseModel):

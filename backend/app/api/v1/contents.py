@@ -1,7 +1,9 @@
 """
 Contents API 端點
 """
-from fastapi import APIRouter, HTTPException, Path
+from fastapi import APIRouter, HTTPException, Path, Request
+
+from app.config import settings
 from app.schemas.content import (
     ContentCreate,
     ContentUpdate,
@@ -74,7 +76,10 @@ def _convert_to_response(content_doc: dict) -> ContentResponse:
 
 
 @router.get("/{topic_id}", response_model=ContentResponse)
-async def get_content(topic_id: str = Path(..., description="主題 ID")):
+async def get_content(
+    http_request: Request,
+    topic_id: str = Path(..., description="主題 ID"),
+):
     """
     取得主題內容
     """
@@ -82,7 +87,7 @@ async def get_content(topic_id: str = Path(..., description="主題 ID")):
         content = await content_repo.get_content_by_topic_id(topic_id)
         if not content:
             from app.utils.i18n import get_error_message, get_user_language
-            language = get_user_language(user=current_user, request=request)
+            language = get_user_language(request=http_request)
             raise HTTPException(
                 status_code=404,
                 detail=get_error_message("content.not_found", language)
@@ -98,8 +103,9 @@ async def get_content(topic_id: str = Path(..., description="主題 ID")):
 
 @router.post("/{topic_id}/generate", response_model=ContentResponse)
 async def generate_content(
+    http_request: Request,
     topic_id: str = Path(..., description="主題 ID"),
-    request: GenerateContentRequest = ...
+    body: GenerateContentRequest = ...,
 ):
     """
     生成內容（同步生成）
@@ -111,14 +117,13 @@ async def generate_content(
         topic = await topic_repo.get_topic_by_id(topic_id)
         if not topic:
             from app.utils.i18n import get_error_message, get_user_language
-            language = get_user_language(user=current_user, request=request)
+            language = get_user_language(request=http_request)
             raise HTTPException(
                 status_code=404,
                 detail=get_error_message("content.topic_not_found", language)
             )
         
         # 調用 AI 服務生成內容（使用統一的 AIServiceFactory）
-        from app.config import settings
         from app.services.ai.ai_service_factory import AIServiceFactory
         from datetime import datetime
         
@@ -155,28 +160,28 @@ async def generate_content(
                         }
         
         # 生成內容（改進版：基於原文內容）
-        if request.type == "article":
+        if body.type == "article":
             # 構建改進的 prompt（使用主題的 display_language）
             from app.prompts.article_prompt import build_article_prompt
             prompt = build_article_prompt(
                 topic_title=topic["title"],
                 topic_category=topic["category"],
                 keywords=keywords,
-                target_length=request.article_length,
+                target_length=body.article_length,
                 original_content=original_content,
                 source_urls=source_urls,
                 original_language=original_language,
                 style_info=style_info,
-                target_language=request.language or topic.get("display_language", "zh-TW")
+                target_language=body.language or topic.get("display_language", "zh-TW")
             )
             article = await ai_service._call_api(prompt)
             script = None
-        elif request.type == "script":
+        elif body.type == "script":
             script = await ai_service.generate_script(
                 topic_title=topic["title"],
                 topic_category=topic["category"],
                 keywords=keywords,
-                duration=request.script_duration
+                duration=body.script_duration
             )
             article = None
         else:  # both
@@ -186,19 +191,19 @@ async def generate_content(
                 topic_title=topic["title"],
                 topic_category=topic["category"],
                 keywords=keywords,
-                target_length=request.article_length,
+                target_length=body.article_length,
                 original_content=original_content,
                 source_urls=source_urls,
                 original_language=original_language,
                 style_info=style_info,
-                target_language=request.language or topic.get("display_language", "zh-TW")
+                target_language=body.language or topic.get("display_language", "zh-TW")
             )
             article = await ai_service._call_api(article_prompt)
             script = await ai_service.generate_script(
                 topic_title=topic["title"],
                 topic_category=topic["category"],
                 keywords=keywords,
-                duration=request.script_duration
+                duration=body.script_duration
             )
         
         # 計算字數和時長
@@ -265,6 +270,7 @@ async def generate_content(
         # 如果是 API Key 未設定的錯誤，提供更詳細的錯誤訊息和建議
         if "API Key 未設定" in error_msg or "未設定" in error_msg:
             from fastapi.responses import JSONResponse
+
             return JSONResponse(
                 status_code=400,
                 content={
@@ -287,8 +293,9 @@ async def generate_content(
 
 @router.put("/{topic_id}", response_model=ContentResponse)
 async def update_content(
+    http_request: Request,
     topic_id: str = Path(..., description="主題 ID"),
-    update_data: ContentUpdate = ...
+    update_data: ContentUpdate = ...,
 ):
     """
     更新內容
@@ -318,7 +325,7 @@ async def update_content(
         
         if not updated:
             from app.utils.i18n import get_error_message, get_user_language
-            language = get_user_language(user=current_user, request=request)
+            language = get_user_language(request=http_request)
             raise HTTPException(
                 status_code=404,
                 detail=get_error_message("content.not_found", language)
@@ -352,8 +359,9 @@ async def get_content_versions(topic_id: str = Path(..., description="主題 ID"
 
 @router.post("/{topic_id}/regenerate", response_model=ContentResponse)
 async def regenerate_content(
+    http_request: Request,
     topic_id: str = Path(..., description="主題 ID"),
-    request: GenerateContentRequest = ...
+    body: GenerateContentRequest = ...,
 ):
     """
     重新生成內容（同步生成）
@@ -365,14 +373,14 @@ async def regenerate_content(
         topic = await topic_repo.get_topic_by_id(topic_id)
         if not topic:
             from app.utils.i18n import get_error_message, get_user_language
-            language = get_user_language(user=current_user, request=request)
+            language = get_user_language(request=http_request)
             raise HTTPException(
                 status_code=404,
                 detail=get_error_message("content.topic_not_found", language)
             )
         
         # 調用生成內容端點（邏輯相同）
-        return await generate_content(topic_id, request)
+        return await generate_content(http_request, topic_id, body)
             
     except HTTPException:
         raise

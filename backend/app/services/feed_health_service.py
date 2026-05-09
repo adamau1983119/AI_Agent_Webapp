@@ -303,7 +303,11 @@ class FeedHealthService:
         list_type = await self.get_source_list_type(feed_url)
         if list_type == SourceListType.BLACKLIST:
             return True
-        
+
+        # Repository 暫停旗標（連敗等機制標記為暫停時直接跳過抓取）
+        if await self.repository.is_paused(feed_url):
+            return True
+
         health_level = await self.get_health_level(feed_url)
         
         if health_level == HealthLevel.HEALTHY:

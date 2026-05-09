@@ -163,7 +163,8 @@ class BaseRepository:
             upsert=upsert
         )
         
-        if result.modified_count > 0 or result.upserted_id:
+        # matched_count：文件是否存在；modified_count 在值未變時可能為 0，仍應回傳最新文件
+        if result.matched_count > 0 or result.upserted_id:
             return await self.find_by_id(id)
         return None
     

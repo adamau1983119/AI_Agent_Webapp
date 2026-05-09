@@ -35,9 +35,3 @@ class Content(BaseModel):
     # 新增欄位：來源連結和圖片
     source_urls: Optional[List[str]] = Field(default_factory=list, description="來源文章 URL 列表")
     source_images: Optional[List[str]] = Field(default_factory=list, description="來源文章圖片 URL 列表（原文圖片）")
-
-    class Config:
-        """Pydantic 配置"""
-        json_encoders = {
-            datetime: lambda v: v.isoformat()
-        }

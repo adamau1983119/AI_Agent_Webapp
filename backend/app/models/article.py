@@ -4,7 +4,7 @@ Article 資料模型 (Phase 6)
 """
 from typing import List, Optional, Dict, Any
 from datetime import datetime
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from enum import Enum
 import uuid
 
@@ -35,16 +35,17 @@ class ImagePreview(BaseModel):
     caption: Optional[str] = Field(None, description="圖片說明")
     width: Optional[int] = Field(None, ge=1, description="寬度")
     height: Optional[int] = Field(None, ge=1, description="高度")
-    
-    class Config:
-        json_schema_extra = {
+
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "photo_id": "P1001",
                 "url": "https://vogue.com/img1.jpg",
                 "thumbnail_url": "https://vogue.com/img1_thumb.jpg",
-                "caption": "Valentino runway look"
+                "caption": "Valentino runway look",
             }
         }
+    )
 
 
 class ImageMatched(BaseModel):
@@ -61,18 +62,19 @@ class ImageMatched(BaseModel):
     is_original: bool = Field(default=False, description="是否為原文照片")
     width: Optional[int] = Field(None, ge=1, description="寬度")
     height: Optional[int] = Field(None, ge=1, description="高度")
-    
-    class Config:
-        json_schema_extra = {
+
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "photo_id": "P2005",
                 "url": "https://unsplash.com/img2.jpg",
                 "keywords": ["Valentino", "fashion"],
                 "score": 0.85,
                 "source": "Unsplash",
-                "is_original": False
+                "is_original": False,
             }
         }
+    )
 
 
 class ArticleImages(BaseModel):
@@ -88,18 +90,17 @@ class ArticleImages(BaseModel):
         default_factory=list, 
         description="匹配照片列表（MongoDB 聚合查詢）"
     )
-    
-    class Config:
-        json_schema_extra = {
+
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
-                "preview": [
-                    {"photo_id": "P1001", "url": "https://vogue.com/img1.jpg"}
-                ],
+                "preview": [{"photo_id": "P1001", "url": "https://vogue.com/img1.jpg"}],
                 "matched": [
                     {"photo_id": "P2005", "url": "https://unsplash.com/img2.jpg", "score": 0.85}
-                ]
+                ],
             }
         }
+    )
 
 
 class ArticleSourceInfo(BaseModel):
@@ -109,11 +110,6 @@ class ArticleSourceInfo(BaseModel):
     url: str = Field(..., description="來源 URL")
     role: Optional[str] = Field(None, description="來源角色（authority/streetwear 等）")
     fetched_at: Optional[datetime] = Field(None, description="取得時間")
-    
-    class Config:
-        json_encoders = {
-            datetime: lambda v: v.isoformat() if v else None
-        }
 
 
 class Article(BaseModel):
@@ -177,14 +173,10 @@ class Article(BaseModel):
     
     # 元數據
     metadata: Dict[str, Any] = Field(default_factory=dict, description="額外元數據")
-    
-    class Config:
-        """Pydantic 配置"""
-        json_encoders = {
-            datetime: lambda v: v.isoformat() if v else None
-        }
-        use_enum_values = True
-        json_schema_extra = {
+
+    model_config = ConfigDict(
+        use_enum_values=True,
+        json_schema_extra={
             "example": {
                 "article_id": "A20260123-001",
                 "title": "Valentino 在巴黎時裝週發表新系列",
@@ -196,15 +188,14 @@ class Article(BaseModel):
                 "source": "Vogue",
                 "hashtags": ["Valentino", "ParisFashionWeek", "Runway", "Spring2026"],
                 "images": {
-                    "preview": [
-                        {"photo_id": "P1001", "url": "https://vogue.com/img1.jpg"}
-                    ],
-                    "matched": []
+                    "preview": [{"photo_id": "P1001", "url": "https://vogue.com/img1.jpg"}],
+                    "matched": [],
                 },
-                "score": 0.85
+                "score": 0.85,
             }
-        }
-    
+        },
+    )
+
     def to_legacy_topic(self) -> dict:
         """
         轉換為舊的 Topic 格式（向後兼容）

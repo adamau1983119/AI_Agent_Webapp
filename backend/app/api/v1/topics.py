@@ -177,8 +177,8 @@ async def list_topics(
 
 @router.get("/{topic_id}", response_model=TopicDetailResponse)
 async def get_topic_detail(
+    request: Request,
     topic_id: str = Path(..., description="主題 ID"),
-    request: Request
 ):
     """
     取得主題詳情

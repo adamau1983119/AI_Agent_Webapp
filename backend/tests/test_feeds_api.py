@@ -115,8 +115,12 @@ class TestFeedsAPIResponses:
         
         with patch('app.api.v1.feeds.health_service.get_category_health', new_callable=AsyncMock) as mock:
             mock.return_value = mock_data
-            result = await get_category_feeds_health("fashion")
-        
+            result = await get_category_feeds_health(
+                "fashion",
+                MagicMock(),
+                {"id": "test-admin", "role": "admin"},
+            )
+
         assert result["success"] == True
         assert result["data"]["category"] == "fashion"
     
@@ -127,8 +131,12 @@ class TestFeedsAPIResponses:
         from fastapi import HTTPException
         
         with pytest.raises(HTTPException) as exc_info:
-            await get_category_feeds_health("invalid_category")
-        
+            await get_category_feeds_health(
+                "invalid_category",
+                MagicMock(),
+                {"id": "test-admin", "role": "admin"},
+            )
+
         assert exc_info.value.status_code == 400
     
     @pytest.mark.asyncio

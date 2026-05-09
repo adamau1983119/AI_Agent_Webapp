@@ -3,7 +3,7 @@ Image 資料模型
 """
 from typing import List, Optional
 from datetime import datetime
-from pydantic import BaseModel, Field, HttpUrl
+from pydantic import BaseModel, Field, HttpUrl, ConfigDict
 from enum import Enum
 
 
@@ -39,9 +39,4 @@ class Image(BaseModel):
     height: Optional[int] = Field(None, ge=1, description="高度")
     fetched_at: datetime = Field(default_factory=datetime.utcnow, description="取得時間")
 
-    class Config:
-        """Pydantic 配置"""
-        json_encoders = {
-            datetime: lambda v: v.isoformat()
-        }
-        use_enum_values = True
+    model_config = ConfigDict(use_enum_values=True)

@@ -4,7 +4,7 @@ Content Schemas
 """
 from typing import Optional, Literal
 from datetime import datetime
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 
 class ContentBase(BaseModel):
@@ -47,11 +47,6 @@ class ContentVersionResponse(BaseModel):
     score: Optional[int] = Field(None, description="品質評分")
     changes: Optional[list[str]] = Field(None, description="變更說明")
 
-    class Config:
-        json_encoders = {
-            datetime: lambda v: v.isoformat()
-        }
-
 
 class ContentResponse(BaseModel):
     """Content 回應模型"""
@@ -70,11 +65,7 @@ class ContentResponse(BaseModel):
     source_urls: Optional[list[str]] = Field(default_factory=list, description="來源文章 URL 列表")
     source_images: Optional[list[str]] = Field(default_factory=list, description="來源文章圖片 URL 列表")
 
-    class Config:
-        from_attributes = True
-        json_encoders = {
-            datetime: lambda v: v.isoformat()
-        }
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ContentVersionsResponse(BaseModel):

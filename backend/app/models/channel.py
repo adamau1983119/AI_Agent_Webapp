@@ -8,7 +8,7 @@ Phase 3: 內容功能
 from typing import Optional, List
 from datetime import datetime
 from enum import Enum
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator, ConfigDict
 
 
 class ChannelCategory(str, Enum):
@@ -54,6 +54,20 @@ class ChannelCollectionStatus(str, Enum):
 # Channel 相關 Schema
 # ============================================
 
+class ChannelFeedEntry(BaseModel):
+    """使用者選取之 RSS／內容來源（建立頻道 Step 2）"""
+    name: str = Field(..., min_length=1, max_length=120)
+    url: str = Field(..., min_length=8, max_length=2048)
+    role: str = Field(default="", max_length=80)
+
+    @field_validator("url")
+    @classmethod
+    def url_must_be_http(cls, v: str) -> str:
+        if not (v.startswith("http://") or v.startswith("https://")):
+            raise ValueError("URL 必須為 http(s) 開頭")
+        return v
+
+
 class ChannelBase(BaseModel):
     """頻道基礎資料"""
     name: str = Field(..., min_length=1, max_length=50, description="頻道名稱")
@@ -65,7 +79,11 @@ class ChannelBase(BaseModel):
 
 class ChannelCreate(ChannelBase):
     """建立頻道請求"""
-    pass
+    selected_feeds: List[ChannelFeedEntry] = Field(
+        default_factory=list,
+        max_length=10,
+        description="優先用於收集的來源（最多 10 筆）；留空則走系統預設 RSS 池",
+    )
 
 
 class ChannelUpdate(BaseModel):
@@ -84,11 +102,16 @@ class ChannelResponse(ChannelBase):
     topic_count: int = 0
     last_collected_at: Optional[datetime] = None
     collection_status: ChannelCollectionStatus = ChannelCollectionStatus.IDLE
+    selected_feeds: List[ChannelFeedEntry] = Field(default_factory=list)
     created_at: datetime
     updated_at: datetime
-    
-    class Config:
-        from_attributes = True
+
+    @field_validator("selected_feeds", mode="before")
+    @classmethod
+    def selected_feeds_none_to_empty(cls, v):
+        return [] if v is None else v
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ChannelListResponse(BaseModel):

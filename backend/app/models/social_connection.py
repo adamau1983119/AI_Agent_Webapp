@@ -6,7 +6,7 @@ Phase 5: 分發與整合
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 from enum import Enum
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 
 class SocialPlatform(str, Enum):
@@ -67,9 +67,8 @@ class SocialConnectionResponse(SocialConnectionBase):
     updated_at: datetime
     
     # 不包含敏感的 token 資訊
-    
-    class Config:
-        from_attributes = True
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class SocialConnectionListResponse(BaseModel):

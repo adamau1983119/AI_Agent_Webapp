@@ -4,7 +4,7 @@ Phase 2: 會員系統
 """
 from typing import Optional, List, Dict, Any
 from datetime import datetime
-from pydantic import BaseModel, Field, EmailStr, validator
+from pydantic import BaseModel, Field, EmailStr, field_validator, ConfigDict
 from enum import Enum
 
 
@@ -61,8 +61,9 @@ class UserCreate(UserBase):
     """建立 User 的請求模型"""
     password: str = Field(..., min_length=8, description="密碼（至少 8 位）")
     
-    @validator('password')
-    def validate_password(cls, v):
+    @field_validator('password')
+    @classmethod
+    def validate_password(cls, v: str) -> str:
         """驗證密碼：至少 8 位 + 1 個大寫字母 + 1 個數字"""
         if len(v) < 8:
             raise ValueError('密碼至少需要 8 個字元')
@@ -106,17 +107,15 @@ class UserResponse(UserBase):
     
     # 警告訊息（用於註冊時郵件發送失敗等情況）
     warning: Optional[str] = Field(None, description="警告訊息（例如：郵件發送失敗）")
-    
-    class Config:
-        from_attributes = True
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class UserInDB(UserResponse):
     """資料庫中的 User 模型（含密碼雜湊）"""
     password_hash: str = Field(..., description="密碼雜湊")
-    
-    class Config:
-        from_attributes = True
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class TokenResponse(BaseModel):
@@ -148,8 +147,9 @@ class PasswordResetConfirm(BaseModel):
     token: str = Field(..., description="重設密碼 Token")
     new_password: str = Field(..., min_length=8, description="新密碼")
     
-    @validator('new_password')
-    def validate_password(cls, v):
+    @field_validator('new_password')
+    @classmethod
+    def validate_password(cls, v: str) -> str:
         """驗證密碼：至少 8 位 + 1 個大寫字母 + 1 個數字"""
         if len(v) < 8:
             raise ValueError('密碼至少需要 8 個字元')
