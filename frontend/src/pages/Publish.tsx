@@ -13,10 +13,10 @@ import {
   PublishResponse,
   
   platformLabels,
-  platformIcons,
   publishStatusI18nKeys,
   publishStatusColors,
 } from '../api/social';
+import PlatformIcon from '@/components/ui/PlatformIcon'
 import toast from 'react-hot-toast';
 
 export default function Publish() {
@@ -316,7 +316,7 @@ export default function Publish() {
                             : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
                         }`}
                       >
-                        <span className="text-2xl">{platformIcons[platform]}</span>
+                        <PlatformIcon platform={platform} size="md" label={platformLabels[platform]} />
                         <div className="flex-1 text-left">
                           <p className={`font-medium ${
                             selected ? 'text-purple-600 dark:text-purple-400' : 'text-gray-700 dark:text-gray-200'
@@ -379,7 +379,11 @@ export default function Publish() {
                         }`}
                       >
                         <div className="flex items-center gap-2">
-                          <span>{platformIcons[result.platform as SocialPlatform]}</span>
+                          <PlatformIcon
+                            platform={result.platform as SocialPlatform}
+                            size="sm"
+                            label={platformLabels[result.platform as SocialPlatform]}
+                          />
                           <span className="font-medium text-gray-900 dark:text-white">
                             {platformLabels[result.platform as SocialPlatform]}
                           </span>

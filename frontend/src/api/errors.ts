@@ -49,6 +49,19 @@ export function handleAPIError(error: unknown): APIError {
  */
 function normalizeDetailMessage(detail: unknown): string | undefined {
   if (typeof detail === 'string') return detail
+  if (Array.isArray(detail)) {
+    const parts = detail
+      .map((item) => {
+        if (typeof item === 'string') return item
+        if (item && typeof item === 'object' && 'msg' in item) {
+          const msg = (item as { msg?: unknown }).msg
+          return typeof msg === 'string' ? msg : undefined
+        }
+        return undefined
+      })
+      .filter(Boolean)
+    return parts.length > 0 ? parts.join('；') : undefined
+  }
   if (detail && typeof detail === 'object' && 'message' in (detail as object)) {
     const m = (detail as { message?: unknown }).message
     return typeof m === 'string' ? m : undefined

@@ -10,8 +10,12 @@ from app.services.repositories.social_connection_repository import SocialConnect
 from app.services.repositories.publish_queue_repository import PublishQueueRepository
 from app.models.social_connection import (
     SocialPlatform, ConnectionStatus, PublishStatus, PublishRequest,
-    PLATFORM_CONFIGS, META_OAUTH_SCOPES, TIKTOK_OAUTH_SCOPES,
-    optimize_content_for_platform
+    PLATFORM_CONFIGS,
+    META_FACEBOOK_PAGE_SCOPES,
+    META_INSTAGRAM_OAUTH_SCOPES,
+    META_FACEBOOK_OAUTH_SCOPES_PUBLISH,
+    TIKTOK_OAUTH_SCOPES,
+    optimize_content_for_platform,
 )
 from app.config_module import settings
 from app.utils.i18n import get_error_message
@@ -64,11 +68,21 @@ class DistributionService:
     # Meta OAuth (Instagram + Facebook + Threads)
     # ============================================
     
-    def get_meta_oauth_url(self, state: str) -> str:
-        """取得 Meta OAuth 授權 URL"""
+    def _meta_oauth_scopes_for(self, target: str) -> List[str]:
+        """依連線目標選 scope（facebook 與 instagram 分開，不可混用無效 scope）"""
+        if target == "instagram":
+            scopes = list(META_INSTAGRAM_OAUTH_SCOPES)
+        else:
+            scopes = list(META_FACEBOOK_PAGE_SCOPES)
+        if getattr(settings, "META_OAUTH_INCLUDE_PUBLISH", False):
+            scopes.extend(META_FACEBOOK_OAUTH_SCOPES_PUBLISH)
+        return scopes
+
+    def get_meta_oauth_url(self, state: str, target: str = "facebook") -> str:
+        """取得 Meta OAuth 授權 URL；target: facebook | instagram"""
         client_id = settings.META_APP_ID
         redirect_uri = f"{settings.BACKEND_URL}/api/v1/social/meta/callback"
-        scopes = ",".join(META_OAUTH_SCOPES)
+        scopes = ",".join(self._meta_oauth_scopes_for(target))
         
         return (
             f"https://www.facebook.com/v18.0/dialog/oauth"
@@ -83,9 +97,10 @@ class DistributionService:
         self,
         user_id: str,
         code: str,
+        target: str = "facebook",
         language: str = "zh-TW"
     ) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
-        """處理 Meta OAuth 回調"""
+        """處理 Meta OAuth 回調；target: facebook | instagram"""
         try:
             # 交換 access token
             token_url = "https://graph.facebook.com/v18.0/oauth/access_token"
@@ -112,54 +127,46 @@ class DistributionService:
                 if not user_info:
                     return None, get_error_message("distribution.get_user_info_failed", language)
                 
-                # 取得 Instagram 帳號
-                ig_account = await self._get_instagram_account(access_token)
-                
-                # 儲存連接
+                scopes_used = self._meta_oauth_scopes_for(target)
                 connections = []
-                
-                # Facebook 連接
-                fb_connection = await self.connection_repo.create_connection(user_id, {
-                    "platform": SocialPlatform.FACEBOOK.value,
-                    "platform_user_id": user_info.get("id"),
-                    "platform_username": user_info.get("name", ""),
-                    "platform_name": user_info.get("name"),
-                    "profile_image_url": user_info.get("picture", {}).get("data", {}).get("url"),
-                    "access_token": access_token,
-                    "token_expires_at": datetime.utcnow() + timedelta(seconds=expires_in),
-                    "scopes": META_OAUTH_SCOPES,
-                })
-                connections.append(fb_connection)
-                
-                # Instagram 連接（如果有）
-                if ig_account:
-                    ig_connection = await self.connection_repo.create_connection(user_id, {
-                        "platform": SocialPlatform.INSTAGRAM.value,
-                        "platform_user_id": ig_account.get("id"),
-                        "platform_username": ig_account.get("username", ""),
-                        "platform_name": ig_account.get("name"),
-                        "profile_image_url": ig_account.get("profile_picture_url"),
+                connect_facebook = target == "facebook"
+                connect_instagram = target == "instagram"
+
+                if connect_facebook:
+                    fb_connection = await self.connection_repo.create_connection(user_id, {
+                        "platform": SocialPlatform.FACEBOOK.value,
+                        "platform_user_id": user_info.get("id"),
+                        "platform_username": user_info.get("name", ""),
+                        "platform_name": user_info.get("name"),
+                        "profile_image_url": user_info.get("picture", {}).get("data", {}).get("url"),
                         "access_token": access_token,
                         "token_expires_at": datetime.utcnow() + timedelta(seconds=expires_in),
-                        "scopes": META_OAUTH_SCOPES,
+                        "scopes": scopes_used,
                     })
-                    connections.append(ig_connection)
-                
-                # Threads 連接（使用相同的 Instagram 帳號）
-                if ig_account:
-                    threads_connection = await self.connection_repo.create_connection(user_id, {
-                        "platform": SocialPlatform.THREADS.value,
-                        "platform_user_id": ig_account.get("id"),
-                        "platform_username": ig_account.get("username", ""),
-                        "platform_name": ig_account.get("name"),
-                        "profile_image_url": ig_account.get("profile_picture_url"),
-                        "access_token": access_token,
-                        "token_expires_at": datetime.utcnow() + timedelta(seconds=expires_in),
-                        "scopes": META_OAUTH_SCOPES,
-                    })
-                    connections.append(threads_connection)
-                
-                logger.info(f"用戶 {user_id} 連接 Meta 平台: {len(connections)} 個帳號")
+                    connections.append(fb_connection)
+
+                if connect_instagram:
+                    ig_account = await self._get_instagram_account(access_token)
+                    if not ig_account:
+                        if not connections:
+                            return None, get_error_message("distribution.instagram_not_linked", language)
+                    else:
+                        ig_connection = await self.connection_repo.create_connection(user_id, {
+                            "platform": SocialPlatform.INSTAGRAM.value,
+                            "platform_user_id": ig_account.get("id"),
+                            "platform_username": ig_account.get("username", ""),
+                            "platform_name": ig_account.get("name"),
+                            "profile_image_url": ig_account.get("profile_picture_url"),
+                            "access_token": access_token,
+                            "token_expires_at": datetime.utcnow() + timedelta(seconds=expires_in),
+                            "scopes": scopes_used,
+                        })
+                        connections.append(ig_connection)
+
+                if not connections:
+                    return None, get_error_message("distribution.connect_failed", language)
+
+                logger.info(f"用戶 {user_id} 連接 Meta ({target}): {len(connections)} 個帳號")
                 
                 return {"connections": connections}, None
                 

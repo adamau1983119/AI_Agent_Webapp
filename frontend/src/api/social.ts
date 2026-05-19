@@ -110,8 +110,10 @@ export const socialApi = {
   /**
    * 取得 Meta OAuth URL
    */
-  getMetaOAuthUrl: async (): Promise<{ oauth_url: string; state: string; platforms: string[] }> => {
-    return fetchAPI('/social/meta/connect');
+  getMetaOAuthUrl: async (
+    target: 'facebook' | 'instagram' = 'facebook'
+  ): Promise<{ oauth_url: string; state: string; target: string; platforms: string[] }> => {
+    return fetchAPI(`/social/meta/connect?target=${target}`);
   },
 
   /**
@@ -174,7 +176,7 @@ export const platformLabels: Record<SocialPlatform, string> = {
   twitter: 'Twitter/X',
 };
 
-// 平台圖標
+/** @deprecated 請改用 `@/components/ui/PlatformIcon` */
 export const platformIcons: Record<SocialPlatform, string> = {
   instagram: '📸',
   facebook: '👤',

@@ -78,6 +78,27 @@ export interface InteractionStatsResponse {
 /**
  * Interactions API
  */
+/** 送出前清理欄位，避免 reasons 非陣列等導致 422 */
+function buildInteractionPayload(data: CreateInteractionRequest): CreateInteractionRequest {
+  const payload: CreateInteractionRequest = {
+    user_id: data.user_id,
+    topic_id: data.topic_id,
+    action: data.action,
+  }
+  if (data.article_id) payload.article_id = data.article_id
+  if (data.script_id) payload.script_id = data.script_id
+  if (data.photo_id) payload.photo_id = data.photo_id
+  if (typeof data.duration === 'number' && data.duration >= 0) {
+    payload.duration = data.duration
+  }
+  if (Array.isArray(data.reasons) && data.reasons.length > 0) {
+    payload.reasons = data.reasons
+  }
+  const trimmedComment = data.comment?.trim()
+  if (trimmedComment) payload.comment = trimmedComment
+  return payload
+}
+
 export const interactionsAPI = {
   /**
    * 記錄互動
@@ -85,7 +106,7 @@ export const interactionsAPI = {
   createInteraction: async (data: CreateInteractionRequest): Promise<InteractionResponse> => {
     return await fetchAPI<InteractionResponse>('/interactions', {
       method: 'POST',
-      body: JSON.stringify(data),
+      body: JSON.stringify(buildInteractionPayload(data)),
     })
   },
 

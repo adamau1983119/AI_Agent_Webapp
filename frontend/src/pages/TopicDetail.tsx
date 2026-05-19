@@ -21,7 +21,7 @@ export default function TopicDetail() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { t, language } = useTranslation()  // 獲取用戶語言偏好
-  const { isAuthenticated } = useAuthStore()
+  const { isAuthenticated, user } = useAuthStore()
   const [showEditor, setShowEditor] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [showImageSearch, setShowImageSearch] = useState(false)
@@ -74,7 +74,7 @@ export default function TopicDetail() {
           if (duration > 5) {
             // 只記錄超過 5 秒的瀏覽
             interactionsAPI.createInteraction({
-              user_id: 'user_default',
+              user_id: user?.id ?? 'user_default',
               topic_id: id!,
               article_id: content?.id,
               action: 'view',
@@ -84,7 +84,7 @@ export default function TopicDetail() {
         }
       }
     }
-  }, [topic, content, id, viewStartTime])
+  }, [topic, content, id, viewStartTime, user?.id])
 
   // 生成內容的 mutation（支援自訂設定）
   const generateContentMutation = useMutation({
@@ -556,6 +556,7 @@ export default function TopicDetail() {
                 topicId={id!}
                 articleId={content?.id}
                 scriptId={content?.id}
+                userId={user?.id}
                 onEdit={() => setShowEditor(true)}
                 onReplace={() => setShowImageSearch(true)}
               />

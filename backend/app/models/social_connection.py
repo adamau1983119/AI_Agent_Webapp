@@ -205,17 +205,38 @@ PLATFORM_CONFIGS: Dict[SocialPlatform, Dict[str, Any]] = {
 # OAuth 配置
 # ============================================
 
-META_OAUTH_SCOPES = [
-    "instagram_basic",
-    "instagram_content_publish",
-    "instagram_manage_comments",
+# Facebook 粉專連線（不含 instagram_*，避免 Invalid Scopes）
+META_FACEBOOK_PAGE_SCOPES = [
     "pages_show_list",
     "pages_read_engagement",
+]
+
+# Instagram 連線（2025+ 使用 business 權限名稱；須在 Meta 後台啟用 Instagram 產品）
+META_INSTAGRAM_OAUTH_SCOPES = [
+    "pages_show_list",
+    "pages_read_engagement",
+    "instagram_business_basic",
+]
+
+# 向後相容
+META_FACEBOOK_OAUTH_SCOPES = list(META_FACEBOOK_PAGE_SCOPES)
+
+# 發布／管理（需 Meta App Review；開發模式請先在後台加測試用戶）
+META_FACEBOOK_OAUTH_SCOPES_PUBLISH = [
+    "instagram_business_content_publish",
+    "instagram_business_manage_comments",
     "pages_manage_posts",
+]
+
+# Threads 須用 https://threads.net/oauth/authorize（非 facebook.com dialog）
+THREADS_OAUTH_SCOPES = [
     "threads_basic",
     "threads_content_publish",
     "threads_manage_replies",
 ]
+
+# 預設 OAuth scope（Facebook 連線）
+META_OAUTH_SCOPES = list(META_FACEBOOK_PAGE_SCOPES)
 
 TIKTOK_OAUTH_SCOPES = [
     "user.info.basic",

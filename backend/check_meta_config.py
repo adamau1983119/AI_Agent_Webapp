@@ -42,9 +42,18 @@ print()
 print("2. OAuth URL 生成測試：")
 distribution_service = DistributionService()
 test_state = "test_user_id:test_token"
-oauth_url = distribution_service.get_meta_oauth_url(test_state)
+fb_url = distribution_service.get_meta_oauth_url(f"{test_state}:facebook", "facebook")
+ig_url = distribution_service.get_meta_oauth_url(f"{test_state}:instagram", "instagram")
+fb_scopes = distribution_service._meta_oauth_scopes_for("facebook")
+ig_scopes = distribution_service._meta_oauth_scopes_for("instagram")
+print(f"   Facebook OAuth scope（不含 instagram_*）:")
+print(f"   {','.join(fb_scopes)}")
+print(f"   Instagram OAuth scope:")
+print(f"   {','.join(ig_scopes)}")
+oauth_url = fb_url
 print(f"   生成的 OAuth URL:")
 print(f"   {oauth_url}")
+print(f"   注意：Threads 須用 threads.net/oauth，不可與上列 scope 混用")
 print()
 
 # 4. 檢查 URL 中的 client_id

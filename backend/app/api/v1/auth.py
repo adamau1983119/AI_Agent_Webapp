@@ -315,7 +315,7 @@ async def google_login(request: Request):
     """
     Google OAuth 登入（重定向到 Google 授權頁面）
     """
-    if not settings.GOOGLE_OAUTH_CLIENT_ID:
+    if not settings.GOOGLE_OAUTH_CLIENT_ID or not settings.GOOGLE_OAUTH_CLIENT_SECRET:
         language = get_user_language(request=request)
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
@@ -379,7 +379,12 @@ async def google_callback(
             )
             
             if token_response.status_code != 200:
-                logger.error(f"Google token exchange failed: {token_response.text}")
+                if not settings.GOOGLE_OAUTH_CLIENT_SECRET:
+                    logger.error(
+                        "Google token exchange failed: GOOGLE_OAUTH_CLIENT_SECRET is empty"
+                    )
+                else:
+                    logger.error(f"Google token exchange failed: {token_response.text}")
                 return RedirectResponse(
                     url=f"{settings.FRONTEND_URL}/login?error=token_exchange_failed"
                 )
@@ -495,9 +500,11 @@ async def google_callback(
         # 4. 建立 JWT Token
         jwt_token = await auth_service.create_access_token_for_user(user)
         
-        # 5. 重定向到前端並帶上 Token
+        # 5. 重定向到前端並帶上 Token（須 URL 編碼，避免 JWT 在 query 中損壞）
+        from urllib.parse import urlencode
+        callback_qs = urlencode({"token": jwt_token})
         return RedirectResponse(
-            url=f"{settings.FRONTEND_URL}/oauth-callback?token={jwt_token}"
+            url=f"{settings.FRONTEND_URL}/oauth-callback?{callback_qs}"
         )
         
     except (ConnectionFailure, ServerSelectionTimeoutError, ConfigurationError) as db_err:
