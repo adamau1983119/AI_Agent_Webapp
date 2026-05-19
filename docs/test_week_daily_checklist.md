@@ -4,7 +4,16 @@
 > **環境**：前端 **`http://localhost:3000`**、後端 **`http://localhost:8000`** — 見 [test_week_gap_closure_plan.md](./test_week_gap_closure_plan.md) 第二節。  
 > **規則**：每項勾選須有證據（URL、Network status、一句話）；禁止虛報。  
 > **關聯**：[AGENTS.md](../AGENTS.md) 日曆、[architecture_test_matrix.md](./architecture_test_matrix.md)、[channel_create_new_scheme_checklist.md](./channel_create_new_scheme_checklist.md) **I 節**、[test_week_gap_closure_plan.md](./test_week_gap_closure_plan.md)。  
-> **最後修訂**：2026-05-09 — 新增 **測試週前已完成**；**架構矩陣 § 易漏對照**；**公開頁／Dashboard** 補強（第二輪複核）。
+> **最後修訂**：2026-05-20 — **T-10 Meta（Facebook）瀏覽器 PASS**（實曆 **2026-05-20** 補跑；原排程 **2026-05-12**）；詳情 **2.6** 仍 **待補**。程式已入 **`main`**（**PR #14** → **`51ba68c`**）。
+
+---
+
+## 實曆執行記錄（排程漂移）
+
+| 原排程（AGENTS） | 實曆執行 | 項目 | 結果 | 證據摘要 |
+|------------------|----------|------|:----:|----------|
+| 第 10 天 Meta | **2026-05-20（三）** | Facebook OAuth（`target=facebook`） | **PASS** | `connect?target=facebook`；scope 僅 `pages_show_list,pages_read_engagement`；授權「已連結」；`/social-connect?success=true`；**@Adam Au 已連接** |
+| 第 10 天 詳情 2.6 | — | 主題詳情 API 盤點 | **待** | 見下方 **2026-05-12** 段未勾項 |
 
 ---
 
@@ -29,32 +38,35 @@
 
 ## 2026-05-12（二）｜第 10 工作天｜Meta 回歸 + 詳情 2.6
 
+> **實曆補記（2026-05-20）**：**Meta（Facebook）** 已於 **2026-05-20** **PASS**（見上方 **實曆執行記錄**）。**詳情 2.6**、**§A**、**§C** 仍待下一可排日。
+
 ### AGENTS 主線（45′ 段內）
 
-- [ ] **0～15′** ` /social-connect `：觸發 Meta 連線；記錄 **oauth_url**、是否進入授權頁、callback **成功／error／BLOCK**  
-- [ ] **15～40′** **詳情 2.6**：固定 `topic_id` → ` /topics/:id `；依第 1 工作天腳本做 1～2 個後端操作；**Network** 記 URL、status、response 摘要  
-- [ ] **40～45′** 寫一句：**Meta 結果** + **2.6 PASS/FAIL** + 是否阻塞  
+- [x] **0～15′** `/social-connect`：**Facebook 卡** → `GET /api/v1/social/meta/connect?target=facebook` → 授權頁 → callback **`?success=true`** — *2026-05-20 **PASS**；先前 Invalid Scopes（`instagram_basic`）已修；**PR #14** 入 `main`*  
+- [ ] **15～40′** **詳情 2.6**：固定 `topic_id` → `/topics/:id`；依第 1 工作天腳本做 1～2 個後端操作；**Network** 記 URL、status、response 摘要  
+- [x] **40～45′** 寫一句：**Meta PASS**（FB @Adam Au）；**2.6 待補** — *已寫入 `工作記錄.md` 2026-05-20*  
 
 ### 完成判定（當日必達）
 
-- [ ] **Meta** 與 **2.6** 皆有 **PASS／FAIL／BLOCK** 之一（可稽核）  
+- [ ] **Meta** 與 **2.6** 皆有 **PASS／FAIL／BLOCK** 之一（可稽核） — *Meta ✅（2026-05-20）；**2.6 未測** → 整日判定仍 ☐*  
 
 ### 架構矩陣（建議同日開跑）
 
 - [ ] [architecture_test_matrix.md](./architecture_test_matrix.md) **§A**：A1 `/` 導向、A2 Sidebar 路徑抽樣、A3 語言切換、A4 `data-testid` 抽樣  
-- [ ] **§H**：H1 `getMetaOAuthUrl`、H2 授權頁（環境允許）、H3／H4 可選  
-- [ ] **§C**：C1 ` /topics ` 列表、**C2～C3** 與 2.6 重疊則合併記錄  
+- [x] **§H**：H1 `getMetaOAuthUrl(target=facebook)`、H2 授權頁 — *2026-05-20 **PASS**；見 [architecture_test_matrix.md](./architecture_test_matrix.md) **H1～H2***  
+- [ ] **§H** H3 `/publish`、H4 可選  
+- [ ] **§C**：C1 `/topics` 列表、**C2～C3** 與 2.6 重疊則合併記錄  
 
 ### 缺口收口（test_week_gap_closure_plan）
 
-- [ ] **#3** Meta 瀏覽器／callback 證據  
+- [x] **#3** Meta 瀏覽器／callback 證據 — *2026-05-20 **PASS**；gap 表已勾*  
 - [ ] **#8** 更新「詳情／主線」通過率或進度一句  
 - [ ] **#4** Redis 限流 smoke **或** 註記「本輪僅記憶體回退」  
 - [ ] **#12** SoT：開頭粗讀三規格與架構表 **⑤**，記 1 條待對照項（可選）  
 
 ### 當日收尾
 
-- [ ] `工作記錄.md`：日期、證據、明日第一步（一句）  
+- [x] `工作記錄.md`：日期、證據、明日第一步（一句） — *2026-05-20 Meta 里程碑 + **PR #14** 合併*  
 
 ---
 

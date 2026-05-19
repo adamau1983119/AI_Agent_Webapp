@@ -286,13 +286,15 @@
 
 > **同日**：執行 [test_week_gap_closure_plan.md](./docs/test_week_gap_closure_plan.md) **#3、#8（詳情）、#4（可選）、#12（起頭）**；並開始 [architecture_test_matrix.md](./docs/architecture_test_matrix.md) **§A／§H／§C**。
 
-- [ ] 0–15′：Meta 連線再跑一次（對照**第 6 天**）
+> **實曆補記（2026-05-20）**：**Meta（Facebook）瀏覽器連線 PASS**—`?target=facebook`；移除無效 `instagram_basic`；**PR #14** 已合併 **`main`**（`51ba68c`）。**#3**、矩陣 **H1～H2**、每日 checklist Meta 項已勾—見 **`docs/test_week_daily_checklist.md`**。**詳情 2.6** 仍 **待補**。
+
+- [x] 0–15′：Meta 連線再跑一次（對照**第 6 天**）— *2026-05-20 **PASS**（Facebook 卡；@Adam Au 已連接）*
 - [ ] 15–40′：詳情頁 2.6 依第 1 天腳本重跑；PASS/FAIL
-- [ ] 40–45′：更新通過率／阻塞一句話
+- [x] 40–45′：更新通過率／阻塞一句話 — *Meta **PASS**；2.6 待；見 `工作記錄.md`*
 
 **完成判定**
 
-- [ ] Meta + 2.6 當日皆有結果
+- [ ] Meta + 2.6 當日皆有結果 — *Meta ✅（2026-05-20）；**2.6 未測***
 
 ---
 
