@@ -535,6 +535,16 @@ class I18nErrorMessages:
             "en": "No valid platform connection",
             "ja": "有効なプラットフォーム接続がありません"
         },
+        "distribution.connect_failed": {
+            "zh-TW": "平台連接失敗",
+            "en": "Platform connection failed",
+            "ja": "プラットフォーム接続に失敗しました"
+        },
+        "distribution.instagram_not_linked": {
+            "zh-TW": "找不到已連結 Facebook 粉專的 Instagram 商業帳號",
+            "en": "No Instagram business account linked to your Facebook Page",
+            "ja": "Facebookページに連携されたInstagramビジネスアカウントが見つかりません"
+        },
         
         # 風格學習服務相關
         "style.update_failed": {

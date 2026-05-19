@@ -9,6 +9,13 @@ import { ThumbsUp, ThumbsDown, Pencil, Image as ImageIcon, History } from 'lucid
 import { useTranslation } from '@/i18n'
 import toast from 'react-hot-toast'
 import { RatingReason, positiveReasons, negativeReasons, ratingReasonI18nKeys } from '@/api/ratings'
+import { useAuthStore } from '@/stores/authStore'
+import { APIError } from '@/api/errors'
+
+type InteractionSubmitVars = {
+  reasons?: RatingReason[]
+  comment?: string
+}
 
 interface InteractionButtonsProps {
   topicId: string
@@ -27,9 +34,11 @@ export default function InteractionButtons({
   onEdit,
   onReplace,
   onViewHistory,
-  userId = 'user_default',
+  userId,
 }: InteractionButtonsProps) {
   const { t } = useTranslation()
+  const { user } = useAuthStore()
+  const effectiveUserId = userId ?? user?.id ?? 'user_default'
   const queryClient = useQueryClient()
   const [isLiked, setIsLiked] = useState(false)
   const [isDisliked, setIsDisliked] = useState(false)
@@ -38,18 +47,26 @@ export default function InteractionButtons({
   const [selectedReasons, setSelectedReasons] = useState<RatingReason[]>([])
   const [comment, setComment] = useState('')
 
+  const submitInteraction = (action: 'like' | 'dislike', vars: InteractionSubmitVars) =>
+    interactionsAPI.createInteraction({
+      user_id: effectiveUserId,
+      topic_id: topicId,
+      article_id: articleId,
+      script_id: scriptId,
+      action,
+      reasons: vars.reasons,
+      comment: vars.comment,
+    })
+
+  const formatInteractionError = (error: unknown) => {
+    if (error instanceof APIError) return error.message
+    if (error instanceof Error) return error.message
+    return t('common.failed')
+  }
+
   // Like mutation
   const likeMutation = useMutation({
-    mutationFn: (reasons?: RatingReason[], commentText?: string) =>
-      interactionsAPI.createInteraction({
-        user_id: userId,
-        topic_id: topicId,
-        article_id: articleId,
-        script_id: scriptId,
-        action: 'like',
-        reasons: reasons,  // 添加原因參數
-        comment: commentText,  // 添加評論參數
-      }),
+    mutationFn: (vars: InteractionSubmitVars) => submitInteraction('like', vars),
     onSuccess: () => {
       setIsLiked(true)
       setIsDisliked(false)
@@ -61,23 +78,14 @@ export default function InteractionButtons({
       // 更新偏好模型
       queryClient.invalidateQueries({ queryKey: ['user', 'preferences'] })
     },
-    onError: (error: any) => {
-      toast.error(error?.message || t('common.failed'))
+    onError: (error: unknown) => {
+      toast.error(formatInteractionError(error))
     },
   })
 
   // Dislike mutation
   const dislikeMutation = useMutation({
-    mutationFn: (reasons?: RatingReason[], commentText?: string) =>
-      interactionsAPI.createInteraction({
-        user_id: userId,
-        topic_id: topicId,
-        article_id: articleId,
-        script_id: scriptId,
-        action: 'dislike',
-        reasons: reasons,  // 添加原因參數
-        comment: commentText,  // 添加評論參數
-      }),
+    mutationFn: (vars: InteractionSubmitVars) => submitInteraction('dislike', vars),
     onSuccess: () => {
       setIsDisliked(true)
       setIsLiked(false)
@@ -89,8 +97,8 @@ export default function InteractionButtons({
       // 更新偏好模型
       queryClient.invalidateQueries({ queryKey: ['user', 'preferences'] })
     },
-    onError: (error: any) => {
-      toast.error(error?.message || t('common.failed'))
+    onError: (error: unknown) => {
+      toast.error(formatInteractionError(error))
     },
   })
 
@@ -121,10 +129,14 @@ export default function InteractionButtons({
   }
 
   const handleSubmitReason = () => {
+    const payload: InteractionSubmitVars = {
+      reasons: selectedReasons.length > 0 ? selectedReasons : undefined,
+      comment: comment.trim() || undefined,
+    }
     if (selectedAction === 'like') {
-      likeMutation.mutate(selectedReasons, comment.trim() || undefined)
+      likeMutation.mutate(payload)
     } else if (selectedAction === 'dislike') {
-      dislikeMutation.mutate(selectedReasons, comment.trim() || undefined)
+      dislikeMutation.mutate(payload)
     }
   }
 

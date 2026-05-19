@@ -1,11 +1,40 @@
 # Influencers AI Agents（網紅 AI 助手）
 
 > **版本**：v6.0.0  
-> **更新日期**：2026-05-09（與工作記錄同步）  
+> **更新日期**：2026-05-15（與工作記錄同步）  
 > **當前分支**：`main`（✅ v6.0.0 已合併，Pull request #9）  
 > **穩定標籤**：`v4.3.0-code-complete`（上一版本）  
 > **狀態同步**：此 README 的「更新日期」應與 `工作記錄.md` 的「最後更新」一致。如不一致，以 `工作記錄.md` 為準。  
 > **AI 排程**：對話輸入「專案開始」可展開 **14 工作天** MVP／測試清單（依 `AGENTS.md` **日曆總表**，含建立頻道插入 3 天）→ [AGENTS.md](./AGENTS.md)
+
+---
+
+## Git 備份與工作流程（遠端 `main` 受保護時必讀）
+
+本倉庫於 GitHub 可啟用 **branch protection**：**不得直接 `git push origin main`**，變更須經 **Pull Request** 合併至 `main`。
+
+### 日常備份到遠端（建議流程）
+
+1. 於本機 **`main`**（或自 `main` 切出之功能分支）完成 `git add` / `git commit`。  
+2. **推送至遠端同名或專用分支**（範例：`docs/你的敘述-日期`）：  
+   `git push origin HEAD:docs/your-branch-name`  
+3. 至 GitHub **建立 Pull Request** → 審核後 **Merge into `main`**。  
+4. 本機同步合併結果：`git fetch origin` → `git pull origin main`。
+
+### 如何驗證「真的已備份」（避免口頭／助手聲稱未兌現）
+
+| 驗證方式 | 說明 |
+|----------|------|
+| **GitHub** | PR 顯示 **Merged**、或提供 **Commit／PR 網址**。 |
+| **本機指令** | `git fetch origin` 後執行 `git log origin/main -3 --oneline`，確認頂端含預期 merge 或內容 commit。 |
+
+**內容 commit**（例如文件變更的短 SHA）與 **合併進 `main` 後的 merge commit** 可能為**不同** SHA，兩者皆可能同時存在於歷史中；以 **`origin/main` 是否含你的變更** 與 **PR 狀態** 為準，勿僅憑單一短 SHA 口頭認定。
+
+### 與本專案其他文件之關係
+
+- **分支策略與版本**：詳 [Git分支策略與版本管理.md](./Git分支策略與版本管理.md)。  
+- **換機／硬碟遺失後重建與對照**：詳 [docs/環境重建指南與Checklist.md](./docs/環境重建指南與Checklist.md)（含第十一～十三節：易漏複核、救回檔合併、壓縮重建）。  
+- **測試週 Gate 與工作記錄勾稽**：[工作記錄.md](./工作記錄.md) 之「重建（R）＋測試週檢核（T）」與近期更新之 **Git 聲明防呆**。
 
 ---
 
@@ -46,7 +75,7 @@
 | **開發完成度** | 106/126 (100%) | Phase 1-5 程式開發全部完成 |
 | **剩餘項目** | 20 項 | QA 測試 / DevOps / DOC 文件（非程式開發） |
 | **測試狀態** | Phase 1 完成 | 2026-02-10 完成 Phase 1 測試 |
-| **最後更新** | 2026-05-09 | 詳見 [工作記錄.md](./工作記錄.md)；**驗收**以 README **交付與驗收原則（Checklist）** 一節為準；每日 [docs/test_week_daily_checklist.md](./docs/test_week_daily_checklist.md) |
+| **最後更新** | 2026-05-15 | 詳見 [工作記錄.md](./工作記錄.md)；**驗收**以 README **交付與驗收原則（Checklist）** 一節為準；每日 [docs/test_week_daily_checklist.md](./docs/test_week_daily_checklist.md)；**Git 備份**見本 README **Git 備份與工作流程** |
 
 ### 最新進展（最近 3 項）
 
@@ -230,6 +259,7 @@ f522e10 - feat: Phase1 RSS health monitoring + Phase2 security enhancements
 | ❌ **禁止** | 永遠不要直接修改 `main` 或 `develop` |
 | ✅ **開發** | 只在 `phase-X-*` 分支上進行 |
 | 🏷️ **測試** | 測試通過後建立 Tag |
+| **遠端 `main` 受保護** | **不可** `git push origin main`；須推至 **`docs/…` 或功能分支** 並於 GitHub **開 PR 合併**；驗證與指令見本文件頂部 **Git 備份與工作流程** |
 
 詳細流程請參考：[Git分支策略與版本管理.md](./Git分支策略與版本管理.md)
 

@@ -3,7 +3,7 @@
 Phase 5: 分發與整合
 提供帳號連接和內容發布功能
 """
-from typing import Optional, List
+from typing import Optional, List, Literal
 from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
 from fastapi.responses import RedirectResponse
 from app.models.social_connection import (
@@ -12,6 +12,7 @@ from app.models.social_connection import (
     PLATFORM_CONFIGS, optimize_content_for_platform
 )
 from app.services.distribution_service import distribution_service
+from app.config_module import settings
 from app.middleware.jwt_auth import get_current_user
 from app.utils.i18n import get_error_message, get_user_language
 import logging
@@ -20,6 +21,12 @@ import secrets
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/social", tags=["social"])
+
+
+def _social_connect_redirect(query: str) -> str:
+    """OAuth 回跳至前端（非後端 8000）"""
+    base = settings.FRONTEND_URL.rstrip("/")
+    return f"{base}/social-connect?{query}"
 
 
 # ============================================
@@ -100,24 +107,26 @@ async def disconnect_platform(
 
 @router.get("/meta/connect")
 async def connect_meta(
-    current_user: dict = Depends(get_current_user)
+    target: Literal["facebook", "instagram"] = Query(
+        "facebook",
+        description="連線目標：facebook 僅粉專 scope；instagram 另含 IG business scope",
+    ),
+    current_user: dict = Depends(get_current_user),
 ):
     """
-    連接 Meta 平台（Instagram + Facebook + Threads）
+    連接 Meta 平台（Facebook 或 Instagram 分開授權）
     
     返回授權 URL，前端需要跳轉到此 URL
     """
-    # 生成 state token（防止 CSRF）
-    state = f"{current_user['id']}:{secrets.token_urlsafe(16)}"
-    
-    # TODO: 儲存 state 以便回調時驗證
-    
-    oauth_url = distribution_service.get_meta_oauth_url(state)
-    
+    state = f"{current_user['id']}:{secrets.token_urlsafe(16)}:{target}"
+    oauth_url = distribution_service.get_meta_oauth_url(state, target)
+    platforms = ["facebook"] if target == "facebook" else ["instagram"]
+
     return {
         "oauth_url": oauth_url,
         "state": state,
-        "platforms": ["instagram", "facebook", "threads"]
+        "target": target,
+        "platforms": platforms,
     }
 
 
@@ -133,38 +142,37 @@ async def meta_callback(
     處理授權完成後的回調
     """
     try:
-        # 解析 state
         parts = state.split(":")
-        if len(parts) != 2:
+        if len(parts) < 2:
             language = get_user_language(request=request)
             raise HTTPException(status_code=400, detail=get_error_message("social.invalid_state", language))
-        
+
         user_id = parts[0]
-        
-        # TODO: 驗證 state token
-        
-        # 處理回調
+        target = parts[2] if len(parts) >= 3 else "facebook"
+        if target not in ("facebook", "instagram"):
+            target = "facebook"
+
         language = get_user_language(request=request)
-        result, error = await distribution_service.handle_meta_callback(user_id, code, language)
+        result, error = await distribution_service.handle_meta_callback(
+            user_id, code, target=target, language=language
+        )
         
         if error:
-            # 重定向到前端錯誤頁面
             return RedirectResponse(
-                url=f"/social-connect?error={error}",
-                status_code=302
+                url=_social_connect_redirect(f"error={error}"),
+                status_code=302,
             )
         
-        # 重定向到前端成功頁面
         return RedirectResponse(
-            url="/social-connect?success=true",
-            status_code=302
+            url=_social_connect_redirect("success=true"),
+            status_code=302,
         )
         
     except Exception as e:
         logger.error(f"Meta callback error: {e}")
         return RedirectResponse(
-            url=f"/social-connect?error=callback_failed",
-            status_code=302
+            url=_social_connect_redirect("error=callback_failed"),
+            status_code=302,
         )
 
 
@@ -200,7 +208,7 @@ async def tiktok_callback(
     """
     parts = state.split(":")
     if len(parts) != 2:
-        return RedirectResponse(url="/social-connect?error=invalid_state", status_code=302)
+        return RedirectResponse(url=_social_connect_redirect("error=invalid_state"), status_code=302)
     
     user_id = parts[0]
     
@@ -208,9 +216,9 @@ async def tiktok_callback(
     result, error = await distribution_service.handle_tiktok_callback(user_id, code, language)
     
     if error:
-        return RedirectResponse(url=f"/social-connect?error={error}", status_code=302)
-    
-    return RedirectResponse(url="/social-connect?success=true", status_code=302)
+        return RedirectResponse(url=_social_connect_redirect(f"error={error}"), status_code=302)
+
+    return RedirectResponse(url=_social_connect_redirect("success=true"), status_code=302)
 
 
 # ============================================

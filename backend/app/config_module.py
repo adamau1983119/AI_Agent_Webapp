@@ -109,6 +109,8 @@ class Settings(BaseSettings):
     # Meta (Instagram + Facebook + Threads)
     META_APP_ID: str = ""
     META_APP_SECRET: str = ""
+    # True 時 OAuth 額外請求發布權限（需 App Review；預設僅連線用最小 scope）
+    META_OAUTH_INCLUDE_PUBLISH: bool = False
     
     # TikTok（可選）
     TIKTOK_CLIENT_KEY: str = ""
