@@ -1,7 +1,7 @@
 # 全專案架構測試對照表（對齊 `專案完整架構表.md`）
 
 > **用途**：補足 **[channel_create_new_scheme_checklist.md](./channel_create_new_scheme_checklist.md)** 範圍外之模組—依 **`專案完整架構表.md`** 路由、API、服務與 Mongo 集合，排定 **煙霧／迴歸** 勾選，方便 **測試週**（`AGENTS.md` 第 10～14 工作天、**2026-05-12 起**）逐日執行。  
-> **建立／更新**：2026-05-09  
+> **建立／更新**：2026-05-20（**§H** H1～H2 Meta Facebook OAuth **PASS**，實曆 2026-05-20）  
 > **規則**：勾選前須有證據（URL、status、截圖或紀錄一句）；與 **#11** 一致—不虛報。  
 > **非本表範圍**：**`/channels/create` 助手主導** 之 B～D 細項—請用 **建立頻道清單**；**I.1～I.3** 與 **清單 H** 仍為 SoT。
 
@@ -131,8 +131,8 @@
 
 | # | 項目 | 驗證方式 | 結果 | 證據／備註 |
 |:-:|------|----------|:----:|------------|
-| H1 | `/social-connect` 取得 `oauth_url`（Meta） | Network | [ ] | 對齊 AGENTS **#39**、**check_meta_config.py** |
-| H2 | 可進入供應商授權頁（環境允許時） | 手動 | [ ] | |
+| H1 | `/social-connect` 取得 `oauth_url`（Meta） | Network | [x] | **2026-05-20 PASS**：`GET …/meta/connect?target=facebook` → 200；scope 無 `instagram_basic`；`check_meta_config.py` OK |
+| H2 | 可進入供應商授權頁（環境允許時） | 手動 | [x] | **2026-05-20 PASS**：Facebook dialog「Adam Au 已與 Influencers AI Agents 連結」 |
 | H3 | `/publish` 導流與錯誤顯示（i18n） | 手動 | [ ] | |
 | H4 | 回呼／token 儲存失敗時使用者可理解 | 可選 | [ ] | |
 
@@ -174,7 +174,7 @@
 | `channels` | §D、§E | [ ] | |
 | `ratings` | §G2 | [ ] | |
 | `style_profiles` | §G1 | [ ] | |
-| `social_connections` | §H | [ ] | |
+| `social_connections` | §H | [x] | **2026-05-20**：Facebook **@Adam Au** 已連接（`/social-connect?success=true`） |
 | `schedules` | §I2 | [ ] | |
 | `feed_health` | §J2 | [ ] | |
 | `inspiration_sessions` / `user_inspiration_preferences` / `cost_records` | §F | [ ] | |
