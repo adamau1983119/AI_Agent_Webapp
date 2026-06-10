@@ -19,11 +19,14 @@ async def health_check(request: Request):
     # 判斷整體狀態
     overall_status = "healthy" if is_connected else "degraded"
     
+    from app.utils.cost_controls import cost_controls_summary
+
     return {
         "status": overall_status,
         "environment": settings.ENVIRONMENT,
         "version": settings.APP_VERSION,
         "database": "connected" if is_connected else "disconnected",
+        "cost_controls": cost_controls_summary(),
         "timestamp": datetime.utcnow().isoformat() + "Z",
     }
 

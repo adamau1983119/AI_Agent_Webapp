@@ -1,0 +1,16 @@
+﻿{
+    "status":  "healthy",
+    "environment":  "development",
+    "database":  {
+                     "status":  "connected",
+                     "reason":  null
+                 },
+    "cost_controls":  {
+                          "auto_start_scheduler":  false,
+                          "scheduled_topic_collection":  false,
+                          "ai_topic_translation":  false,
+                          "ai_topic_fallback":  false,
+                          "ai_service":  "deepseek",
+                          "deepseek_model":  "deepseek-v4-flash"
+                      }
+}

@@ -93,7 +93,7 @@ class PublishQueueRepository(BaseRepository):
     
     async def get_publish_job(self, publish_id: str) -> Optional[Dict[str, Any]]:
         """取得發布任務"""
-        return await self.find_by_id(publish_id, id_field="id")
+        return await self.find_by_id(publish_id)
     
     async def get_user_publish_history(
         self,
@@ -175,7 +175,7 @@ class PublishQueueRepository(BaseRepository):
             "updated_at": datetime.utcnow()
         }
         
-        return await self.update_by_id(publish_id, {"$set": update_data}, id_field="id")
+        return await self.update_by_id(publish_id, {"$set": update_data})
     
     async def mark_platform_success(
         self,
@@ -234,7 +234,7 @@ class PublishQueueRepository(BaseRepository):
             await self.update_by_id(publish_id, {"$set": {
                 "status": PublishStatus.RETRY.value,
                 "updated_at": datetime.utcnow()
-            }}, id_field="id")
+            }})
         else:
             # 最終失敗
             result = await self.update_platform_result(publish_id, platform, {
@@ -292,7 +292,7 @@ class PublishQueueRepository(BaseRepository):
             "status": overall_status,
             "published_at": published_at,
             "updated_at": datetime.utcnow()
-        }}, id_field="id")
+        }})
     
     async def count_user_publishes(
         self,

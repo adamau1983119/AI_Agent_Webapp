@@ -1,26 +1,45 @@
+import { useState, useMemo, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import type { Topic } from '@/types'
 import { API_BASE_URL } from '@/api/client'
+import { topicsAPI } from '@/api/topics'
 import { useTranslation } from '@/i18n'
 import { formatDistanceToNow } from 'date-fns'
 import { zhTW, enUS, ja } from 'date-fns/locale'
+import TopicTranslateDisplayButton, {
+  type TopicDisplayOverride,
+} from '@/components/ui/TopicTranslateDisplayButton'
+import {
+  getOriginalTitleLine,
+  getTopicI18nMaps,
+  needsTranslateToCurrentLanguage,
+  normalizeUiLanguage,
+  resolveTopicDisplayCopy,
+} from '@/lib/topicDisplay'
 
-/**
- * 生成圖片代理 URL（如果需要）
- */
 function getProxyImageUrl(imageUrl: string): string {
   if (!imageUrl) return ''
-  // 如果 URL 已經是代理 URL 或是相對路徑，直接返回
   if (imageUrl.includes('/images/proxy') || imageUrl.startsWith('/')) return imageUrl
-  // 如果是完整 URL，使用代理
   if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
     return `${API_BASE_URL}/images/proxy?url=${encodeURIComponent(imageUrl)}`
   }
   return imageUrl
 }
 
+function TopicTextSkeleton() {
+  return (
+    <div className="animate-pulse space-y-2" data-testid="topic-card-text-skeleton" aria-hidden>
+      <div className="h-4 bg-gray-200 dark:bg-gray-600 rounded w-4/5" />
+      <div className="h-3 bg-gray-200 dark:bg-gray-600 rounded w-full" />
+      <div className="h-3 bg-gray-200 dark:bg-gray-600 rounded w-3/4" />
+    </div>
+  )
+}
+
 interface TopicCardProps {
   topic: Topic
+  /** 頻道列表等場景可覆寫 kol 按鈕 testid */
+  kolStyleTestId?: string
 }
 
 const gradientClasses = {
@@ -29,138 +48,208 @@ const gradientClasses = {
   trend: 'from-green-400 to-blue-400',
 }
 
-export default function TopicCard({ topic }: TopicCardProps) {
+export default function TopicCard({ topic, kolStyleTestId }: TopicCardProps) {
   const { t, language } = useTranslation()
-  // 從 topic 數據計算進度
+  const [override, setOverride] = useState<TopicDisplayOverride | null>(null)
+  const [standardLoading, setStandardLoading] = useState(false)
+  const [fadeReady, setFadeReady] = useState(true)
+
+  const uiLang = normalizeUiLanguage(language)
+  const needsTranslate = needsTranslateToCurrentLanguage(topic, language)
+  const { titles } = getTopicI18nMaps(topic)
+  const hasStandardCache = needsTranslate && Boolean(titles[uiLang])
+
+  const display = useMemo(
+    () => resolveTopicDisplayCopy(topic, language, override),
+    [topic, language, override]
+  )
+  const originalLine = useMemo(
+    () => getOriginalTitleLine(topic, display.title),
+    [topic, display.title]
+  )
+
+  useEffect(() => {
+    setOverride(null)
+  }, [topic.id])
+
+  useEffect(() => {
+    if (!needsTranslate) {
+      setStandardLoading(false)
+      setFadeReady(true)
+      return
+    }
+
+    if (hasStandardCache) {
+      setStandardLoading(false)
+      setFadeReady(false)
+      const timer = window.setTimeout(() => setFadeReady(true), 30)
+      return () => window.clearTimeout(timer)
+    }
+
+    let cancelled = false
+    setStandardLoading(true)
+    setFadeReady(false)
+
+    topicsAPI
+      .translateDisplay(topic.id, language, 'standard_translation')
+      .then((res) => {
+        if (cancelled) return
+        setOverride({
+          title: res.title,
+          description: res.description,
+          cached: res.cached,
+          translationType: 'standard_translation',
+        })
+        window.setTimeout(() => setFadeReady(true), 30)
+      })
+      .catch(() => {
+        if (!cancelled) setFadeReady(true)
+      })
+      .finally(() => {
+        if (!cancelled) setStandardLoading(false)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [topic.id, language, needsTranslate, hasStandardCache])
+
   const contentProgress = (topic.wordCount || 0) > 0 ? Math.min(100, ((topic.wordCount || 0) / 500) * 100) : 0
   const imageProgress = (topic.imageCount || 0) >= 8 ? 100 : Math.min(100, ((topic.imageCount || 0) / 8) * 100)
-  
-  // 格式化時間顯示（幾小時前）
+
   const formatTimeAgo = (dateValue: string | Date | undefined): string => {
     if (!dateValue) return ''
     try {
       const date = typeof dateValue === 'string' ? new Date(dateValue) : dateValue
       if (isNaN(date.getTime())) return ''
-      
-      const locales = { 'zh-TW': zhTW, 'en': enUS, 'ja': ja }
+      const locales = { 'zh-TW': zhTW, en: enUS, ja }
       const locale = locales[language as keyof typeof locales] || enUS
-      
-      return formatDistanceToNow(date, { 
-        addSuffix: true,
-        locale 
-      })
-    } catch (e) {
+      return formatDistanceToNow(date, { addSuffix: true, locale })
+    } catch {
       return ''
     }
   }
-  
-  // 獲取生成時間（優先使用 generatedAt，然後是 generated_at，最後是 createdAt）
-  const generatedTime = topic.generatedAt || (topic as any).generated_at || topic.createdAt || (topic as any).created_at
+
+  const generatedTime = topic.generatedAt || topic.generated_at || topic.createdAt || topic.created_at
   const timeAgo = formatTimeAgo(generatedTime)
-  
-  // 階段 1：優先使用預覽圖片，如果沒有則使用漸層背景
-  // 同時支持 previewImages（前端格式）和 preview_images（後端格式）
-  const previewImages = (topic as any).previewImages || (topic as any).preview_images || []
-  const previewImage = Array.isArray(previewImages) && previewImages.length > 0 
-    ? previewImages[0] 
-    : null
-  const isExpanded = topic.isExpanded || false
-  
-  // 調試：開發環境下顯示圖片信息
-  if (!import.meta.env.PROD && previewImage) {
-    console.log(`📷 TopicCard [${topic.id.substring(0, 20)}...]:`, {
-      title: topic.title,
-      previewImage,
-      previewImagesCount: previewImages.length,
-      imageCount: topic.imageCount
-    })
+  const previewImages = topic.previewImages || topic.preview_images || []
+  const previewImage = Array.isArray(previewImages) && previewImages.length > 0 ? previewImages[0] : null
+
+  const handleKolTranslated = (next: TopicDisplayOverride) => {
+    setOverride(next)
+    setFadeReady(false)
+    window.setTimeout(() => setFadeReady(true), 30)
   }
 
+  const showKolButton = needsTranslate && !standardLoading
+  const showTranslateFooter = needsTranslate || display.fromCache || override?.translationType === 'kol_style'
+
+  const textFadeClass = `transition-opacity duration-500 ease-out ${
+    fadeReady && !standardLoading ? 'opacity-100' : 'opacity-0'
+  }`
+
   return (
-    <Link to={`/topics/${topic.id}`} className="block h-full">
-      <div className="bg-white rounded-lg shadow overflow-hidden hover:shadow-lg transition-shadow p-3 md:p-4 h-full min-h-[140px] flex flex-col">
-        {/* 標題區域：包含左上角圖片和標題 */}
-        <div className="flex items-start gap-3 mb-2 md:mb-3">
-          {/* 左上角：小圖片圖標 */}
-          <div className="flex-shrink-0">
-            {previewImage ? (
-              <div className="relative w-12 h-12 md:w-16 md:h-16 rounded overflow-hidden bg-gray-100">
-                <img 
-                  src={getProxyImageUrl(previewImage)} 
-                  alt={topic.title}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    // 如果圖片載入失敗，顯示漸層背景
-                    e.currentTarget.style.display = 'none'
-                    e.currentTarget.parentElement!.className = `relative w-12 h-12 md:w-16 md:h-16 rounded overflow-hidden bg-gradient-to-br ${gradientClasses[topic.category]}`
-                  }}
-                />
-              </div>
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden hover:shadow-lg transition-shadow p-3 md:p-4 h-full min-h-[140px] flex flex-col">
+      <div className="flex items-start gap-3 mb-2 md:mb-3">
+        <Link to={`/topics/${topic.id}`} className="flex-shrink-0">
+          {previewImage ? (
+            <div className="relative w-12 h-12 md:w-16 md:h-16 rounded overflow-hidden bg-gray-100">
+              <img
+                src={getProxyImageUrl(previewImage)}
+                alt={display.title}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none'
+                  e.currentTarget.parentElement!.className = `relative w-12 h-12 md:w-16 md:h-16 rounded overflow-hidden bg-gradient-to-br ${gradientClasses[topic.category]}`
+                }}
+              />
+            </div>
+          ) : (
+            <div className={`w-12 h-12 md:w-16 md:h-16 rounded bg-gradient-to-br ${gradientClasses[topic.category]}`} />
+          )}
+        </Link>
+
+        <div className="flex-1 min-w-0">
+          <Link to={`/topics/${topic.id}`} className="block">
+            {standardLoading ? (
+              <TopicTextSkeleton />
             ) : (
-              <div className={`w-12 h-12 md:w-16 md:h-16 rounded bg-gradient-to-br ${gradientClasses[topic.category]}`}></div>
+              <div className={textFadeClass}>
+                <h3 className="font-bold text-sm md:text-base lg:text-lg line-clamp-2 leading-tight text-gray-900 dark:text-white">
+                  {display.title}
+                </h3>
+              </div>
             )}
-          </div>
-          
-          {/* 標題 */}
-          <div className="flex-1 min-w-0">
-            <h3 className="font-bold text-sm md:text-base lg:text-lg line-clamp-2 leading-tight">{topic.title}</h3>
-            {/* 時間顯示 */}
-            {timeAgo && (
-              <p className="text-xs text-gray-500 mt-1">{timeAgo}</p>
-            )}
-          </div>
+          </Link>
+          {!standardLoading && originalLine && (
+            <p className={`text-[11px] text-gray-500 dark:text-gray-400 italic line-clamp-1 mt-0.5 ${textFadeClass}`}>
+              {t('topics.originalTitlePrefix')} {originalLine}
+            </p>
+          )}
+          {timeAgo && <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{timeAgo}</p>}
         </div>
-        
-        {/* 內容區域：主要顯示文字內容 */}
-        <div className="flex-1 flex flex-col justify-between min-h-0">
-          <div className="flex-1 min-h-0">
-            {/* 30字內容撮要 - 始終顯示 */}
-            <div className="mb-3 md:mb-4">
-              <p className="text-xs md:text-sm text-gray-600 line-clamp-2 leading-snug">
-                {topic.description ? (
-                  topic.description
+      </div>
+
+      <Link to={`/topics/${topic.id}`} className="flex-1 flex flex-col justify-between min-h-0">
+        <div className="flex-1 min-h-0">
+          <div className="mb-3 md:mb-4">
+            {standardLoading ? (
+              <TopicTextSkeleton />
+            ) : (
+              <p className={`text-xs md:text-sm text-gray-600 dark:text-gray-300 line-clamp-2 leading-snug ${textFadeClass}`}>
+                {display.description ? (
+                  display.description
                 ) : (
                   <span className="text-gray-400 italic">{t('topics.noContent')}</span>
                 )}
               </p>
-            </div>
-            
-            {/* 進度條 */}
-            <div className="space-y-1.5 md:space-y-2">
-              <div>
-                <div className="flex justify-between text-xs mb-0.5 md:mb-1">
-                  <span className="text-gray-600">{t('topics.contentProgress')}</span>
-                  <span className="font-semibold">{contentProgress}%</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-1.5">
-                  <div
-                    className="bg-primary h-1.5 rounded-full transition-all"
-                    style={{ width: `${contentProgress}%` }}
-                  ></div>
-                </div>
+            )}
+          </div>
+
+          <div className="space-y-1.5 md:space-y-2">
+            <div>
+              <div className="flex justify-between text-xs mb-0.5 md:mb-1">
+                <span className="text-gray-600 dark:text-gray-400">{t('topics.contentProgress')}</span>
+                <span className="font-semibold">{contentProgress}%</span>
               </div>
-              <div>
-                <div className="flex justify-between text-xs mb-0.5 md:mb-1">
-                  <span className="text-gray-600">{t('topics.imageProgress')}</span>
-                  <span className="font-semibold">{imageProgress}%</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-1.5">
-                  <div
-                    className="bg-secondary h-1.5 rounded-full transition-all"
-                    style={{ width: `${imageProgress}%` }}
-                  ></div>
-                </div>
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+                <div className="bg-primary h-1.5 rounded-full transition-all" style={{ width: `${contentProgress}%` }} />
+              </div>
+            </div>
+            <div>
+              <div className="flex justify-between text-xs mb-0.5 md:mb-1">
+                <span className="text-gray-600 dark:text-gray-400">{t('topics.imageProgress')}</span>
+                <span className="font-semibold">{imageProgress}%</span>
+              </div>
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+                <div className="bg-secondary h-1.5 rounded-full transition-all" style={{ width: `${imageProgress}%` }} />
               </div>
             </div>
           </div>
-          
-          {/* 展開按鈕 */}
-          <button className="text-primary hover:text-primary-dark font-medium text-xs md:text-sm mt-3 md:mt-4 self-start">
-            {t('common.viewDetails')} →
-          </button>
         </div>
-      </div>
-    </Link>
+
+        <span className="text-primary hover:text-primary-dark font-medium text-xs md:text-sm mt-3 md:mt-4 self-start">
+          {t('common.viewDetails')} →
+        </span>
+      </Link>
+
+      {showTranslateFooter && (
+        <div className="flex items-center justify-end gap-2 mt-2 pt-2 border-t border-gray-100 dark:border-gray-700">
+          {(display.fromCache || override?.cached) && override?.translationType !== 'kol_style' && (
+            <span className="text-[10px] text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-2 py-0.5 rounded">
+              {t('topics.translatedCached')}
+            </span>
+          )}
+          {showKolButton && (
+            <TopicTranslateDisplayButton
+              topic={topic}
+              translationType="kol_style"
+              testId={kolStyleTestId || `btn-topic-card-kol-style-${topic.id}`}
+              onTranslated={handleKolTranslated}
+            />
+          )}
+        </div>
+      )}
+    </div>
   )
 }
-

@@ -9,7 +9,7 @@ import type { Topic } from '@/types'
 /**
  * 類型轉換函數：API Topic → Frontend Topic
  */
-function convertTopic(apiTopic: any): Topic {
+export function convertTopic(apiTopic: any): Topic {
   return {
     id: apiTopic.id,
     title: apiTopic.title,
@@ -28,7 +28,21 @@ function convertTopic(apiTopic: any): Topic {
     // Phase 7: 多語言支援
     displayLanguage: apiTopic.display_language || apiTopic.displayLanguage || undefined,
     originalTitle: apiTopic.original_title || apiTopic.originalTitle || undefined,
+    titlesI18n: apiTopic.titles_i18n || apiTopic.titlesI18n,
+    descriptionI18n: apiTopic.description_i18n || apiTopic.descriptionI18n,
   }
+}
+
+export interface TopicTranslateDisplayResult {
+  topic_id: string
+  title: string
+  description?: string | null
+  target_language: string
+  display_language: string
+  original_title?: string | null
+  cached: boolean
+  titles_i18n?: Record<string, string>
+  description_i18n?: Record<string, string>
 }
 
 /**
@@ -150,6 +164,23 @@ export const topicsAPI = {
   /**
    * 取得主題詳情
    */
+  /**
+   * 方案 C：譯為目前介面語言（標題／摘要，快取 titles_i18n）
+   */
+  translateDisplay: async (
+    topicId: string,
+    targetLanguage?: string,
+    translationType: 'standard_translation' | 'kol_style' = 'standard_translation'
+  ): Promise<TopicTranslateDisplayResult> => {
+    const body: Record<string, string> = {}
+    if (targetLanguage) body.target_language = targetLanguage
+    if (translationType) body.translation_type = translationType
+    return fetchAPI<TopicTranslateDisplayResult>(`/topics/${topicId}/translate-display`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    })
+  },
+
   getTopic: async (id: string): Promise<Topic | null> => {
     const topic = await fetchAPI<any>(`/topics/${id}`)
     if (!topic) {

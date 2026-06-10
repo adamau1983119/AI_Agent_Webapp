@@ -134,6 +134,7 @@ import { schedulesAPI } from './schedules'
 import { interactionsAPI } from './interactions'
 import { recommendationsAPI } from './recommendations'
 import { discoverAPI } from './discover'
+import { publicFeedAPI } from './publicFeed'
 import { validateAPI } from './validate'
 // delay 已在同檔案中定義（第 20 行），不需要導入
 
@@ -199,5 +200,7 @@ export {
   interactionsAPI,
   recommendationsAPI,
   discoverAPI,
+  publicFeedAPI,
   validateAPI,
 }
+export { userPreferencesAPI } from './userPreferences'

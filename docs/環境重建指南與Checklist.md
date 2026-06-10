@@ -338,7 +338,7 @@ AGENTS 邏輯第 10～14 天改排為：第10天→yyyy-mm-dd、第11天→…�
 
 1. **先**依本檔完成重建（第一～五節與 **R-1～R-5**）；Git 已 push 之程式／版控文件為準。  
 2. **救回之專案資料夾勿整包覆蓋** 目前工作樹；救回檔只作參考，以 **diff／摘寫** 合併進今版。  
-3. 合併後 **重驗**（`npm run build`、前後端煙霧、`.env` 逐行對 `.env.example`）；媒介接入前建議 **掃毒**。
+3. 合併後 **重驗**（`npm run build`、前後端健康檢查、`.env` 逐行對 `.env.example`）；媒介接入前建議 **掃毒**。
 
 ---
 
@@ -392,10 +392,26 @@ npm run build
 
 ---
 
+## 第十四節：DeepSeek 與測試期本機（2026-05-28）
+
+> **SoT**：[`deepseek_cost_investigation_2026-05.md`](./deepseek_cost_investigation_2026-05.md)  
+> **測試日 checklist**：[`test_week_daily_checklist.md`](./test_week_daily_checklist.md)「測試期 DeepSeek／本機環境」
+
+| 重建／測試前 | 建議 |
+|--------------|------|
+| `backend/.env` | **測試專用** DeepSeek key（勿用已外洩之 production key） |
+| `AUTO_START_SCHEDULER` | **`false`**（避免 development 仍啟動排程） |
+| `DEEPSEEK_MODEL` | 建議明設 **`deepseek-chat`**，測後對照後台計費模型 |
+| 勿重複觸發 | `POST /api/v1/schedules/generate-today`、Dashboard「立即生成今日主題」 |
+| Railway | 2026-05 **`gentle-enchantment` offline** → 重建時**勿假設**雲端會產生 5 月帳單用量 |
+
+---
+
 ## 修訂記錄
 
 | 日期 | 說明 |
 |------|------|
+| 2026-05-28 | 新增 **第十四節**：DeepSeek 費用調查後之測試期 `.env` 與排程防護；鏈結調查 SoT。 |
 | 2026-05-15 | 初版：整合環境重建說明、細節與九段 Checklist，並對齊 README／工作記錄／專案完整架構表之職責分工。 |
 | 2026-05-15 | 新增 **第十節**：測試週 **作法 A（Gate）+ 作法 B（日曆漂移）** 併用流程、工作記錄模板與對照表。 |
 | 2026-05-15 | 新增 **第十一節**：硬碟遺失後**五點複核**（版本庫外、資料帳號、Git 落差、執行驗證、文件入口）；修正「文件定位」第十節列之左右欄意涵。 |

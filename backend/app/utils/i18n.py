@@ -366,6 +366,11 @@ class I18nErrorMessages:
             "en": "Topic not found",
             "ja": "トピックが見つかりません"
         },
+        "content.summary_flash_required": {
+            "zh-TW": "此主題尚無 summary_flash，請先執行頻道收集後再產文",
+            "en": "This topic has no summary_flash; collect topics first before generating",
+            "ja": "summary_flash がありません。先にトピック収集を実行してください",
+        },
         
         # 圖片相關（擴展）
         "image.not_found": {
@@ -544,6 +549,16 @@ class I18nErrorMessages:
             "zh-TW": "找不到已連結 Facebook 粉專的 Instagram 商業帳號",
             "en": "No Instagram business account linked to your Facebook Page",
             "ja": "Facebookページに連携されたInstagramビジネスアカウントが見つかりません"
+        },
+        "distribution.facebook_no_page": {
+            "zh-TW": "Facebook 發布需要粉絲專頁（Page）。請確認 Meta 帳號下至少有一個粉專，並重新連線授權。",
+            "en": "Facebook publishing requires a Page. Ensure your Meta account has at least one Page and reconnect.",
+            "ja": "Facebook投稿にはページが必要です。Metaアカウントにページがあり、再接続してください。"
+        },
+        "distribution.facebook_publish_permission": {
+            "zh-TW": "缺少發布權限（pages_manage_posts）。請在 backend/.env 設定 META_OAUTH_INCLUDE_PUBLISH=true 後重新連線 Facebook。",
+            "en": "Missing publish permission (pages_manage_posts). Set META_OAUTH_INCLUDE_PUBLISH=true and reconnect Facebook.",
+            "ja": "投稿権限（pages_manage_posts）がありません。META_OAUTH_INCLUDE_PUBLISH=true で再接続してください。"
         },
         
         # 風格學習服務相關

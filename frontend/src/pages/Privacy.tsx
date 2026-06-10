@@ -85,6 +85,16 @@ export default function Privacy() {
           <section>
             <h2 className="text-black font-normal text-lg tracking-wide mb-4">{t('legal.privacy.section7.title')}</h2>
             <p>{t('legal.privacy.section7.content')}</p>
+            <ul className="list-disc list-inside mt-2 space-y-1">
+              <li>{t('legal.privacy.section7.list1')}</li>
+              <li>{t('legal.privacy.section7.list2')}</li>
+              <li>{t('legal.privacy.section7.list3')}</li>
+            </ul>
+          </section>
+
+          <section>
+            <h2 className="text-black font-normal text-lg tracking-wide mb-4">{t('legal.privacy.section8.title')}</h2>
+            <p>{t('legal.privacy.section8.content')}</p>
           </section>
         </div>
         

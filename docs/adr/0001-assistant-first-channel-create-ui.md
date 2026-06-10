@@ -6,7 +6,7 @@ Accepted（2026-05-09）
 
 ## 情境
 
-建立頻道原以三步表單為主；產品要降低冷啟動摩擦，並與 §E（`channel_create_ai_guided_spec.md`）對齊。
+建立頻道原以三步表單為主；產品要降低冷啟動摩擦，並與 E 階段（`channel_create_ai_guided_spec.md`）對齊。
 
 ## 決策
 

@@ -75,7 +75,6 @@ export default function InteractionButtons({
       setSelectedReasons([])
       setComment('')
       toast.success(t('common.success'))
-      // 更新偏好模型
       queryClient.invalidateQueries({ queryKey: ['user', 'preferences'] })
     },
     onError: (error: unknown) => {
@@ -94,7 +93,6 @@ export default function InteractionButtons({
       setSelectedReasons([])
       setComment('')
       toast.success(t('common.success'))
-      // 更新偏好模型
       queryClient.invalidateQueries({ queryKey: ['user', 'preferences'] })
     },
     onError: (error: unknown) => {

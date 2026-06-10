@@ -118,6 +118,41 @@ class TopicRepository(BaseRepository):
         total = await self.count(filter)
         
         return topics, total
+
+    async def list_by_channel_id(
+        self,
+        channel_id: str,
+        user_id: Optional[str] = None,
+        page: int = 1,
+        limit: int = 50,
+        sort: str = "generated_at",
+        order: str = "desc",
+    ) -> tuple[List[Dict[str, Any]], int]:
+        """
+        依頻道 ID 列出主題（排除已刪除）
+
+        Args:
+            channel_id: 頻道 ID
+            user_id: 可選，限定所屬使用者
+            page: 頁碼
+            limit: 每頁數量
+            sort: 排序欄位
+            order: asc / desc
+        """
+        filter: Dict[str, Any] = {
+            "channel_id": channel_id,
+            "status": {"$ne": Status.DELETED.value},
+        }
+        if user_id:
+            filter["user_id"] = user_id
+
+        sort_order = -1 if order == "desc" else 1
+        sort_list = [(sort, sort_order)]
+        skip = (page - 1) * limit
+
+        topics = await self.find_many(filter, skip=skip, limit=limit, sort=sort_list)
+        total = await self.count(filter)
+        return topics, total
     
     async def update_topic(
         self,
@@ -173,6 +208,14 @@ class TopicRepository(BaseRepository):
         )
         return result is not None
     
+    async def delete_by_channel_id(self, channel_id: str) -> int:
+        """硬刪除指定頻道底下的所有主題（重新收集前清空）。"""
+        if not channel_id:
+            return 0
+        collection = await self._get_collection()
+        result = await collection.delete_many({"channel_id": channel_id})
+        return result.deleted_count
+
     async def hard_delete_topic(self, topic_id: str) -> bool:
         """
         硬刪除 Topic（從資料庫中完全刪除）

@@ -31,6 +31,10 @@ export interface Topic {
   display_language?: string // 後端格式
   originalTitle?: string    // 原始標題（來源語言）
   original_title?: string   // 後端格式
+  titlesI18n?: Record<string, string>
+  titles_i18n?: Record<string, string>
+  descriptionI18n?: Record<string, string>
+  description_i18n?: Record<string, string>
 }
 
 // 內容類型

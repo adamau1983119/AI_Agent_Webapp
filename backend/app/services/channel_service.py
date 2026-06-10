@@ -159,11 +159,11 @@ class ChannelService:
         """
         取得頻道的 RSS 來源（三層備用機制）
         
-        Layer 1: 主要來源（類別 + 地區）
-        Layer 2: 備用來源（相近類別 + 同地區）
-        Layer 3: AI 生成（當 RSS 全部失敗時）
+        Layer 1: 主要來源（類別 + 地區，或使用者 **selected_feeds**）
+        Layer 2: 備用來源（相近類別，僅在 Layer 1 不足時由收集器啟用）
+        Layer 3: AI 生成（僅在 RSS 全數失敗時，由收集器觸發）
         
-        若頻道存有 **selected_feeds**（建立時使用者選取），Layer 1 僅使用該列表。
+        若頻道存有 **selected_feeds**，Layer 1 僅用使用者選取；Layer 2 仍可提供相近類別備援。
         
         Args:
             channel: 頻道資料
@@ -207,23 +207,25 @@ class ChannelService:
                 return sources
             # selected_feeds 鍵存在但無有效 URL：改走下方預設邏輯
         
-        # Layer 1: 主要來源
+        # Layer 1: 主要來源（類別 + 地區預設池）
         primary_sources = self._get_primary_sources(category, region)
         for source in primary_sources:
-            source["layer"] = 1
-            source["category"] = category.value
-            source["region"] = region.value
-            sources.append(source)
+            s = dict(source)
+            s["layer"] = 1
+            s["category"] = category.value
+            s["region"] = region.value
+            sources.append(s)
         
         # Layer 2: 備用來源（相近類別）
         fallback_categories = CATEGORY_FALLBACK_MAP.get(category, [])
         for fallback_cat in fallback_categories:
             fallback_sources = self._get_primary_sources(fallback_cat, region)
-            for source in fallback_sources[:2]:  # 每個備用類別取 2 個
-                source["layer"] = 2
-                source["category"] = fallback_cat.value
-                source["region"] = region.value
-                sources.append(source)
+            for source in fallback_sources[:2]:
+                s = dict(source)
+                s["layer"] = 2
+                s["category"] = fallback_cat.value
+                s["region"] = region.value
+                sources.append(s)
         
         return sources
     

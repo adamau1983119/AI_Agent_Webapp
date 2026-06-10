@@ -225,7 +225,7 @@ export default function CreateChannel() {
   /** 上一輪 assist 已展示之推薦 URL，供「再分析」時 exclude，換一批白名單候選 */
   const assistShownSourceUrlsRef = useRef<string[]>([]);
 
-  // AI 助手狀態（§E Phase B：進頁預設開啟助手為主舞台）
+  // AI 助手狀態（E 階段 B：進頁預設開啟助手為主舞台）
   const [showAssist, setShowAssist] = useState(true);
   const [assistInput, setAssistInput] = useState('');
   const [isAssisting, setIsAssisting] = useState(false);
@@ -1626,7 +1626,7 @@ export default function CreateChannel() {
             )}
           </div>
 
-        {/* 表單內容：lg＋助手開啟時預設收合（進階），符合 §E 表單收斂 */}
+        {/* 表單內容：lg＋助手開啟時預設收合（進階），符合 E 階段 表單收斂 */}
         <div
           id="channel-create-form"
           tabIndex={-1}

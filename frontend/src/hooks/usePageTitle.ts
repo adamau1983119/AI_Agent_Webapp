@@ -18,6 +18,7 @@ export function usePageTitle(customTitle?: string) {
     const pageTitleKeys: Record<string, string> = {
       '/': 'nav.dashboard',
       '/topics': 'nav.topics',
+      '/discover': 'nav.discover',
       '/channels': 'nav.channels',
       '/inspiration': 'nav.inspiration',
       '/style-profile': 'nav.styleProfile',

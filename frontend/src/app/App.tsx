@@ -25,6 +25,7 @@ import CreateChannel from '@/pages/CreateChannel'
 import ChannelDetail from '@/pages/ChannelDetail'
 import ChannelEdit from '@/pages/ChannelEdit'
 import Inspiration from '@/pages/Inspiration'
+import Discover from '@/pages/Discover'
 // Phase 4: AI 個人化頁面
 import StyleProfile from '@/pages/StyleProfile'
 // Phase 5: 分發與整合頁面
@@ -83,6 +84,7 @@ function App() {
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/topics" element={<Topics />} />
                 <Route path="/topics/:id" element={<TopicDetail />} />
+                <Route path="/discover" element={<Discover />} />
                 <Route path="/preferences" element={<Preferences />} />
                 <Route path="/schedule" element={<Schedule />} />
                 <Route path="/settings" element={<Settings />} />

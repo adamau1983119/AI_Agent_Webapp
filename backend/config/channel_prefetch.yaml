@@ -1,0 +1,11 @@
+# v7 定向夜間預載：港日媒體 Channel（P2-07）
+# 與 DB channels.region 對齊：hong_kong | japan
+regions:
+  - hong_kong
+  - japan
+# 每頻道最多處理主題數（單次 job）
+max_topics_per_channel: 20
+# 預載語言（standard_translation）
+preload_langs:
+  - ja
+  - en

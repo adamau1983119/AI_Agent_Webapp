@@ -143,6 +143,17 @@ class DistributionService:
                         "token_expires_at": datetime.utcnow() + timedelta(seconds=expires_in),
                         "scopes": scopes_used,
                     })
+                    page = await self._get_first_facebook_page(access_token)
+                    if page:
+                        fb_connection = await self.connection_repo.update_connection(
+                            user_id,
+                            SocialPlatform.FACEBOOK,
+                            {
+                                "page_id": page.get("id"),
+                                "page_access_token": page.get("access_token"),
+                                "page_name": page.get("name"),
+                            },
+                        ) or fb_connection
                     connections.append(fb_connection)
 
                 if connect_instagram:
@@ -174,6 +185,23 @@ class DistributionService:
             logger.error(f"Meta OAuth callback error: {e}")
             return None, str(e)
     
+    async def _get_first_facebook_page(self, access_token: str) -> Optional[Dict[str, Any]]:
+        """取得第一個可管理的 Facebook 粉絲專頁（含 page access token）"""
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.get(
+                    "https://graph.facebook.com/v18.0/me/accounts",
+                    params={"access_token": access_token},
+                )
+                if response.status_code != 200:
+                    logger.warning("me/accounts 失敗: %s", response.text[:300])
+                    return None
+                pages = response.json().get("data", [])
+                return pages[0] if pages else None
+        except Exception as e:
+            logger.error("取得 Facebook Page 失敗: %s", e)
+            return None
+
     async def _get_meta_user_info(self, access_token: str) -> Optional[Dict[str, Any]]:
         """取得 Meta 用戶資訊"""
         try:
@@ -323,7 +351,7 @@ class DistributionService:
         
         # 如果沒有排程時間，立即發布
         if not publish_request.scheduled_at or publish_request.scheduled_at <= datetime.utcnow():
-            await self._execute_publish(user_id, publish_job)
+            await self._execute_publish(user_id, publish_job, language=language)
         
         # 重新取得更新後的任務
         publish_job = await self.publish_repo.get_publish_job(publish_job["id"])
@@ -333,7 +361,8 @@ class DistributionService:
     async def _execute_publish(
         self,
         user_id: str,
-        publish_job: Dict[str, Any]
+        publish_job: Dict[str, Any],
+        language: str = "zh-TW",
     ):
         """執行發布任務"""
         publish_id = publish_job["id"]
@@ -346,7 +375,7 @@ class DistributionService:
         await self.publish_repo.update_by_id(publish_id, {"$set": {
             "status": PublishStatus.PUBLISHING.value,
             "updated_at": datetime.utcnow()
-        }}, id_field="id")
+        }})
         
         for platform_value in platforms:
             platform = SocialPlatform(platform_value)
@@ -378,7 +407,7 @@ class DistributionService:
                     )
                 elif platform == SocialPlatform.FACEBOOK:
                     result = await self._publish_to_facebook(
-                        connection, publish_content, image_urls
+                        connection, publish_content, image_urls, language=language
                     )
                 elif platform == SocialPlatform.THREADS:
                     result = await self._publish_to_threads(
@@ -468,55 +497,58 @@ class DistributionService:
         self,
         connection: Dict[str, Any],
         content: str,
-        image_urls: List[str]
+        image_urls: List[str],
+        language: str = "zh-TW",
     ) -> Dict[str, Any]:
-        """發布到 Facebook"""
+        """發布到 Facebook 粉絲專頁（Page feed）"""
         access_token = connection.get("access_token")
-        
-        try:
-            async with httpx.AsyncClient() as client:
-                # 取得用戶的 Page
-                pages_response = await client.get(
-                    "https://graph.facebook.com/v18.0/me/accounts",
-                    params={"access_token": access_token}
-                )
-                
-                if pages_response.status_code != 200:
-                    return {"success": False, "error": "無法取得 Page"}
-                
-                pages = pages_response.json().get("data", [])
-                if not pages:
-                    return {"success": False, "error": "沒有可用的 Page"}
-                
-                page = pages[0]
+        page_id = connection.get("page_id")
+        page_token = connection.get("page_access_token")
+
+        if not page_id or not page_token:
+            page = await self._get_first_facebook_page(access_token)
+            if page:
                 page_id = page.get("id")
                 page_token = page.get("access_token")
-                
-                # 發布貼文
+            else:
+                return {
+                    "success": False,
+                    "error": get_error_message("distribution.facebook_no_page", language),
+                }
+
+        try:
+            async with httpx.AsyncClient() as client:
                 post_params = {
                     "access_token": page_token,
                     "message": content,
                 }
-                
                 if image_urls:
                     post_params["link"] = image_urls[0]
-                
+
                 post_response = await client.post(
                     f"https://graph.facebook.com/v18.0/{page_id}/feed",
-                    params=post_params
+                    params=post_params,
                 )
-                
+
                 if post_response.status_code != 200:
-                    return {"success": False, "error": post_response.text}
-                
+                    err_text = post_response.text
+                    if "pages_manage_posts" in err_text or "(#200)" in err_text or "permission" in err_text.lower():
+                        return {
+                            "success": False,
+                            "error": get_error_message(
+                                "distribution.facebook_publish_permission", language
+                            ),
+                        }
+                    return {"success": False, "error": err_text}
+
                 post_id = post_response.json().get("id")
-                
+
                 return {
                     "success": True,
                     "post_id": post_id,
-                    "post_url": f"https://www.facebook.com/{post_id}"
+                    "post_url": f"https://www.facebook.com/{post_id}",
                 }
-                
+
         except Exception as e:
             return {"success": False, "error": str(e)}
     

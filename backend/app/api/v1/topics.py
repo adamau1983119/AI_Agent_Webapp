@@ -2,7 +2,7 @@
 Topics API 端點
 """
 from typing import Optional, Dict, Any, List
-from fastapi import APIRouter, HTTPException, Query, Path, Header
+from fastapi import APIRouter, HTTPException, Query, Path, Header, Depends
 from app.schemas.topic import (
     TopicCreate,
     TopicUpdate,
@@ -10,7 +10,14 @@ from app.schemas.topic import (
     TopicResponse,
     TopicDetailResponse,
     TopicListResponse,
+    TopicTranslateDisplayRequest,
+    TopicTranslateDisplayResponse,
 )
+from app.services.topic_display_translation_service import (
+    topic_display_translation_service,
+    normalize_language,
+)
+from app.middleware.jwt_auth import get_current_user_optional
 from app.schemas.common import PaginationResponse, ErrorResponse
 from app.services.repositories.topic_repository import TopicRepository
 from app.services.repositories.content_repository import ContentRepository
@@ -317,6 +324,38 @@ async def get_topic_detail(
     except Exception as e:
         logger.error(f"取得主題詳情失敗: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/{topic_id}/translate-display", response_model=TopicTranslateDisplayResponse)
+async def translate_topic_display(
+    request: Request,
+    topic_id: str = Path(..., description="主題 ID"),
+    body: TopicTranslateDisplayRequest = TopicTranslateDisplayRequest(),
+    current_user: Optional[dict] = Depends(get_current_user_optional),
+):
+    """
+    方案 C：將主題標題／摘要譯為使用者目前介面語言（按需、可快取 titles_i18n）。
+    """
+    language = get_user_language(user=current_user, request=request)
+    target = normalize_language(
+        body.target_language
+        or (current_user.get("language") if current_user else None)
+        or language
+    )
+
+    trans_type = body.translation_type or "standard_translation"
+    result, err = await topic_display_translation_service.translate_display(
+        topic_id, target, translation_type=trans_type
+    )
+    if err == "topic_not_found":
+        raise HTTPException(
+            status_code=404,
+            detail=get_error_message("topic.not_found", language),
+        )
+    if err or not result:
+        raise HTTPException(status_code=400, detail=err or "translate_failed")
+
+    return TopicTranslateDisplayResponse(**result)
 
 
 @router.put("/{topic_id}", response_model=TopicResponse)

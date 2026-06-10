@@ -1,0 +1,5 @@
+﻿main
+docs_status=200
+frontend_status=200
+health_status=healthy
+database=@{status=connected; reason=}

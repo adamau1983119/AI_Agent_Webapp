@@ -10,6 +10,7 @@ from app.services.automation.scheduler import SchedulerService
 from app.services.repositories.topic_repository import TopicRepository
 from app.database import check_connection_from_request, get_database_from_request
 from app.config import settings
+from app.utils.cost_controls import scheduled_topic_collection_enabled
 from pymongo.errors import ConnectionFailure
 # 同時從統一的 exceptions 模組導入（備用方案，避免循環導入問題）
 try:
@@ -251,6 +252,14 @@ async def manual_generate_topics(
     
     用於測試或立即執行主題生成任務
     """
+    if not scheduled_topic_collection_enabled():
+        raise HTTPException(
+            status_code=403,
+            detail={
+                "code": "scheduled_topic_collection_disabled",
+                "message": "排程主題卡收集已暫停。請設 ENABLE_SCHEDULED_TOPIC_COLLECTION=true 或改用頻道收集。",
+            },
+        )
     try:
         scheduler_service = get_scheduler_service()
         
@@ -289,6 +298,14 @@ async def generate_today_all_topics(
     
     用於補齊今日缺失的主題
     """
+    if not scheduled_topic_collection_enabled():
+        raise HTTPException(
+            status_code=403,
+            detail={
+                "code": "scheduled_topic_collection_disabled",
+                "message": "每日主打主題卡生成已暫停 (ENABLE_SCHEDULED_TOPIC_COLLECTION=false)。",
+            },
+        )
     try:
         # 記錄 API 請求
         logger.info(f"收到生成今日主題請求: force={request_body.force}")

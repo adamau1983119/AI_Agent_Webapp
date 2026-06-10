@@ -10,6 +10,24 @@ from typing import Optional
 from loguru import logger
 import json
 
+# v7 官方成本 tag（MD-M1 · 見 docs/v7_dev_monitoring_discipline.md）
+COST_EVENT_TAGS = frozenset({
+    "SUMMARY_FLASH_SUCCESS",
+    "I18N_CACHE_HIT",
+    "CACHE_MISS",
+    "TRANSLATION_FALLBACK_TRIGGERED",
+    "TOKEN_GATEWAY_PASSED",
+    "PUBLIC_FEED_DEV_CAP",
+})
+
+
+def log_cost_event(tag: str, level: str = "info", **fields) -> None:
+    """同步成本事件日誌；kwargs 內建 key=value（key 排序），函數內不 await／不做 I/O。"""
+    parts = [f"{k}={fields[k]}" for k in sorted(fields)]
+    message = f"[{tag}] " + " ".join(parts)
+    log_fn = getattr(logger, level.lower(), logger.info)
+    log_fn(message)
+
 
 class InterceptHandler(logging.Handler):
     """攔截標準 logging 並轉發到 loguru"""

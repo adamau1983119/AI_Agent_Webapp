@@ -7,9 +7,16 @@ from typing import Optional, List, Literal
 from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
 from fastapi.responses import RedirectResponse
 from app.models.social_connection import (
-    SocialPlatform, SocialConnectionResponse, SocialConnectionListResponse,
-    PublishRequest, PublishResponse, PublishHistoryResponse,
-    PLATFORM_CONFIGS, optimize_content_for_platform
+    SocialPlatform,
+    SocialConnectionResponse,
+    SocialConnectionListResponse,
+    PublishRequest,
+    PublishResponse,
+    PublishResult,
+    PublishStatus,
+    PublishHistoryResponse,
+    PLATFORM_CONFIGS,
+    optimize_content_for_platform,
 )
 from app.services.distribution_service import distribution_service
 from app.config_module import settings
@@ -243,42 +250,68 @@ async def publish_content(
     
     支援一鍵發布到多個平台
     """
-    result, error = await distribution_service.publish_content(
-        current_user["id"],
-        request
-    )
-    
-    if error:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=error
+    language = get_user_language(user=current_user, request=http_request)
+
+    try:
+        result, error = await distribution_service.publish_content(
+            current_user["id"],
+            request,
+            language=language,
         )
-    
-    # 計算成功/失敗數量
-    platform_results = result.get("platform_results", {})
-    successful = sum(1 for r in platform_results.values() if r.get("status") == "published")
-    failed = sum(1 for r in platform_results.values() if r.get("status") == "failed")
-    
-    logger.info(
-        f"用戶 {current_user['email']} 發布內容到 {len(request.platforms)} 個平台，"
-        f"成功: {successful}，失敗: {failed}"
-    )
-    
-    return PublishResponse(
-        publish_id=result["id"],
-        content_id=result["content_id"],
-        total_platforms=len(request.platforms),
-        successful=successful,
-        failed=failed,
-        results=[
-            {
-                "platform": platform,
-                **data
-            }
-            for platform, data in platform_results.items()
-        ],
-        created_at=result["created_at"]
-    )
+
+        if error:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=error,
+            )
+
+        if not result:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Publish job not created",
+            )
+
+        # 計算成功/失敗數量
+        platform_results = result.get("platform_results", {})
+        successful = sum(
+            1 for r in platform_results.values() if r.get("status") == "published"
+        )
+        failed = sum(
+            1 for r in platform_results.values() if r.get("status") == "failed"
+        )
+
+        logger.info(
+            f"用戶 {current_user['email']} 發布內容到 {len(request.platforms)} 個平台，"
+            f"成功: {successful}，失敗: {failed}"
+        )
+
+        return PublishResponse(
+            publish_id=result["id"],
+            content_id=result["content_id"],
+            total_platforms=len(request.platforms),
+            successful=successful,
+            failed=failed,
+            results=[
+                PublishResult(
+                    platform=SocialPlatform(platform),
+                    status=PublishStatus(data.get("status", "failed")),
+                    post_id=data.get("post_id"),
+                    post_url=data.get("post_url"),
+                    error_message=data.get("error_message"),
+                    published_at=data.get("published_at"),
+                )
+                for platform, data in platform_results.items()
+            ],
+            created_at=result["created_at"],
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("發布內容失敗: %s", e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e),
+        )
 
 
 @router.post("/preview-optimize")
