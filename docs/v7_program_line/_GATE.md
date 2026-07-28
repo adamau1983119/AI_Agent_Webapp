@@ -49,12 +49,22 @@
 
 ---
 
-## 5. 觸發詞（2026-07-21 鎖定 · 上架衝刺）
+## 5. 觸發詞（2026-07-29 修訂 · v8 上架）
+
+**現用（上架／正式域）**
+
+```
+專案開始，v8 上架，先讀 docs/archives/v7.0.0_CODE_FREEZE_MANIFEST.md 與 專案完整架構表_v8.md @AGENTS.md
+```
+
+→ 確認 **v7 已隔離** → 只在 **`feature/v8-launch`** 改碼／測正式域；**禁止**改 archives v7 凍結檔。
+
+**封存（上架衝刺測試 · 07-22～24）**
 
 ```
 專案開始，先讀 docs/v7_program_line/_GATE.md 與 launch_test_sprint_2026-07-22.md 當日 Day，再開測 @AGENTS.md
 ```
 
-→ `_GATE` → `index` Active → **[`launch_test_sprint_2026-07-22.md`](./launch_test_sprint_2026-07-22.md)** 當日 Day；展開 AGENTS **「上架衝刺」**。開測前必驗 `:8000`／`:3000`／**已登入**。
+→ 歷史三日表；主路已過，勿重開 v7 PD。
 
 **封存（程式段）**：`專案開始，並先讀 docs/v7_program_line/_GATE.md，再對照 index 當日 Phase @AGENTS.md`
