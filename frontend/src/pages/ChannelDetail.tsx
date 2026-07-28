@@ -16,6 +16,8 @@ import {
   categoryIcons,
 } from '../api/channels';
 import toast from 'react-hot-toast';
+import TopicCard from '@/components/ui/TopicCard';
+import type { Topic } from '@/types';
 
 export default function ChannelDetail() {
   const { id } = useParams<{ id: string }>();
@@ -27,6 +29,9 @@ export default function ChannelDetail() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isCollecting, setIsCollecting] = useState(false);
+  const [topics, setTopics] = useState<Topic[]>([]);
+  const [topicsTotal, setTopicsTotal] = useState(0);
+  const [topicsLoading, setTopicsLoading] = useState(false);
   
   useEffect(() => {
     if (!isAuthenticated) {
@@ -36,8 +41,25 @@ export default function ChannelDetail() {
     
     if (id) {
       loadChannel();
+      loadChannelTopics();
     }
   }, [id, isAuthenticated, navigate]);
+  
+  const loadChannelTopics = async () => {
+    if (!id) return;
+    setTopicsLoading(true);
+    try {
+      const res = await channelsApi.getChannelTopics(id, 1, 50);
+      setTopics(res.data);
+      setTopicsTotal(res.pagination.total);
+    } catch (err: any) {
+      console.error('loadChannelTopics failed', err);
+      setTopics([]);
+      setTopicsTotal(0);
+    } finally {
+      setTopicsLoading(false);
+    }
+  };
   
   const loadChannel = async () => {
     if (!id) return;
@@ -60,10 +82,15 @@ export default function ChannelDetail() {
     
     setIsCollecting(true);
     try {
-      await channelsApi.triggerCollection(id);
-      toast.success(t('channels.collectTriggered'));
-      // 重新載入頻道資訊
+      const result = await channelsApi.triggerCollection(id);
+      const count = result?.topics_collected ?? 0;
+      if (count > 0) {
+        toast.success(t('channels.collectSuccessCount', { count }));
+      } else {
+        toast.error(t('channels.collectNoMatches'));
+      }
       await loadChannel();
+      await loadChannelTopics();
     } catch (err: any) {
       toast.error(err.message || t('channels.triggerFailed'));
     } finally {
@@ -250,6 +277,45 @@ export default function ChannelDetail() {
             </svg>
             {t('channels.editChannel')}
           </Link>
+        </div>
+
+        {/* 頻道主題卡（資料庫 channel_id 關聯） */}
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+              {t('channels.channelTopicsTitle')}
+            </h2>
+            {!topicsLoading && topicsTotal > 0 && (
+              <span className="text-sm text-gray-500 dark:text-gray-400">
+                {t('topics.total', { count: topicsTotal })}
+              </span>
+            )}
+          </div>
+
+          {topicsLoading && (
+            <div className="flex justify-center py-8">
+              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-purple-500" />
+            </div>
+          )}
+
+          {!topicsLoading && topics.length === 0 && (
+            <p className="text-gray-600 dark:text-gray-400 text-sm">
+              {channel.topic_count > 0
+                ? t('channels.channelTopicsMismatch')
+                : t('channels.collectNoMatches')}
+            </p>
+          )}
+
+          {!topicsLoading && topics.length > 0 && (
+            <div
+              className="grid gap-4 sm:grid-cols-2"
+              data-testid="channel-detail-topics-grid"
+            >
+              {topics.map((topic) => (
+                <TopicCard key={topic.id} topic={topic} />
+              ))}
+            </div>
+          )}
         </div>
         
         {/* RSS 健康度指示 */}

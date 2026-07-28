@@ -54,20 +54,35 @@ class SchedulerService:
             logger.warning("排程服務已經在運行")
             return
         
-        # Phase 1: 根據配置決定收集模式
-        collection_mode = self.config.get_collection_mode()
-        logger.info(f"收集模式: {collection_mode}")
-        
-        if collection_mode == "interval":
-            self._setup_interval_collection()
+        from app.utils.cost_controls import scheduled_topic_collection_enabled
+
+        if scheduled_topic_collection_enabled():
+            collection_mode = self.config.get_collection_mode()
+            logger.info(f"收集模式: {collection_mode}")
+            if collection_mode == "interval":
+                self._setup_interval_collection()
+            else:
+                self._setup_daily_collection()
         else:
-            self._setup_daily_collection()
+            logger.warning(
+                "已暫停排程主題卡收集 (ENABLE_SCHEDULED_TOPIC_COLLECTION=false)；"
+                "僅保留清理／RSS 驗證等任務"
+            )
         
         # Phase 1: 設定資料清理任務
         self._setup_data_cleanup()
         
         # v4.1: 設定 RSS 驗證任務（每週日 04:00 UTC）
         self._setup_rss_validation()
+
+        # v7: 港日定向夜間預載（無 kol_style）
+        self._setup_channel_prefetch()
+
+        # v7 Discover: 公共主題牆 8h 批次
+        self._setup_public_feed()
+
+        # v7 Alter Ego: 週 batch DNA patch（AE-2）
+        self._setup_alter_ego_weekly_batch()
         
         self.scheduler.start()
         self.is_running = True
@@ -140,6 +155,80 @@ class SchedulerService:
         
         logger.info(f"資料清理任務已設定: 每日 {cleanup_hour:02d}:{cleanup_minute:02d} UTC")
     
+    def _setup_channel_prefetch(self):
+        """v7：定向夜間預載 DeepL ja/en（ENABLE_CHANNEL_PREFETCH_PIPELINE）"""
+        from app.utils.cost_controls import channel_prefetch_pipeline_enabled
+
+        if not channel_prefetch_pipeline_enabled():
+            logger.info("channel_prefetch_pipeline 未啟用 (ENABLE_CHANNEL_PREFETCH_PIPELINE=false)")
+            return
+
+        self.scheduler.add_job(
+            self._run_channel_prefetch_pipeline,
+            CronTrigger(hour=2, minute=0, timezone="UTC"),
+            id="channel_prefetch_pipeline",
+            replace_existing=True,
+        )
+        logger.info("channel_prefetch_pipeline 已排程: 每日 02:00 UTC")
+
+    async def _run_channel_prefetch_pipeline(self):
+        from app.services.automation.channel_prefetch_pipeline import run_channel_prefetch_pipeline
+
+        logger.info("開始 channel_prefetch_pipeline（無 kol_style）")
+        await run_channel_prefetch_pipeline()
+
+    def _setup_public_feed(self):
+        from app.utils.cost_controls import public_feed_pipeline_enabled
+
+        if not public_feed_pipeline_enabled():
+            logger.info("public_feed_batch 未啟用 (ENABLE_PUBLIC_FEED_PIPELINE=false)")
+            return
+
+        from app.config import settings
+
+        if settings.ENVIRONMENT == "development":
+            logger.info(
+                "public_feed_batch 未註冊 cron（development 僅允許 CLI 手動觸發）"
+            )
+            return
+
+        interval = int(settings.PUBLIC_FEED_INTERVAL_HOURS)
+        self.scheduler.add_job(
+            self._run_public_feed_batch,
+            IntervalTrigger(hours=interval, timezone="UTC"),
+            id="public_feed_batch",
+            replace_existing=True,
+        )
+        logger.info("public_feed_batch 已排程: 每 %dh UTC", interval)
+
+    async def _run_public_feed_batch(self):
+        from app.services.public_feed.public_feed_pipeline import run_public_feed_batch
+
+        logger.info("開始 public_feed_batch")
+        await run_public_feed_batch()
+
+    def _setup_alter_ego_weekly_batch(self):
+        from app.config import settings
+
+        if settings.ENVIRONMENT == "development":
+            logger.info(
+                "alter_ego_weekly_batch 未註冊 cron（development 僅 scripts/run_alter_ego_weekly_batch.py）"
+            )
+            return
+        self.scheduler.add_job(
+            self._run_alter_ego_weekly_batch,
+            CronTrigger(day_of_week="sun", hour=5, minute=0, timezone="UTC"),
+            id="alter_ego_weekly_batch",
+            replace_existing=True,
+        )
+        logger.info("alter_ego_weekly_batch 已排程: 每週日 05:00 UTC")
+
+    async def _run_alter_ego_weekly_batch(self):
+        from app.services.alter_ego_weekly_batch import alter_ego_weekly_batch
+
+        logger.info("開始 alter_ego_weekly_batch")
+        await alter_ego_weekly_batch.run_all()
+
     def _setup_rss_validation(self):
         """設定 RSS 驗證任務（v4.1: 每週日 04:00 UTC）"""
         self.scheduler.add_job(
@@ -241,6 +330,14 @@ class SchedulerService:
             category: 主題分類
             time_slot: 時間段（用於日誌記錄）
         """
+        from app.utils.cost_controls import scheduled_topic_collection_enabled
+
+        if not scheduled_topic_collection_enabled():
+            logger.info(
+                f"跳過 {category.value} 排程收集（ENABLE_SCHEDULED_TOPIC_COLLECTION=false）"
+            )
+            return
+
         category_name = category.value
         logger.info(f"開始為 {category_name} 分類生成主題（時間段: {time_slot}）")
         
@@ -372,6 +469,14 @@ class SchedulerService:
         Returns:
             建立的主題列表
         """
+        from app.utils.cost_controls import scheduled_topic_collection_enabled
+
+        if not scheduled_topic_collection_enabled():
+            logger.warning(
+                "拒絕手動批量生成：ENABLE_SCHEDULED_TOPIC_COLLECTION=false"
+            )
+            return []
+
         logger.info(f"手動觸發生成 {count} 個 {category.value} 主題 (語言: {display_language})")
         
         try:

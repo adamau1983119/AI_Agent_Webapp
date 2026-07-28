@@ -38,7 +38,7 @@ export default function Dashboard() {
     retry: false, // 完全關閉自動重試，避免 429 錯誤循環
     staleTime: 30000, // 30 秒內認為數據新鮮
     gcTime: 5 * 60 * 1000, // 5 分鐘緩存
-    refetchInterval: 5000, // 每 5 秒自動輪詢一次（降低頻率，避免觸發速率限制）
+    refetchInterval: false, // 關閉自動輪詢，避免 5s 重刷累積圖片／翻譯 Console 紅錯
     refetchOnWindowFocus: false, // 避免視窗聚焦時自動重試
     refetchOnMount: true, // 組件掛載時獲取數據
   })
@@ -603,12 +603,11 @@ export default function Dashboard() {
             <>
               <h3 className="text-[11px] tracking-[0.15em] uppercase text-gray-500 mb-4">{t('dashboard.topicCards')}</h3>
               {(() => {
-                // 顯示主題：優先今日 → 最近 → 全部
+                // 只顯示今日主題；無今日卡時顯示收集中（不回退舊卡）
                 const now = new Date()
                 const todayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()))
                 const today = todayUTC.toISOString().split('T')[0]
                 
-                // 先嘗試獲取今日主題
                 const todayTopicsList = topics.filter((t) => {
                   try {
                     const dateValue = (t as any).generated_at || (t as any).generatedAt || 
@@ -638,24 +637,9 @@ export default function Dashboard() {
                   }
                 })
                 
-                // 決定顯示哪些主題
-                let displayTopics = todayTopicsList
-                let displayTitle = t('dashboard.todayTopics')
-                let showNotice = false
-                
-                if (todayTopicsList.length === 0) {
-                  // 沒有今日主題，顯示所有主題（按日期排序）
-                  displayTopics = [...topics].sort((a, b) => {
-                    const dateA = (a as any).generated_at || (a as any).generatedAt || 
-                                 (a as any).created_at || (a as any).createdAt
-                    const dateB = (b as any).generated_at || (b as any).generatedAt || 
-                                 (b as any).created_at || (b as any).createdAt
-                    if (!dateA || !dateB) return 0
-                    return new Date(dateB).getTime() - new Date(dateA).getTime()
-                  })
-                  displayTitle = t('dashboard.latestTopics')
-                  showNotice = true
-                }
+                const displayTopics = todayTopicsList
+                const displayTitle = t('dashboard.todayTopics')
+                const showNotice = todayTopicsList.length === 0
                 
                 // 如果完全沒有主題，顯示 Agent 收集中 - Lane Crawford Style
                 if (displayTopics.length === 0) {
@@ -716,7 +700,7 @@ export default function Dashboard() {
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                               {category.topics.map((topic) => (
                                 <div key={topic.id} className="h-full">
-                                  <TopicCard topic={topic} />
+                                  <TopicCard topic={topic} enableAutoTranslate={false} />
                                 </div>
                               ))}
                             </div>

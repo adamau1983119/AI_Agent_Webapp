@@ -188,18 +188,23 @@ class TopicCollector:
                 return topics[:count]
             
             # 如果不足且允許使用備用方案，使用備用關鍵字生成主題
-            if use_fallback and len(topics) < count:
+            from app.utils.cost_controls import ai_topic_fallback_enabled
+            if use_fallback and ai_topic_fallback_enabled() and len(topics) < count:
                 logger.info(f"主題不足 ({len(topics)}/{count})，使用備用關鍵字補充")
                 fallback_topics = await self._generate_from_keywords(
                     category,
                     count - len(topics)
                 )
                 topics.extend(fallback_topics)
+            elif use_fallback and not ai_topic_fallback_enabled() and len(topics) < count:
+                logger.info(
+                    f"主題不足 ({len(topics)}/{count})，AI 備援已關閉 (ENABLE_AI_TOPIC_FALLBACK=false)"
+                )
                 
         except Exception as e:
             logger.error(f"收集主題失敗: {e}")
-            # 如果完全失敗，使用備用關鍵字
-            if use_fallback:
+            from app.utils.cost_controls import ai_topic_fallback_enabled
+            if use_fallback and ai_topic_fallback_enabled():
                 topics = await self._generate_from_keywords(category, count)
         
         return topics[:count]
@@ -390,6 +395,19 @@ class TopicCollector:
                     
                     score_result = self.scoring_service.compute_score(article_data, category)
                     
+                    from app.services.summarization.summary_flash_service import generate_summary_flash
+
+                    flash_input = (
+                        source_info.get("original_content")
+                        or content_text
+                        or description
+                        or title
+                    )
+                    summary_flash = await generate_summary_flash(
+                        title=title,
+                        raw_text=flash_input,
+                    )
+
                     # 構建 topic（舊格式，向後兼容）
                     topic = {
                         "title": translated_title,
@@ -397,6 +415,7 @@ class TopicCollector:
                         "source": source_name,
                         "source_name": source_name,
                         "description": description,
+                        "summary_flash": summary_flash,
                         "sources": [source_info],
                         "role": role_name,
                         "score": score_result["score"],
@@ -585,12 +604,23 @@ class TopicCollector:
                                 if style_info:
                                     source_info["style"] = style_info if isinstance(style_info, dict) else style_info
                             
+                            from app.services.summarization.summary_flash_service import (
+                                generate_summary_flash,
+                            )
+
+                            flash_input = (
+                                source_info.get("original_content") or description or title
+                            )
+                            summary_flash = await generate_summary_flash(
+                                title=title, raw_text=flash_input
+                            )
                             topic = {
                                 "title": translated_title,
                                 "category": category.value,
                                 "source": source_name,
                                 "source_name": source_name,
                                 "description": description,
+                                "summary_flash": summary_flash,
                                 "sources": [source_info],
                                 "display_language": "zh-TW",
                                 "original_title": title,
@@ -646,6 +676,10 @@ class TopicCollector:
         count: int
     ) -> List[Dict[str, Any]]:
         """從備用關鍵字生成主題（使用 AI 生成中文標題）"""
+        from app.utils.cost_controls import ai_topic_fallback_enabled
+        if not ai_topic_fallback_enabled():
+            return []
+
         topics = []
         keywords = self.fallback_keywords.get(category, [])
         
@@ -795,6 +829,12 @@ class TopicCollector:
         # 如果目標語言是中文且標題已經是中文，直接返回
         if target_language == "zh-TW" and has_cjk and not has_english:
             return source_title, None
+
+        from app.utils.cost_controls import ai_topic_translation_enabled
+        if not ai_topic_translation_enabled():
+            desc = source_title[:30] if len(source_title) > 30 else None
+            logger.debug("AI 標題翻譯已關閉，使用 RSS 原文: %s", source_title[:40])
+            return source_title, desc
         
         try:
             from app.services.ai.ai_service_factory import AIServiceFactory

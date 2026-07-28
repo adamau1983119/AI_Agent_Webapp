@@ -163,50 +163,34 @@ class AutomationWorkflow:
         topic_title = topic["title"]
         topic_category = topic["category"]
         
-        # 提取關鍵字和原文資訊
         keywords = []
         source_urls = []
-        original_content = None
-        original_language = None
-        style_info = None
-        
         for source in topic.get("sources", []):
             if "keywords" in source:
                 keywords.extend(source["keywords"])
             if "url" in source:
                 source_urls.append(source["url"])
-            # 提取原文內容（使用第一個有內容的來源）
-            if not original_content and source.get("original_content"):
-                original_content = source["original_content"]
-                original_language = source.get("language")
-                if source.get("style"):
-                    style_info = source["style"]
-                    if isinstance(style_info, dict):
-                        pass
-                    else:
-                        style_info = {
-                            "tone": getattr(style_info, "tone", None),
-                            "structure": getattr(style_info, "structure", None),
-                            "vocabulary": getattr(style_info, "vocabulary", None)
-                        }
-        
-        # 動態獲取 AI Service（每次調用時獲取最新配置）
+
+        summary_flash = (topic.get("summary_flash") or "").strip()
+        if not summary_flash:
+            logger.warning("topic %s 無 summary_flash，跳過自動產文", topic_id)
+            return
+
+        from app.config import settings
+        pro_model = getattr(settings, "DEEPSEEK_MODEL_PRO", "deepseek-v4-pro")
         ai_service = self._get_ai_service()
-        
-        # 生成內容（改進版：基於原文內容）
+
         from app.prompts.article_prompt import build_article_prompt
         article_prompt = build_article_prompt(
             topic_title=topic_title,
             topic_category=topic_category,
             keywords=keywords,
             target_length=500,
-            original_content=original_content,
+            summary_flash=summary_flash,
             source_urls=source_urls,
-            original_language=original_language,
-            style_info=style_info,
-            target_language=target_language
+            target_language=target_language,
         )
-        article = await ai_service._call_api(article_prompt)
+        article = await ai_service._call_api(article_prompt, model=pro_model)
         script = await ai_service.generate_script(
             topic_title=topic_title,
             topic_category=topic_category,

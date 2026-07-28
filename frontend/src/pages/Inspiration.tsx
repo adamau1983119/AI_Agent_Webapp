@@ -585,7 +585,11 @@ export default function Inspiration() {
         ) : (
           <div className="space-y-4">
             {results.map((item, index) => (
-              <InspirationCard key={index} item={item} />
+              <InspirationCard
+                key={index}
+                item={item}
+                onUseInspiration={handleUseInspiration}
+              />
             ))}
           </div>
         )}
@@ -595,7 +599,13 @@ export default function Inspiration() {
 }
 
 // 靈感卡片組件
-function InspirationCard({ item }: { item: InspirationItem }) {
+function InspirationCard({
+  item,
+  onUseInspiration,
+}: {
+  item: InspirationItem;
+  onUseInspiration: (item: InspirationItem) => void;
+}) {
   const { t } = useTranslation();
   
   return (
@@ -657,10 +667,12 @@ function InspirationCard({ item }: { item: InspirationItem }) {
         {/* 操作按鈕 */}
         <div className="flex-shrink-0">
           <button
+            type="button"
             data-testid="btn-inspiration-use-this"
-            onClick={() => handleUseInspiration(item)}
+            onClick={() => onUseInspiration(item)}
             className="p-2 text-gray-400 hover:text-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-lg transition-colors"
             title={t('inspiration.useThis')}
+            aria-label={t('inspiration.useThis')}
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />

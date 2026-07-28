@@ -81,9 +81,23 @@ class Topic(BaseModel):
     is_expanded: bool = Field(default=False, description="是否已展開（用戶是否已點擊生成完整內容）")
     generation_config: Optional[Dict[str, Any]] = Field(default=None, description="生成配置（用於記錄生成時的參數）")
     description: Optional[str] = Field(None, max_length=200, description="主題內容摘要（約30字）")
-    
+    summary_flash: Optional[str] = Field(
+        None, max_length=400, description="Flash 提煉摘要（~300 字；v7 LLM 事實源）"
+    )
+
     # Phase 7：多語言支援
     display_language: Optional[str] = Field(default="zh-TW", description="標題/摘要的顯示語言（zh-TW/en/ja）")
     original_title: Optional[str] = Field(None, description="原始標題（來源語言，通常為英文/日文）")
+    titles_i18n: Optional[Dict[str, str]] = Field(
+        None, description="多語言標題快取（zh-TW/ja 等）"
+    )
+
+    # v7 Discover SKU
+    public_feed_flag: bool = Field(default=False, description="公共主題牆卡片")
+    source_lang: Optional[str] = Field(default=None, description="原文語言（公共卡通常 en）")
+    source_country: Optional[str] = Field(
+        default=None, description="來源國別（ISO 簡碼；PF-M metadata 伏筆）"
+    )
+    is_trend_alert: bool = Field(default=False, description="趨勢警報標記（v7.1 伏筆；MVP 不跑 job）")
 
     model_config = ConfigDict(use_enum_values=True)

@@ -19,6 +19,12 @@ from app.services.feed_validate_rate_limit import (
 )
 from app.services.feed_whitelist_search_service import search_whitelist_feeds
 from app.middleware.jwt_auth import get_current_user
+from app.schemas.topic import TopicResponse, TopicListResponse
+from app.schemas.common import PaginationResponse
+from app.services.repositories.topic_repository import TopicRepository
+from app.services.repositories.content_repository import ContentRepository
+from app.services.repositories.image_repository import ImageRepository
+from app.api.v1.topics import _convert_to_response
 from pydantic import BaseModel, Field
 import logging
 
@@ -311,6 +317,58 @@ async def get_channel_sources(
     }
 
 
+_topic_repo = TopicRepository()
+_content_repo = ContentRepository()
+_image_repo = ImageRepository()
+
+
+@router.get("/{channel_id}/topics", response_model=TopicListResponse)
+async def list_channel_topics(
+    channel_id: str,
+    page: int = Query(1, ge=1, description="頁碼"),
+    limit: int = Query(50, ge=1, le=100, description="每頁數量"),
+    current_user: dict = Depends(get_current_user),
+):
+    """
+    取得頻道底下已寫入資料庫的主題列表（依 channel_id 篩選，非僅 topic_count 數字）。
+    """
+    channel = await channel_service.get_channel(current_user["id"], channel_id)
+    if not channel:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="頻道不存在",
+        )
+
+    topics, total = await _topic_repo.list_by_channel_id(
+        channel_id=channel_id,
+        user_id=current_user["id"],
+        page=page,
+        limit=limit,
+    )
+
+    topic_responses = []
+    for topic in topics:
+        topic_copy = dict(topic)
+        try:
+            topic_copy["image_count"] = await _image_repo.count_by_topic_id(topic_copy["id"])
+        except Exception as e:
+            logger.warning(f"取得主題 {topic_copy.get('id')} 圖片數失敗: {e}")
+            topic_copy["image_count"] = 0
+        try:
+            content = await _content_repo.get_content_by_topic_id(topic_copy["id"])
+            topic_copy["word_count"] = content.get("word_count", 0) if content else 0
+        except Exception as e:
+            logger.warning(f"取得主題 {topic_copy.get('id')} 字數失敗: {e}")
+            topic_copy["word_count"] = 0
+        try:
+            topic_responses.append(_convert_to_response(topic_copy))
+        except Exception as e:
+            logger.warning(f"轉換頻道主題 {topic_copy.get('id')} 失敗: {e}")
+
+    pagination = PaginationResponse.create(page, limit, total)
+    return TopicListResponse(data=topic_responses, pagination=pagination)
+
+
 @router.post("/{channel_id}/collect")
 async def trigger_channel_collection(
     channel_id: str,
@@ -319,9 +377,8 @@ async def trigger_channel_collection(
     """
     手動觸發頻道內容收集
     
-    - 通常由排程自動執行
-    - 此端點用於手動測試
-    - 使用三層備用機制確保頻道有內容
+    - 全球多語 RSS → AI 翻譯為用戶語言（資訊差）
+    - 三層備援：L1 頻道 RSS → L2 相近類別 → L3 僅 RSS 全失敗
     """
     channel = await channel_service.get_channel(current_user["id"], channel_id)
     
@@ -348,11 +405,13 @@ async def trigger_channel_collection(
     
     logger.info(f"用戶 {current_user['email']} 觸發頻道收集: {channel_id}, 收集了 {result['topics_collected']} 個主題")
     
+    msg_key = result.get("message", "ok")
     return {
-        "message": "收集完成",
+        "message": "收集完成" if result["topics_collected"] > 0 else "無符合頻道設定與語言的主題",
+        "message_code": msg_key,
         "channel_id": channel_id,
         "topics_collected": result["topics_collected"],
-        "collection_log": result.get("collection_log", {})
+        "collection_log": result.get("collection_log", {}),
     }
 
 

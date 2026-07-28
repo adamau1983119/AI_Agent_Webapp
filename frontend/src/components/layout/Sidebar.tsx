@@ -3,18 +3,30 @@ import { useUIStore } from '@/stores/uiStore'
 import { useAuthStore } from '@/stores/authStore'
 import { useTranslation } from '@/i18n'
 
-// 選單項目配置（使用翻譯 key + 測試 ID）
-const menuItemsConfig = [
-  { path: '/dashboard', labelKey: 'nav.dashboard', icon: 'home', testId: 'link-sidebar-dashboard' },
-  { path: '/topics', labelKey: 'nav.topics', icon: 'document', testId: 'link-sidebar-topics' },
-  { path: '/channels', labelKey: 'nav.channels', icon: 'channel', testId: 'link-sidebar-channels' },
-  { path: '/inspiration', labelKey: 'nav.inspiration', icon: 'lightbulb', testId: 'link-sidebar-inspiration' },
-  { path: '/style-profile', labelKey: 'nav.styleProfile', icon: 'sparkles', testId: 'link-sidebar-style' },
-  { path: '/publish', labelKey: 'nav.publish', icon: 'rocket', testId: 'link-sidebar-publish' },
-  { path: '/social-connect', labelKey: 'nav.socialConnect', icon: 'link', testId: 'link-sidebar-social' },
-  { path: '/preferences', labelKey: 'nav.settings', icon: 'settings', testId: 'link-sidebar-preferences' },
-  { path: '/schedule', labelKey: 'nav.schedule', icon: 'calendar', testId: 'link-sidebar-schedule' },
+/** v7 導航可見性（對齊 專案完整架構表_v7.md 「前端路由」） */
+type V7NavVisibility = 'show' | 'hide' | 'beta'
+
+const menuItemsConfig: Array<{
+  path: string
+  labelKey: string
+  icon: string
+  testId: string
+  v7Nav: V7NavVisibility
+}> = [
+  { path: '/dashboard', labelKey: 'nav.dashboard', icon: 'home', testId: 'link-sidebar-dashboard', v7Nav: 'show' },
+  { path: '/topics', labelKey: 'nav.topics', icon: 'document', testId: 'link-sidebar-topics', v7Nav: 'show' },
+  { path: '/discover', labelKey: 'nav.discover', icon: 'compass', testId: 'link-sidebar-discover', v7Nav: 'show' },
+  { path: '/my-channel', labelKey: 'nav.channels', icon: 'channel', testId: 'link-sidebar-my-channel', v7Nav: 'show' },
+  { path: '/channels', labelKey: 'nav.channelList', icon: 'channel', testId: 'link-sidebar-channels', v7Nav: 'show' },
+  { path: '/inspiration', labelKey: 'nav.inspiration', icon: 'lightbulb', testId: 'link-sidebar-inspiration', v7Nav: 'show' },
+  { path: '/style-profile', labelKey: 'nav.styleProfile', icon: 'sparkles', testId: 'link-sidebar-style', v7Nav: 'hide' },
+  { path: '/publish', labelKey: 'nav.publish', icon: 'rocket', testId: 'link-sidebar-publish', v7Nav: 'beta' },
+  { path: '/social-connect', labelKey: 'nav.socialConnect', icon: 'link', testId: 'link-sidebar-social', v7Nav: 'beta' },
+  { path: '/preferences', labelKey: 'nav.preferences', icon: 'settings', testId: 'link-sidebar-preferences', v7Nav: 'show' },
+  { path: '/schedule', labelKey: 'nav.schedule', icon: 'calendar', testId: 'link-sidebar-schedule', v7Nav: 'hide' },
 ]
+
+const visibleMenuItems = menuItemsConfig.filter((item) => item.v7Nav !== 'hide')
 
 export default function Sidebar() {
   const location = useLocation()
@@ -61,7 +73,7 @@ export default function Sidebar() {
       {/* 導航選單 */}
       <nav className="flex-1 p-4">
         <ul className="space-y-2">
-          {menuItemsConfig.map((item) => {
+          {visibleMenuItems.map((item) => {
             const isActive = location.pathname === item.path
             return (
               <li key={item.path}>
@@ -72,7 +84,12 @@ export default function Sidebar() {
                   className={`sidebar-item ${isActive ? 'active' : ''}`}
                 >
                   <Icon name={item.icon} />
-                  <span>{t(item.labelKey as any)}</span>
+                  <span className="flex-1 min-w-0">{t(item.labelKey as any)}</span>
+                  {item.v7Nav === 'beta' && (
+                    <span className="shrink-0 text-[10px] font-medium text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">
+                      {t('feature.beta')}
+                    </span>
+                  )}
                 </Link>
               </li>
             )
@@ -141,6 +158,11 @@ function Icon({ name }: { name: string }) {
     link: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+      </svg>
+    ),
+    compass: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 2a10 10 0 100 20 10 10 0 000-20zm0 4l1.5 5.5L19 13l-5.5 1.5L12 20l-1.5-5.5L5 13l5.5-1.5L12 6z"></path>
       </svg>
     ),
   }

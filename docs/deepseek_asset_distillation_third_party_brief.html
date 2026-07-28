@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DeepSeek 蒸餾成珍貴資料 — 第三方溝通</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --surface: #1a2332;
+      --border: #2d3a4f;
+      --text: #e7ecf3;
+      --muted: #9aa8bc;
+      --accent: #6b9fd4;
+      --accent-hover: #8ab5e0;
+      --gold: #c9a227;
+      --ok: #3d9a6a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Microsoft JhengHei", "PingFang TC", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+    .wrap { max-width: 960px; margin: 0 auto; padding: 1.5rem 1.25rem 3rem; }
+    h1 { font-size: 1.45rem; margin: 0 0 0.35rem; }
+    .meta { color: var(--muted); font-size: 0.875rem; margin-bottom: 1rem; }
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1.25rem;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      padding: 0.75rem 0;
+      background: linear-gradient(var(--bg) 75%, transparent);
+    }
+    button {
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      padding: 0.5rem 0.9rem;
+      border-radius: 8px;
+      font-size: 0.8125rem;
+      font-family: inherit;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    button:hover { border-color: var(--accent); background: #243044; }
+    button.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      font-weight: 600;
+    }
+    button.primary:hover { background: var(--accent-hover); }
+    button.gold {
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+    button.gold:hover { background: #2a2618; }
+    .toast {
+      position: fixed;
+      bottom: 1.25rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(120%);
+      background: var(--ok);
+      color: #fff;
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      opacity: 0;
+      transition: transform 0.25s, opacity 0.25s;
+      pointer-events: none;
+      z-index: 100;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+    article {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+    }
+    article h2 { font-size: 1.05rem; margin: 1.35rem 0 0.65rem; color: var(--accent); }
+    article h2:first-child { margin-top: 0; }
+    article p, article li { font-size: 0.9rem; }
+    article table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      margin: 0.5rem 0 1rem;
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 0.45rem 0.6rem;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: #243044; color: var(--muted); font-weight: 600; }
+    .lead {
+      font-size: 1rem;
+      padding: 0.75rem 1rem;
+      background: #1e2a3d;
+      border-left: 4px solid var(--gold);
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 1rem;
+    }
+    blockquote {
+      margin: 0.75rem 0;
+      padding: 0.5rem 0.75rem;
+      border-left: 3px solid var(--muted);
+      background: #121a26;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+    pre.copy-block {
+      background: #121a26;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      font-size: 0.78rem;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+      max-height: 280px;
+      overflow-y: auto;
+    }
+    hr { border: none; border-top: 1px solid var(--border); margin: 1.25rem 0; }
+    footer { margin-top: 1rem; font-size: 0.75rem; color: var(--muted); }
+    code { font-size: 0.85em; background: #121a26; padding: 0.1em 0.35em; border-radius: 4px; }
+    a { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>DeepSeek 蒸餾成「珍貴資料」</h1>
+    <p class="meta">第三方溝通用 · Influencers AI · v7.0.0 · 2026-06-04 · 對應 <code>deepseek_asset_distillation_third_party_brief.md</code></p>
+
+    <div class="toolbar">
+      <button type="button" class="primary" id="btn-copy-plain">複製：一頁摘要（推薦貼 LINE／Email）</button>
+      <button type="button" class="gold" id="btn-copy-layers">複製：四層策略 L0～L3</button>
+      <button type="button" id="btn-copy-precious">複製：珍貴資料定義表</button>
+      <button type="button" id="btn-copy-questions">複製：7 項待討論題</button>
+      <button type="button" id="btn-copy-env">複製：建議 .env 開關</button>
+      <button type="button" id="btn-copy-md">複製：完整 Markdown</button>
+    </div>
+
+    <article id="content">
+      <p class="lead" id="lead-text">
+        Influencers AI 只把 DeepSeek 用在「使用者主動要的發文素材」；RSS 標題翻譯改零成本或便宜機器翻譯，且所有 AI 產出一律寫入資料庫快取，避免重複付費。
+      </p>
+
+      <h2>1. 為什麼要蒸餾</h2>
+      <table>
+        <tr><th>問題</th><th>說明</th></tr>
+        <tr><td>成本</td><td>測試期：少量主題收集卻大量 API（收集時每則標題翻譯 + 排程自動收）</td></tr>
+        <tr><td>浪費</td><td>同一內容重翻、無故重新生成 = 丟棄已付費輸出</td></tr>
+        <tr><td>混淆</td><td>「看懂標題」不應與「寫可發布短文／腳本」同一套高價 AI</td></tr>
+      </table>
+
+      <h2>2. 珍貴資料（要留、要版本化）</h2>
+      <table>
+        <tr><th>資產</th><th>儲存</th><th>說明</th></tr>
+        <tr><td>短文 + 腳本</td><td><code>contents</code></td><td>發文素材；含 model、prompt 版本</td></tr>
+        <tr><td>版本歷史</td><td><code>contents.versions[]</code></td><td>重新生成不覆蓋舊稿</td></tr>
+        <tr><td>卡片譯文快取</td><td><code>titles_i18n</code></td><td>按鈕翻譯後永久快取，第二次 0 API</td></tr>
+        <tr><td>收集主標</td><td><code>title</code> / <code>original_title</code></td><td>RSS 原文，不被翻譯覆寫</td></tr>
+        <tr><td>（規劃）日誌</td><td><code>ai_generations</code></td><td>稽核 topic、種類、是否快取</td></tr>
+      </table>
+      <blockquote>不燒 DeepSeek：背景每則 RSS 自動改寫標題、無人點開就批量生成全文。</blockquote>
+
+      <h2>3. 四層策略 L0～L3 + 生成</h2>
+      <table>
+        <tr><th>層</th><th>行為</th><th>技術</th><th>成本</th></tr>
+        <tr><td>L0</td><td>收集主題卡，保留來源語言標題</td><td>無 AI</td><td>≈0</td></tr>
+        <tr><td>L1</td><td>顯示主標；語言不同才顯示翻譯鈕</td><td>UI</td><td>≈0</td></tr>
+        <tr><td>L2</td><td>使用者按鈕才翻標題／摘要</td><td>Google／Azure MT（規劃）</td><td>低</td></tr>
+        <tr><td>L3</td><td>社群風格標題改寫（可選）</td><td>DeepSeek Flash</td><td>按次</td></tr>
+        <tr><td>生成</td><td>詳情短文、腳本、重生</td><td>DeepSeek Flash（核心）</td><td>按次·限流</td></tr>
+      </table>
+
+      <h2>4. MVP 主路</h2>
+      <pre class="copy-block">頻道 RSS 收集 (L0)
+  → 主題卡 (L1，按需 L2/L3)
+  → 詳情「生成內容」(DeepSeek Flash)
+  → Post Kit 複製 → FB／IG 發文</pre>
+
+      <h2>5. 正式環境建議開關</h2>
+      <pre class="copy-block" id="env-preview"></pre>
+
+      <h2>6. 給第三方討論（7 項）</h2>
+      <ol>
+        <li>L2 翻譯：Google 還是 Azure？免費額度與繁中品質？</li>
+        <li>預設是否「僅機翻標題」、改寫為進階？</li>
+        <li>單用戶每月 DeepSeek 預算上限？</li>
+        <li>重新生成是否強制二次確認？</li>
+        <li>生成內容／譯文保留天數與刪帳？</li>
+        <li>是否要 AI 呼叫日誌給財務對帳？</li>
+        <li>是否關閉每 6 小時自動收三類主題？</li>
+      </ol>
+
+      <hr />
+      <h2>7. 一頁摘要預覽</h2>
+      <pre class="copy-block" id="plain-preview"></pre>
+    </article>
+
+    <footer>
+      開啟方式：雙擊本 HTML 或用瀏覽器開啟。規格詳見
+      <code>docs/v7.0.0_需求文件.md</code>。
+    </footer>
+  </div>
+
+  <div class="toast" id="toast" role="status">已複製到剪貼簿</div>
+
+  <script type="text/plain" id="md-embed"># DeepSeek 蒸餾成「珍貴資料」— 第三方溝通簡介
+
+> **用途**：與技術顧問、翻譯服務商、投資人或合作方說明 **AI 成本策略** 與 **資料資產** 設計  
+> **版本**：v7.0.0 對齊  
+> **更新**：2026-06-04  
+> **可複製 HTML**：[`deepseek_asset_distillation_third_party_brief.html`](./deepseek_asset_distillation_third_party_brief.html)（瀏覽器開啟，一鍵複製）  
+> **詳規**：[`v7.0.0_需求文件.md`](./v7.0.0_需求文件.md)、[`deepseek_cost_investigation_2026-05.md`](./deepseek_cost_investigation_2026-05.md)
+
+---
+
+## 1. 一句話（給第三方）
+
+**Influencers AI 只把 DeepSeek 用在「使用者主動要的發文素材」；RSS 標題翻譯改零成本或便宜機器翻譯，且所有 AI 產出一律寫入資料庫快取，避免重複付費。**
+
+---
+
+## 2. 為什麼要「蒸餾」
+
+| 問題 | 說明 |
+|------|------|
+| 成本不可擴展 | 測試期曾出現：極少主題收集卻觸發大量 **DeepSeek** 呼叫（多為收集時「每則標題翻譯一次」+ 排程自動收集） |
+| 浪費 | 同一標題重翻、同一主題無故「重新生成」，等於丟棄已付費的輸出 |
+| 混淆 | 把「看懂標題」與「寫可發布的短文／腳本」混用同一套高價 prompt |
+
+**蒸餾**＝把 DeepSeek 從低價值、高頻流程中抽離，只留下高價值、低頻、可留存、可稽核的產出。
+
+---
+
+## 3. 什麼算「珍貴資料」（要留、要版本化）
+
+| 資產 | 存哪裡 | 為何珍貴 |
+|------|--------|----------|
+| **短文 + 腳本** | MongoDB `contents`（`article`、`script`） | 使用者要拿去 IG／小紅書發文；含 `model_used`、`prompt_version` |
+| **版本歷史** | `contents.versions[]` | 每次重新生成不覆蓋舊稿，可回溯、可選用 |
+| **卡片譯文（快取）** | `topics.titles_i18n`、`description_i18n` | 使用者按「譯為目前語言」後**永久快取**，第二次不再呼叫 API |
+| **收集主標** | `topics.title`、`original_title` | 來自 RSS，**不應**被翻譯 API 覆寫（方案 C） |
+| **（規劃）呼叫日誌** | `ai_generations` | 稽核：哪個 topic、翻譯或生成、是否快取、用哪個 model |
+
+**不算珍貴、不應燒 DeepSeek**：背景排程替每則 RSS 自動改寫標題、無人點開就批量生成全文。
+
+---
+
+## 4. 四層策略（L0～L3）
+
+| 層級 | 做什麼 | 用什麼 | 成本 |
+|------|--------|--------|------|
+| **L0** | 收集主題卡：保留 RSS／來源語言標題 | 無 AI | ≈ 0 |
+| **L1** | 介面顯示：主標＝收集語言；必要時顯示「譯為目前語言」按鈕 | UI only | ≈ 0 |
+| **L2** | 使用者按鈕才翻譯標題／短摘要 | Google／Azure 等 **機器翻譯**（規劃） | 低 |
+| **L3** | 需要「社群風格」標題改寫 | DeepSeek **Flash**（可選） | 按次 |
+| **生成** | 主題詳情：短文、腳本、重新生成 | DeepSeek **Flash**（核心） | 按次、需限流 |
+
+**原則**：主題卡瀏覽 **不必** DeepSeek；**必須** DeepSeek 的是使用者明確觸發的 **內容生成**。
+
+---
+
+## 5. 正式環境建議開關（可給維運／第三方看）
+
+```env
+DEEPSEEK_MODEL=deepseek-v4-flash
+ENABLE_SCHEDULED_TOPIC_COLLECTION=false
+ENABLE_AI_TOPIC_TRANSLATION=false
+ENABLE_AI_TOPIC_FALLBACK=false
+AUTO_START_SCHEDULER=false
+# 規劃
+TRANSLATION_PROVIDER=none   # 或 google / azure / deepseek_flash
+```
+
+`GET /health` 可回傳 `cost_controls` 供監控對照。
+
+---
+
+## 6. 產品主路（MVP，與蒸餾一致）
+
+```
+頻道 RSS 收集 (L0)
+    → 主題卡閱讀 (L1，按需 L2/L3 譯)
+    → 進詳情 → 使用者按「生成內容」(DeepSeek Flash)
+    → Post Kit 複製發文（站外 FB／IG）
+```
+
+---
+
+## 7. 給第三方討論題（7 項）
+
+1. **翻譯供應商**：L2 優先接 **Google Cloud Translation** 還是 **Azure Translator**？免費額度與繁中品質要求？  
+2. **是否接受「標題僅機翻、不改寫」**作為預設，改寫僅進階選項？  
+3. **DeepSeek 預算**：單用戶每月 API 上限（例如 USD）？超過時降級或排隊？  
+4. **重新生成**：是否強制二次確認，避免誤觸燒量？  
+5. **資料保留**：生成內容與譯文快取保留幾天？是否符合私隱／刪除帳號要求？  
+6. **稽核**：是否需要匯出 `ai_generations` 給財務對帳？  
+7. **排程**：正式上線是否 **完全關閉**「每 6 小時自動收三類主題」？
+
+---
+
+## 8. 技術錨點（給工程第三方）
+
+| 項目 | 路徑 |
+|------|------|
+| 成本開關 | `backend/app/utils/cost_controls.py` |
+| 收集翻譯 | `backend/app/services/automation/topic_collector.py` → `_translate_title` |
+| 按需卡片翻譯 | `backend/app/services/topic_display_translation_service.py` |
+| 內容生成 | `backend/app/api/v1/contents.py` |
+| 內容版本 | `backend/app/services/repositories/content_repository.py` |
+| v7 規格 | `docs/v7.0.0_需求文件.md`、`專案完整架構表_v7.md` |
+
+---
+
+## 9. 參考數據（測試期，非承諾）
+
+- 歷史帳單調查見 `deepseek_cost_investigation_2026-05.md`（多為 **v4-pro** + 高頻 API，非現行 Flash 預設目標）。  
+- v7 目標：新用戶首週 DeepSeek 成本較「收集開翻譯」情境 **降 ≥ 80%**（待實測驗證）。
+
+---
+
+**文件維護**：開發團隊 · 2026-06-04
+</script>
+
+  <script>
+    const PLAIN = `【Influencers AI】DeepSeek 蒸餾成「珍貴資料」— 第三方一頁摘要
+更新：2026-06-04 · 對齊 v7.0.0
+
+■ 一句話
+只把 DeepSeek 用在「使用者主動要的發文素材」；RSS 標題改零成本或便宜機翻；AI 產出寫入 DB 快取，避免重複付費。
+
+■ 為什麼
+· 測試期：少量收集卻大量 API（每則標題翻譯 + 自動排程）
+· 同一內容重翻／誤觸重生 = 浪費
+· 「看懂標題」≠「寫可發布稿」
+
+■ 珍貴資料（要留）
+1. 短文+腳本 → contents（含 model、prompt 版）
+2. 版本史 → contents.versions[]（重生不蓋舊稿）
+3. 卡片譯文 → titles_i18n（按鈕翻一次、永久快取）
+4. 收集主標 → title / original_title（不被翻譯覆寫）
+5. （規劃）ai_generations 稽核日誌
+
+■ 四層
+L0 收集無 AI｜L1 顯示+按需按鈕｜L2 機翻（Google/Azure）｜L3 Flash 改寫標題（可選）
+「生成」= 詳情短文/腳本 → DeepSeek Flash（核心、限流）
+
+■ MVP 主路
+頻道 RSS → 主題卡 → 詳情生成 → Post Kit 複製發 FB/IG
+
+■ 正式建議 .env
+DEEPSEEK_MODEL=deepseek-v4-flash
+ENABLE_SCHEDULED_TOPIC_COLLECTION=false
+ENABLE_AI_TOPIC_TRANSLATION=false
+ENABLE_AI_TOPIC_FALLBACK=false
+AUTO_START_SCHEDULER=false
+
+■ 待討論 7 題
+1. L2 用 Google 或 Azure？
+2. 預設僅機翻？
+3. 單用戶月預算上限？
+4. 重生要二次確認？
+5. 資料保留與刪帳？
+6. 要 AI 日誌對帳？
+7. 關閉 6h 自動收三類？
+
+■ 技術錨點
+cost_controls.py · topic_display_translation_service.py · contents.py · v7.0.0_需求文件.md`;
+
+    const LAYERS = `DeepSeek 四層策略（Influencers AI v7）
+
+L0｜收集：RSS 原文標題，無 AI｜成本≈0
+L1｜顯示：主標=收集語言；介面語不同才顯示「譯為目前語言」｜成本≈0
+L2｜按需翻譯：Google/Azure 機器翻譯 → 寫入 titles_i18n 快取｜成本低
+L3｜進階：社群風格標題改寫 → DeepSeek Flash（可選）｜按次
+生成｜詳情短文+腳本+重新生成 → DeepSeek Flash（核心，需限流）｜按次
+
+原則：主題卡瀏覽不必 DeepSeek；必須 DeepSeek = 使用者明確按「生成內容」。`;
+
+    const PRECIOUS = `珍貴資料定義（要寫入 DB、避免重複 API）
+
+| 資產 | 儲存 | 規則 |
+| 短文+腳本 | contents.article/script | 含 model_used、prompt_version |
+| 版本 | contents.versions[] | regenerate 必追加版本 |
+| 譯文快取 | topics.titles_i18n | 快取命中後禁止再呼叫任何翻譯 API |
+| 收集主標 | topics.title | translate-display 不覆寫 |
+| 原文標題 | topics.original_title | 方案 C 小字顯示 |
+| 日誌(規劃) | ai_generations | kind=content|translate|assist, cached 旗標 |
+
+非珍貴（不應燒 DeepSeek）：
+· 排程每則 RSS 自動翻譯標題
+· 無人互動批量 generate-today`;
+
+    const QUESTIONS = `【待第三方回覆】DeepSeek 蒸餾 — 7 題
+
+1. L2 機翻供應商：Google Cloud Translation 或 Azure Translator？免費額度與繁中品質要求？
+2. 產品預設：標題僅機翻、社群改寫是否改為「進階選項」？
+3. 營運：單用戶每月 DeepSeek API 預算上限（USD/CNY）？超限降級策略？
+4. UX：重新生成是否強制二次確認以防誤觸？
+5. 合規：生成內容與譯文保留幾天？刪除帳號時如何清除？
+6. 財務：是否需要 ai_generations 日誌匯出對帳？
+7. 排程：正式環境是否完全關閉「每 6 小時自動收 fashion/food/trend」？`;
+
+    const ENV = `DEEPSEEK_MODEL=deepseek-v4-flash
+ENABLE_SCHEDULED_TOPIC_COLLECTION=false
+ENABLE_AI_TOPIC_TRANSLATION=false
+ENABLE_AI_TOPIC_FALLBACK=false
+AUTO_START_SCHEDULER=false
+# 規劃中
+TRANSLATION_PROVIDER=none`;
+
+    document.getElementById('plain-preview').textContent = PLAIN;
+    document.getElementById('env-preview').textContent = ENV;
+
+    function getMarkdown() {
+      return document.getElementById('md-embed').textContent.trim();
+    }
+
+    function showToast() {
+      const t = document.getElementById('toast');
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2200);
+    }
+
+    async function copyText(text) {
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.left = '-9999px';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      }
+      showToast();
+    }
+
+    document.getElementById('btn-copy-plain').addEventListener('click', () => copyText(PLAIN));
+    document.getElementById('btn-copy-layers').addEventListener('click', () => copyText(LAYERS));
+    document.getElementById('btn-copy-precious').addEventListener('click', () => copyText(PRECIOUS));
+    document.getElementById('btn-copy-questions').addEventListener('click', () => copyText(QUESTIONS));
+    document.getElementById('btn-copy-env').addEventListener('click', () => copyText(ENV));
+    document.getElementById('btn-copy-md').addEventListener('click', () => copyText(getMarkdown()));
+  </script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { topicsAPI, contentsAPI, imagesAPI, interactionsAPI } from '@/api/client'
@@ -11,10 +11,20 @@ import ImageGallery from '@/components/features/ImageGallery'
 import ImageSearch from '@/components/features/ImageSearch'
 import InteractionButtons from '@/components/features/InteractionButtons'
 import ContentGenerationPanel from '@/components/features/ContentGenerationPanel'
+import PostKitPanel from '@/components/features/PostKitPanel'
 import type { GenerationSettings } from '@/components/features/ContentGenerationPanel'
 import { usePageTitle } from '@/hooks/usePageTitle'
 import { useAuthStore } from '@/stores/authStore'
 import { useTranslation } from '@/i18n'
+import TopicTranslateDisplayButton, {
+  type TopicDisplayOverride,
+} from '@/components/ui/TopicTranslateDisplayButton'
+import {
+  getCollectionLanguage,
+  getOriginalTitleLine,
+  needsTranslateToCurrentLanguage,
+  resolveTopicDisplayCopy,
+} from '@/lib/topicDisplay'
 
 export default function TopicDetail() {
   const { id } = useParams<{ id: string }>()
@@ -27,6 +37,8 @@ export default function TopicDetail() {
   const [showImageSearch, setShowImageSearch] = useState(false)
   const [showLoginPrompt, setShowLoginPrompt] = useState(false)
   const [viewStartTime, setViewStartTime] = useState<number | null>(null)
+  const [displayOverride, setDisplayOverride] = useState<TopicDisplayOverride | null>(null)
+  const [showCollectionTitle, setShowCollectionTitle] = useState(false)
 
   // 檢查是否需要登入才能執行操作
   const requireAuth = (action: () => void) => {
@@ -48,8 +60,25 @@ export default function TopicDetail() {
     enabled: !!id,
   })
 
-  // 設定頁面標題
-  usePageTitle(topic ? topic.title : t('nav.topics'))
+  const displayCopy = useMemo(() => {
+    if (!topic) return null
+    if (showCollectionTitle) {
+      return {
+        title: topic.title,
+        description: topic.description,
+        usingTranslation: false,
+        fromCache: false,
+      }
+    }
+    return resolveTopicDisplayCopy(topic, language, displayOverride)
+  }, [topic, language, displayOverride, showCollectionTitle])
+
+  useEffect(() => {
+    setDisplayOverride(null)
+    setShowCollectionTitle(false)
+  }, [id, language])
+
+  usePageTitle(displayCopy?.title || (topic ? topic.title : t('nav.topics')))
 
   const {
     data: content,
@@ -297,9 +326,26 @@ export default function TopicDetail() {
   return (
     <div className="p-4 sm:p-6 min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* 標題和操作按鈕 */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white break-words flex-1">{topic.title}</h1>
-        <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+      <div className="flex flex-col gap-4 mb-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white break-words">
+              {displayCopy?.title ?? topic.title}
+            </h1>
+            {displayCopy && getOriginalTitleLine(topic, displayCopy.title) && (
+              <p className="text-sm text-gray-500 dark:text-gray-400 italic mt-2 break-words">
+                {t('topics.originalTitlePrefix')}{' '}
+                {getOriginalTitleLine(topic, displayCopy.title)}
+              </p>
+            )}
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+              {t('topics.collectionVsUiLanguage', {
+                collection: t(`language.${getCollectionLanguage(topic)}`),
+                ui: t(`language.${language}`),
+              })}
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2 w-full sm:w-auto shrink-0">
           <button
             onClick={() => requireAuth(() => setShowEditor(true))}
             data-testid="btn-topic-detail-edit"
@@ -324,7 +370,54 @@ export default function TopicDetail() {
           >
             {t('common.delete')}
           </button>
+          </div>
         </div>
+
+        {(needsTranslateToCurrentLanguage(topic, language) || displayCopy?.fromCache) && (
+          <div className="flex flex-wrap items-center gap-2">
+            {needsTranslateToCurrentLanguage(topic, language) && !showCollectionTitle && (
+              <>
+                <TopicTranslateDisplayButton
+                  topic={topic}
+                  translationType="standard_translation"
+                  testId="btn-topic-detail-translate-display"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-md hover:bg-purple-700 disabled:opacity-50 min-h-[44px]"
+                  onTranslated={(next) => {
+                    setDisplayOverride(next)
+                    setShowCollectionTitle(false)
+                  }}
+                />
+                <TopicTranslateDisplayButton
+                  topic={topic}
+                  translationType="kol_style"
+                  testId="btn-topic-detail-kol-style"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-amber-900 dark:text-amber-100 bg-amber-100 dark:bg-amber-900/30 border border-amber-300 dark:border-amber-700 rounded-md hover:bg-amber-200 dark:hover:bg-amber-900/50 disabled:opacity-50 min-h-[44px]"
+                  onTranslated={(next) => {
+                    setDisplayOverride(next)
+                    setShowCollectionTitle(false)
+                  }}
+                />
+              </>
+            )}
+            {(displayOverride || showCollectionTitle || displayCopy?.fromCache) && (
+              <button
+                type="button"
+                onClick={() => setShowCollectionTitle((v) => !v)}
+                data-testid="btn-topic-detail-show-collected"
+                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 min-h-[44px]"
+              >
+                {showCollectionTitle
+                  ? t('topics.showTranslatedTitle')
+                  : t('topics.showCollectionTitle')}
+              </button>
+            )}
+            {displayCopy?.fromCache && !showCollectionTitle && (
+              <span className="text-xs text-green-700 dark:text-green-400 px-2 py-1 bg-green-50 dark:bg-green-900/20 rounded">
+                {t('topics.translatedCached')}
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
       {/* 編輯模態框 */}
@@ -639,6 +732,17 @@ export default function TopicDetail() {
             </div>
           </div>
         </div>
+      </div>
+
+      <div className="mt-6">
+        <PostKitPanel
+          displayTitle={displayCopy?.title || topic.title}
+          category={topic.category}
+          content={content ?? null}
+          images={images}
+          previewImages={topic.previewImages || []}
+          topicId={topic.id}
+        />
       </div>
     </div>
   )

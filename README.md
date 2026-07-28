@@ -1,12 +1,12 @@
 # Influencers AI Agents（網紅 AI 助手）
 
 > **版本**：v6.0.0  
-> **更新日期**：2026-05-29（新增 **規則 #15～#16** 測試分工與 checklist 代號；與 [`工作記錄.md`](./工作記錄.md)「最後更新」對齊；**#10** README↔工作記錄日期）  
-> **當前分支**：`main`（**PR #15** 已合併；頂端 **`5882db9`**；變更須經 PR，勿直推 `main`）  
+> **更新日期**：2026-06-16（增 **禁止模糊驗收與 Mock 假資料**；其餘與 [`工作記錄.md`](./工作記錄.md)「最後更新」不一致時**以工作記錄為準**）  
+> **當前分支**：`main`（**PR #16** 已合併；頂端 **`deae669`**；變更須經 PR，勿直推 `main`）  
 > **穩定標籤**：`v4.3.0-code-complete`（上一版本）  
 > **狀態同步**：此 README 的「更新日期」應與 `工作記錄.md` 的「最後更新」一致。**如不一致，以 `工作記錄.md` 為準。**  
 > **日期 SoT**：[`docs/calendar_2026_reference.md`](./docs/calendar_2026_reference.md)（2026 全年 365 日；寫入星期前必查）  
-> **AI 排程**：對話輸入「專案開始」→ [AGENTS.md](./AGENTS.md)（第 10～14 天 + **收口 W-1～W-4：2026-05-26 二～05-29 五**；**NW-1～NW-4：2026-06-02 二～06-05 五**）  
+> **AI 排程**：對話輸入 **`專案開始`**（**預設 v7**）→ [AGENTS.md](./AGENTS.md) **Phase 0～4** + [`docs/v7_token_cost_phase_checklist.md`](./docs/v7_token_cost_phase_checklist.md)；**`專案開始 v6`** → v6 測試週（T-10～T-14、NW-1～NW-4，封存追溯）  
 > **v7 規劃（2026-06-04）**：上架收斂與 AI 成本 — [`docs/v7.0.0_需求文件.md`](./docs/v7.0.0_需求文件.md)、[`專案完整架構表_v7.md`](./專案完整架構表_v7.md)；v6 架構 [`專案完整架構表.md`](./專案完整架構表.md) **已凍結**（[`docs/VERSIONING_POLICY.md`](./docs/VERSIONING_POLICY.md)）。
 
 ---
@@ -45,6 +45,27 @@
 **專案核心交付準則**：凡本專案之驗收、收口、是否「可收貨」，**必須**對照**書面 Checklist** 逐項執行，並留存**可稽核證據**（例如：URL、HTTP status、截圖、`工作記錄.md` 一句結論、Network 摘要）。**未經 Checklist 涵蓋之口頭需求、口頭完成聲明，不構成收貨條件；無 Checklist 對照者，本人不予收貨。**
 
 **開發段對照前提**：第 1～9 工作天相關之 `AGENTS.md` 核取項、[docs/channel_create_new_scheme_checklist.md](./docs/channel_create_new_scheme_checklist.md) **A～H**（含 B～D 建立頻道交付）、[專案完整架構表.md](./專案完整架構表.md) 與規格互鏈等，**已視為開發段依 Checklist 對齊之基線**；後續僅接受**測試週**與**迴歸**之勾選與證據更新。
+
+### ⛔ 禁止模糊驗收與 Mock 假資料（強制 · 2026-06-16 鎖定 · 禁止再犯）
+
+> **專案底線**：凡以「能跑通、能開頁、API 回 200」但**無實質產品內容**或**以假資料充數**之驗收，**一律不算完成、不可收貨、不得寫入排程或 Checklist 為 PASS**。本條與 [`開發人員必讀規則.md`](./開發人員必讀規則.md) **規則 5**（禁止模擬測試）及 [docs/test_week_daily_checklist.md](./docs/test_week_daily_checklist.md) **禁止模糊签收** 同級；**AI 助手與開發者均不得再引入、再排程、再口頭宣告完成**。
+
+**本專案所禁止之「模糊驗收」**（含但不限於）：
+
+| 禁止 | 說明 | 典型反例（曾發生／須杜絕） |
+|------|------|---------------------------|
+| **Mock／假資料充 UI** | 寫入固定字串、假 `topics`、假 feed 只為讓畫面有卡 | v7 Discover ~~**PF-S**~~（`trigger_public_feed_smoke.py`、≥3 筆 mock topics）— **已廢止** |
+| **空殼 PASS** | 僅驗證路由可開、白屏無、HTTP 200，但無可稽核之**真實業務資料** | 「`/discover` 能開」「feed 200 但陣列空仍勾 E0-PF」 |
+| **跳過真實 API** | 以模板輸出、假 response、未呼叫後端即宣稱通過 | 前端 fallback mock（全專案 mock 已移除，**禁止回歸**） |
+| **模糊驗收式排程** | 把上述行為寫進 AGENTS／工作記錄／需求 Phase 當「結案」或「演示」 | 任何「零 AI Mock 模糊驗收」「只跑通不驗內容」之 Phase |
+
+**允許且必須**（驗收之前提）：
+
+- ✅ **真實後端 + 真實 API** 回應（規則 5）
+- ✅ Checklist 逐項 **UI 可驗證項 + Network（或指定 curl／後台）** + **截圖檔名**（禁止模糊签收）
+- ✅ Discover／公共 feed：**真實批次管線**（例：`backend/scripts/run_public_feed_batch.py`；dev 受控 `safe_batch_size`）+ **PF-B** 等寫入真實 `topic_translations` — 見 [`docs/v7_discover_public_feed_checklist.md`](./docs/v7_discover_public_feed_checklist.md) **工程鐵律 E7**
+
+**違反後果**：該項 **不得 `[x]`**、**不得 merge 收貨**；須在 `工作記錄.md` 標 **FAIL／BLOCK** 並修正後重測。**排程、需求、架構表若與本條衝突，以本條與 Checklist 為準**（曾錯排之 Phase 須明示作廢，不得静默沿用）。
 
 ### 測試分工與代號（固定｜2026-05-29）
 
@@ -87,7 +108,7 @@
 
 | 項目 | 狀態 | 說明 |
 |:----:|:----:|------|
-| **版本** | v6.0.0 | ✅ `main`（**PR #15** `5882db9`） |
+| **版本** | v6.0.0 程式／**v7.0.0-docs** | ✅ `main`（**PR #16** `deae669`；v7 規格見頂部連結） |
 | **當前分支** | `main` | 改碼請用 **feature 分支 + PR** |
 | **開發完成度** | 106/126 (100%) | Phase 1-5 程式開發全部完成 |
 | **測試週 R+T** | **收口衝刺** | **W-4 PARTIAL（05-29）**；**T-14 ☑ → NW-4（06-05）**；W-1 ☑；W-2～3 批次 S1～S11 |
@@ -254,7 +275,7 @@ f522e10 - feat: Phase1 RSS health monitoring + Phase2 security enhancements
 
 | 順序 | 文件 | 目的 | 必須閱讀 |
 |:----:|------|------|:--------:|
-| 0 | **[開發人員必讀規則.md](./開發人員必讀規則.md)** | **🔴 所有必須遵守的規則（每日開發前檢查）** | ✅ **必須** |
+| 0 | **[開發人員必讀規則.md](./開發人員必讀規則.md)** | **🔴 所有必須遵守的規則（每日開發前檢查）**；**規則 5** 與 README **禁止模糊驗收／Mock** 同級 | ✅ **必須** |
 | 1 | **README.md** | 核心價值、規則、禁止操作 | ✅ 必須 |
 | 2 | [專案完整架構表.md](./專案完整架構表.md) | 路由、組件結構、技術架構 | ✅ 必須 |
 | 3 | [Git分支策略與版本管理.md](./Git分支策略與版本管理.md) | 分支規則、合併流程 | ✅ 必須 |
@@ -293,6 +314,7 @@ f522e10 - feat: Phase1 RSS health monitoring + Phase2 security enhancements
 □ 🔴 記住：修改前必須完整了解程式架構，避免整個程式崩壞（規則 #8）
 □ 🔴 記住：擅自生成程式會導致整個程式崩潰
 □ 🔴 記住：嚴禁因測試或替代方案（ngrok、HTTPS 等）修改原有程式，完全禁止（規則 #14）
+□ 🔴 記住：禁止模糊驗收與 Mock 假資料—不得「能開頁／空 feed／假 topics」當 PASS（README「交付與驗收原則」；規則 #5）
 ```
 
 ### 🔴 關鍵錯誤記錄（避免再犯）

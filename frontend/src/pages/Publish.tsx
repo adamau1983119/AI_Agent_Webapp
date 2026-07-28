@@ -19,6 +19,8 @@ import {
 import PlatformIcon from '@/components/ui/PlatformIcon'
 import toast from 'react-hot-toast';
 
+const API_PUBLISH_ENABLED = import.meta.env.VITE_ENABLE_API_PUBLISH === 'true';
+
 export default function Publish() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -145,6 +147,31 @@ export default function Publish() {
   };
 
   if (!isAuthenticated) return null;
+
+  if (!API_PUBLISH_ENABLED) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg text-center">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
+              {t('publish.assistantTitle')}
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
+              {t('publish.assistantBody')}
+            </p>
+            <button
+              type="button"
+              data-testid="btn-publish-goto-topics"
+              onClick={() => navigate('/topics')}
+              className="min-h-[44px] px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
+            >
+              {t('publish.goToTopics')}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
@@ -276,7 +303,13 @@ export default function Publish() {
                           alt={`${t('publish.image')} ${index + 1}`}
                           className="w-full h-24 object-cover rounded-lg"
                           onError={(e) => {
-                            (e.target as HTMLImageElement).src = 'https://via.placeholder.com/150?text=Invalid';
+                            const target = e.target as HTMLImageElement
+                            target.src =
+                              'data:image/svg+xml,' +
+                              encodeURIComponent(
+                                '<svg xmlns="http://www.w3.org/2000/svg" width="150" height="100"><rect fill="#e5e7eb" width="150" height="100"/></svg>'
+                              )
+                            target.onerror = null
                           }}
                         />
                         <button

@@ -2,11 +2,12 @@
  * 設定頁面
  * Phase 2: 會員系統
  */
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation, languageOptions, Language } from '../i18n';
 import { useAuthStore } from '../stores/authStore';
 import { authApi } from '../api/auth';
+import { alterEgoApi } from '../api/alterEgo';
 import toast from 'react-hot-toast';
 
 export default function Settings() {
@@ -17,6 +18,14 @@ export default function Settings() {
   const [activeTab, setActiveTab] = useState<'profile' | 'account' | 'preferences'>('profile');
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
+  const [dnaStatus, setDnaStatus] = useState<string | null>(null);
+
+  useEffect(() => {
+    alterEgoApi
+      .getStatus()
+      .then((s) => setDnaStatus(s.dna_status))
+      .catch(() => setDnaStatus(null));
+  }, []);
   
   // 表單狀態
   const [profileData, setProfileData] = useState({
@@ -192,6 +201,19 @@ export default function Settings() {
                       ))}
                     </select>
                   </div>
+
+                  {(dnaStatus === 'skipped' || dnaStatus === 'pending') && (
+                    <div className="pt-2 border-t border-slate-700/50">
+                      <p className="text-sm text-gray-400 mb-3">{t('alterEgo.settingsHint')}</p>
+                      <Link
+                        to="/onboarding/alter-ego"
+                        data-testid="btn-settings-alter-ego-setup"
+                        className="inline-flex items-center px-4 py-3 bg-purple-600 hover:bg-purple-500 rounded-lg text-sm font-medium min-h-[44px]"
+                      >
+                        {t('alterEgo.settingsCta')}
+                      </Link>
+                    </div>
+                  )}
                   
                   {/* 儲存按鈕 */}
                   <div className="flex items-center gap-4 pt-4">

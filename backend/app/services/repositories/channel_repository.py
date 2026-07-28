@@ -89,7 +89,7 @@ class ChannelRepository(BaseRepository):
     
     async def get_channel_by_id(self, channel_id: str) -> Optional[Dict[str, Any]]:
         """根據 ID 取得 Channel"""
-        return await self.find_by_id(channel_id, id_field="id")
+        return await self.find_by_id(channel_id)
     
     async def get_user_channel(
         self,
@@ -149,7 +149,7 @@ class ChannelRepository(BaseRepository):
     ) -> Optional[Dict[str, Any]]:
         """更新 Channel"""
         update_data["updated_at"] = datetime.utcnow()
-        return await self.update_by_id(channel_id, {"$set": update_data}, id_field="id")
+        return await self.update_by_id(channel_id, {"$set": update_data})
     
     async def delete_channel(
         self,
@@ -218,7 +218,6 @@ class ChannelRepository(BaseRepository):
                 "$inc": {"topic_count": count},
                 "$set": {"updated_at": datetime.utcnow()}
             },
-            id_field="id"
         )
     
     async def get_active_channels(self) -> List[Dict[str, Any]]:

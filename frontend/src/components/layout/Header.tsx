@@ -2,12 +2,14 @@ import { format } from 'date-fns'
 import { zhTW, enUS, ja } from 'date-fns/locale'
 import { useState, FormEvent, useRef, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
 import { useUIStore } from '@/stores/uiStore'
 import { useAuthStore } from '@/stores/authStore'
 import { useTranslation, languageOptions, Language } from '@/i18n'
 
 export default function Header() {
   const { t, language, setLanguage } = useTranslation()
+  const queryClient = useQueryClient()
   const today = new Date()
   
   // 根據語言選擇日期格式和地區
@@ -50,6 +52,8 @@ export default function Header() {
     setLanguage(lang)
     localStorage.setItem('preferred-language', lang)
     setShowLangMenu(false)
+    // Discover feed 依語系分 key；清掉以免留住切語前舊摘要
+    void queryClient.invalidateQueries({ queryKey: ['publicFeed'] })
   }
 
   // 當前語言的顯示信息

@@ -2,7 +2,7 @@
 Topics API 端點
 """
 from typing import Optional, Dict, Any, List
-from fastapi import APIRouter, HTTPException, Query, Path, Header
+from fastapi import APIRouter, HTTPException, Query, Path, Header, Depends
 from app.schemas.topic import (
     TopicCreate,
     TopicUpdate,
@@ -10,7 +10,14 @@ from app.schemas.topic import (
     TopicResponse,
     TopicDetailResponse,
     TopicListResponse,
+    TopicTranslateDisplayRequest,
+    TopicTranslateDisplayResponse,
 )
+from app.services.topic_display_translation_service import (
+    topic_display_translation_service,
+    normalize_language,
+)
+from app.middleware.jwt_auth import get_current_user_optional
 from app.schemas.common import PaginationResponse, ErrorResponse
 from app.services.repositories.topic_repository import TopicRepository
 from app.services.repositories.content_repository import ContentRepository
@@ -58,10 +65,29 @@ def get_user_role_from_request(request: Request) -> UserRole:
         return UserRole.GUEST
 
 
+def _normalize_preview_images(raw) -> list:
+    """將 preview_images 統一為 URL 字串列表（相容 dict／str）。"""
+    if not raw or not isinstance(raw, list):
+        return []
+    out: list = []
+    for item in raw:
+        if isinstance(item, str) and item.strip():
+            out.append(item.strip())
+        elif isinstance(item, dict):
+            url = (item.get("url") or item.get("src") or "").strip()
+            if url:
+                out.append(url)
+    return out
+
+
 def _convert_to_response(topic_doc: dict) -> TopicResponse:
     """將 MongoDB 文檔轉換為 TopicResponse"""
     # 移除 MongoDB 的 _id
     topic_doc.pop("_id", None)
+    if "preview_images" in topic_doc:
+        topic_doc["preview_images"] = _normalize_preview_images(
+            topic_doc.get("preview_images")
+        )
     return TopicResponse(**topic_doc)
 
 
@@ -188,7 +214,6 @@ async def get_topic_detail(
     try:
         topic = await topic_repo.get_topic_by_id(topic_id)
         if not topic:
-            from app.utils.i18n import get_error_message, get_user_language
             language = get_user_language(request=request)
             raise HTTPException(
                 status_code=404,
@@ -228,6 +253,8 @@ async def get_topic_detail(
         
         # 轉換為回應格式
         topic.pop("_id", None)
+        # pubfeed 等來源可能存 dict；詳情與列表一致轉成 URL 字串
+        topic["preview_images"] = _normalize_preview_images(topic.get("preview_images"))
         
         # 確保所有必需欄位都存在
         required_fields = ["id", "title", "category", "status", "source", "generated_at", "updated_at"]
@@ -317,6 +344,38 @@ async def get_topic_detail(
     except Exception as e:
         logger.error(f"取得主題詳情失敗: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/{topic_id}/translate-display", response_model=TopicTranslateDisplayResponse)
+async def translate_topic_display(
+    request: Request,
+    topic_id: str = Path(..., description="主題 ID"),
+    body: TopicTranslateDisplayRequest = TopicTranslateDisplayRequest(),
+    current_user: Optional[dict] = Depends(get_current_user_optional),
+):
+    """
+    方案 C：將主題標題／摘要譯為使用者目前介面語言（按需、可快取 titles_i18n）。
+    """
+    language = get_user_language(user=current_user, request=request)
+    target = normalize_language(
+        body.target_language
+        or (current_user.get("language") if current_user else None)
+        or language
+    )
+
+    trans_type = body.translation_type or "standard_translation"
+    result, err = await topic_display_translation_service.translate_display(
+        topic_id, target, translation_type=trans_type
+    )
+    if err == "topic_not_found":
+        raise HTTPException(
+            status_code=404,
+            detail=get_error_message("topic.not_found", language),
+        )
+    if err or not result:
+        raise HTTPException(status_code=400, detail=err or "translate_failed")
+
+    return TopicTranslateDisplayResponse(**result)
 
 
 @router.put("/{topic_id}", response_model=TopicResponse)

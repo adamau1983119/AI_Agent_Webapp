@@ -9,6 +9,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from '../i18n';
 import { useAuthStore } from '../stores/authStore';
 import { authApi } from '../api/auth';
+import { resolvePostLoginPath } from '@/lib/alterEgoRouting';
 
 // 統一品牌設定
 const BRAND = {
@@ -33,7 +34,7 @@ export default function Login() {
   // 如果已登入，重定向到 Dashboard
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/dashboard');
+      resolvePostLoginPath().then((path) => navigate(path, { replace: true }));
     }
   }, [isAuthenticated, navigate]);
   
@@ -48,7 +49,8 @@ export default function Login() {
     
     const success = await login({ email, password });
     if (success) {
-      navigate('/dashboard');
+      const path = await resolvePostLoginPath();
+      navigate(path);
     }
   };
   

@@ -134,8 +134,29 @@ async def _update_topic_preview_images(topic_id: str):
         # 不影響主流程，只記錄錯誤
 
 
+# 1×1 透明 PNG（上游失敗時仍回 200 image/*，避免 <img> Console Failed to load）
+_PROXY_FALLBACK_PNG = bytes.fromhex(
+    "89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c489"
+    "0000000a49444154789c63000100000500010d0a2db40000000049454e44ae426082"
+)
+
+
+def _proxy_fallback_image(reason: str) -> Response:
+    logger.warning(f"圖片代理回退佔位圖: {reason}")
+    return Response(
+        content=_PROXY_FALLBACK_PNG,
+        media_type="image/png",
+        headers={
+            "Cache-Control": "public, max-age=60",
+            "X-Image-Proxy": "fallback",
+            "X-Image-Proxy-Reason": reason[:120],
+        },
+    )
+
+
 @router.get("/proxy")
 async def proxy_image(
+    request: Request,
     url: str = Query(..., description="圖片 URL"),
     timeout: Optional[float] = Query(10.0, ge=1.0, le=30.0, description="請求超時時間（秒）")
 ):
@@ -190,21 +211,13 @@ async def proxy_image(
             # 檢查響應狀態碼
             if response.status_code != 200:
                 logger.warning(f"圖片代理請求失敗: status_code={response.status_code}, url={url[:100]}")
-                from app.utils.i18n import get_error_message, get_user_language
-                language = get_user_language(user=current_user, request=request)
-                raise HTTPException(
-                    status_code=response.status_code,
-                    detail=get_error_message("image.fetch_failed", language)
-                )
+                return _proxy_fallback_image(f"upstream_{response.status_code}")
             
             # 驗證 Content-Type
             content_type = response.headers.get("content-type", "").lower()
             if not content_type.startswith("image/"):
                 logger.warning(f"響應不是圖片類型: content_type={content_type}, url={url[:100]}")
-                raise HTTPException(
-                    status_code=400,
-                    detail=get_error_message("image.invalid_content_type", get_user_language(user=current_user, request=request))
-                )
+                return _proxy_fallback_image("invalid_content_type")
             
             # 檢查響應大小（防止過大的文件）
             content_length = response.headers.get("content-length")
@@ -212,10 +225,7 @@ async def proxy_image(
                 size_mb = int(content_length) / (1024 * 1024)
                 if size_mb > 10:  # 限制 10MB
                     logger.warning(f"圖片文件過大: {size_mb:.2f}MB, url={url[:100]}")
-                    raise HTTPException(
-                        status_code=413,
-                        detail=get_error_message("image.file_too_large", get_user_language(user=current_user, request=request))
-                    )
+                    return _proxy_fallback_image("file_too_large")
             
             # 返回圖片流
             logger.info(f"✅ 圖片代理成功: content_type={content_type}, size={content_length or 'unknown'}")
@@ -231,30 +241,15 @@ async def proxy_image(
             
     except httpx.TimeoutException:
         logger.error(f"圖片代理請求超時: url={url[:100]}, timeout={timeout}")
-        from app.utils.i18n import get_error_message, get_user_language
-        language = get_user_language(user=current_user, request=request)
-        raise HTTPException(
-            status_code=504,
-            detail=get_error_message("image.request_timeout", language)
-        )
+        return _proxy_fallback_image("timeout")
     except httpx.RequestError as e:
         logger.error(f"圖片代理請求錯誤: {e}, url={url[:100]}")
-        from app.utils.i18n import get_error_message, get_user_language
-        language = get_user_language(user=current_user, request=request)
-        raise HTTPException(
-            status_code=502,
-            detail=get_error_message("image.server_connection_failed", language)
-        )
+        return _proxy_fallback_image("request_error")
     except HTTPException:
         raise
     except Exception as e:
         logger.exception(f"圖片代理發生未處理異常: url={url[:100]}")
-        from app.utils.i18n import get_error_message, get_user_language
-        language = get_user_language(user=current_user, request=request)
-        raise HTTPException(
-            status_code=500,
-            detail=get_error_message("image.server_error", language)
-        )
+        return _proxy_fallback_image("server_error")
 
 
 @router.get("/search", response_model=ImageSearchResponse)

@@ -68,8 +68,14 @@ export default function Channels() {
   
   const handleTriggerCollection = async (channelId: string) => {
     try {
-      await channelsApi.triggerCollection(channelId);
-      toast.success(t('channels.collectTriggered'));
+      const result = await channelsApi.triggerCollection(channelId);
+      const count = result?.topics_collected ?? 0;
+      if (count > 0) {
+        toast.success(t('channels.collectSuccessCount', { count }));
+      } else {
+        toast.error(t('channels.collectNoMatches'));
+      }
+      loadChannels();
     } catch (err: any) {
       toast.error(err.message || t('channels.triggerFailed'));
     }
@@ -216,9 +222,13 @@ function ChannelCard({
             {categoryIcons[channel.category as ChannelCategory]}
           </span>
           <div>
-            <h3 className="font-semibold text-gray-900 dark:text-white">
+            <Link
+              to={`/channels/${channel.id}`}
+              data-testid={`btn-channels-card-open-${channel.id}`}
+              className="font-semibold text-gray-900 dark:text-white hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
+            >
               {channel.name}
-            </h3>
+            </Link>
             <p className="text-sm text-gray-500 dark:text-gray-400">
               {t(categoryI18nKeys[channel.category as ChannelCategory])} · {t(regionI18nKeys[channel.region as ChannelRegion])}
             </p>
@@ -302,25 +312,34 @@ function ChannelCard({
         </div>
       )}
       
-      {/* 統計 */}
-      <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-700">
-        <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
-          <span>{channel.topic_count} {t('channels.topics')}</span>
-          {channel.last_collected_at && (
-            <span>
-              {new Date(channel.last_collected_at).toLocaleDateString()}
-            </span>
-          )}
-        </div>
-        
-        {/* 狀態指示器 */}
-        <div className={`w-2 h-2 rounded-full ${
+      {/* 統計與查看主題 */}
+      <div className="pt-4 border-t border-gray-100 dark:border-gray-700 space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+            <span>{channel.topic_count} {t('channels.topics')}</span>
+            {channel.last_collected_at && (
+              <span>
+                {new Date(channel.last_collected_at).toLocaleDateString()}
+              </span>
+            )}
+          </div>
+          <div className={`w-2 h-2 rounded-full ${
           channel.collection_status === 'collecting'
             ? 'bg-yellow-500 animate-pulse'
             : channel.status === 'active'
             ? 'bg-green-500'
             : 'bg-gray-400'
         }`} />
+        </div>
+        {channel.topic_count > 0 && (
+          <Link
+            to={`/channels/${channel.id}`}
+            data-testid={`btn-channels-view-topics-${channel.id}`}
+            className="block w-full text-center px-4 py-2 text-sm font-medium text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/20 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/40 transition-colors min-h-[44px] flex items-center justify-center"
+          >
+            {t('channels.viewTopicsCount', { count: channel.topic_count })}
+          </Link>
+        )}
       </div>
     </div>
   );

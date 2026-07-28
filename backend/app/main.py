@@ -210,6 +210,12 @@ async def lifespan(app: FastAPI):
         logger.info(f"資料庫實例 ID: {id(mongo_db)}")
         logger.info(f"app.state.db ID: {id(app.state.db)}")
         logger.info("✅ MongoDB 連接已存儲到 app.state.db，所有端點將使用同一個實例")
+
+        try:
+            from app.services.repositories.topic_translation_repository import TopicTranslationRepository
+            await TopicTranslationRepository(db=mongo_db).ensure_indexes()
+        except Exception as idx_err:
+            logger.warning("topic_translations 索引建立略過: %s", idx_err)
         
     except Exception as e:
         # 在開發環境中，連接失敗不會阻止啟動
@@ -253,12 +259,10 @@ async def lifespan(app: FastAPI):
     scheduler_service = None
     scheduler_monitor = None
     
-    # 檢查是否應該啟動排程服務
-    # 生產環境或明確設定 AUTO_START_SCHEDULER=true 時啟動
-    should_start_scheduler = (
-        settings.ENVIRONMENT == "production" or 
-        getattr(settings, 'AUTO_START_SCHEDULER', 'false').lower() == 'true'
-    )
+    from app.utils.cost_controls import auto_start_scheduler_enabled, cost_controls_summary
+
+    should_start_scheduler = auto_start_scheduler_enabled()
+    logger.info("成本開關: %s", cost_controls_summary())
     
     if should_start_scheduler:
         try:
@@ -359,6 +363,13 @@ logger.info(f"解析後的 CORS_ORIGINS: {cors_origins_list}")
 # 為了確保 CORS header 正確設定，CORSMiddleware 必須在 RateLimitMiddleware 之後添加
 # 這樣當 RateLimitMiddleware 返回 429 時，CORSMiddleware 已經處理過請求
 
+# 0. v7 Token Gateway（最內層 · 最早 add · 僅 generate/regenerate body 重放）
+from app.middleware.token_gateway import TokenGatewayMiddleware
+from app.middleware.alter_ego_body_gateway import AlterEgoBodyGatewayMiddleware
+
+app.add_middleware(TokenGatewayMiddleware)
+app.add_middleware(AlterEgoBodyGatewayMiddleware)
+
 # 1. 先添加 API Key 認證中間件（最先執行）
 if settings.API_KEY:
     app.add_middleware(APIKeyMiddleware)
@@ -399,7 +410,10 @@ async def root():
 
 @app.get("/health")
 async def health_check():
-    """健康檢查"""
+    """健康檢查（含 cost_controls，對齊 /api/v1/health）"""
+    from app.utils.cost_controls import cost_controls_summary
+    from app.services.alter_ego_health import alter_ego_health_payload
+
     db_status, reason = await check_connection()
     return {
         "status": "healthy" if db_status else "unhealthy",
@@ -408,11 +422,13 @@ async def health_check():
             "status": "connected" if db_status else "disconnected",
             "reason": reason if not db_status else None
         },
+        "cost_controls": cost_controls_summary(),
+        "alter_ego": alter_ego_health_payload(),
     }
 
 
 # 註冊 API 路由
-from app.api.v1 import topics, contents, images, user, health, schedules, interactions, recommendations, discover, validate, test_db, feeds, articles, auth, feature_flags, channels, inspiration, ratings, style_profile, generate, social
+from app.api.v1 import topics, contents, images, user, health, schedules, interactions, recommendations, discover, validate, test_db, feeds, articles, auth, feature_flags, channels, inspiration, ratings, style_profile, generate, social, public_topics, alter_ego, my_channel
 
 app.include_router(health.router, prefix="/api/v1")
 app.include_router(test_db.router, prefix="/api/v1")  # 測試端點，用於驗證資料庫連接
@@ -425,6 +441,7 @@ app.include_router(schedules.router, prefix="/api/v1")
 app.include_router(interactions.router, prefix="/api/v1")
 app.include_router(recommendations.router, prefix="/api/v1")
 app.include_router(discover.router, prefix="/api/v1")
+app.include_router(public_topics.router, prefix="/api/v1")
 app.include_router(validate.router, prefix="/api/v1")
 app.include_router(feeds.router, prefix="/api/v1")  # Feed 健康監控 API
 app.include_router(articles.router, prefix="/api/v1")  # Phase 6: Articles API
@@ -435,6 +452,9 @@ app.include_router(ratings.router, prefix="/api/v1")  # Phase 4: Ratings API
 app.include_router(style_profile.router, prefix="/api/v1")  # Phase 4: Style Profile API
 app.include_router(generate.router, prefix="/api/v1")  # Phase 4: Content Generation API
 app.include_router(social.router, prefix="/api/v1")  # Phase 5: Social Distribution API
+app.include_router(alter_ego.router, prefix="/api/v1")  # v7 Alter Ego SKU
+app.include_router(my_channel.router, prefix="/api/v1")  # v7.1 MyChannel SKU
+app.include_router(my_channel.admin_router, prefix="/api/v1")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Influencers AI — 首頁功能簡介（第三方討論）</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --surface: #1a2332;
+      --border: #2d3a4f;
+      --text: #e7ecf3;
+      --muted: #9aa8bc;
+      --accent: #5b9fd4;
+      --accent-hover: #7ab3e0;
+      --ok: #3d9a6a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Microsoft JhengHei", "PingFang TC", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+    .wrap { max-width: 920px; margin: 0 auto; padding: 1.5rem 1.25rem 3rem; }
+    h1 { font-size: 1.5rem; margin: 0 0 0.5rem; }
+    .meta { color: var(--muted); font-size: 0.875rem; margin-bottom: 1.25rem; }
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      padding: 0.75rem 0;
+      background: linear-gradient(var(--bg) 70%, transparent);
+    }
+    button {
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-family: inherit;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    button:hover { border-color: var(--accent); background: #243044; }
+    button.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      font-weight: 600;
+    }
+    button.primary:hover { background: var(--accent-hover); }
+    .toast {
+      position: fixed;
+      bottom: 1.25rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(120%);
+      background: var(--ok);
+      color: #fff;
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      opacity: 0;
+      transition: transform 0.25s, opacity 0.25s;
+      pointer-events: none;
+      z-index: 100;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+    article {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+    }
+    article h2 { font-size: 1.1rem; margin: 1.5rem 0 0.75rem; color: var(--accent); }
+    article h2:first-child { margin-top: 0; }
+    article h3 { font-size: 0.95rem; margin: 1rem 0 0.5rem; }
+    article p, article li { font-size: 0.9rem; }
+    article table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      margin: 0.5rem 0 1rem;
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 0.45rem 0.6rem;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: #243044; color: var(--muted); font-weight: 600; }
+    blockquote {
+      margin: 0.75rem 0;
+      padding: 0.5rem 0.75rem;
+      border-left: 3px solid var(--accent);
+      background: #121a26;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+    pre.copy-block {
+      background: #121a26;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      font-size: 0.8rem;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    hr { border: none; border-top: 1px solid var(--border); margin: 1.25rem 0; }
+    footer { margin-top: 1rem; font-size: 0.75rem; color: var(--muted); }
+    a { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Influencers AI — 首頁／Landing 功能簡介</h1>
+    <p class="meta">第三方討論用 · 更新 2026-06-02 · 對應 <code>docs/landing_page_feature_brief.md</code></p>
+
+    <div class="toolbar">
+      <button type="button" class="primary" id="btn-copy-plain">複製：純文字摘要（推薦貼給第三方）</button>
+      <button type="button" id="btn-copy-md">複製：完整 Markdown</button>
+      <button type="button" id="btn-copy-hero6">複製：首頁主打 6 項表</button>
+    </div>
+
+    <article id="content">
+      <h2>1. 背景與目標</h2>
+      <table>
+        <tr><th>項目</th><th>說明</th></tr>
+        <tr><td>現況</td><td>根路徑 <code>/</code> 導向登入或儀表板，無對外介紹頁</td></tr>
+        <tr><td>目標</td><td>新增第一頁：介紹功能、說明好處、引導註冊／登入</td></tr>
+        <tr><td>文案原則</td><td>每項好處 ≤20 字（繁中）</td></tr>
+        <tr><td>MVP 主路</td><td>站內產素材 → 複製到 FB／IG 發布（非站內代發）</td></tr>
+      </table>
+
+      <h2>2. 首頁建議主打（6 項）</h2>
+      <table>
+        <tr><th>#</th><th>功能</th><th>好處（≤20字）</th></tr>
+        <tr><td>1</td><td>主題趨勢</td><td>自動收時尚美食熱點，選題省時間</td></tr>
+        <tr><td>2</td><td>AI 寫稿／重生</td><td>一鍵產文配圖，少花構思時間</td></tr>
+        <tr><td>3</td><td>建立頻道（AI 助手）</td><td>用說話建頻道，不必懂 RSS</td></tr>
+        <tr><td>4</td><td>靈感策劃</td><td>搜尋加 AI 對話，找企劃靈感</td></tr>
+        <tr><td>5</td><td>風格學習</td><td>按讚踩學偏好，越用越像你</td></tr>
+        <tr><td>6</td><td>複製發文（Post Kit）</td><td>標題內文標籤複製，貼平台即發</td></tr>
+      </table>
+      <blockquote>Post Kit 為規格主路；完整 UI 尚未交付，對外文案需商務決策。</blockquote>
+
+      <h2>3. 登入前功能</h2>
+      <table>
+        <tr><th>功能</th><th>好處（≤20字）</th></tr>
+        <tr><td>語言選擇</td><td>繁中英日，一開始就懂介面</td></tr>
+        <tr><td>Google 登入</td><td>免註冊密碼，幾秒進站</td></tr>
+        <tr><td>Email 登入／註冊</td><td>習慣信箱者也能用</td></tr>
+        <tr><td>忘記密碼／驗證信</td><td>帳號可自救，少找客服</td></tr>
+      </table>
+
+      <h2>4. 登入後 — 主選單</h2>
+      <table>
+        <tr><th>功能</th><th>路由</th><th>好處（≤20字）</th></tr>
+        <tr><td>儀表板</td><td>/dashboard</td><td>今日排程熱門一覽，進站知要做什麼</td></tr>
+        <tr><td>主題列表</td><td>/topics</td><td>自動收趨勢內容，選題不漏拍</td></tr>
+        <tr><td>主題詳情</td><td>/topics/:id</td><td>內文配圖重生稿，一頁準備發文</td></tr>
+        <tr><td>我的頻道</td><td>/channels</td><td>自訂類別地區，最多三條內容線</td></tr>
+        <tr><td>建立頻道</td><td>/channels/create</td><td>AI 助手帶設定，不必懂技術</td></tr>
+        <tr><td>靈感策劃</td><td>/inspiration</td><td>搜尋加 AI，找企劃靈感</td></tr>
+        <tr><td>風格檔</td><td>/style-profile</td><td>評分學偏好，語氣越來越貼你</td></tr>
+        <tr><td>一鍵發布</td><td>/publish</td><td>集中發文操作</td></tr>
+        <tr><td>平台連線</td><td>/social-connect</td><td>連 Facebook 粉專（進階）</td></tr>
+        <tr><td>偏好設定</td><td>/preferences</td><td>調類別權重，內容更對味</td></tr>
+        <tr><td>排程</td><td>/schedule</td><td>看自動收主題時間</td></tr>
+        <tr><td>設定</td><td>/settings</td><td>改姓名語言帳號</td></tr>
+      </table>
+
+      <h2>5. 平台能力（可寫於介紹頁）</h2>
+      <table>
+        <tr><th>能力</th><th>好處</th><th>備註</th></tr>
+        <tr><td>自動收集</td><td>背景抓 RSS，不用自己刷新聞</td><td>約 6h</td></tr>
+        <tr><td>多語言</td><td>繁中英日，海外網紅也能用</td><td>—</td></tr>
+        <tr><td>來源驗證</td><td>推薦來源較可靠，少亂連</td><td>v5.0</td></tr>
+        <tr><td>Post Kit</td><td>標題內文標籤複製貼平台發</td><td>L0 規格</td></tr>
+        <tr><td>導師模式</td><td>深度企劃對話</td><td>規劃中</td></tr>
+      </table>
+
+      <h2>6. 建議弱化或折疊</h2>
+      <ul>
+        <li>平台連線、排程、偏好細調、發布頁（若仍空）</li>
+      </ul>
+
+      <h2>7. 給第三方討論題</h2>
+      <ol>
+        <li>路由：<code>/welcome</code> 或未登入顯示行銷 <code>/</code>？</li>
+        <li>Landing 是否三語？</li>
+        <li>Post Kit 對外表述：已可用或即將推出？</li>
+        <li>6 卡 + CTA「免費開始」→ register 或 login？</li>
+        <li>是否預留 testimonial／截圖區？</li>
+        <li>Footer 條款／隱私是否首屏可見？</li>
+      </ol>
+
+      <hr />
+      <h3>純文字摘要預覽</h3>
+      <pre class="copy-block" id="plain-preview"></pre>
+    </article>
+
+    <footer>開啟方式：以瀏覽器直接開啟本 HTML，或分享 <code>landing_page_feature_brief.md</code>。</footer>
+  </div>
+
+  <div class="toast" id="toast" role="status">已複製到剪貼簿</div>
+
+  <script type="text/plain" id="md-embed"># Influencers AI — 首頁／Landing 功能簡介（第三方討論用）
+
+> **用途**：與設計／產品第三方討論「登入前介紹頁」方案  
+> **狀態**：現況盤點（非最終文案）  
+> **更新**：2026-06-02  
+> **產品**：Influencers AI（網紅 AI 助手）  
+> **相關**：`專案完整架構表.md`、`docs/publish_post_kit_spec.md`
+
+---
+
+## 1. 背景與目標
+
+| 項目 | 說明 |
+|------|------|
+| **現況** | 根路徑 `/` 依登入狀態導向 `/login` 或 `/dashboard`，**無**對外介紹頁 |
+| **目標** | 新增「第一頁」：介紹核心功能、說明好處、**引導註冊／登入** |
+| **文案原則** | 每項「好處」**≤20 字**（繁中），利於卡片／輪播排版 |
+| **MVP 主路** | 站內產出素材 → **複製**到 FB／IG 等發布（**非站內代發**） |
+
+---
+
+## 2. 首頁建議主打（6 項）
+
+對外 Landing 建議只強調下列 6 項；其餘收「進階功能」折疊區。
+
+| # | 功能 | 好處（≤20字） |
+|---|------|----------------|
+| 1 | 主題趨勢 | 自動收時尚美食熱點，選題省時間 |
+| 2 | AI 寫稿／重生 | 一鍵產文配圖，少花構思時間 |
+| 3 | 建立頻道（AI 助手） | 用說話建頻道，不必懂 RSS |
+| 4 | 靈感策劃 | 搜尋加 AI 對話，找企劃靈感 |
+| 5 | 風格學習 | 按讚踩學偏好，越用越像你 |
+| 6 | 複製發文（Post Kit） | 標題內文標籤複製，貼平台即發 |
+
+> **備註**：Post Kit 為產品規格主路（L0）；**完整 UI 尚未交付**，對外文案可寫願景並標「即將推出」或弱化，依商務決策。
+
+---
+
+## 3. 登入前功能
+
+| 功能 | 好處（≤20字） |
+|------|----------------|
+| 語言選擇 | 繁中英日，一開始就懂介面 |
+| Google 登入 | 免註冊密碼，幾秒進站 |
+| Email 登入／註冊 | 習慣信箱者也能用 |
+| 忘記密碼／驗證信 | 帳號可自救，少找客服 |
+
+**路由參考**：`/language`、`/login`、`/register`、`/forgot-password`、`/verify-email`
+
+---
+
+## 4. 登入後 — 主選單（Sidebar）
+
+| 功能 | 路由 | 好處（≤20字） |
+|------|------|----------------|
+| 儀表板 | `/dashboard` | 今日排程熱門一覽，進站知要做什麼 |
+| 主題列表 | `/topics` | 自動收趨勢內容，選題不漏拍 |
+| 主題詳情 | `/topics/:id` | 內文配圖重生稿，一頁準備發文 |
+| 我的頻道 | `/channels` | 自訂類別地區，最多三條內容線 |
+| 建立頻道 | `/channels/create` | AI 助手帶設定，不必懂技術 |
+| 靈感策劃 | `/inspiration` | 搜尋加 AI，找企劃靈感 |
+| 風格檔 | `/style-profile` | 評分學偏好，語氣越來越貼你 |
+| 一鍵發布／發布助手 | `/publish` | 集中發文操作（頁面已有） |
+| 平台連線 | `/social-connect` | 連 Facebook 粉專（進階選用） |
+| 偏好設定 | `/preferences` | 調類別權重，內容更對味 |
+| 排程 | `/schedule` | 看自動收主題時間（營運向） |
+| 設定 | `/settings`（Header） | 改姓名語言帳號，與偏好分開 |
+
+---
+
+## 5. 平台能力（介紹頁可寫、不必單獨一頁）
+
+| 能力 | 好處（≤20字） | 備註 |
+|------|----------------|------|
+| 自動收集（約 6h） | 背景抓 RSS，不用自己刷新聞 | 後端排程 |
+| 多語言介面 | 繁中英日，海外網紅也能用 | zh-TW／en／ja |
+| 來源驗證 | 推薦來源較可靠，少亂連 | v5.0 |
+| Post Kit（L0） | 標題內文標籤複製貼平台發 | 規格見 publish_post_kit_spec.md |
+| API 代發（L2） | 站內一鍵發文 | **選配／非 MVP** |
+| 導師／同伴模式 | 深度企劃對話 | **規劃中，未上線** |
+
+---
+
+## 6. 建議弱化或折疊（Landing 次要）
+
+- 平台連線（Meta OAuth）— 進階、設定門檻高  
+- 排程檢視 — 營運／技術向  
+- 偏好權重細調 — 進階個人化  
+- 發布助手頁 — 若 UI 仍空，避免當主 CTA  
+
+---
+
+## 7. 給第三方的討論題（待決）
+
+1. **路由**：`/welcome` vs 行銷根路徑 `/`（未登入顯示 Landing，已登入仍進 `/dashboard`）？  
+2. **語言**：Landing 是否跟全站 i18n（三語切換在首屏）？  
+3. **Post Kit**：對外寫「已可用」或「即將推出」？  
+4. **視覺**：6 張功能卡 + 單一 CTA「免費開始」→ `/register` 或 `/login`？  
+5. **社會證明**：是否預留 testimonial／截圖區（目前無素材）？  
+6. **法務**：Footer 連 `/terms`、`/privacy` 是否必須首屏可見？  
+
+---
+
+## 8. 技術錨點（供設計對接工程）
+
+| 項目 | 位置 |
+|------|------|
+| 路由定義 | frontend/src/app/App.tsx |
+| 側欄選單 | frontend/src/components/layout/Sidebar.tsx（9 項） |
+| 根路徑邏輯 | RootRedirect |
+| Post Kit 規格 | docs/publish_post_kit_spec.md |
+
+---
+
+*本文件由產品盤點產出；實作 Landing 前請與工作記錄.md、分支策略對齊。*
+</script>
+
+  <script>
+    const PLAIN = `【Influencers AI — 功能與好處摘要｜第三方討論用】
+更新：2026-06-02
+
+■ 背景
+現況：無 Landing，/ 導向登入或儀表板
+目標：介紹功能 + 引導註冊登入
+MVP：站內產素材，複製到自有平台發（非站內代發）
+
+■ 首頁建議主打（6項）
+1. 主題趨勢 — 自動收時尚美食熱點，選題省時間
+2. AI寫稿／重生 — 一鍵產文配圖，少花構思時間
+3. 建立頻道（AI助手）— 用說話建頻道，不必懂RSS
+4. 靈感策劃 — 搜尋加AI對話，找企劃靈感
+5. 風格學習 — 按讚踩學偏好，越用越像你
+6. 複製發文（Post Kit）— 標題內文標籤複製，貼平台即發
+※ Post Kit UI 尚未完整交付，對外文案待決
+
+■ 登入前
+語言選擇｜Google/Email登入｜密碼重設
+
+■ 登入後主選單
+儀表板｜主題列表/詳情｜頻道｜建立頻道｜靈感｜風格檔｜發布｜平台連線｜偏好｜排程｜設定
+
+■ 給設計師討論
+1. 路由 /welcome 或行銷根路徑？
+2. Landing 三語？
+3. Post Kit 怎麼對外說？
+4. 6功能卡 + CTA 文案？
+5. 社會證明區要嗎？
+6. 條款隱私放哪？
+
+■ 技術錨點
+frontend/src/app/App.tsx、Sidebar.tsx（9項）
+docs/publish_post_kit_spec.md`;
+
+    const HERO6 = `首頁主打 6 項（好處≤20字）
+1. 主題趨勢 — 自動收時尚美食熱點，選題省時間
+2. AI寫稿／重生 — 一鍵產文配圖，少花構思時間
+3. 建立頻道 — 用說話建頻道，不必懂RSS
+4. 靈感策劃 — 搜尋加AI對話，找企劃靈感
+5. 風格學習 — 按讚踩學偏好，越用越像你
+6. 複製發文 — 標題內文標籤複製，貼平台即發`;
+
+    document.getElementById('plain-preview').textContent = PLAIN;
+
+    function getMarkdown() {
+      return document.getElementById('md-embed').textContent.trim();
+    }
+
+    function showToast() {
+      const t = document.getElementById('toast');
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2200);
+    }
+
+    async function copyText(text) {
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.left = '-9999px';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      }
+      showToast();
+    }
+
+    document.getElementById('btn-copy-plain').addEventListener('click', () => copyText(PLAIN));
+    document.getElementById('btn-copy-hero6').addEventListener('click', () => copyText(HERO6));
+    document.getElementById('btn-copy-md').addEventListener('click', () => copyText(getMarkdown()));
+  </script>
+</body>
+</html>

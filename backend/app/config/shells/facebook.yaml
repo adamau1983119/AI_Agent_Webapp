@@ -1,0 +1,25 @@
+# Alter Ego Shell — Facebook（AE-0 · docs/ALTER_EGO_SPEC.md §5）
+platform: facebook
+display_name: Facebook
+version: 1
+
+constraints:
+  max_lead_chars: 90
+  hashtag_min: 4
+  hashtag_max: 6
+  max_body_chars: 5000
+  allow_thread: false
+
+format:
+  sections:
+    - lead
+    - body
+    - hashtags
+  hashtag_prefix: "#"
+
+prompt_hints:
+  lead: "開場一段須在 90 字以內，吸引點擊展開。"
+  body: "正文可分段，語氣須符合 DNA lexicon 與 tone。"
+  hashtags: "文末 4～6 個相關 hashtag，勿堆砌無關標籤。"
+
+visual_prompt: false

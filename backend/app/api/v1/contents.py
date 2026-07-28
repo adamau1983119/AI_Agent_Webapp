@@ -1,9 +1,12 @@
 """
 Contents API 端點
 """
-from fastapi import APIRouter, HTTPException, Path, Request
+from typing import Optional
+
+from fastapi import APIRouter, Depends, HTTPException, Path, Request
 
 from app.config import settings
+from app.middleware.jwt_auth import get_current_user_optional
 from app.schemas.content import (
     ContentCreate,
     ContentUpdate,
@@ -24,6 +27,49 @@ router = APIRouter(prefix="/contents", tags=["contents"])
 # Repository 實例
 content_repo = ContentRepository()
 topic_repo = TopicRepository()
+
+
+def _pro_model() -> str:
+    return getattr(settings, "DEEPSEEK_MODEL_PRO", "deepseek-v4-pro")
+
+
+def _require_summary_flash(topic: dict, language: str = "zh-TW") -> str:
+    """v7 Phase 3：generate 必須有 DB summary_flash（不以 body 為 SoT）。"""
+    sf = (topic.get("summary_flash") or "").strip()
+    if not sf:
+        from app.utils.i18n import get_error_message
+        raise HTTPException(
+            status_code=400,
+            detail=get_error_message("content.summary_flash_required", language),
+        )
+    return sf
+
+
+def _style_hint_from_context(ctx: dict) -> str:
+    compressed = (ctx.get("compressed_dna") or "").strip()
+    if compressed:
+        return compressed
+    return (ctx.get("legacy_style_hint") or "").strip()
+
+
+def _generation_meta_from_context(ctx: dict) -> dict:
+    meta = {"dna_status": ctx.get("dna_status", "pending")}
+    version_id = ctx.get("dna_version_id")
+    if version_id:
+        meta["dna_version_id"] = version_id
+    return meta
+
+
+async def _resolve_generate_style(user_id: Optional[str]) -> tuple[str, dict]:
+    if not user_id:
+        from app.services.content_style_service import _empty_context
+
+        ctx = _empty_context("contents_generate")
+        return "", _generation_meta_from_context(ctx)
+    from app.services.content_style_service import content_style_service
+
+    ctx = await content_style_service.resolve_for_route(user_id, "contents_generate")
+    return _style_hint_from_context(ctx), _generation_meta_from_context(ctx)
 
 
 def _convert_to_response(content_doc: dict) -> ContentResponse:
@@ -106,6 +152,7 @@ async def generate_content(
     http_request: Request,
     topic_id: str = Path(..., description="主題 ID"),
     body: GenerateContentRequest = ...,
+    current_user: Optional[dict] = Depends(get_current_user_optional),
 ):
     """
     生成內容（同步生成）
@@ -114,96 +161,83 @@ async def generate_content(
     """
     try:
         # 檢查主題是否存在
+        from app.utils.i18n import get_user_language
+
+        language = get_user_language(user=current_user, request=http_request)
         topic = await topic_repo.get_topic_by_id(topic_id)
         if not topic:
-            from app.utils.i18n import get_error_message, get_user_language
-            language = get_user_language(request=http_request)
+            from app.utils.i18n import get_error_message
             raise HTTPException(
                 status_code=404,
                 detail=get_error_message("content.topic_not_found", language)
             )
-        
-        # 調用 AI 服務生成內容（使用統一的 AIServiceFactory）
+
         from app.services.ai.ai_service_factory import AIServiceFactory
         from datetime import datetime
-        
-        # 使用統一的 Factory 獲取 AI 服務（每次請求時動態獲取最新配置）
+
         ai_service = AIServiceFactory.get_service(settings.AI_SERVICE)
-        logger.info(f"使用 AI 服務: {settings.AI_SERVICE} (請求 ID: {topic_id})")
-        
-        # 取得關鍵字和原文資訊（從主題的 sources 中提取）
+        logger.info("generate %s AI=%s", topic_id, settings.AI_SERVICE)
+
         keywords = []
         source_urls = []
-        original_content = None
-        original_language = None
-        style_info = None
-        
         for source in topic.get("sources", []):
             if "keywords" in source:
                 keywords.extend(source["keywords"])
             if "url" in source:
                 source_urls.append(source["url"])
-            # 提取原文內容（使用第一個有內容的來源）
-            if not original_content and source.get("original_content"):
-                original_content = source["original_content"]
-                original_language = source.get("language")
-                if source.get("style"):
-                    style_info = source["style"]
-                    if isinstance(style_info, dict):
-                        pass  # 已經是字典
-                    else:
-                        # 如果是 SourceStyle 對象，轉換為字典
-                        style_info = {
-                            "tone": getattr(style_info, "tone", None),
-                            "structure": getattr(style_info, "structure", None),
-                            "vocabulary": getattr(style_info, "vocabulary", None)
-                        }
-        
-        # 生成內容（改進版：基於原文內容）
+
+        summary_flash = _require_summary_flash(topic, language)
+        uid = None
+        if current_user:
+            uid = current_user.get("id") or current_user.get("user_id")
+        style_hint, generation_meta = await _resolve_generate_style(uid)
+        pro_model = _pro_model()
+        pro_max_tokens = int(getattr(settings, "DEEPSEEK_PRO_MAX_TOKENS", 4096))
+        target_lang = body.language or topic.get("display_language", "zh-TW")
+        from app.prompts.article_prompt import build_article_prompt
+
         if body.type == "article":
-            # 構建改進的 prompt（使用主題的 display_language）
-            from app.prompts.article_prompt import build_article_prompt
             prompt = build_article_prompt(
                 topic_title=topic["title"],
                 topic_category=topic["category"],
                 keywords=keywords,
                 target_length=body.article_length,
-                original_content=original_content,
+                summary_flash=summary_flash,
                 source_urls=source_urls,
-                original_language=original_language,
-                style_info=style_info,
-                target_language=body.language or topic.get("display_language", "zh-TW")
+                target_language=target_lang,
+                style_hint=style_hint,
             )
-            article = await ai_service._call_api(prompt)
+            article = await ai_service._call_api(
+                prompt, model=pro_model, max_tokens=pro_max_tokens
+            )
             script = None
         elif body.type == "script":
             script = await ai_service.generate_script(
                 topic_title=topic["title"],
                 topic_category=topic["category"],
                 keywords=keywords,
-                duration=body.script_duration
+                duration=body.script_duration,
             )
             article = None
-        else:  # both
-            # 構建改進的 prompt（僅用於文章，使用主題的 display_language）
-            from app.prompts.article_prompt import build_article_prompt
+        else:
             article_prompt = build_article_prompt(
                 topic_title=topic["title"],
                 topic_category=topic["category"],
                 keywords=keywords,
                 target_length=body.article_length,
-                original_content=original_content,
+                summary_flash=summary_flash,
                 source_urls=source_urls,
-                original_language=original_language,
-                style_info=style_info,
-                target_language=body.language or topic.get("display_language", "zh-TW")
+                target_language=target_lang,
+                style_hint=style_hint,
             )
-            article = await ai_service._call_api(article_prompt)
+            article = await ai_service._call_api(
+                article_prompt, model=pro_model, max_tokens=pro_max_tokens
+            )
             script = await ai_service.generate_script(
                 topic_title=topic["title"],
                 topic_category=topic["category"],
                 keywords=keywords,
-                duration=body.script_duration
+                duration=body.script_duration,
             )
         
         # 計算字數和時長
@@ -229,10 +263,11 @@ async def generate_content(
                 "script": script,
                 "word_count": word_count,
                 "estimated_duration": estimated_duration,
-                "model_used": getattr(ai_service, 'model', getattr(ai_service, 'model_name', 'unknown')),
-                "prompt_version": "v2.0",  # 更新版本號
+                "model_used": pro_model if body.type in ("article", "both") else getattr(ai_service, "model", "unknown"),
+                "prompt_version": "v3.1-content-style-dna",
                 "source_urls": source_urls,
-                "source_images": source_images
+                "source_images": source_images,
+                "generation_meta": generation_meta,
             }
             
             updated = await content_repo.update_content(
@@ -251,10 +286,11 @@ async def generate_content(
                 "script": script,
                 "word_count": word_count,
                 "estimated_duration": estimated_duration,
-                "model_used": getattr(ai_service, 'model', getattr(ai_service, 'model_name', 'unknown')),
-                "prompt_version": "v2.0",
+                "model_used": pro_model if body.type in ("article", "both") else getattr(ai_service, "model", "unknown"),
+                "prompt_version": "v3.1-content-style-dna",
                 "source_urls": source_urls,
                 "source_images": source_images,
+                "generation_meta": generation_meta,
                 "version": 1,
                 "generated_at": now,
                 "updated_at": now
@@ -362,6 +398,7 @@ async def regenerate_content(
     http_request: Request,
     topic_id: str = Path(..., description="主題 ID"),
     body: GenerateContentRequest = ...,
+    current_user: Optional[dict] = Depends(get_current_user_optional),
 ):
     """
     重新生成內容（同步生成）
@@ -380,7 +417,7 @@ async def regenerate_content(
             )
         
         # 調用生成內容端點（邏輯相同）
-        return await generate_content(http_request, topic_id, body)
+        return await generate_content(http_request, topic_id, body, current_user)
             
     except HTTPException:
         raise

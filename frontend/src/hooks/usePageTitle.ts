@@ -18,6 +18,7 @@ export function usePageTitle(customTitle?: string) {
     const pageTitleKeys: Record<string, string> = {
       '/': 'nav.dashboard',
       '/topics': 'nav.topics',
+      '/discover': 'nav.discover',
       '/channels': 'nav.channels',
       '/inspiration': 'nav.inspiration',
       '/style-profile': 'nav.styleProfile',
@@ -26,6 +27,8 @@ export function usePageTitle(customTitle?: string) {
       '/preferences': 'nav.settings',
       '/schedule': 'nav.schedule',
       '/settings': 'nav.settings',
+      '/my-channel': 'myChannel.pageTitle',
+      '/onboarding/alter-ego': 'alterEgo.title',
       '/login': 'nav.login',
       '/register': 'nav.register',
     }

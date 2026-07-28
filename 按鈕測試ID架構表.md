@@ -50,8 +50,10 @@ data-testid="{類型}-{位置}-{功能}"
 | `register` | 註冊頁 |
 | `forgot` | 忘記密碼頁 |
 | `lang` | 語言選擇頁 |
+| `landing` | 登入前介紹頁 |
 | `dashboard` | 控制面板 |
 | `topics` | 主題列表 |
+| `discover` | 探索（公共主題牆） |
 | `topic` | 主題詳情 |
 | `channels` | 頻道管理 |
 | `inspiration` | 靈感策劃 |
@@ -68,7 +70,9 @@ data-testid="{類型}-{位置}-{功能}"
 | `link-sidebar-logo` | Logo | 返回首頁 | `/dashboard` |
 | `link-sidebar-dashboard` | 選單項 | 控制面板 | `/dashboard` |
 | `link-sidebar-topics` | 選單項 | 主題列表 | `/topics` |
-| `link-sidebar-channels` | 選單項 | 我的頻道 | `/channels` |
+| `link-sidebar-discover` | 選單項 | 探索（公共主題牆） | `/discover` |
+| `link-sidebar-my-channel` | 選單項 | 我的頻道 | `/my-channel` |
+| `link-sidebar-channels` | 選單項 | 頻道管理 | `/channels` |
 | `link-sidebar-inspiration` | 選單項 | 靈感策劃 | `/inspiration` |
 | `link-sidebar-style` | 選單項 | 風格檔案 | `/style-profile` |
 | `link-sidebar-publish` | 選單項 | 一鍵發布 | `/publish` |
@@ -104,9 +108,53 @@ data-testid="{類型}-{位置}-{功能}"
 | `link-dashboard-inspiration` | 連結 | 靈感策劃 | `/inspiration` |
 | `link-dashboard-style` | 連結 | 風格檔案 | `/style-profile` |
 
+### 1.4 Discover 公共主題牆（v7 PF-4）
+
+| Test ID | 元素 | 功能 |
+|---------|------|------|
+| `page-discover` | 頁面容器 | `/discover` 根節點 |
+| `discover-page-title` | 標題 | 頁面主標 |
+| `discover-page-subtitle` | 副標 | 說明文字 |
+| `discover-feed-skeleton` | 骨架 | 載入中占位 |
+| `discover-feed-grid` | 網格 | 卡片列表容器 |
+| `card-discover-feed-{n}` | 卡片 | 第 n 張公共主題卡（0-based） |
+| `card-discover-feed-{n}-title` | 文字 | 卡片標題 |
+| `card-discover-feed-{n}-description` | 文字 | 卡片摘要 |
+| `card-discover-feed-{n}-category` | 標籤 | 分類徽章 |
+| `card-discover-feed-{n}-source` | 文字 | 來源名稱 |
+
+### 1.5 MyChannel（v7.1 · MC-4～MC-6）
+
+| Test ID | 元素 | 功能 |
+|---------|------|------|
+| `heading-my-channel` | 標題 | `/my-channel` 主標 |
+| `text-my-channel-balance` | 文字 | 點數餘額 |
+| `panel-my-channel-empty` | 區塊 | 空 feed／無頻道提示 |
+| `panel-my-channel-templates` | 區塊 | 熱門模板列表（無頻道） |
+| `btn-my-channel-template-{id}` | 連結 | 套用模板 → 建立頻道 |
+| `btn-my-channel-create-channel` | 連結 | 建立頻道 |
+| `btn-my-channel-go-discover` | 連結 | 探索 |
+| `list-my-channel-feed` | 列表 | feed 卡 |
+| `btn-my-channel-unlock-{id}` | 按鈕 | 解鎖原文 |
+| `link-my-channel-source-{id}` | 連結 | 開啟原文 |
+
 ---
 
 ## 2. 認證類 (Authentication)
+
+### 2.0 Landing 介紹頁（`/welcome`）
+
+| Test ID | 元素 | 功能 |
+|---------|------|------|
+| `btn-landing-register` | 按鈕 | 主 CTA → `/register` |
+| `btn-landing-login` | 連結 | Header 登入 |
+| `btn-landing-login-hero` | 按鈕 | Hero 次 CTA → `/login` |
+| `btn-landing-lang-zh` | 按鈕 | 切換繁體中文 |
+| `btn-landing-lang-en` | 按鈕 | 切換 English |
+| `btn-landing-lang-ja` | 按鈕 | 切換日本語 |
+| `link-landing-terms` | 連結 | 使用條款 |
+| `link-landing-privacy` | 連結 | 隱私政策 |
+| `card-landing-feature-*` | 卡片 | 功能卡（trends／aiWrite 等） |
 
 ### 2.1 語言選擇頁
 
@@ -323,6 +371,26 @@ data-testid="{類型}-{位置}-{功能}"
 | `btn-topic-detail-add-image` | 按鈕 | 新增圖片 |
 | `btn-topic-detail-match-photos` | 按鈕 | 智能匹配照片 |
 | `btn-topic-detail-search-images` | 按鈕 | 搜尋圖片 |
+| `btn-topic-card-translate` | 按鈕 | 主題卡：譯為目前語言（v7 Phase 4 改為語系切換自動 standard；保留 testid 供手動重試元件） |
+| `btn-topic-card-kol-style` | 按鈕 | 主題卡：網紅風格（kol_style Flash 按需） |
+| `btn-topic-card-show-collected` | 按鈕 | 主題卡：顯示收集時標題 |
+| `btn-topic-detail-translate-display` | 按鈕 | 詳情：譯為目前語言（標題／摘要） |
+| `btn-topic-detail-kol-style` | 按鈕 | 詳情：網紅風格（kol_style Flash 按需） |
+| `btn-topic-detail-show-collected` | 按鈕 | 詳情：顯示收集時標題 |
+
+### 4.10 發文套件 Post Kit (`PostKitPanel.tsx` · 嵌入 `TopicDetail.tsx`)
+
+| testid | 類型 | 說明 |
+|--------|------|------|
+| `section-postkit` | 區塊 | 發文套件主區 |
+| `input-postkit-title-1`～`3` | 單選 | 標題候選 |
+| `btn-postkit-copy-title-1`～`3` | 按鈕 | 複製標題候選 |
+| `btn-postkit-copy-body` | 按鈕 | 複製內文 |
+| `btn-postkit-copy-script` | 按鈕 | 複製腳本 |
+| `btn-postkit-copy-hashtags` | 按鈕 | 複製 Hashtag |
+| `btn-postkit-copy-image-1`～`N` | 按鈕 | 複製圖片 URL |
+| `btn-postkit-copy-all` | 按鈕 | 複製全部文字 |
+| `btn-publish-goto-topics` | 按鈕 | `/publish` L0 導向主題列表 |
 
 ### 4.10 內容生成面板 (`ContentGenerationPanel.tsx`)
 
@@ -453,6 +521,7 @@ test('login flow', async ({ page }) => {
 
 | 版本 | 日期 | 變更說明 |
 |------|------|----------|
+| v1.2.0 | 2026-07-21 | 新增 MyChannel MC-4～MC-6 testid（模板／解鎖） |
 | v1.0.0 | 2026-02-05 | 初始版本 - 完整按鈕測試 ID 定義 |
 | v1.1.0 | 2026-02-07 | 新增: AI助手預設組合按鈕、來源卡片增強、內容生成面板(風格/格式/長度/時長) |
 

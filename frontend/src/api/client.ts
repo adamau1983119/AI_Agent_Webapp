@@ -88,6 +88,60 @@ async function fetchAPI<T>(
 }
 
 /**
+ * HTTP 請求：回傳完整 JSON（不拆 data 欄位）。
+ * MyChannel 等 envelope 含 balance／empty 與 data 並存時必須用此函式。
+ */
+async function fetchAPIEnvelope<T>(
+  endpoint: string,
+  options?: RequestConfig
+): Promise<T> {
+  const url = `${API_BASE_URL}${endpoint}`
+  const timeout = options?.timeout || 10000
+
+  try {
+    const config = requestInterceptor(options || {})
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), timeout)
+
+    try {
+      const response = await fetch(url, {
+        ...config,
+        signal: controller.signal,
+      })
+      clearTimeout(timeoutId)
+
+      if (!response.ok) {
+        await responseInterceptor(response, options?.skipErrorHandler)
+      }
+
+      const contentType = response.headers.get('content-type')
+      if (!contentType || !contentType.includes('application/json')) {
+        return null as T
+      }
+      return (await response.json()) as T
+    } catch (fetchError: any) {
+      clearTimeout(timeoutId)
+      if (fetchError.name === 'AbortError') {
+        throw new Error(`Request timeout (${timeout}ms): ${endpoint}`)
+      }
+      throw fetchError
+    }
+  } catch (error) {
+    const apiError = handleAPIError(error)
+    if (apiError.status === 404 || apiError.status === 429) {
+      throw apiError
+    }
+    console.error(`❌ API request failed: ${endpoint}`, {
+      url,
+      error: apiError,
+      message: apiError.message,
+      status: apiError.status,
+    })
+    throw apiError
+  }
+}
+
+/**
  * 取得完整響應（包含分頁資訊）
  */
 async function fetchAPIWithPagination<T>(
@@ -97,21 +151,14 @@ async function fetchAPIWithPagination<T>(
   const url = `${API_BASE_URL}${endpoint}`
 
   try {
-    // 1. 請求攔截器處理
     const config = requestInterceptor(options || {})
-
-    // 2. 發送請求
     const response = await fetch(url, config)
-
-    // 3. 分頁響應攔截器處理
     const result = await paginationResponseInterceptor(
       response,
       options?.skipErrorHandler
     )
-
     return result as { data: T[]; pagination: any }
   } catch (error) {
-    // 4. 統一錯誤處理
     const apiError = handleAPIError(error)
     console.error(`API request failed: ${endpoint}`, apiError)
     throw apiError
@@ -119,7 +166,7 @@ async function fetchAPIWithPagination<T>(
 }
 
 // 導出基礎函數供專用模組使用
-export { fetchAPI, fetchAPIWithPagination, API_BASE_URL }
+export { fetchAPI, fetchAPIEnvelope, fetchAPIWithPagination, API_BASE_URL }
 
 /**
  * 統一的 API 介面
@@ -134,6 +181,7 @@ import { schedulesAPI } from './schedules'
 import { interactionsAPI } from './interactions'
 import { recommendationsAPI } from './recommendations'
 import { discoverAPI } from './discover'
+import { publicFeedAPI } from './publicFeed'
 import { validateAPI } from './validate'
 // delay 已在同檔案中定義（第 20 行），不需要導入
 
@@ -199,5 +247,7 @@ export {
   interactionsAPI,
   recommendationsAPI,
   discoverAPI,
+  publicFeedAPI,
   validateAPI,
 }
+export { userPreferencesAPI } from './userPreferences'

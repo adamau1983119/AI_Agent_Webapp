@@ -52,11 +52,42 @@ class TopicResponse(BaseModel):
     preview_images: Optional[List[str]] = Field(None, description="預覽圖片 URL 列表")
     is_expanded: bool = Field(default=False, description="是否已展開")
     description: Optional[str] = Field(None, description="主題內容摘要（約30字）")
+    summary_flash: Optional[str] = Field(None, description="Flash 提煉摘要（v7 事實源）")
     # Phase 7: 多語言支援
     display_language: Optional[str] = Field(None, description="標題/摘要的顯示語言（zh-TW/en/ja）")
     original_title: Optional[str] = Field(None, description="原始標題（來源語言）")
+    titles_i18n: Optional[Dict[str, str]] = Field(
+        None, description="多語言標題快取（zh-TW/en/ja）"
+    )
+    description_i18n: Optional[Dict[str, str]] = Field(
+        None, description="多語言摘要快取（zh-TW/en/ja）"
+    )
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class TopicTranslateDisplayRequest(BaseModel):
+    """譯為目前語言請求"""
+    target_language: Optional[str] = Field(
+        None, description="目標語言（zh-TW/en/ja）；省略則由前端帶入介面語言"
+    )
+    translation_type: Optional[str] = Field(
+        "standard_translation",
+        description="standard_translation（DeepL）| kol_style（Flash 按需）",
+    )
+
+
+class TopicTranslateDisplayResponse(BaseModel):
+    """譯為目前語言回應"""
+    topic_id: str
+    title: str
+    description: Optional[str] = None
+    target_language: str
+    display_language: str
+    original_title: Optional[str] = None
+    cached: bool = False
+    titles_i18n: Optional[Dict[str, str]] = None
+    description_i18n: Optional[Dict[str, str]] = None
 
 
 class TopicDetailResponse(BaseModel):
@@ -77,9 +108,12 @@ class TopicDetailResponse(BaseModel):
     is_expanded: bool = Field(default=False, description="是否已展開")
     generation_config: Optional[Dict[str, Any]] = Field(None, description="生成配置")
     description: Optional[str] = Field(None, description="主題內容摘要（約30字）")
+    summary_flash: Optional[str] = Field(None, description="Flash 提煉摘要（v7 事實源）")
     # Phase 7: 多語言支援
     display_language: Optional[str] = Field(None, description="標題/摘要的顯示語言（zh-TW/en/ja）")
     original_title: Optional[str] = Field(None, description="原始標題（來源語言）")
+    titles_i18n: Optional[Dict[str, str]] = Field(None, description="多語言標題快取")
+    description_i18n: Optional[Dict[str, str]] = Field(None, description="多語言摘要快取")
 
     model_config = ConfigDict(from_attributes=True)
 

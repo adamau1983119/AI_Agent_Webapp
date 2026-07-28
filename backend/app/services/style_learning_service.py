@@ -201,9 +201,7 @@ class StyleLearningService:
         - 主要風格特徵
         - 建議
         """
-        profile = await self.profile_repo.get_by_user_id(user_id)
-        if not profile:
-            return {"error": "Profile not found"}
+        profile = await self.get_or_create_profile(user_id)
         
         stats = await self.rating_repo.get_user_rating_stats(user_id)
         

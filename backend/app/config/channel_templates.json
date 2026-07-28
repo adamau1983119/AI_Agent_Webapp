@@ -1,0 +1,34 @@
+[
+  {
+    "id": "tpl-hk-food",
+    "category": "food",
+    "region": "hong_kong",
+    "name_key": "myChannel.template.hkFood.name",
+    "desc_key": "myChannel.template.hkFood.desc",
+    "suggested_name": "香港美食日誌"
+  },
+  {
+    "id": "tpl-jp-fashion",
+    "category": "fashion",
+    "region": "japan",
+    "name_key": "myChannel.template.jpFashion.name",
+    "desc_key": "myChannel.template.jpFashion.desc",
+    "suggested_name": "東京街頭時尚"
+  },
+  {
+    "id": "tpl-global-trend",
+    "category": "trend",
+    "region": "global",
+    "name_key": "myChannel.template.globalTrend.name",
+    "desc_key": "myChannel.template.globalTrend.desc",
+    "suggested_name": "全球趨勢速覽"
+  },
+  {
+    "id": "tpl-tw-tech",
+    "category": "tech",
+    "region": "taiwan",
+    "name_key": "myChannel.template.twTech.name",
+    "desc_key": "myChannel.template.twTech.desc",
+    "suggested_name": "台灣科技觀察"
+  }
+]

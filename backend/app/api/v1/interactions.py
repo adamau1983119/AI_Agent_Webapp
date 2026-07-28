@@ -11,9 +11,12 @@ from app.schemas.interaction import (
 )
 from app.services.repositories.interaction_repository import InteractionRepository
 from app.services.repositories.topic_repository import TopicRepository
+from app.services.style_learning_service import style_learning_service
 from app.models.interaction import InteractionAction
+from app.models.rating import RatingCreate, RatingValue, RatingReason
 from app.models.topic import Category
 from datetime import datetime
+from typing import List, Optional
 import logging
 
 logger = logging.getLogger(__name__)
@@ -29,6 +32,63 @@ def _convert_to_response(interaction_doc: dict) -> InteractionResponse:
     """將 MongoDB 文檔轉換為 InteractionResponse"""
     interaction_doc.pop("_id", None)
     return InteractionResponse(**interaction_doc)
+
+
+def _map_interaction_reasons(reasons: Optional[List[str]]) -> List[RatingReason]:
+    """將互動原因字串轉為評分枚舉（未知值略過）"""
+    if not reasons:
+        return []
+    mapped: List[RatingReason] = []
+    for raw in reasons:
+        try:
+            mapped.append(RatingReason(raw))
+        except ValueError:
+            logger.debug("略過未知互動原因: %s", raw)
+    return mapped
+
+
+async def _sync_like_dislike_to_style_profile(
+    *,
+    user_id: str,
+    topic_id: str,
+    action: InteractionAction,
+    article_id: Optional[str],
+    script_id: Optional[str],
+    category: Optional[str],
+    reasons: Optional[List[str]],
+    comment: Optional[str],
+) -> None:
+    """
+    詳情頁 👍👎 經 interactions 寫入後，同步至 ratings + style_profiles（Phase 4）。
+    互動記錄為主；風格同步失敗不阻斷互動 API。
+    """
+    if action not in (InteractionAction.LIKE, InteractionAction.DISLIKE):
+        return
+    if not user_id or user_id == "user_default":
+        return
+
+    content_id = article_id or script_id or topic_id
+    rating_data = RatingCreate(
+        content_id=content_id,
+        topic_id=topic_id,
+        value=RatingValue.LIKE if action == InteractionAction.LIKE else RatingValue.DISLIKE,
+        reasons=_map_interaction_reasons(reasons),
+        comment=comment,
+        topic_category=category,
+    )
+    rating, error = await style_learning_service.submit_rating(
+        user_id=user_id,
+        rating_data=rating_data,
+    )
+    if error:
+        logger.warning("風格學習同步失敗 user=%s topic=%s: %s", user_id, topic_id, error)
+    elif rating:
+        logger.info(
+            "風格學習已同步 user=%s topic=%s action=%s",
+            user_id,
+            topic_id,
+            action.value,
+        )
 
 
 @router.post("", response_model=InteractionResponse)
@@ -54,6 +114,42 @@ async def create_interaction(interaction_data: InteractionCreate):
             reasons=interaction_data.reasons,  # 原因列表
             comment=interaction_data.comment  # 評論
         )
+
+        try:
+            await _sync_like_dislike_to_style_profile(
+                user_id=interaction_data.user_id,
+                topic_id=interaction_data.topic_id,
+                action=interaction_data.action,
+                article_id=interaction_data.article_id,
+                script_id=interaction_data.script_id,
+                category=category,
+                reasons=interaction_data.reasons,
+                comment=interaction_data.comment,
+            )
+        except Exception as sync_err:
+            logger.warning(
+                "風格學習同步例外（互動已記錄）user=%s topic=%s: %s",
+                interaction_data.user_id,
+                interaction_data.topic_id,
+                sync_err,
+            )
+
+        if interaction_data.action in (InteractionAction.LIKE, InteractionAction.DISLIKE):
+            try:
+                from app.services.alter_ego_service import alter_ego_service
+
+                await alter_ego_service.log_thumb_feedback(
+                    interaction_data.user_id,
+                    action=interaction_data.action.value,
+                    topic_id=interaction_data.topic_id,
+                    comment=interaction_data.comment,
+                )
+            except Exception as ae_err:
+                logger.warning(
+                    "Alter Ego feedback 同步例外 user=%s: %s",
+                    interaction_data.user_id,
+                    ae_err,
+                )
         
         return _convert_to_response(created)
     except Exception as e:

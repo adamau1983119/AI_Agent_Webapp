@@ -15,7 +15,21 @@ class Settings(BaseSettings):
     APP_VERSION: str = "1.0.0"
     DEBUG: bool = True
     ENVIRONMENT: str = "development"
-    AUTO_START_SCHEDULER: str = "true"  # 是否自動啟動排程服務（Agent 核心功能，預設啟用）
+    AUTO_START_SCHEDULER: str = "false"  # 本機／測試預設關；production 仍會自動啟動排程
+    # 成本開關（見 docs/deepseek_cost_investigation_2026-05.md）
+    ENABLE_SCHEDULED_TOPIC_COLLECTION: str = "false"  # false=暫停每 6h 主打分類主題卡
+    ENABLE_AI_TOPIC_TRANSLATION: str = "false"  # false=收集時不逐則呼叫 DeepSeek 翻譯標題
+    ENABLE_AI_TOPIC_FALLBACK: str = "false"  # false=RSS 不足時不用 AI 補滿主題
+    ENABLE_CHANNEL_PREFETCH_PIPELINE: str = "false"  # v7：港日定向夜間 DeepL 預載
+    ENABLE_PUBLIC_FEED_PIPELINE: str = "false"  # v7 Discover：公共 8h RSS 批次
+    PUBLIC_FEED_BATCH_SIZE: int = 30
+    PUBLIC_FEED_INTERVAL_HOURS: int = 8
+    PUBLIC_FEED_WINDOW_HOURS: int = 36
+    PUBLIC_FEED_MAX_CARDS: int = 135
+    MAX_TRANSLATION_RETRIES: int = 3  # Discover 標題 DeepL 單卡單語重試
+    DEEPL_API_KEY: str = ""
+    DEEPL_API_URL: str = "https://api-free.deepl.com/v2/translate"
+    TRANSLATION_TIMEOUT_SEC: int = 5
     
     # 伺服器配置
     HOST: str = "0.0.0.0"
@@ -53,7 +67,12 @@ class Settings(BaseSettings):
     
     # DeepSeek AI（OpenAI 兼容 API，推薦）
     DEEPSEEK_API_KEY: str = ""
-    DEEPSEEK_MODEL: str = "deepseek-chat"  # 或 "deepseek-chat-v3" 用於最新版本
+    # v7 D2：Flash／Pro 分離（generate/regenerate 用 PRO）
+    DEEPSEEK_MODEL_FLASH: str = "deepseek-v4-flash"
+    DEEPSEEK_MODEL_PRO: str = "deepseek-v4-pro"
+    DEEPSEEK_PRO_MAX_TOKENS: int = 4096
+    # 向後相容；預設等同 FLASH
+    DEEPSEEK_MODEL: str = "deepseek-v4-flash"
     DEEPSEEK_BASE_URL: str = "https://api.deepseek.com/v1/chat/completions"
     
     # 選擇使用的 AI 服務（qwen, openai, gemini, ollama, ollama_cloud, deepseek）
@@ -121,6 +140,33 @@ class Settings(BaseSettings):
     RATE_LIMIT_PER_MINUTE: int = 60  # 預設值（生產環境）
     RATE_LIMIT_PER_HOUR: int = 1000  # 預設值（生產環境）
     
+    @property
+    def safe_batch_size(self) -> int:
+        """
+        Discover 批次硬上限（PF-H）。
+        development：一律 ≤2，防本機誤開 pipeline 或手動腳本燒 Token。
+        staging／production：PUBLIC_FEED_BATCH_SIZE（預設 30）。
+        """
+        if self.ENVIRONMENT == "development":
+            return 2
+        if self.ENVIRONMENT in ("staging", "production"):
+            return int(self.PUBLIC_FEED_BATCH_SIZE)
+        return min(2, int(self.PUBLIC_FEED_BATCH_SIZE))
+
+    @model_validator(mode='after')
+    def validate_public_feed_formula(self):
+        """Discover：135 = 30 × (36/8)"""
+        expected = int(
+            self.PUBLIC_FEED_BATCH_SIZE
+            * (self.PUBLIC_FEED_WINDOW_HOURS / self.PUBLIC_FEED_INTERVAL_HOURS)
+        )
+        if self.PUBLIC_FEED_MAX_CARDS != expected:
+            raise ValueError(
+                f"PUBLIC_FEED_MAX_CARDS must be {expected} "
+                f"(batch×window/interval), got {self.PUBLIC_FEED_MAX_CARDS}"
+            )
+        return self
+
     @model_validator(mode='after')
     def adjust_rate_limit_for_environment(self):
         """根據環境調整速率限制"""

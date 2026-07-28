@@ -4,61 +4,57 @@
 # 更新：2026-01-30 - 收集間隔從 4 小時改為 6 小時（降低 33% 負載）
 
 # ============================================
-# Phase 1: 收集排程設定（每 6 小時）
+# 收集排程（上架衝刺：每日 04:00 HKT × 三類各 5 張）
 # ============================================
 collection_schedule:
   # 收集模式: "daily" 或 "interval"
-  mode: "interval"
+  mode: "daily"
   # 收集間隔（小時），僅 mode=interval 時有效
   interval_hours: 6
-  # 收集時間點（UTC，每 6 小時: 00:00, 06:00, 12:00, 18:00）
+  # 收集時間點（UTC，僅 mode=interval）
   collection_hours: [0, 6, 12, 18]
   timezone: "UTC"
 
-# 舊版相容設定（保留用於向後相容）
+# 每日生成（mode=daily 時生效）
 daily_generation:
-  # 生成時間（香港時間）- 僅 mode=daily 時有效
-  time: "07:00"
+  # 生成時間（香港時間）— 上架衝刺測試約 04:00 開工，故對齊 04:00
+  time: "04:00"
   timezone: "Asia/Hong_Kong"
   
-  # 各分類的生成設定
+  # 各分類：每日各 5 張主題卡（fashion / food / trend）
   categories:
     fashion:
-      # 每天固定生成 10 個標題
-      count: 10
-      # 每個標題只生成 1 張預覽圖片
+      count: 5
       preview_images: 1
-      # 是否生成文字內容（階段1設為false，延遲生成）
       generate_content: false
-      # 角色分配比例
       role_distribution:
-        authority: 2    # 權威來源 (Vogue, Elle)
-        streetwear: 2   # 街頭潮牌 (Hypebeast, Highsnobiety)
-        asian: 2        # 亞洲時尚 (Popbee, SCMP Style)
-        industry: 2     # 產業分析 (BoF, WWD)
-        practical: 2    # 實用穿搭 (Who What Wear, Fashionista)
+        authority: 1
+        streetwear: 1
+        asian: 1
+        industry: 1
+        practical: 1
       
     food:
-      count: 10
+      count: 5
       preview_images: 1
       generate_content: false
       role_distribution:
-        mainstream: 2   # 主流美食 (Eater, Bon Appétit)
-        professional: 2 # 專業料理 (Epicurious, The Kitchn)
-        cultural: 2     # 文化美食 (BBC Good Food, Simply Recipes)
-        healthy: 2      # 健康飲食 (Eat This Not That)
-        casual: 2       # 輕鬆美食 (The Takeout, Mashed)
+        mainstream: 1
+        professional: 1
+        cultural: 1
+        healthy: 1
+        casual: 1
       
     trend:
-      count: 10
+      count: 5
       preview_images: 1
       generate_content: false
       role_distribution:
-        tech: 2         # 科技新聞 (TechCrunch, The Verge)
-        science: 2      # 科學技術 (Ars Technica, IEEE Spectrum)
-        culture: 2      # 文化分析 (Vox, The Atlantic)
-        innovation: 2   # 創新趨勢 (WIRED, MIT Technology Review)
-        lifestyle: 2    # 生活方式 (Fast Company, Rest of World)
+        tech: 1
+        science: 1
+        culture: 1
+        innovation: 1
+        lifestyle: 1
 
 # 圖片搜尋設定
 image_search:

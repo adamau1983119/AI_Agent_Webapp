@@ -88,28 +88,28 @@ CATEGORY_ROLES: Dict[Category, Dict[str, List[Tuple[str, str, float]]]] = {
     Category.TREND: TREND_ROLES,
 }
 
-# 預設角色分配比例（每個角色獲得的主題數量）
+# 預設角色分配比例（與 topic_generation.yaml count=5 對齊：5 角色 × 1）
 DEFAULT_ROLE_DISTRIBUTION: Dict[Category, Dict[str, int]] = {
     Category.FASHION: {
-        "authority": 2,
-        "streetwear": 2,
-        "asian": 2,
-        "industry": 2,
-        "practical": 2,
+        "authority": 1,
+        "streetwear": 1,
+        "asian": 1,
+        "industry": 1,
+        "practical": 1,
     },
     Category.FOOD: {
-        "mainstream": 2,
-        "professional": 2,
-        "cultural": 2,
-        "healthy": 2,
-        "casual": 2,
+        "mainstream": 1,
+        "professional": 1,
+        "cultural": 1,
+        "healthy": 1,
+        "casual": 1,
     },
     Category.TREND: {
-        "tech": 2,
-        "science": 2,
-        "culture": 2,
-        "innovation": 2,
-        "lifestyle": 2,
+        "tech": 1,
+        "science": 1,
+        "culture": 1,
+        "innovation": 1,
+        "lifestyle": 1,
     },
 }
 

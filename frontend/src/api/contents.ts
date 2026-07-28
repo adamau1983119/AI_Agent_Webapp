@@ -74,6 +74,7 @@ export const contentsAPI = {
     topicId: string,
     params: GenerateContentParams
   ): Promise<Content> => {
+    // Pro 生成常 >10s；預設 fetch timeout 會誤殺（E0-AE-3）
     const content = await fetchAPI<any>(`/contents/${topicId}/generate`, {
       method: 'POST',
       body: JSON.stringify({
@@ -82,6 +83,7 @@ export const contentsAPI = {
         script_duration: params.script_duration || 30,
         language: params.language || 'zh-TW',  // 傳遞用戶語言偏好
       }),
+      timeout: 120000,
     })
 
     return convertContent(content)
@@ -126,7 +128,7 @@ export const contentsAPI = {
         script_duration: params.script_duration || 30,
         language: params.language || 'zh-TW',  // 傳遞用戶語言偏好
       }),
-      timeout: 60000, // 60 秒超時（內容生成需要更長時間）
+      timeout: 120000,
     })
 
     return convertContent(content)

@@ -1,0 +1,24 @@
+# Alter Ego Shell — X / Twitter（AE-0 · docs/ALTER_EGO_SPEC.md §5）
+platform: x
+display_name: X
+version: 1
+
+constraints:
+  max_lead_chars: null
+  hashtag_min: 0
+  hashtag_max: 3
+  max_post_chars: 280
+  allow_thread: true
+  max_thread_posts: 8
+
+format:
+  sections:
+    - post
+    - thread_continuation
+  hashtag_prefix: "#"
+
+prompt_hints:
+  post: "單則 ≤280 字；精煉、可含 0～3 個 hashtag。"
+  thread_continuation: "若需 thread，每則仍 ≤280 字，首則最吸睛。"
+
+visual_prompt: false

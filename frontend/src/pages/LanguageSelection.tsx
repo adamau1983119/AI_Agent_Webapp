@@ -27,9 +27,8 @@ export default function LanguageSelection() {
     // 儲存到 localStorage
     localStorage.setItem('preferred-language', lang);
     
-    // 短暫延遲後跳轉到登入頁
     setTimeout(() => {
-      navigate('/login');
+      navigate('/welcome');
     }, 300);
   };
 

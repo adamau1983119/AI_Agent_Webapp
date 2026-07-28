@@ -2,7 +2,10 @@
  * 頻道 API
  * Phase 3: 內容功能
  */
-import { fetchAPI } from './client';
+import { fetchAPI, fetchAPIWithPagination } from './client';
+import { convertTopic } from './topics';
+import type { Topic } from '@/types';
+import type { PaginatedResponse } from './topics';
 
 // 類型定義
 export interface ChannelFeedEntry {
@@ -167,6 +170,46 @@ export const channelsApi = {
     return fetchAPI(`/channels/${channelId}/collect`, {
       method: 'POST',
     });
+  },
+
+  /**
+   * 取得頻道底下已寫入資料庫的主題（依 channel_id，非僅統計數字）
+   */
+  getChannelTopics: async (
+    channelId: string,
+    page: number = 1,
+    limit: number = 50
+  ): Promise<PaginatedResponse<Topic>> => {
+    const params = new URLSearchParams({
+      page: String(page),
+      limit: String(limit),
+    });
+    const response = await fetchAPIWithPagination<any>(
+      `/channels/${channelId}/topics?${params.toString()}`
+    );
+    const pagination = response.pagination || {
+      page,
+      limit,
+      total: response.data.length,
+      totalPages: Math.ceil(response.data.length / limit) || 0,
+    };
+    const total = pagination.total ?? response.data.length;
+    const pageLimit = pagination.limit ?? limit;
+    const computedPages =
+      Math.ceil(total / pageLimit) || 0;
+
+    return {
+      data: response.data.map(convertTopic),
+      pagination: {
+        page: pagination.page ?? page,
+        limit: pageLimit,
+        total,
+        totalPages:
+          pagination.totalPages ??
+          pagination.total_pages ??
+          computedPages,
+      },
+    };
   },
 
   /**

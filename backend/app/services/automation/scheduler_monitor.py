@@ -111,6 +111,12 @@ class SchedulerMonitor:
         確保今日主題已生成
         如果不足，自動觸發生成
         """
+        from app.utils.cost_controls import scheduled_topic_collection_enabled
+        if not scheduled_topic_collection_enabled():
+            logger.info(
+                "跳過 ensure_today_topics（ENABLE_SCHEDULED_TOPIC_COLLECTION=false）"
+            )
+            return
         try:
             today = datetime.now().strftime("%Y-%m-%d")
             topics, _ = await self.topic_repo.list_topics(date=today, limit=100)

@@ -1,0 +1,24 @@
+# Alter Ego Shell — Threads（AE-0 · docs/ALTER_EGO_SPEC.md §5）
+platform: threads
+display_name: Threads
+version: 1
+
+constraints:
+  max_lead_chars: null
+  hashtag_min: 0
+  hashtag_max: 1
+  max_body_chars: 500
+  allow_thread: true
+  max_thread_posts: 5
+
+format:
+  sections:
+    - body
+    - hashtags
+  hashtag_prefix: "#"
+
+prompt_hints:
+  body: "口語、連貫；可短句換行；避免過長段落。"
+  hashtags: "最多 1 個 hashtag，或完全不使用。"
+
+visual_prompt: false

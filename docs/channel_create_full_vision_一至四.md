@@ -2,7 +2,7 @@
 
 > **定位**：本檔為 **核心體驗目標、資訊架構、前端架構、後端與領域、資料生命週期、測試／發布／營運** 之 **全集敘述**（不依 MVP 砍範圍）。**第五、六章**之細部驗收與勾選以 **[新方案檢查清單 H／I](./channel_create_new_scheme_checklist.md)** 為準，**預設於測試階段**（AGENTS **第 10～14 工作天**或專案測試週）補齊。  
 > **與其他文件關係**：  
-> - 實作契約、已落地 MVP、**§E Phase A（版面凍結）** → 見 [channel_create_ai_guided_spec.md](./channel_create_ai_guided_spec.md)  
+> - 實作契約、已落地 MVP、**E 階段 A（版面凍結）** → 見 [channel_create_ai_guided_spec.md](./channel_create_ai_guided_spec.md)  
 > - 路由、RSS 步驟、架構表 **⑤** → 見 [專案完整架構表.md](../專案完整架構表.md)（建立頻道 Step 2／RSS）  
 > **建立／更新**：2026-05-08  
 > **維護**：產品／架構共筆；實作切版時請在本檔標註「已採用／暫緩」避免漂移。
@@ -27,9 +27,9 @@
 | **可信任** | 寫入 `POST /channels` 前：**可視、可改、可還原**；關鍵變更有摘要或差異提示。 |
 | **可觀測** | 步驟完成、放棄、錯誤、建立成功等事件，預留分析／稽核欄位（實作階段再接）。 |
 
-### 1.3 與 §E 的關係
+### 1.3 與 E 階段 的關係
 
-- **§E（Phase A）**：已凍結 **L0～L4** 與 **文件階段 DoD**、Phase B～D 邊界。  
+- **E 階段（Phase A）**：已凍結 **L0～L4** 與 **文件階段 DoD**、Phase B～D 邊界。  
 - **本檔第一節**：把 **核心體驗目標** 寫成可對齊全專案的敘述，供 **一＋二** 定稿與驗收引用。
 
 ---
@@ -148,7 +148,7 @@
 
 ## 五、資料與生命週期（完整）
 
-> **計劃**：本章為 **資料面全集**；**實作、對照程式與策略文件**預設延至 **測試階段** 與檢查清單 **H** 逐項補齊（見 [channel_create_new_scheme_checklist.md](./channel_create_new_scheme_checklist.md) §H）。
+> **計劃**：本章為 **資料面全集**；**實作、對照程式與策略文件**預設延至 **測試階段** 與檢查清單 **H** 逐項補齊（見 [channel_create_new_scheme_checklist.md](./channel_create_new_scheme_checklist.md) 矩陣 H）。
 
 ### 5.1 正式頻道與草稿
 
@@ -202,8 +202,8 @@
 
 | 項目 | 說明 |
 |------|------|
-| **規格** | `channel_create_ai_guided_spec.md`（含 §E）與本檔 **一至六** 為 **產品與架構敘述** 主軸；版本與日期同步。 |
-| **架構表** | `專案完整架構表.md` 建立頻道 §⑤ 與 **①～④** 狀態與本願景 **對齊**。 |
+| **規格** | `channel_create_ai_guided_spec.md`（含 E 階段）與本檔 **一至六** 為 **產品與架構敘述** 主軸；版本與日期同步。 |
+| **架構表** | `專案完整架構表.md` 建立頻道 第⑤節 與 **①～④** 狀態與本願景 **對齊**。 |
 | **ADR** | 建議另存 `docs/adr/`（或專案約定路徑）：至少 **「為何表單弱化／改助手主導」**、**「為何檢索邊界如此定（白名單／probe）」**；決策日期與利害關係人可考。 |
 
 ---
@@ -212,7 +212,7 @@
 
 | 本檔章節 | 建議對照之程式／文件 |
 |----------|----------------------|
-| 一（核心體驗目標）、二 | `channel_create_ai_guided_spec.md` **§E**；產品 review 簡報。 |
+| 一（核心體驗目標）、二 | `channel_create_ai_guided_spec.md` **E 階段**；產品 review 簡報。 |
 | 三 | `frontend/src/pages/CreateChannel.tsx`（現為單檔多職責，Phase B 可拆子元件）。 |
 | 四 | `backend/app/api/v1/channels.py`、`channel_assist_service.py`、`channel_service.py`、`feed_url_probe_service.py` 等。 |
 | 五 | Mongo `channels`／草稿集合設計、`selected_feeds` 策略文件、頻道 CRUD；**檢查清單 H**（測試階段）。 |

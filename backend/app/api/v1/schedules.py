@@ -10,6 +10,7 @@ from app.services.automation.scheduler import SchedulerService
 from app.services.repositories.topic_repository import TopicRepository
 from app.database import check_connection_from_request, get_database_from_request
 from app.config import settings
+from app.utils.cost_controls import scheduled_topic_collection_enabled
 from pymongo.errors import ConnectionFailure
 # 同時從統一的 exceptions 模組導入（備用方案，避免循環導入問題）
 try:
@@ -251,6 +252,14 @@ async def manual_generate_topics(
     
     用於測試或立即執行主題生成任務
     """
+    if not scheduled_topic_collection_enabled():
+        raise HTTPException(
+            status_code=403,
+            detail={
+                "code": "scheduled_topic_collection_disabled",
+                "message": "排程主題卡收集已暫停。請設 ENABLE_SCHEDULED_TOPIC_COLLECTION=true 或改用頻道收集。",
+            },
+        )
     try:
         scheduler_service = get_scheduler_service()
         
@@ -285,13 +294,34 @@ async def generate_today_all_topics(
     background_tasks: BackgroundTasks = BackgroundTasks()
 ):
     """
-    立即生成今日所有主題（3個分類 × 3個主題 = 9個主題）
+    立即生成今日所有主題（三分類 × 配置檔 count；預設各 5 = 15）
     
     用於補齊今日缺失的主題
     """
+    if not scheduled_topic_collection_enabled():
+        raise HTTPException(
+            status_code=403,
+            detail={
+                "code": "scheduled_topic_collection_disabled",
+                "message": "每日主打主題卡生成已暫停 (ENABLE_SCHEDULED_TOPIC_COLLECTION=false)。",
+            },
+        )
     try:
+        from app.config.topic_config import get_topic_config
+        from app.utils.i18n import get_error_message, get_user_language
+
+        topic_cfg = get_topic_config()
+        per_category = {
+            cat.value: topic_cfg.get_category_count(cat.value)
+            for cat in [Category.FASHION, Category.FOOD, Category.TREND]
+        }
+        expected_total = sum(per_category.values())
+
         # 記錄 API 請求
-        logger.info(f"收到生成今日主題請求: force={request_body.force}")
+        logger.info(
+            f"收到生成今日主題請求: force={request_body.force} "
+            f"per_category={per_category} expected={expected_total}"
+        )
         
         scheduler_service = get_scheduler_service()
         
@@ -307,7 +337,7 @@ async def generate_today_all_topics(
                     "message": get_error_message("schedule.database_not_connected", language),
                     "detail": "資料庫客戶端未初始化",
                     "categories": ["fashion", "food", "trend"],
-                    "expected_count": 30,
+                    "expected_count": expected_total,
                     "existing_count": 0,
                     "suggestion": get_error_message("schedule.suggestion.check_mongodb", language)
                 }
@@ -336,7 +366,7 @@ async def generate_today_all_topics(
                     "message": get_error_message("schedule.database_unavailable", language),
                     "detail": str(e),
                     "categories": ["fashion", "food", "trend"],
-                    "expected_count": 30,
+                    "expected_count": expected_total,
                     "existing_count": 0,
                     "suggestion": get_error_message("schedule.suggestion.check_mongodb_config", language)
                 }
@@ -346,14 +376,15 @@ async def generate_today_all_topics(
             existing_topics = []
         
         # 4. 檢查是否已達到上限
-        if not request_body.force and len(existing_topics) >= 30:
+        if not request_body.force and len(existing_topics) >= expected_total:
             logger.info("今日主題已完整，無需重新生成")
             return {
                 "status": "skipped",
                 "message": "今日主題已完整，無需重新生成",
                 "categories": ["fashion", "food", "trend"],
-                "expected_count": 30,
-                "existing_count": len(existing_topics)
+                "expected_count": expected_total,
+                "existing_count": len(existing_topics),
+                "per_category": per_category,
             }
         
         # 5. 在背景任務中執行生成
@@ -369,10 +400,14 @@ async def generate_today_all_topics(
                 
                 for category in [Category.FASHION, Category.FOOD, Category.TREND]:
                     try:
-                        logger.info(f"📝 開始生成 {category.value} 主題（目標：10 個, 語言: {target_language}）...")
+                        cat_count = per_category[category.value]
+                        logger.info(
+                            f"📝 開始生成 {category.value} 主題"
+                            f"（目標：{cat_count} 個, 語言: {target_language}）..."
+                        )
                         topics = await scheduler_service.trigger_manual_generation(
                             category=category,
-                            count=10,
+                            count=cat_count,
                             display_language=target_language
                         )
                         generated_count = len(topics) if topics else 0
@@ -397,7 +432,7 @@ async def generate_today_all_topics(
                 
                 logger.info("=" * 60)
                 logger.info(f"📊 今日主題生成完成！")
-                logger.info(f"   總計生成：{total_generated}/30 個主題")
+                logger.info(f"   總計生成：{total_generated}/{expected_total} 個主題")
                 logger.info(f"   詳細結果：{results}")
                 logger.info("=" * 60)
             except Exception as e:
@@ -412,8 +447,9 @@ async def generate_today_all_topics(
             "status": "accepted",
             "message": "生成任務已提交，請稍後查看結果",
             "categories": ["fashion", "food", "trend"],
-            "expected_count": 30,
+            "expected_count": expected_total,
             "existing_count": len(existing_topics),
+            "per_category": per_category,
             "language": target_language
         }
         
