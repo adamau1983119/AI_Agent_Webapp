@@ -8,13 +8,21 @@
 
 當使用者在對話中輸入 **`專案開始`**（或 `@AGENTS.md` 並要求展開專案排程）時，助手**不得**只貼排程；須先完成 **專案開始前檢查**，再依 **版本路由** 輸出對應 Operation Plan（與 `README.md`「必讀文件」「⛔ 啟動檢查」對齊）。
 
-**推薦一句（2026-07-21 鎖定 · 上架衝刺測試 07-22～24 · 與下表等價）**
+**推薦一句（2026-07-29 鎖定 · v8 上架 · 與下表等價）**
+
+```text
+專案開始，v8 上架，先讀 docs/archives/v7.0.0_CODE_FREEZE_MANIFEST.md 與 專案完整架構表_v8.md @AGENTS.md
+```
+
+→ 助手須：① **專案開始前檢查**；② 確認 **v7 已隔離**（`check_git_v7_refs.py`／Manifest）；③ 只在 **`feature/v8-launch`** 改碼／測正式域；④ **禁止**改 `docs/archives/v7.0.0_*_凍結.md`；⑤ DNS／OAuth 對照 [`alter_ego_launch_dns_checklist.md`](./docs/alter_ego_launch_dns_checklist.md)。
+
+**封存（2026-07-21～28 · 上架衝刺測試）**
 
 ```text
 專案開始，先讀 docs/v7_program_line/_GATE.md 與 launch_test_sprint_2026-07-22.md 當日 Day，再開測 @AGENTS.md
 ```
 
-→ 助手須：① **專案開始前檢查**（含 **R-1～R-5**、**:8000／:3000**、**已登入**）；② 讀 [`_GATE.md`](./docs/v7_program_line/_GATE.md) + [`index.md`](./docs/v7_program_line/index.md) Active；③ **必讀** [`launch_test_sprint_2026-07-22.md`](./docs/v7_program_line/launch_test_sprint_2026-07-22.md) **當日 Day 表**；④ 展開本檔 **「## 專案開始（v7 · 上架衝刺）」**；⑤ **禁止**再開新 PD／改架構除非測試 FAIL 阻塞。
+→ 三日主路已過；僅追溯用。**勿**再開 v7 PD。
 
 **封存（2026-06-23 · 程式段）**：
 
@@ -38,8 +46,9 @@
 
 | 使用者輸入 | 模式 | Operation Plan 章節 | 核證／SoT |
 |------------|------|-------------------|-------------------------|
-| **上列推薦一句**、**`專案開始 v7 測試週`**、**`專案開始`（07-22～24 實曆）** | **上架衝刺測試** | **「## 專案開始（v7 · 上架衝刺）」** | [`launch_test_sprint_2026-07-22.md`](./docs/v7_program_line/launch_test_sprint_2026-07-22.md) 當日 Day |
-| **封存程式段句**、明示「改碼／PD」 | v7 程式段 | **「## 專案開始（v7 · 程式段）」** | index Active（應無新 PD） |
+| **上列推薦一句**、**`專案開始 v8`**、**`專案開始`（07-29 起）** | **v8 上架** | DNS／正式域／真實數據；分支 `feature/v8-launch` | Manifest + [`專案完整架構表_v8.md`](./專案完整架構表_v8.md) |
+| **封存上架衝刺句**、**`專案開始 v7 測試週`** | 上架衝刺追溯 | **「## 專案開始（v7 · 上架衝刺）」** | [`launch_test_sprint_2026-07-22.md`](./docs/v7_program_line/launch_test_sprint_2026-07-22.md) |
+| **封存程式段句**、明示「改碼／PD」 | v7 程式段追溯 | **「## 專案開始（v7 · 程式段）」** | index Completed |
 | **封存：R＋V7 觸發詞** | 監察／核證追溯 | **「## 專案開始（v7）」** 封存段 | V7 核證表 |
 | **`專案開始 v6`** | v6 測試週（封存） | **「## 專案開始（v6 · 封存）」** | T-10～T-14、NW-* |
 
