@@ -153,10 +153,10 @@
 
 | # | 步驟 | PASS 標準 | ☐ |
 |:-:|------|-----------|:-:|
-| PK1 | 開 `/topics/{固定 topic_id}` | 看見 **發文套件** 四區 | ☐ |
-| PK2 | 點 **標題候選 1** 的 copy | 剪貼簿 = 該標題純文字 | ☐ |
-| PK3 | 點 **內文** copy | 剪貼簿含短文（與畫面一致） | ☐ |
-| PK4 | 點 **Hashtag** copy | 剪貼簿含 `#` 開頭 tags | ☐ |
+| PK1 | 開 `/topics/{固定 topic_id}` | 看見 **發文套件** 四區 | ☑ **2026-07-28** `pubfeed_3db59cb51872`；[`…_PK1-4_postkit_four_zones.png`](./evidence/v7/2026-07-28/2026-07-28_v7_PK1-4_postkit_four_zones.png) |
+| PK2 | 點 **標題候選 1** 的 copy | 剪貼簿 = 該標題純文字 | ☑ **2026-07-28** User：copy OK；toast「已複製到剪貼簿」[`…_PK2-4_copy_ok_toast.png`](./evidence/v7/2026-07-28/2026-07-28_v7_PK2-4_copy_ok_toast.png) |
+| PK3 | 點 **內文** copy | 剪貼簿含短文（與畫面一致） | ☑ 同上 |
+| PK4 | 點 **Hashtag** copy | 剪貼簿含 `#` 開頭 tags | ☑ 同上 |
 | PK5 | 點 **圖片** copy 連結 | 剪貼簿為可開之 https URL | ☐ |
 | PK6 | 375×747 RWD | 四區可讀、copy 鈕可點、無橫向捲動 | ☐ |
 

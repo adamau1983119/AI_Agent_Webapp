@@ -3,7 +3,7 @@
  * Phase 3: 內容功能
  */
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from '../i18n';
 import { useAuthStore } from '../stores/authStore';
 import {
@@ -18,6 +18,7 @@ import {
 } from '../api/channels';
 import toast from 'react-hot-toast';
 import { APIError } from '../api/errors';
+import { alterEgoApi } from '../api/alterEgo';
 
 const MAX_STEP2_SELECTED_FEEDS = 10;
 
@@ -187,8 +188,9 @@ const regions: { value: ChannelRegion; label: string }[] = [
 ];
 
 export default function CreateChannel() {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { isAuthenticated } = useAuthStore();
   
   // 表單狀態
@@ -200,6 +202,16 @@ export default function CreateChannel() {
   const [keywordInput, setKeywordInput] = useState('');
   const [description, setDescription] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // MC-6：熱門模板預填
+  useEffect(() => {
+    const qName = searchParams.get('name');
+    const qCat = searchParams.get('category') as ChannelCategory | null;
+    const qRegion = searchParams.get('region') as ChannelRegion | null;
+    if (qName) setName(qName.slice(0, 80));
+    if (qCat && categoryI18nKeys[qCat]) setCategory(qCat);
+    if (qRegion && regionI18nKeys[qRegion]) setRegion(qRegion);
+  }, [searchParams]);
 
   /** Step 2：候選池（系統預設 + AI 推薦合併）；建立時送出的選取以 selectedReferenceSourceUrls 為準 */
   const [step2PoolSources, setStep2PoolSources] = useState<ChannelFeedEntry[]>([]);
@@ -259,6 +271,9 @@ export default function CreateChannel() {
   const [guidedRetryToken, setGuidedRetryToken] = useState(0);
   /** Phase C：分析失敗時助手內橫幅（與 toast 並列） */
   const [assistRequestError, setAssistRequestError] = useState<string | null>(null);
+  /** AE F06：助手貼範文觸發 DNA extract */
+  const [assistExemplar, setAssistExemplar] = useState('');
+  const [isExtractingDna, setIsExtractingDna] = useState(false);
   /** Phase C：表單區（RSS 池／白名單搜尋／驗證／建立）錯誤同步顯示於助手內 */
   const [feedActionBanner, setFeedActionBanner] = useState<string | null>(null);
   const [mobileSummaryOpen, setMobileSummaryOpen] = useState(false);
@@ -532,6 +547,24 @@ export default function CreateChannel() {
     setAssistInput(
       t('channels.assist.quickPreset', { category: categoryText, region: regionText })
     );
+  };
+
+  const handleAssistExtractDna = async () => {
+    const text = assistExemplar.trim();
+    if (!text) {
+      toast.error(t('channels.assist.exemplarRequired'));
+      return;
+    }
+    setIsExtractingDna(true);
+    try {
+      await alterEgoApi.extract([text], language);
+      toast.success(t('channels.assist.extractDone'));
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : t('common.error');
+      toast.error(msg);
+    } finally {
+      setIsExtractingDna(false);
+    }
   };
 
   // AI 助手：處理用戶輸入（多輪：保留對話並附帶 conversation_history）
@@ -1337,6 +1370,34 @@ export default function CreateChannel() {
               </div>
             </div>
             
+            {/* AE F06：貼範文建立 Alter Ego DNA */}
+            <div className="mb-6 p-3 sm:p-4 rounded-lg border border-purple-200 dark:border-purple-800 bg-purple-50/50 dark:bg-purple-900/10">
+              <h3 className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
+                {t('channels.assist.exemplarTitle')}
+              </h3>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+                {t('channels.assist.exemplarHint')}
+              </p>
+              <textarea
+                value={assistExemplar}
+                onChange={(e) => setAssistExemplar(e.target.value)}
+                rows={4}
+                data-testid="input-channels-assist-exemplar"
+                placeholder={t('channels.assist.exemplarPlaceholder')}
+                disabled={isExtractingDna || isAssisting}
+                className="w-full mb-3 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm min-h-[100px]"
+              />
+              <button
+                type="button"
+                data-testid="btn-channels-assist-extract-dna"
+                onClick={handleAssistExtractDna}
+                disabled={!assistExemplar.trim() || isExtractingDna || isAssisting}
+                className="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg min-h-[44px] disabled:opacity-50"
+              >
+                {isExtractingDna ? t('common.processing') : t('channels.assist.extractDna')}
+              </button>
+            </div>
+
             {/* 輸入區域 */}
             <div className="mb-4">
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">

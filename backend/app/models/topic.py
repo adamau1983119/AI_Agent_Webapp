@@ -95,5 +95,9 @@ class Topic(BaseModel):
     # v7 Discover SKU
     public_feed_flag: bool = Field(default=False, description="公共主題牆卡片")
     source_lang: Optional[str] = Field(default=None, description="原文語言（公共卡通常 en）")
+    source_country: Optional[str] = Field(
+        default=None, description="來源國別（ISO 簡碼；PF-M metadata 伏筆）"
+    )
+    is_trend_alert: bool = Field(default=False, description="趨勢警報標記（v7.1 伏筆；MVP 不跑 job）")
 
     model_config = ConfigDict(use_enum_values=True)

@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { useTranslation } from '../i18n';
+import { resolvePostLoginPath } from '@/lib/alterEgoRouting';
 
 export default function OAuthCallback() {
   const { t } = useTranslation();
@@ -32,8 +33,9 @@ export default function OAuthCallback() {
         // 短暫延遲確保狀態已同步到 localStorage
         await new Promise(resolve => setTimeout(resolve, 100));
         
-        // 成功後重定向到 Dashboard
-        navigate('/dashboard');
+        // pending → onboarding；已完成 → my-channel
+        const path = await resolvePostLoginPath();
+        navigate(path, { replace: true });
       } catch (err) {
         // 失敗後重定向到登入頁面
         navigate('/login?error=oauth_failed');

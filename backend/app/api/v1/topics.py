@@ -65,10 +65,29 @@ def get_user_role_from_request(request: Request) -> UserRole:
         return UserRole.GUEST
 
 
+def _normalize_preview_images(raw) -> list:
+    """將 preview_images 統一為 URL 字串列表（相容 dict／str）。"""
+    if not raw or not isinstance(raw, list):
+        return []
+    out: list = []
+    for item in raw:
+        if isinstance(item, str) and item.strip():
+            out.append(item.strip())
+        elif isinstance(item, dict):
+            url = (item.get("url") or item.get("src") or "").strip()
+            if url:
+                out.append(url)
+    return out
+
+
 def _convert_to_response(topic_doc: dict) -> TopicResponse:
     """將 MongoDB 文檔轉換為 TopicResponse"""
     # 移除 MongoDB 的 _id
     topic_doc.pop("_id", None)
+    if "preview_images" in topic_doc:
+        topic_doc["preview_images"] = _normalize_preview_images(
+            topic_doc.get("preview_images")
+        )
     return TopicResponse(**topic_doc)
 
 
@@ -195,7 +214,6 @@ async def get_topic_detail(
     try:
         topic = await topic_repo.get_topic_by_id(topic_id)
         if not topic:
-            from app.utils.i18n import get_error_message, get_user_language
             language = get_user_language(request=request)
             raise HTTPException(
                 status_code=404,
@@ -235,6 +253,8 @@ async def get_topic_detail(
         
         # 轉換為回應格式
         topic.pop("_id", None)
+        # pubfeed 等來源可能存 dict；詳情與列表一致轉成 URL 字串
+        topic["preview_images"] = _normalize_preview_images(topic.get("preview_images"))
         
         # 確保所有必需欄位都存在
         required_fields = ["id", "title", "category", "status", "source", "generated_at", "updated_at"]

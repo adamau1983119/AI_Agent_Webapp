@@ -70,7 +70,7 @@ class Settings(BaseSettings):
     # v7 D2：Flash／Pro 分離（generate/regenerate 用 PRO）
     DEEPSEEK_MODEL_FLASH: str = "deepseek-v4-flash"
     DEEPSEEK_MODEL_PRO: str = "deepseek-v4-pro"
-    DEEPSEEK_PRO_MAX_TOKENS: int = 1500
+    DEEPSEEK_PRO_MAX_TOKENS: int = 4096
     # 向後相容；預設等同 FLASH
     DEEPSEEK_MODEL: str = "deepseek-v4-flash"
     DEEPSEEK_BASE_URL: str = "https://api.deepseek.com/v1/chat/completions"

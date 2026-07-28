@@ -11,7 +11,7 @@
 | PF-1 | `config_module` 四常數 + assert 135；`cost_controls.public_feed_pipeline`；`.env.example` |
 | PF-2 | `services/public_feed/*`；scheduler `public_feed_batch` 8h；`scripts/run_public_feed_batch.py` |
 | PF-3 | `GET /api/v1/public/topics/feed`；`public_feed_cache.py` Redis→Mongo |
-| PF-4 | `/discover`；`publicFeed.ts`；i18n；`按鈕測試ID架構表` §1.4；`npm run build` exit 0 |
+| PF-4 | `/discover`；`publicFeed.ts`；i18n；`按鈕測試ID架構表` 頻道區塊 1.4；`npm run build` exit 0 |
 
 ## 靜態驗證（本日）
 
@@ -25,7 +25,9 @@
 | CD-4-4 `npm run build` | exit 0（2026-06-12） |
 | CD-4-5 testid + i18n | `page-discover`、`discover.*` keys |
 
-## 待測試段（06-16～06-18）
+## 待整批測試週（程式全線結案後）
+
+> **排程（2026-06-12 五）**：非 06-16～18 每日測；待 **PF-B～Post Kit** 結案後**一次過**驗收（~~PF-S~~ **廢止**）。
 
 - E0-B／E0-PF 截圖  
 - `run_public_feed_batch` + Mongo count（CD-2-1）  

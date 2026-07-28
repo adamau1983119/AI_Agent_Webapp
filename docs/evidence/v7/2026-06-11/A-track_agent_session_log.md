@@ -18,7 +18,7 @@
 | 靜態檢查 | **PASS** | gateway、`article_prompt`、Discover、i18n、無 NLLB／SQLAlchemy |
 | `pytest` | **SKIP** | venv 無 pytest |
 | C1 資料面 | **DEFER** | DB **0**／96 筆具 `summary_flash`；刻意未跑 collect |
-| U 軌 | **待做** | 登入煙霧 5 步（用家） |
+| U 軌 | **待做** | 登入驗證 5 步（用家） |
 
 ---
 
@@ -47,7 +47,7 @@
 
 ---
 
-## API 煙霧
+## API 健康檢查
 
 | 請求 | 狀態 | 說明 |
 |------|------|------|
@@ -87,4 +87,4 @@ npm run build → exit 0 (~4.87s)
 ## 結論
 
 **A 軌本輪 PASS**（環境 + 建置 + 靜態 + 公共 API + C3-3 400）。  
-**阻塞 commit 前**：U 軌煙霧、（可選）`git commit`；**C\*** 截圖項留 **06-16 起**。
+**阻塞 commit 前**：U 軌 E2E、（可選）`git commit`；**C\*** 截圖項留 **06-16 起**。

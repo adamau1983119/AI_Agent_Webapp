@@ -1,34 +1,101 @@
 # v7 大眾免費主題卡（Discover SKU）— 工作明細與完成檢查清單
 
 > **SoT 對照**：[`專案完整架構表_v7.md`](../專案完整架構表_v7.md) **「大眾免費主題卡（Discover SKU）」**  
+> **上線 DNS**：[`alter_ego_launch_dns_checklist.md`](./alter_ego_launch_dns_checklist.md)（品牌 **Alter Ego** · **`ai-alterego.com`**）  
 > **依賴（硬門檻）**：**VM 監察週結案**（`log_cost_event`）＋ **v7 Token Phase 1**（`summary_flash`）＋ **Phase 2**（`deepl_provider`）— 見 [`v7_token_cost_phase_checklist.md`](./v7_token_cost_phase_checklist.md)  
 > **建議分支**：`feature/v7-discover-feed` 或延續 `feature/v7-cost-pipeline`（勿在 `main` 直接改）  
-> **觸發對齊**：**Discover 開發段**須在 Token Phase 0～2 相關項 `[x]` 後執行；日常仍用 **`專案開始`** + [`AGENTS.md`](../AGENTS.md)  
+> **觸發對齊**：**v7 程式段** → 先讀 [`docs/v7_program_line/_GATE.md`](./v7_program_line/_GATE.md)，再 [`index.md`](./v7_program_line/index.md)；**`專案開始 v6`** 才用 `專案開始 v6`  
 > **填寫規則**：勾選前須**可重現**驗證；禁止未測即勾（規則 #11、#12）。  
 > **截圖政策（與 Token 相同）**：`:8000`／`:3000` 驗收 → **必須截圖** → [`v7_evidence_screenshot_guide.md`](./v7_evidence_screenshot_guide.md)（檔名建議前綴 `…_v7_PF-…`）  
-> **監控紀律**：[`v7_dev_monitoring_discipline.md`](./v7_dev_monitoring_discipline.md)（`log_cost_event` 五 tag）  
+> **監控紀律**：[`v7_dev_monitoring_discipline.md`](./v7_dev_monitoring_discipline.md)（`log_cost_event` 六 tag；含 **`PUBLIC_FEED_DEV_CAP`**）  
 > **實作基礎守則**：[`v7_implementation_basics.md`](./v7_implementation_basics.md)（**BF-***；PF-4 須 **BF-UI-*** + **PD-4-04／CD-4-5**）  
-> **程式落地（2026-06-12）**：**PD-0～PD-4** ✅（分支 `feature/v7-cost-pipeline`）；**CD-*／E0-PF** ⏳ **整批測試週**（須截圖才可 `[x]`）。證據：[`docs/evidence/v7/2026-06-12/V7-Discover_program_line_session_log.md`](./evidence/v7/2026-06-12/V7-Discover_program_line_session_log.md)  
-> **Key／驗收（2026-06-13）**：DeepSeek production key 已作廢；助手 **A 軌** 驗收見 Token checklist **雙軌驗收**（Discover 手測仍走 **U 軌**）。  
-> **GTM 硬化（2026-06-13）**：新增 **PF-H／PF-S／PF-B／PF-M**；開發順序見下節；需求 SoT：[`v7.0.0_需求文件.md`](./v7.0.0_需求文件.md) §12。
+> **程式落地（2026-06-12）**：**PD-0～PD-4** ✅（分支 `feature/v7-cost-pipeline`）；**CD-4-1～3／E0-PF／E0-Discover-i18n** ✅ **2026-07-28**。  
+> **觸發對齊（2026-07-21）**：上架衝刺 → [`launch_test_sprint_2026-07-22.md`](./v7_program_line/launch_test_sprint_2026-07-22.md)  
+> **日期 SoT**：**2026-07-28（星期二）** — 見 [`工作記錄.md`](../工作記錄.md) 頂部。
 
 ---
 
-## 開發順序（GTM · 原子 Phase · 2026-06-13）
+## 文件收口（2026-07-28 · Discover summary_i18n）
 
-> **策略**：先完成功能硬化與 Landing／Post Kit，再**一次過整批測試**（非每日小段）。**禁止**未測即勾 CD-*。
+- [x] **DOC-BAK-5** 快照 `2026-07-28_discover_summary_i18n` 已建立  
+  - 證據：[`SNAPSHOT_README.md`](../backups/2026-07-28_discover_summary_i18n/SNAPSHOT_README.md)
+- [x] **DOC-ALIGN-5** **CD-4-3／CD-B-2／E0-Discover-i18n** 與工作記錄／架構表 `summary_i18n`（含 **en**）一致  
 
-| 序 | Phase | 目標 | 依賴 |
-|:--:|-------|------|------|
-| 0 | **commit** | `feature/v7-cost-pipeline` 基線（排除 `.env`） | PF-0～4 程式 |
-| 1 | **PF-H** | 熔斷三閘 + `safe_batch_size` + dev 禁 8h cron | PF-1～2 |
-| 2 | **PF-S** | Mock 煙霧腳本（零 AI；Mongo+Redis） | PF-3 |
-| 3 | **PF-B** | 港日同質：批次預寫 zh-TW+ja `topic_translations` | PF-2 DeepL |
-| 4 | **PF-M** | v7.1 metadata（`source_country`、`is_trend_alert`） | PF-2 入庫 |
-| 5 | **staging** | 真 30 批一輪（受控；後台對帳） | PF-H + PF-B |
-| 6 | **Landing** | `/welcome` 導流 | 見 `landing_page_客戶開發需求.md` |
-| 7 | **Post Kit** | 付費主路 UI | 既有 spec |
-| 8 | **整批測試週** | CD-*／E0-PF／**E0-Discover-i18n** + v7 C*/X* | 上列全完成 |
+## 文件收口（2026-07-21 · 上架衝刺）
+
+- [x] **DOC-BAK-4** 快照 `2026-07-21_launch-sprint-trigger_snapshot` 已建立  
+  - 證據：[`SNAPSHOT_README.md`](../backups/2026-07-21_launch-sprint-trigger_snapshot/SNAPSHOT_README.md)
+- [x] **DOC-ALIGN-4** Discover **CD-4／E0-PF** 對齊上架衝刺 **Day3**（非無限整批）  
+  - 證據：`launch_test_sprint` Day3 表 —
+
+## 文件收口（2026-06-11 · 非程式驗收）
+
+- [x] **DOC-BAK-1** 快照 `2026-06-11_pf-h-gtm-docs_snapshot` 已建立  
+  - 證據：`SNAPSHOT_README.md` —
+- [x] **DOC-DATE-1** 全檔 GTM／Key 輪換日期統一 **2026-06-11**（非 06-13）  
+  - 證據：本檔頂部 + 工作記錄「日期 SoT」—
+- [x] **DOC-ALIGN-1** 工程鐵律 E1～E6 與需求 頻道區塊 12／架構表 Discover 章 **一致**  
+  - 證據：備份目錄三檔同 revision —
+
+## 文件收口（2026-06-23 · v7_program_line 專區）
+
+- [x] **DOC-BAK-3** 快照 `2026-06-23_v7-program-line-folder_snapshot` 已建立  
+  - 證據：[`SNAPSHOT_README.md`](../backups/2026-06-23_v7-program-line-folder_snapshot/SNAPSHOT_README.md)
+- [x] **DOC-ALIGN-3** Token SoT 遷至 [`v7_program_line/_completed/token_cost.md`](./v7_program_line/_completed/token_cost.md)；觸發對齊 `_GATE` → `index`  
+  - 證據：本檔頂部 + AGENTS 推薦一句 —
+
+## 文件收口（2026-06-18 · 觸發詞 + Landing）
+
+- [x] **DOC-BAK-2** 快照 `2026-06-18_v7-program-line-trigger_snapshot` 已建立  
+  - 證據：[`SNAPSHOT_README.md`](../backups/2026-06-18_v7-program-line-trigger_snapshot/SNAPSHOT_README.md)
+- [x] **DOC-DATE-2** 程式段／Landing 日期 SoT **2026-06-18**（工作記錄頂部、架構表、本檔開發順序表）  
+  - 證據：本檔頂部 + 工作記錄 —
+- [x] **DOC-ALIGN-2** 開發順序 **Landing ✅**、**PF-B/M ⏳** 與工作記錄「v7 程式段」、架構表 `/welcome` **一致**  
+  - 證據：備份目錄同 revision —
+
+---
+
+## 工程鐵律（防幻覺 · 2026-06-11 對齊）
+
+| # | 鐵律 | 說明 |
+|---|------|------|
+| E1 | **`ENVIRONMENT`** | 分流鍵為 `development`／`staging`／`production`；**非** `APP_ENV` |
+| E2 | **`safe_batch_size`** | `development` **一律 2**（含 CLI 手動）；staging／prod → **30** |
+| E3 | **Redis key** | `public_feed:feed:zh-TW`／`ja`；**JSON 字串**；**僅** `refresh_feed_cache`（真實批次管線尾端） |
+| E4 | **E0-Discover-i18n** | **僅 PF-B 結案後**可勾；Network 翻譯 API **必須 = 0** |
+| E5 | **CD-H-4** | 須**重啟 uvicorn** 後 `/health` 才見 `safe_batch_size` |
+| E6 | **DT-5** | staging／prod 真 30 批前須設 DeepSeek **每日預算告警**（營運；非 code 可擋） |
+| E7 | **禁止假資料 Phase** | **不得**新增 Mock topics／固定字串 feed 充數；對齊 [`開發人員必讀規則.md`](../開發人員必讀規則.md) **規則 5** 與 **禁止模糊签收**（~~PF-S~~ **廢止 2026-06-16**） |
+
+---
+
+## 開發順序（GTM · 原子 Phase · 2026-06-11）
+
+> **策略（2026-06-12 五確認 · SoT）**：**先寫完程式**（下表序 1～6），**再**一次過**整批測試**整個系統。**禁止** Mock 假資料（~~PF-S~~ 已廢止；對齊 **規則 5**）。**禁止**未測即勾 CD-*；**禁止**「能開頁／空 feed」式模糊签收。
+
+| 序 | Phase | 目標 | 06-16～19 建議 | 狀態 |
+|:--:|-------|------|----------------|------|
+| 0 | **commit** | 基線 `bebf6d0`（排除 `.env`） | — | ✅ |
+| 1 | **PF-H** | 熔斷三閘 + `safe_batch_size` + dev 禁 cron | 已併入 06-11 | **PD ✅**／CD ⏳ |
+| 2 | **PF-B** | 港日同質：`topic_translations`＋**`summary_i18n`**（zh-TW／ja／en） | **06-23＋07-28** | **PD-B ✅**／**CD-B-1～3 ✅**／**E0-Discover-i18n ✅** |
+| 3 | **PF-M** | v7.1 metadata 伏筆 | **06-23（二）** | **PD-M ✅**／**CD-M-1 ✅**；CD-M-2 靜態 ✅ |
+| 4 | **Landing** | `/welcome` 導流 | **06-18（四）** | ✅ 程式結案（build PASS；`check_landing_bf_ui` 11/11）；手測留整批測試週 |
+| 5 | **Post Kit** | 付費主路 UI | **06-23（二）** 併 PF-M | ⏳ `check_postkit_bf_ui`；PK 留測試週 |
+| 6 | **staging** | 真 30 批（**DT-5** + 後台對帳） | 整批測試週前 | ⏳ |
+| 7 | **整批測試週** | CD-*／E0-PF／E0-Discover-i18n + v7 C*/X* + U 軌 | **程式結案後**（例：06-23 二起） | ⏳ |
+
+---
+
+## Phase 依賴圖（驗收用）
+
+```text
+PF-0～4（程式 ✅）
+    └── PF-H（PD ✅）──► PF-B ──► E0-Discover-i18n（硬門檻）
+                              └── PF-M
+                                      └── staging 真 30 批（+ DT-5）
+                                              └── Landing → Post Kit
+                                                      └── 整批測試週 CD-*
+```
 
 ---
 
@@ -37,7 +104,7 @@
 > 對齊 [`README.md`](../README.md) 規則 **3、4、6** 與 [`AGENTS.md`](../AGENTS.md) 專案開始前檢查；**禁止** Discover 頁硬編碼可見字串或無 `data-testid` 之新按鈕。
 
 - [x] **BF-DAY-1**～**BF-DAY-3**（見 [`v7_implementation_basics.md`](./v7_implementation_basics.md)）  
-  - 證據：i18n 三語、`按鈕測試ID架構表` §1.4；分支 `feature/v7-cost-pipeline`
+  - 證據：i18n 三語、`按鈕測試ID架構表` 頻道區塊 1.4；分支 `feature/v7-cost-pipeline`
 - [x] **BF-UI-1**～**BF-UI-4**（PF-4 結案前全勾）  
   - 證據：靜態核對 **CD-4-5**；瀏覽器手測留測試週
 
@@ -45,18 +112,19 @@
 
 ## 每日開工 — 環境截圖（E0 · 必做）
 
-> **未完成 E0 不得勾選當日任何依賴本機的 CD-*。** 通用 E0-B／E0-F 定義見 [`v7_token_cost_phase_checklist.md`](./v7_token_cost_phase_checklist.md) § E0。
+> **未完成 E0 不得勾選當日任何依賴本機的 CD-*。** 通用 E0-B／E0-F 定義見 [`v7_token_cost_phase_checklist.md`](./v7_token_cost_phase_checklist.md) E0。
 
 - [ ] **E0-B** 後端：`http://localhost:8000/health`（含 `cost_controls` 與 Discover 開關）  
   - 證據：截圖 `YYYY-MM-DD_v7_E0-B_….png` —
 - [ ] **E0-F** 前端：`http://localhost:3000` 可開（登入或匿名依當日劇本）  
   - 證據：截圖 `YYYY-MM-DD_v7_E0-F_….png` —
-- [ ] **E0-PF** Discover 專用（Phase PF-3／PF-4 起每日必做）  
+- [x] **E0-PF** Discover 專用（Phase PF-3／PF-4 起每日必做）  
   - 驗證：`GET /api/v1/public/topics/feed?lang=zh-TW` **200** + 前端 `/discover` 首屏；Network **Fetch/XHR** 僅 feed（**無** `assist`／`generate`／DeepL 網域）  
-  - 證據：截圖 `YYYY-MM-DD_v7_E0-PF_feed_….png`、`…_v7_E0-PF_discover_….png` —
-- [ ] **E0-Discover-i18n** 港日同質讀取驗收（**PF-B** 結案後；整批測試週必做）  
-  - 驗證：`/discover` 切 **zh-TW** 與 **ja** 各一屏；Network **翻譯 API = 0**（無 DeepL／DeepSeek 外連）  
-  - 證據：截圖 `…_v7_E0-Discover-i18n_zh-TW_….png`、`…_v7_E0-Discover-i18n_ja_….png` — 詳見 [`v7_evidence_screenshot_guide.md`](./v7_evidence_screenshot_guide.md)
+  - 證據（2026-07-28）：[`…_E0-PF_CD-4-1_discover_2_cards.png`](./evidence/v7/2026-07-28/2026-07-28_v7_E0-PF_CD-4-1_discover_2_cards.png)；2 卡真實 RSS 批次 —
+- [x] **E0-Discover-i18n** 港日同質讀取驗收（**硬門檻：PF-B 結案後**；整批測試週必做）  
+  - 驗證：`/discover` 切 **zh-TW** 與 **ja** 各一屏；DevTools Network **翻譯 API 呼叫次數 = 0**（無 DeepL／DeepSeek 外連）  
+  - **禁止**：以 Mock topics／空殼 feed 勾本項；須 **PF-B** 批次預載 + 真實 `run_public_feed_batch` 產出  
+  - 證據（2026-07-28）：zh-TW【暫】＋繁中摘要；ja【仮】＋日文摘要；Network 僅 `feed?lang=`；另擴 **en**（原文標題＋英文摘要）— [`backups/2026-07-28_discover_summary_i18n/`](./backups/2026-07-28_discover_summary_i18n/SNAPSHOT_README.md) —
 
 ---
 
@@ -107,7 +175,7 @@
   - 證據：本檔 2026-06-12 —
 - [ ] **CD-0-3** `ENABLE_SCHEDULED_TOPIC_COLLECTION=false`（舊 6h 不與公共 8h 混用）  
   - 驗證：`/health` → `cost_controls`
-  - 證據：**截圖** E0-B —（VM-4 舊圖可參；**06-16** 補 `public_feed_pipeline`）
+  - 證據：**截圖** E0-B —（VM-4 舊圖可參；**整批測試週** 補 `public_feed_pipeline`）
 - [x] **CD-0-4** 分支策略：非 `main` 直推  
   - 驗證：`git branch --show-current`
   - 證據：`feature/v7-cost-pipeline` —
@@ -156,7 +224,7 @@ DEEPSEEK_MODEL_FLASH=deepseek-v4-flash
   - 證據：session log —
 - [ ] **CD-1-4** `/health` 含 `enable_public_feed_pipeline`（或同名鍵）  
   - 驗證：`curl -s http://localhost:8000/health`
-  - 證據：**截圖** E0-B — **06-16**
+  - 證據：**截圖** E0-B — **整批測試週**
 - [x] **CD-1-5** v7 新檔 ≤150 行（M2）；無 `CRITICAL ENGINE` 頂部註解  
   - 驗證：`public_feed/*` 各檔 ≤70 行
   - 證據：session log —
@@ -190,7 +258,7 @@ DEEPSEEK_MODEL_FLASH=deepseek-v4-flash
   - 產出：`models/topic.py`、`public_feed_repository.py`
 - [x] **PD-2-08** 36h 滾動：刪除或歸檔逾窗卡片；庫內公共卡 **≤135**  
   - 產出：`cleanup()` in repository
-- [x] **PD-2-09** 手動觸發入口（dev only）：管理腳本或 `POST`（需 auth／feature flag）跑 **1 批** 煙霧  
+- [x] **PD-2-09** 手動觸發入口（dev only）：**`run_public_feed_batch.py`** 跑 **1 批**（真實 RSS 管線；dev `safe_batch_size=2`）  
   - 產出：`scripts/run_public_feed_batch.py`
 
 ### Phase PF-2 完成檢查清單
@@ -270,7 +338,7 @@ DEEPSEEK_MODEL_FLASH=deepseek-v4-flash
 - [x] **PD-4-03** i18n：可見字串進 `frontend/src/i18n/index.ts`（**zh-TW／en／ja**；**禁止硬編碼**，對齊 README 規則 6）  
   - 產出：`nav.discover`、`discover.*`
 - [x] **PD-4-04** 按鈕／連結：`data-testid` + 更新 [`按鈕測試ID架構表.md`](../按鈕測試ID架構表.md)（對齊 README 規則 3、4）  
-  - 產出：§1.4 Discover
+  - 產出：頻道區塊 1.4 Discover
 - [x] **PD-4-05** 骨架／placeholder（對齊 Phase 4 skeleton 精神，可簡版）  
   - 產出：`PublicFeedSkeleton.tsx`
 - [x] **PD-4-06** `npm run build` PASS  
@@ -278,115 +346,100 @@ DEEPSEEK_MODEL_FLASH=deepseek-v4-flash
 
 ### Phase PF-4 完成檢查清單
 
-- [ ] **CD-4-1** `/discover` 首屏顯示 **≥1** 張卡；繁中或日文依 `lang`  
+- [x] **CD-4-1** `/discover` 首屏顯示 **≥1** 張卡；繁中或日文依 `lang`  
+  - 證據（2026-07-28）：2 卡（Housewives／Italian Dinner）；[`…_E0-PF_CD-4-1_discover_2_cards.png`](./evidence/v7/2026-07-28/2026-07-28_v7_E0-PF_CD-4-1_discover_2_cards.png)；修 `publicFeed` envelope + `image_url` 正規化 + RSS 批次 —
   - 驗證：瀏覽器；標題 ≤20 字體感
   - 證據：**截圖** `…_v7_E0-PF_discover_….png` —
-- [ ] **CD-4-2** DevTools Network：**僅** feed GET **200**；**無** `assist`／`generate`／`translate-display`  
-  - 驗證：Preserve log + 篩選 XHR
-  - 證據：併入 E0-PF 或獨立截圖 —
-- [ ] **CD-4-3** 切換語言 `zh-TW`↔`ja` 再請求 feed；內容隨 `lang` 變化  
-  - 驗證：兩次 GET 參數不同
-  - 證據：**截圖** 兩語各一 —
+- [x] **CD-4-2** DevTools Network：**僅** feed GET **200**；**無** `assist`／`generate`／`translate-display`  
+  - 驗證：Preserve log + 篩選 XHR  
+  - 證據（2026-07-28）：[`…_CD-4-2_discover_feed_only_200.png`](./evidence/v7/2026-07-28/2026-07-28_v7_CD-4-2_discover_feed_only_200.png)；篩 `feed` → **200**；2 卡 —
+- [x] **CD-4-3** 切換語言 `zh-TW`↔`ja`（及 **en**）再請求 feed；內容隨 `lang` 變化  
+  - 驗證：兩次 GET 參數不同；摘要／標題隨語系（非僅 chrome i18n）
+  - 證據（2026-07-28）：ja OK（【仮】＋日文摘要）；en 原誤映至 zh-TW → 已修 `resolvePublicFeedLang`＋`summary_i18n.en`；API `feed?lang=en` 英文標題／摘要 —
 - [x] **CD-4-4** `npm run build` exit 0  
   - 驗證：`cd frontend && npm run build`
   - 證據：2026-06-12 exit 0 —
 - [x] **CD-4-5** 靜態核對：Discover 相關按鈕皆有 **`data-testid`**；i18n key 已 `grep` 存在（**BF-UI-3／BF-UI-4**）  
   - 驗證：`page-discover`、`discover-feed-grid`、`card-discover-feed-{n}`
-  - 證據：`按鈕測試ID架構表` §1.4 —
+  - 證據：`按鈕測試ID架構表` 頻道區塊 1.4 —
 
 ---
 
 ## Phase PF-H — 硬化（熔斷三閘 · 環境分流）
 
-**目標**：防 6/6 翻版；dev 誤開 pipeline 不燒 Token；staging／prod 真 30 批受控。
+**目標**：防 6/6 翻版；development **一律** `safe_batch_size=2`；staging／prod 真 30 批受控。
 
-**結案判定**：**CD-H-1～CD-H-4 必須 `[x]`**（可含 1 項 `[!]` 並註延後）。
+**程式結案**：**PD-H-01～05 已 `[x]`**（`bebf6d0`）。  
+**驗收結案**：**CD-H-1～CD-H-4 必須 `[x]`**（可含 1 項 `[!]` 並註延後）。
 
 ### 工作明細（原子化）
 
-- [ ] **PD-H-01** `config_module.py`：新增 **`safe_batch_size`** property（`development` 且 pipeline 誤開 → **2**；`staging`／`production` → **30**）  
-  - 產出：`safe_batch_size` + 單元 assert
-- [ ] **PD-H-02** `run_public_feed_batch` 入口：`batch_size = min(PUBLIC_FEED_BATCH_SIZE, safe_batch_size)`；迴圈硬 **break**  
-  - 產出：`scheduler.py` 或 `public_feed/pipeline.py`
-- [ ] **PD-H-03** `ENVIRONMENT=development` 時 **不註冊** 8h `public_feed_batch` cron（僅 CLI／腳本可觸發）  
-  - 產出：`scheduler.py` 條件註冊
-- [ ] **PD-H-04** dev 降級時 `log_cost_event` 記錄（例如 `PUBLIC_FEED_DEV_CAP`）  
-  - 產出：`logger.py` tag 或既有 tag 擴充
-- [ ] **PD-H-05** 複核 **熔斷三閘**：DeepL retries≤3（PD-1-02）、`public_topics` 零 LLM（PD-3-05）  
-  - 產出：grep／靜態審計 session log
+- [x] **PD-H-01** `config_module.py`：新增 **`safe_batch_size`** property（`development` → **2**；`staging`／`production` → **30**）  
+  - 產出：`config_module.py`；commit **bebf6d0**
+- [x] **PD-H-02** `run_public_feed_batch` 入口：`safe_batch_size`；迴圈硬 **break**  
+  - 產出：`public_feed_pipeline.py`；commit **bebf6d0**
+- [x] **PD-H-03** `ENVIRONMENT=development` 時 **不註冊** 8h `public_feed_batch` cron（僅 CLI／腳本可觸發）  
+  - 產出：`scheduler.py`；commit **bebf6d0**
+- [x] **PD-H-04** dev 降級時 `log_cost_event` 記錄 **`PUBLIC_FEED_DEV_CAP`**；`/health` 暴露 `safe_batch_size`  
+  - 產出：`logger.py`、`cost_controls.py`；commit **bebf6d0**
+- [x] **PD-H-05** 複核 **熔斷三閘**：DeepL retries≤3（PD-1-02）、`public_topics` 零 LLM（PD-3-05）  
+  - 產出：既有 PF-1／PF-3 程式線；靜態審計 2026-06-11
 
 ### Phase PF-H 完成檢查清單
 
-- [ ] **CD-H-1** `ENVIRONMENT=development` + 誤開 `ENABLE_PUBLIC_FEED_PIPELINE=true` → 單批 **≤2** 卡  
-  - 驗證：手動跑 1 批；Mongo count ≤2
-  - 證據：終端 + count 輸出 —
-- [ ] **CD-H-2** development **無** 8h cron 註冊 log（重啟 uvicorn 後查 scheduler 啟動輸出）  
-  - 驗證：grep log `public_feed_batch` 僅手動觸發
+- [ ] **CD-H-1** `ENVIRONMENT=development`（pipeline 開或關皆可）→ 單批 **≤2** 卡  
+  - 驗證：`run_public_feed_batch.py` 或等價手動 1 批；終端見 **`[PUBLIC_FEED_DEV_CAP]`**
+  - 證據：終端 + Mongo count ≤2 —
+- [ ] **CD-H-2** development **無** `public_feed_batch 已排程` log（重啟 uvicorn 後）  
+  - 驗證：啟動 log 含「development 僅允許 CLI 手動觸發」或等價；**無** 8h cron 註冊
   - 證據：終端截圖 —
 - [ ] **CD-H-3** staging 設定下單批可達 **30**（或 config 上限）  
-  - 驗證：`ENVIRONMENT=staging` + 受控 1 批
-  - 證據：—（真 30 批留 **staging 輪** 序 5）
-- [ ] **CD-H-4** `/health` 仍暴露 `public_feed_pipeline` 與 `cost_controls` 六開關  
-  - 驗證：`curl /health`
+  - 驗證：`ENVIRONMENT=staging` + 受控 1 批；**須** DT-5 告警已設
+  - 證據：—（真 30 批留 **序 5**）
+- [ ] **CD-H-4** **重啟 uvicorn 後** `/health` → `cost_controls` 含六開關 + **`safe_batch_size`** + **`public_feed_batch_size`**  
+  - 驗證：`curl http://localhost:8000/health`（或 `/api/v1/health`）
   - 證據：**截圖** E0-B —
 
 ---
 
-## Phase PF-S — Mock 煙霧（零 AI）
+## ~~Phase PF-S~~ — **已廢止（2026-06-16）**
 
-**目標**：dev 演示 `/discover` 有卡；**零** DeepSeek／DeepL；寫 Mongo + Redis。
+> **原因**：原設計（`trigger_public_feed_smoke.py`、≥3 筆 **mock** `topics`、固定字串 feed）違反 [`開發人員必讀規則.md`](../開發人員必讀規則.md) **規則 5**（禁止 Mock／假造測試數據）與 [`test_week_daily_checklist.md`](./test_week_daily_checklist.md) **禁止模糊签收**（「能開頁／無實質內容」≠ 完成）。  
+> **替代（已有）**：**`backend/scripts/run_public_feed_batch.py`** — 走真實 RSS 管線 + `refresh_feed_cache`；dev 受控 **`safe_batch_size=2`**（**PD-2-09** ✅）。  
+> **驗收**：Discover 卡片須來自 **PF-B + 真實批次**；整批測試週勾 **CD-4-1**／**E0-PF**／**E0-Discover-i18n**，**不得**以假資料充數。
 
-**結案判定**：**CD-S-1～CD-S-3 必須 `[x]`**。
-
-### 工作明細（原子化）
-
-- [ ] **PD-S-01** 新建 `backend/scripts/trigger_public_feed_smoke.py`（或同名）  
-  - 產出：腳本檔 ≤150 行
-- [ ] **PD-S-02** 寫入 **≥3** 筆 mock `topics`（`public_feed_flag=true`、`titles_i18n` zh-TW+ja、`summary_flash` 固定字串）  
-  - 產出：直接 Motor insert 或 repository helper
-- [ ] **PD-S-03** 呼叫 `refresh_feed_cache`（或等價）刷新 Redis  
-  - 產出：pipeline 尾寫邏輯複用
-- [ ] **PD-S-04** 腳本 docstring／README 一句：**禁止**在 production 無旗標執行  
-  - 產出：腳本頂部註解
-
-### Phase PF-S 完成檢查清單
-
-- [ ] **CD-S-1** 執行腳本後 `GET .../feed?lang=zh-TW` → **200** + **≥3** 卡  
-  - 驗證：`curl` 或 Postman
-  - 證據：截圖 `…_v7_CD-S-1_….png` —
-- [ ] **CD-S-2** 執行過程 **無** `api.deepseek.com`／`api-free.deepl.com` 外連  
-  - 驗證：終端 log；後台用量 **0**
-  - 證據：—
-- [ ] **CD-S-3** `/discover` 首屏可見 mock 卡（與 CD-S-1 併測）  
-  - 驗證：瀏覽器
-  - 證據：併入 E0-PF 或獨立截圖 —
+~~PD-S-01～PD-S-04、CD-S-1～CD-S-3~~ — **勿實作、勿勾選**。
 
 ---
 
 ## Phase PF-B — 港日同質（批次預載雙語）
 
-**目標**：批次內預寫 `topic_translations` **zh-TW + ja** `standard_translation`；讀取零翻譯 API。
+**目標**：批次內預寫 `topic_translations` **zh-TW + ja** `standard_translation`；讀取零翻譯 API；**解鎖 E0-Discover-i18n**。
 
-**結案判定**：**CD-B-1～CD-B-3 必須 `[x]`**；**E0-Discover-i18n 必須 `[x]`**。
+**結案判定**：**CD-B-1～CD-B-3 必須 `[x]`** → 方可勾 **E0-Discover-i18n**。
 
 ### 工作明細（原子化）
 
-- [ ] **PD-B-01** `item_builder`／pipeline：每卡批次內呼叫 DeepL 寫入 **zh-TW** 與 **ja** `standard_translation`（標題 ≤20 字）  
+- [x] **PD-B-01** `item_builder`／pipeline：每卡批次內呼叫 DeepL 寫入 **zh-TW** 與 **ja** `standard_translation`（標題 ≤20 字）  
   - 產出：`topic_translations` upsert ×2
-- [ ] **PD-B-02** `GET .../feed` 讀取優先 `topic_translations`（fallback `titles_i18n`）  
+  - 證據（2026-06-23）：`run_public_feed_batch` inserted=2；Mongo `pubfeed_*` 各 2 筆（provider=`fallback` 因本機無 DeepL key）
+- [x] **PD-B-02** `GET .../feed` 讀取優先 `topic_translations`（fallback `titles_i18n`）  
   - 產出：`public_topics.py` 或 feed schema mapper
-- [ ] **PD-B-03** 骨：feed 回傳共用 `summary_flash`（或依 lang 之顯示欄位）；**禁止**讀取時 Flash  
-  - 產出：schema 對齊架構表
+  - 證據：`check_pf_b_static.py` 10/10
+- [x] **PD-B-03** 骨：feed 依 `lang` 回傳 `summary_i18n`／`cached_content`（canonical `summary_flash` 仍為繁中骨）；**禁止**讀取時 Flash  
+  - 產出：schema 對齊架構表；2026-07-28 擴 **en**
+  - 證據：批次 log `[SUMMARY_FLASH_SUCCESS]`；讀取路徑無 `generate_summary_flash`
 
 ### Phase PF-B 完成檢查清單
 
-- [ ] **CD-B-1** 跑 1 批（或 mock 擴充）後 Mongo `topic_translations` 含 **zh-TW + ja** 各 ≥1 筆／卡  
+- [x] **CD-B-1** 跑 1 批（或 mock 擴充）後 Mongo `topic_translations` 含 **zh-TW + ja** 各 ≥1 筆／卡  
   - 驗證：`mongosh` 或 Compass
-  - 證據：查詢輸出 —
-- [ ] **CD-B-2** `/discover` 切 zh-TW／ja 標題不同且皆為母語（非 key 洩漏）  
-  - 驗證：瀏覽器兩語
-  - 證據：**E0-Discover-i18n** 兩張截圖 —
-- [ ] **CD-B-3** 讀取時 Network **無** DeepL／DeepSeek（與 CD-4-2 複核）  
+  - 證據（2026-06-23）：`python -m scripts.run_public_feed_batch` → `inserted=2`；`check_pf_b_mongo.py` 2/2 PASS；範例 `pubfeed_a816702647d4`／`pubfeed_3db59cb51872`
+- [x] **CD-B-2** `/discover` 切 zh-TW／ja 標題不同且皆為母語（非 key 洩漏）  
+  - 驗證：瀏覽器兩語；2026-07-28 另驗 **en** 原文標題
+  - 證據（2026-07-28）：併 **E0-Discover-i18n**／**CD-4-3**；【暫】↔【仮】；en 無前綴原文 —
+- [x] **CD-B-3** 讀取時 Network **無** DeepL／DeepSeek（與 CD-4-2 複核）  
+  - 證據（2026-07-28）：併 CD-4-2；Discover 重整僅 feed GET —
   - 驗證：DevTools XHR
   - 證據：併入 E0-Discover-i18n —
 
@@ -400,21 +453,22 @@ DEEPSEEK_MODEL_FLASH=deepseek-v4-flash
 
 ### 工作明細（原子化）
 
-- [ ] **PD-M-01** `models/topic.py`：新增 `source_country: Optional[str]`、`is_trend_alert: bool = False`  
+- [x] **PD-M-01** `models/topic.py`：新增 `source_country: Optional[str]`、`is_trend_alert: bool = False`  
   - 產出：Pydantic model + 遷移註記（Mongo 無強制 migrate）
-- [ ] **PD-M-02** 公共批次入庫：依 RSS 源或白名單表預填 `source_country`（可簡化為 `US`／`GB` 等）  
+- [x] **PD-M-02** 公共批次入庫：依 RSS 源或白名單表預填 `source_country`（可簡化為 `US`／`GB` 等）  
   - 產出：`item_builder.py`
-- [ ] **PD-M-03** 文件連結 [`v7.1_ROADMAP.md`](./v7.1_ROADMAP.md) 於架構表與本檔  
+  - 證據：`check_pf_b_mongo.py` → `source_country='US'`
+- [x] **PD-M-03** 文件連結 [`v7.1_ROADMAP.md`](./v7.1_ROADMAP.md) 於架構表與本檔  
   - 產出：本 commit 文件
 
 ### Phase PF-M 完成檢查清單
 
-- [ ] **CD-M-1** 新卡 JSON／Compass 可見 `source_country`（可為 null 舊卡）  
+- [x] **CD-M-1** 新卡 JSON／Compass 可見 `source_country`（可為 null 舊卡）  
   - 驗證：查 1 筆新卡
-  - 證據：—
-- [ ] **CD-M-2** `is_trend_alert` 預設 **false**；**無** 背景 alert job 註冊  
+  - 證據：`pubfeed_*` → `source_country='US'`（`check_pf_b_mongo.py`）
+- [x] **CD-M-2** `is_trend_alert` 預設 **false**；**無** 背景 alert job 註冊  
   - 驗證：grep scheduler 0 命中 `trend_alert`
-  - 證據：session log —
+  - 證據：`check_pf_b_static.py` CD-M-2 PASS；Mongo `is_trend_alert=False`
 
 ---
 
@@ -450,7 +504,7 @@ DEEPSEEK_MODEL_FLASH=deepseek-v4-flash
 | PF-5 | CD-2-2、CD-2-3、CD-X-5 |
 | PF-6 | CD-1-1、CD-1-2、CD-X-6 |
 | PF-H | CD-H-1～CD-H-4 |
-| PF-S | CD-S-1～CD-S-3 |
+| ~~PF-S~~ | ~~CD-S-1～CD-S-3~~ **廢止 2026-06-16** |
 | PF-B | CD-B-1～CD-B-3、E0-Discover-i18n |
 | PF-M | CD-M-1～CD-M-2 |
 
@@ -474,5 +528,10 @@ DEEPSEEK_MODEL_FLASH=deepseek-v4-flash
 
 | 日期 | 說明 |
 |------|------|
+| 2026-07-28 | **summary_i18n** zh-TW／ja／en；CD-4-3／CD-B-2／E0-Discover-i18n `[x]`；DOC-BAK-5 |
 | 2026-06-05 | 初版：Phase PF-0～PF-4 + PF-X；PD-*／CD-*；格式對齊 `v7_token_cost_phase_checklist.md` |
-| 2026-06-13 | GTM：開發順序表；PF-H／PF-S／PF-B／PF-M 原子 Phase；E0-Discover-i18n；測試週改整批 |
+| 2026-06-16 | **PF-S 廢止**（規則 5／禁止模糊签收）；開發順序改 PF-B 起；增 E7 |
+| 2026-06-11 | GTM：開發順序表；PF-H／PF-B／PF-M 原子 Phase；E0-Discover-i18n；測試週改整批 |
+| 2026-06-11 | PF-H 實作對齊：工程鐵律 E1～E6、依賴圖、ENVIRONMENT、Redis JSON key、DT-5、commit bebf6d0 |
+| 2026-06-18 | 備份 `2026-06-18_v7-program-line-trigger_snapshot`；觸發詞程式段；Landing ✅；DOC-BAK-2/DATE-2/ALIGN-2；06-19～26 日曆 |
+| 2026-06-11 | 備份 `2026-06-11_pf-h-gtm-docs_snapshot`；日期 SoT 校正；DOC-BAK/DATE/ALIGN |

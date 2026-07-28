@@ -15,6 +15,8 @@ BACKUP_MARK = "/backups/"
 SKIP_FILES = {
     "scripts/fix_test_doc_wording.py",
     "scripts/fix_scan_report.txt",
+    "scripts/hardcoded_report.txt",
+    "scripts/suggested_translations.json",
 }
 SEC = "\u00a7"  # section symbol — only used inside this script
 
@@ -85,6 +87,30 @@ def transform_section_symbols(text: str) -> str:
     text = text.replace("矩陣全章 有結果", "矩陣全章節皆有結果")
     text = text.replace("架構矩陣章 與", "架構矩陣章節與")
     text = text.replace("增刪本表章 與列", "增刪本表章節與列")
+
+    # Generic document cross-refs (§ → 章節名／「…」)
+    sec_refs = [
+        (f"{s} 重建（R）", "「重建（R）」"),
+        (f"{s} v7 Token 開發核證（V7）", "「v7 Token 開發核證（V7）」"),
+        (f"{s} Token 省成本 D1～D5", "「Token 省成本」D1～D5"),
+        (f"{s} Token 省成本", "「Token 省成本」"),
+        (f"{s} V7 核證表", "「V7 核證表」"),
+        (f"{s} V7 證據表", "「V7 證據表」"),
+        (f"{s} Phase 0 監察線結案", "「Phase 0 監察線結案」"),
+        (f"{s} 階段 R", "「階段 R」"),
+        (f"{s} 階段 T", "「階段 T」"),
+        (f"{s} MD-M2", "MD-M2"),
+        (f"{s} 前端路由", "「前端路由」"),
+        (f"{s} E0", "E0"),
+        (f" v7 {s} D1～D5", " v7 D1～D5"),
+        (f"{s} D1～D5", "D1～D5"),
+        (f"{s}2.0", "第 2.0 節"),
+    ]
+    for old, new in sec_refs:
+        text = text.replace(old, new)
+    # stray § before closing paren in combined refs
+    text = text.replace(f"{s}重建（R）", "「重建（R）」")
+    text = text.replace(f"＋{s} ", "＋")
     return text
 
 
@@ -135,6 +161,32 @@ def transform_smoke_wording(text: str) -> str:
         ("（能開即可）", "（改由 I.1 E2E 逐項 TC）"),
         ("需 DB 之煙霧", "需 DB 之迴歸 TC"),
         ("R-5 Gate：PASS**（可進 **T-10** 每日開工與需 DB 之", "R-5 Gate：PASS**（可進 **T-10** 每日開工與需 DB 之"),
+        # 2026-06-18 補齊剩餘模糊用語
+        ("禁止煙霧驗收與 Mock", "禁止模糊驗收與 Mock"),
+        ("禁止煙霧驗收", "禁止模糊驗收"),
+        ("禁止煙霧／Mock", "禁止模糊驗收／Mock"),
+        ("禁止 Mock／煙霧验收", "禁止 Mock／模糊驗收"),
+        ("禁止 Mock／煙霧", "禁止 Mock／模糊驗收"),
+        ("本專案所禁止之「煙霧」", "本專案所禁止之「模糊驗收」"),
+        ("煙霧式排程", "模糊驗收式排程"),
+        ("零 AI Mock 煙霧", "零 AI Mock 模糊驗收"),
+        ("煙霧路徑", "上線驗證路徑"),
+        ("上線煙霧", "上線驗證"),
+        ("對齊 README 禁止煙霧", "對齊 README 禁止模糊驗收"),
+        ("README 禁止煙霧", "README 禁止模糊驗收"),
+        ("U 軌煙霧", "U 軌 E2E"),
+        ("5 步煙霧", "5 步 E2E"),
+        ("## API 煙霧", "## API 健康檢查"),
+        ("端到端煙霧", "端到端 E2E"),
+        ("批次煙霧", "批次驗證"),
+        ("本日剩：煙霧", "本日剩：E2E"),
+        ("併入 **06-12 煙霧**", "併入 **06-12 E2E**"),
+        ("式煙霧签收", "式模糊签收"),
+        ("正式域煙霧", "正式域 E2E"),
+        ("靈感頁 smoke", "靈感頁載入 TC"),
+        ("**禁止**煙霧签收", "**禁止**模糊签收"),
+        ("程式結案（煙霧 + commit）", "程式結案（E2E + commit）"),
+        ("commit／煙霧", "commit／E2E"),
     ]
     for old, new in replacements:
         text = text.replace(old, new)
@@ -262,7 +314,10 @@ def main() -> int:
 
     write_text(report_path, "\n".join(lines_out) + "\n")
     print(f"Report: {report_path}")
-    print(f"Active remaining — section_symbol: {remaining_sec}, vague_wording: {smoke_remaining}")
+    if remaining_sec or smoke_remaining:
+        print(f"Active remaining — section_symbol: {remaining_sec}, vague_wording: {smoke_remaining}")
+    else:
+        print("scan clean")
     return 1 if remaining_sec or smoke_remaining else 0
 
 

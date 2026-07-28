@@ -35,7 +35,7 @@
 ## 每日開工 — 環境與監察前置（MD-E0）
 
 > 未完成 **MD-E0-B、MD-E0-F** 前，勿勾 **MD-M1** 中依賴本機服務的項。  
-> 詳細拍攝方式 → [`v7_evidence_screenshot_guide.md`](./v7_evidence_screenshot_guide.md) §2。
+> 詳細拍攝方式 → [`v7_evidence_screenshot_guide.md`](./v7_evidence_screenshot_guide.md) 頻道區塊 2。
 
 - [ ] **MD-E0-B** 後端 `http://localhost:8000/health` 整段 JSON（含 `cost_controls`）  
   - 驗證：瀏覽器可開；欄位與 `.env` 一致  
@@ -59,7 +59,7 @@
 | `vercel dev` 作本機後端 | `uvicorn app.main:app --reload --host 0.0.0.0 --port 8000` |
 | `/server/utils/logger.js` | 僅擴充 Python `logger.py` |
 
-**官方 `tag`（僅准這五個字串作為 `log_cost_event` 的 `tag`）**
+**官方 `tag`（僅准下列字串作為 `log_cost_event` 的 `tag` · Token 五項 + Discover 一項）**
 
 | tag | 用途 |
 |-----|------|
@@ -68,6 +68,7 @@
 | `CACHE_MISS` | 快取未命中 |
 | `TRANSLATION_FALLBACK_TRIGGERED` | DeepL Fallback |
 | `TOKEN_GATEWAY_PASSED` | generate 通過 gateway |
+| `PUBLIC_FEED_DEV_CAP` | development 公共批次 cap=2（PF-H · `bebf6d0`） |
 
 **輸出格式（強制 · 內建 Key-Value 結構化）**
 
@@ -161,7 +162,7 @@ def log_cost_event(tag: str, level: str = "info", **fields) -> None:
 
 - [x] **MD-ALL-1** M1～M3 各結案判定已滿足  
 - [x] **MD-ALL-2** 主 checklist **P0-06、P0-07** 已改 `[x]`（與 MD-M1、MD-M2 同步）  
-- [x] **MD-ALL-3** 證據已貼 `工作記錄.md` § v7 Token 開發核證（V7）或 Phase 結案段  
+- [x] **MD-ALL-3** 證據已貼 `工作記錄.md` 「v7 Token 開發核證（V7）」或 Phase 結案段  
 
 ---
 

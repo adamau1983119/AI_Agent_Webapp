@@ -8,48 +8,69 @@
 
 當使用者在對話中輸入 **`專案開始`**（或 `@AGENTS.md` 並要求展開專案排程）時，助手**不得**只貼排程；須先完成 **專案開始前檢查**，再依 **版本路由** 輸出對應 Operation Plan（與 `README.md`「必讀文件」「⛔ 啟動檢查」對齊）。
 
-**推薦一句（監察週 2026-06-09～12 · 與下表等價）**
+**推薦一句（2026-07-21 鎖定 · 上架衝刺測試 07-22～24 · 與下表等價）**
+
+```text
+專案開始，先讀 docs/v7_program_line/_GATE.md 與 launch_test_sprint_2026-07-22.md 當日 Day，再開測 @AGENTS.md
+```
+
+→ 助手須：① **專案開始前檢查**（含 **R-1～R-5**、**:8000／:3000**、**已登入**）；② 讀 [`_GATE.md`](./docs/v7_program_line/_GATE.md) + [`index.md`](./docs/v7_program_line/index.md) Active；③ **必讀** [`launch_test_sprint_2026-07-22.md`](./docs/v7_program_line/launch_test_sprint_2026-07-22.md) **當日 Day 表**；④ 展開本檔 **「## 專案開始（v7 · 上架衝刺）」**；⑤ **禁止**再開新 PD／改架構除非測試 FAIL 阻塞。
+
+**封存（2026-06-23 · 程式段）**：
+
+```text
+專案開始，並先讀 docs/v7_program_line/_GATE.md，再對照 index 當日 Phase @AGENTS.md
+```
+
+→ 僅當使用者**明示要改碼／PD** 時使用；程式段主線已結。
+
+**封存（2026-06-18）**：`專案開始，並對照工作記錄「v7 程式段（排程 B）」@AGENTS.md`
+
+**封存觸發詞（僅監察週追溯 · 勿作預設）**
 
 ```text
 專案開始，並對照工作記錄「重建（R）＋v7 Token 開發核證（V7）」@AGENTS.md
 ```
 
-助手須：① 讀 `工作記錄` **§ 重建（R）**（R-1～R-5 Gate）＋ **§ v7 Token 開發核證（V7）**（含 **實曆填寫** 之 **VM-1～4**）；② 展開本檔 **專案開始（v7）** ＋ 當日 **VM-x**（[`docs/v7_monitoring_week_daily_checklist.md`](./docs/v7_monitoring_week_daily_checklist.md)）。
+→ 僅當使用者**明示**或補讀 **VM-1～4**／V7 核證表時使用。
 
-### 版本路由（2026-06-05 起 · 必讀）
+### 版本路由（2026-07-21 修訂）
 
-| 使用者輸入 | 模式 | Operation Plan 章節 | 核證表（`工作記錄.md`） |
+| 使用者輸入 | 模式 | Operation Plan 章節 | 核證／SoT |
 |------------|------|-------------------|-------------------------|
-| **`專案開始`**、**`專案開始 v7`**、**`@AGENTS.md` v7**、上列**推薦一句** | **v7（預設）** | 本檔 **「## 專案開始（v7）」** | **§ 重建（R）**（Gate）＋ **§ v7 Token 開發核證（V7）** ＋ [`docs/v7_token_cost_phase_checklist.md`](./docs/v7_token_cost_phase_checklist.md) |
-| **`專案開始 v6`** | v6 測試週（封存追溯） | 本檔 **「## 專案開始（v6 · 封存）」** | **§ 重建（R）＋測試週檢核（T）**（T-10～T-14、NW-1～NW-4） |
+| **上列推薦一句**、**`專案開始 v7 測試週`**、**`專案開始`（07-22～24 實曆）** | **上架衝刺測試** | **「## 專案開始（v7 · 上架衝刺）」** | [`launch_test_sprint_2026-07-22.md`](./docs/v7_program_line/launch_test_sprint_2026-07-22.md) 當日 Day |
+| **封存程式段句**、明示「改碼／PD」 | v7 程式段 | **「## 專案開始（v7 · 程式段）」** | index Active（應無新 PD） |
+| **封存：R＋V7 觸發詞** | 監察／核證追溯 | **「## 專案開始（v7）」** 封存段 | V7 核證表 |
+| **`專案開始 v6`** | v6 測試週（封存） | **「## 專案開始（v6 · 封存）」** | T-10～T-14、NW-* |
 
-**助手鐵律**
+**助手鐵律（07-22～24）**
 
-- **未**寫 `v6` 時 → **一律 v7**；**禁止**默認展開 v6「第 10～14 工作天」或 NW-4 測試收口為「今日任務」。
-- v7 主線 = **Token 省成本 Phase 0～4**（D1～D5）；v6 測試週 **已結案／僅追溯**，見 `工作記錄` 頂部 **NW-4** 與 **T-14** 狀態。
-- 換機／venv 仍先做 **R-1～R-5**（見 `工作記錄` **階段 R**）；**R-5 PASS** 後才標記 v7 Phase 實作或驗收。
+- **預設今日任務**＝上架衝刺 **Day1／2／3**（對照日曆）；**禁止**默認展開程式段 PD、VM-x、全量 C*。
+- 開測前必驗：`:8000/health`、`:3000` 可開、**使用者已登入**（勿訪客測 AE／MC）。
+- 勾 CD／E0／PK 須有截圖或 Network 一句；無證據**禁止**勾 `[x]`。
+- 換機／venv 仍先 **R-1～R-5**；測完再談 commit。
 
-**三件事（v7 預設；各對齊一份來源）**
-
-| # | 對齊來源 | 助手收斂 |
-|---|----------|----------|
-| 1 | **本檔「## 專案開始（v7）」**＋ [`docs/v7_token_cost_phase_checklist.md`](./docs/v7_token_cost_phase_checklist.md) | **當前 Phase**（0～4）、當日 **P*-* 工作項**、**C*-* 必過檢查**；勾選符號 `[ ]`／`[x]`／`[!]`。 |
-| 2 | **`README` 必讀／啟動檢查**＋本檔 **「專案開始前檢查」**＋ **[`docs/v7_implementation_basics.md`](./docs/v7_implementation_basics.md)** | **能不能改碼**；必讀含架構表 v7；**改碼日**須勾 **BF-***（i18n 禁硬編碼、按鈕 `data-testid`）。 |
-| 3 | **[`專案完整架構表_v7.md`](./專案完整架構表_v7.md) § Token 省成本 D1～D5**＋[`docs/v7.0.0_需求文件.md`](./docs/v7.0.0_需求文件.md) | 模型路由（Pro/Flash）、Mongo `summary_flash`／`topic_translations`、定向排程；**禁止** PostgreSQL／NLLB。 |
-
-**三件事（僅 `專案開始 v6` 時改為下表）**
+**三件事（上架衝刺 · 07-22～24 預設）**
 
 | # | 對齊來源 | 助手收斂 |
 |---|----------|----------|
-| 1 | 本檔 **「## 專案開始（v6 · 封存）」**、第 1～14 工作天 | 測試週／NW 日曆（追溯）。 |
-| 2 | `README` 必讀＋專案開始前檢查 | 改碼門檻；架構可對 [`專案完整架構表.md`](./專案完整架構表.md) **凍結版** 或 archives。 |
-| 3 | [channel_create_new_scheme_checklist.md](./docs/channel_create_new_scheme_checklist.md) **I 節** | 建立頻道測試殘項。 |
+| 1 | [`launch_test_sprint_2026-07-22.md`](./docs/v7_program_line/launch_test_sprint_2026-07-22.md) **當日 Day** | Day1 AE／Day2 MC+PK／Day3 Discover+收口；**1.5h** |
+| 2 | [`_GATE.md`](./docs/v7_program_line/_GATE.md) + [`index.md`](./docs/v7_program_line/index.md) | Active＝上架衝刺；不開新 PD |
+| 3 | 當日細項 checklist | AE → [`v7_alter_ego_checklist.md`](./docs/v7_alter_ego_checklist.md)；MC → [`v7_mychannel_checklist.md`](./docs/v7_mychannel_checklist.md)；PK → [`publish_post_kit_spec.md`](./docs/publish_post_kit_spec.md)；Discover → [`v7_discover_public_feed_checklist.md`](./docs/v7_discover_public_feed_checklist.md) |
+
+**三件事（封存 · 僅明示程式段／改碼）**
+
+| # | 對齊來源 | 助手收斂 |
+|---|----------|----------|
+| 1 | `_GATE` + `index` + 工作記錄「v7 程式段」 | 無新 PD 則拒改碼 |
+| 2 | README＋專案開始前檢查＋`v7_implementation_basics` | BF-DAY／BF-UI |
+| 3 | 對應 Phase checklist | 僅修 FAIL 阻塞 |
 
 ### 執行順序（強制）
 
-1. **先做「專案開始前檢查」**（見下一節）：使用工具**實際讀取／執行**可驗證項，並在回覆**最上方**輸出 **「專案開始前檢查 — 結果表」**（每一列：項目／狀態：✅ 已滿足／⚠️ 需使用者處理／➖ 本輪不涉及改碼）。
-2. **再**完整展開下方 **「## 專案開始」** Operation Plan（日曆、第 1～14 工作天、當日 checklist）。
-3. **若當次對話後續將修改程式碼**，而「必讀文件」尚未讀取或「啟動檢查」有任一項對 **改碼** 為不通過 → **禁止**進行任何程式碼修改；僅可說明缺什麼、請使用者補齊或改天再改。
+1. **先做「專案開始前檢查」**：工具實際讀取／執行，回覆最上方輸出 **結果表**。
+2. **再**輸出 Operation Plan：**07-22～24** → **「## 專案開始（v7 · 上架衝刺）」**；明示改碼 → 程式段；**v6** → 封存章。
+3. 若將改碼而必讀／啟動檢查未過 → **禁止**改碼。
 
 ### 專案開始前檢查 — 必做項目（對齊 README）
 
@@ -69,7 +90,7 @@
 | 5 | [品牌設計規範.md](./品牌設計規範.md) | 讀取；若將動 UI 必對照 |
 | 6 | [按鈕測試ID架構表.md](./按鈕測試ID架構表.md) | 讀取；若新增／修改按鈕必對照 |
 
-- **僅手動測試、完全不碰程式與設定**：仍須讀 **工作記錄.md**、**README** 相關規則摘要；其餘文件可標 **➖ 本輪唯讀測試** 但**建議**仍掃過架構表與分支策略，避免誤判環境。
+- **僅手動測試、完全不碰程式與設定**：仍須讀 **工作記錄.md**、**README** 相關規則摘要、**當日 launch_test Day 表**；其餘可標 **➖ 本輪唯讀測試**。
 
 #### B. 啟動檢查（`README.md` ⛔ 啟動檢查 — 逐條在結果表呼應）
 
@@ -79,15 +100,23 @@
 - [ ] **當前 Git 分支**：已執行 `git branch --show-current`（或同等），且**確認**非違規直接改 `main`／`develop`（依 `Git分支策略與版本管理.md`）  
 - [ ] **文檔日期**：已比對 `README.md`「更新日期」與 `工作記錄.md`「最後更新」；**不一致時宣告以工作記錄為準**  
 - [ ] **日期／星期**：凡寫入排程（含「週X」）須對照 [`docs/calendar_2026_reference.md`](./docs/calendar_2026_reference.md) 或執行 `python scripts/generate_calendar_2026.py`；**禁止**從上下文推斷星期  
-- [ ] **版本模式**：已確認本次為 **v7（預設）** 或使用者明示 **`專案開始 v6`**  
-- [ ] **今日任務**：**v7** → `工作記錄` **V7 核證表** 當前 Phase ＋ checklist；**2026-06-09～12** → 當日 **VM-1～VM-4**（[`v7_monitoring_week_daily_checklist.md`](./docs/v7_monitoring_week_daily_checklist.md)，**非** v6 NW）；**v6** → AGENTS 第 N 工作天／NW-x  
-- [ ] **專案架構**：已具備「專案完整架構表」之認知，將改碼處已粗對路由／模組  
+- [ ] **版本模式**：已確認本次為 **上架衝刺（07-22～24）**／明示程式段／**`專案開始 v6`**  
+- [ ] **今日任務**：上架衝刺 → `launch_test_sprint` **當日 Day**；程式段 → 僅明示改碼時；**禁止**預設 VM-x／全量 C*  
+- [ ] **專案架構**：已具備「專案完整架構表」之認知  
 - [ ] 記住：不自動建立報告 `.md`（除非使用者明確要求）  
 - [ ] 規則 #11：更新測試結果前須先查實際程式  
 - [ ] 規則 #12：測試守門員，不虛報完成  
 - [ ] 規則 #13：禁止未讀規範即生成／修改程式  
 - [ ] 規則 #8：修改前須了解依賴與影響範圍  
 - [ ] 規則 #14：**禁止**為測試（ngrok、本機 HTTPS 等）擅自改既有程式與預設設定  
+
+#### B2. 上架衝刺開測前（07-22～24 · 必列結果表）
+
+- [ ] **`:8000/health`** → 200、`database: connected`（記 `scheduled_topic_collection` 現值一句）  
+- [ ] **`:3000`** → 200、Dashboard／Welcome 可開（非無限「載入中」）  
+- [ ] **已登入**（非訪客）；AE／MC／generate 路徑才算有效  
+- [ ] 已讀 **當日 Day** 分鐘表（Day1 AE／Day2 MC+PK／Day3 Discover）  
+- [ ] 證據目錄就緒：`docs/evidence/v7/2026-07-2x/`（可當日建立）
 
 #### C. i18n（凡將改前端使用者可見文字）
 
@@ -99,30 +128,115 @@
 ## 專案開始前檢查 — 結果
 | 類別 | 項目 | 狀態 | 備註 |
 |------|------|------|------|
-| 必讀 | 開發人員必讀規則.md | ✅ | … |
-| 必讀 | 工作記錄.md 頂部 | ✅ | 最後更新：… |
+| 必讀 | 工作記錄.md 頂部 | ✅ | … |
 | 分支 | git branch --show-current | ✅ | feature/… |
-| 啟動 | 非 main/develop 改碼 | ✅ | … |
-| … | … | … | … |
+| 開測 | :8000/health | ✅ | database connected |
+| 開測 | :3000 | ✅ | … |
+| 開測 | 已登入 | ✅／⚠️ | 訪客則請使用者登入 |
+| v7 | launch_test 當日 Day | ✅ | Day1 AE … |
 ```
 
-完成上表後，再輸出對應 Operation Plan：**v7** → **「## 專案開始（v7）」**；**v6** → **「## 專案開始（v6 · 封存）」**（日曆 + 當日細項）。
+完成上表後，再輸出 **「## 專案開始（v7 · 上架衝刺）」**。
 
-**v7 專用：專案開始前檢查結果表須多兩列**
+**v7 專用：專案開始前檢查結果表須多列**
 
 | 類別 | 項目 | 狀態 | 備註 |
 |------|------|------|------|
-| v7 | `專案完整架構表_v7.md` D1～D5 | ✅／➖ | 一句收斂 |
-| v7 | `v7_token_cost_phase_checklist.md` 當前 Phase | ✅／➖ | Phase N；必過 C* 列表 |
-| v7 | `v7_implementation_basics.md` BF 當日 | ✅／➖ | 是否動前端；BF-DAY／BF-UI |
-| R+T | `工作記錄` R-1～R-5（環境 Gate） | ✅／⚠️ | PASS 才建議開 Phase 1 改碼 |
+| v7 | `launch_test_sprint` 當日 Day | ✅ | Day1／2／3 一句 |
+| v7 | 當日必過代號 | ✅ | 例：E0-AE-1～3、CD-AE-C1 |
+| R | R-1～R-5 | ✅／⚠️ | 換機日必查 |
+| 開測 | :8000／:3000／登入 | ✅／⚠️ | 未登入不得開 AE 主路 |
+| v7 | Token／DNS／全量 C* | ➖ | 衝刺僅煙霧或 N/A |
+---
+
+## 專案開始（v7 · 上架衝刺）
+
+> **狀態（2026-07-21）**：程式段 PD **已結**；**07-22～24** 每日 **1.5h** 完成 MVP 上架必測。  
+> **SoT**：[`docs/v7_program_line/launch_test_sprint_2026-07-22.md`](./docs/v7_program_line/launch_test_sprint_2026-07-22.md)  
+> **閘門**：[`_GATE.md`](./docs/v7_program_line/_GATE.md) → [`index.md`](./docs/v7_program_line/index.md) Active  
+> **分支**：`feature/v7-cost-pipeline`（測試為主；非阻塞勿改碼）
+
+### 約束（上架衝刺）
+
+- 每日 **90′**；只跑當日 Day 表；餘項 **N/A／上線後**。
+- **必須**截圖或 Network 一句才勾 CD／E0／PK。
+- **開測門檻**：`:8000` + `:3000` + **已登入**；訪客路徑不算 AE／MC PASS。
+- **禁止**：為測 DNS／全量 C*／staging 30 批而拖過三日；**禁止**無 FAIL 證據改架構。
+
+### 三日日曆（對照 calendar · 禁止推斷）
+
+| 日期 | 週 | Day | 必過（摘要） |
+|------|-----|-----|--------------|
+| **07-22** | 三 | **1** 環境 + AE | E0-B/F；E0-AE-1～3；CD-AE-C1／C3 |
+| **07-23** | 四 | **2** MC + Post Kit | E0-MC；CD-MC2/3；PK1～4 |
+| **07-24** | 五 | **3** Discover + 收口 | CD-4-1/2；PD-AE2-03；Token 煙霧；**可上架判決** |
+
+### Operation Plan 模板（助手展開至少含）
+
+1. **開測檢查結果表**（含 B2：health／3000／登入／當日 Day）。  
+2. **今日 Day 分鐘表**（自 `launch_test_sprint` 原文列 3～6 條必過）。  
+3. **證據路徑**：`docs/evidence/v7/2026-07-2x/`。  
+4. **收尾**：工作記錄一句 PASS／FAIL；**明日第一步**一句。  
+5. **Day3 額外**：寫明 **可上架／條件上架／阻塞** + 阻塞 ≤3。
+
+### 明日（07-22）第一步（固定）
+
+重啟確認 `:8000/health` + `:3000` → **登入** → 依 Day1 表跑 **E0-AE-1**（onboarding → extract）。
 
 ---
 
-## 專案開始（v7）
+## 專案開始（v7 · 程式段）
 
-> **狀態（2026-06-05）**：v6 測試週 **收尾中**（NW-4／T-14 見 `工作記錄`）；**本專案主線已切 v7**—上架 MVP + **Token 省成本**（客戶五項決策 D1～D5 已鎖定）。  
-> **建議分支**：`feature/v7-cost-pipeline`（勿在 `main` 直接改）。
+> **狀態**：程式段主線 **已結**（2026-07-21）；本章僅供**明示改碼／PD** 時使用。  
+> **SoT**：[`docs/v7_program_line/index.md`](./docs/v7_program_line/index.md)（**閘門** [`_GATE.md`](./docs/v7_program_line/_GATE.md)）＋ [`工作記錄.md`](./工作記錄.md) **「## v7 程式段」**  
+> **建議分支**：`feature/v7-cost-pipeline`
+
+### 約束（程式段）
+
+- 每個工作段 **45 分鐘**（含環境、驗證、記錄）；**週一不排**；**週二～五**每天最多 1 段。
+- **本段只做程式**；**禁止**勾 C*／CD*／X*、E0 截圖驗收、為手測改 `.env`。
+- **允許驗證**：`npm run build`、`python scripts/validate_structure.py`、`python scripts/fix_test_doc_wording.py`（scan clean）、後端 import／curl。
+- **改碼**：[`docs/v7_implementation_basics.md`](./docs/v7_implementation_basics.md) **BF-DAY**；前端 **BF-UI**。
+
+### 程式段日曆（2026-06-19～06-26 · 6/26 前程式全結案）
+
+| 日期 | 週 | 主題 | 結案判定 |
+|------|-----|------|----------|
+| **06-19** | 五 | **PF-B** 港日同質（`topic_translations`） | PD-B-01～03 |
+| 06-20～21 | 六日 | — | 不排 |
+| 06-22 | 一 | — | **不排** |
+| **06-23** | 二 | **PF-M** + **Post Kit** L0 | PD-M-*；`PostKitPanel` + build PASS |
+| **06-24** | 三 | **AE-0** + **AE-1a/1b** 後端 | `ALTER_EGO_SPEC`；extract/preview/Shell |
+| **06-25** | 四 | **AE-1c/1d** | ContentStyleService + onboarding/Skip |
+| **06-26** | 五 | **MC-1～5** + staging 30 批 | MyChannel MVP；程式線結案 |
+
+> **06-27 起**：**整批測試週**（建議第一可排日 **06-30 二**）；觸發 **`專案開始 v7 測試週`**。
+
+### 專案開始（v7 · 程式段）— 當日 Operation Plan 模板
+
+助手展開時**至少**包含：
+
+1. **環境**：`工作記錄` **R-1～R-5**；分支 `feature/v7-cost-pipeline`（或當日分支）。  
+2. **實曆**：對照 [`calendar_2026_reference.md`](./docs/calendar_2026_reference.md)；**禁止**推斷星期。  
+3. **當日 Phase**：上表或 `工作記錄` 程式段總覽；列 **3～5 條 PD-*** 工作項。  
+4. **本日驗收**：`npm run build` 或後端自測；**不**列 C*／CD*（留測試週）。  
+5. **明日第一步**（一句）。
+
+### 程式段與 checklist 對照
+
+| Phase | Checklist |
+|-------|-----------|
+| **專區總表** | [`docs/v7_program_line/index.md`](./docs/v7_program_line/index.md) |
+| PF-B／PF-M／Discover | [`v7_discover_public_feed_checklist.md`](./docs/v7_discover_public_feed_checklist.md) · **Token** [`v7_program_line/_completed/token_cost.md`](./docs/v7_program_line/_completed/token_cost.md) |
+| Post Kit | [`publish_post_kit_spec.md`](./docs/publish_post_kit_spec.md) |
+| AE-0～1 | [`v7_alter_ego_checklist.md`](./docs/v7_alter_ego_checklist.md) |
+| MC-* | [`v7_mychannel_checklist.md`](./docs/v7_mychannel_checklist.md) |
+
+---
+
+## 專案開始（v7）— 封存（監察週／Token 核證追溯）
+
+> **預設 `專案開始` 已改指「v7 · 程式段」**（見上節）。本章僅供 **R＋V7 封存觸發詞** 或查 **VM-1～4**／**V7 核證表** 時使用。
 
 ### 約束（v7）
 
@@ -130,7 +244,7 @@
 - **週一**：YouTuber 創作，**不排本專案**。
 - **每週可排**：**週二～週五**（每天最多 1 段 45′）。
 - **改碼 SoT**：[`專案完整架構表_v7.md`](./專案完整架構表_v7.md)、[`docs/v7.0.0_需求文件.md`](./docs/v7.0.0_需求文件.md)。
-- **驗收 SoT**：[`docs/v7_token_cost_phase_checklist.md`](./docs/v7_token_cost_phase_checklist.md)（`[ ]`／`[x]` PASS／`[!]` FAIL）；Phase 結案證據貼 `工作記錄.md` **§ V7 核證表**。
+- **驗收 SoT**：[`docs/v7_token_cost_phase_checklist.md`](./docs/v7_token_cost_phase_checklist.md)（`[ ]`／`[x]` PASS／`[!]` FAIL）；Phase 結案證據貼 `工作記錄.md` **「V7 核證表」**。
 - **截圖為證（不變 · 首要）**：凡在 **`localhost:8000`／`3000`** 驗收 checklist → **必須附截圖** 才可勾 `[x]`；見 [`docs/v7_evidence_screenshot_guide.md`](./docs/v7_evidence_screenshot_guide.md)。助手**不得**代勾無圖項。
 - **禁止**：SQL／PostgreSQL、NLLB、全開三類 6h 排程＋收集 AI 翻譯（見 D3）；為測試擅自改架構（規則 #14）。
 - **實作基礎（下週編碼起）**：[`docs/v7_implementation_basics.md`](./docs/v7_implementation_basics.md)—**commit 前** BF-DAY；**前端**另 BF-UI（i18n 三語、按鈕 testid＋架構表；對齊 README 規則 3、4、6）。
@@ -168,19 +282,19 @@
 
 **邏輯**：VM-1 鋪證據 → VM-2 **原子化實作**監察程式並自測 M1 → VM-3 **局部驗收**（M2+C0）→ VM-4 **總驗收**。分支 **`feature/v7-cost-pipeline`**（VM-2 起 commit）。
 
-**`專案開始` 對齊**：06-09～12 展開 Operation Plan 時，**當日任務 = 上表 VM-x**（非 v6 NW／第 10～14 天）。
+**`專案開始` 對齊（封存）**：06-09～12 曾為 **VM-1～VM-4**（**已結案 V7-0 ☑**）；**2026-06-16 起**預設改 **v7 程式段**。
 
 ### v7 Phase 日曆（邏輯順序 · 可漂移實曆）
 
 | Phase | 名稱 | 結案必過（摘要） | 狀態 |
 |-------|------|------------------|------|
-| **0** | 政策／env／`/health` 基線 | C0-1、C0-2、C0-4 | 待實作 |
-| **1** | `summary_flash`、Pro/Flash、prompt 斷流 | C1-1、C1-2、C1-3、C1-4、C1-5、C1-7 | 待實作 |
-| **2** | `topic_translations`、DeepL、夜間預載 | C2-1、C2-3、C2-5、C2-6、C2-7、C2-8；（有 in-flight 鎖則 C2-11） | 待實作 |
-| **3** | token gateway、body 重放、DB SoT | C3-1、C3-2、C3-3、C3-5、**C3-9** | 待實作 |
-| **4** | UI skeleton、cache 體感 | C4-1、C4-2、C4-4 | 待實作 |
-| **5** | 法務合規 | P5-01～02 | 待實作 |
-| **X** | 上線前總驗收 | X-1～X-6 | — |
+| **0** | 政策／env／`/health` 基線 | C0-1、C0-2、C0-4 | **程式 ✅**；C* 留測試週 |
+| **1** | `summary_flash`、Pro/Flash、prompt 斷流 | C1-* | **程式 ✅**；C* 留測試週 |
+| **2** | `topic_translations`、DeepL、夜間預載 | C2-* | **程式 ✅**；C* 留測試週 |
+| **3** | token gateway、body 重放、DB SoT | C3-* | **程式 ✅**；C* 留測試週 |
+| **4** | UI skeleton、cache 體感 | C4-* | **程式 ✅**；C* 留測試週 |
+| **5** | 法務合規 | P5-01～02 | 文件／程式部分 ✅ |
+| **X** | 上線前總驗收 | X-1～X-6 | 整批測試週 |
 
 > 工作項 **P0-01～P4-06**、檢查項 **C0-1～C4-5** 全文 → **僅** [`docs/v7_token_cost_phase_checklist.md`](./docs/v7_token_cost_phase_checklist.md)（避免雙份漂移）。
 
@@ -188,7 +302,7 @@
 
 助手展開時**至少**包含：
 
-1. **環境**：`工作記錄` **§ 重建（R）** **R-1～R-5** 是否 PASS；**E0-B／E0-F 截圖**是否已有（`:8000/health`、`:3000`）；`cost_controls` 與 v7 env 一致與否。  
+1. **環境**：`工作記錄` **「重建（R）」** **R-1～R-5** 是否 PASS；**E0-B／E0-F 截圖**是否已有（`:8000/health`、`:3000`）；`cost_controls` 與 v7 env 一致與否。  
 2. **當日代號**：對照 `工作記錄` **實曆填寫**；**06-09～12** 為 **VM-1～VM-4**（監察週 daily checklist）；其餘日依 **V7-0～V7-4**／Phase。列出本日 **3～5 條**工作項（含 **P*-*／MD-***）。  
 3. **本日驗收**：列出該 Phase **必過 C*-* **；若本日只做文件則標 ➖ 改碼。  
 4. **與 v6 測試週關係**：一句話（例：T-14／NW-4 待使用者 UI；**不阻塞** v7 Phase 1 後端）。  
@@ -198,9 +312,9 @@
 
 | 代號 | 對照 | 說明 |
 |------|------|------|
-| **R-1～R-5** | `工作記錄` **§ 階段 R** | 換機／重建 **不變**；Gate PASS 後才建議 v7 改碼。 |
-| **V7-0～V7-4** | `工作記錄` **§ v7 Token 開發核證（V7）** | 與 checklist **Phase 0～4** 同步勾選。 |
-| **T-10～T-14、NW-*** | `工作記錄` **§ 階段 T** | **v6 封存**；僅 `專案開始 v6` 或修復回歸時查。 |
+| **R-1～R-5** | `工作記錄` **「階段 R」** | 換機／重建 **不變**；Gate PASS 後才建議 v7 改碼。 |
+| **V7-0～V7-4** | `工作記錄` **「v7 Token 開發核證（V7）」** | 與 checklist **Phase 0～4** 同步勾選。 |
+| **T-10～T-14、NW-*** | `工作記錄` **「階段 T」** | **v6 封存**；僅 `專案開始 v6` 或修復回歸時查。 |
 
 ---
 
@@ -619,7 +733,7 @@
 
 - 修改程式前遵守 `README.md` 規則（含 i18n、`data-testid`、禁止為測試擅自改架構等）。
 - 狀態以 `工作記錄.md` 為準時，與 README 日期不一致以工作記錄為準。
-- **`專案開始`（預設 v7）**：[`docs/v7_token_cost_phase_checklist.md`](./docs/v7_token_cost_phase_checklist.md)、[`專案完整架構表_v7.md`](./專案完整架構表_v7.md)、`工作記錄` **§ v7 Token 開發核證（V7）**。
-- **v7 監察週（VM-1～4）**：[v7_monitoring_week_daily_checklist.md](./docs/v7_monitoring_week_daily_checklist.md)、[v7_dev_monitoring_discipline.md](./docs/v7_dev_monitoring_discipline.md)、[v7_evidence_screenshot_guide.md](./docs/v7_evidence_screenshot_guide.md)。
-- **v7 Discover SKU（待 VM+Token 後）**：[v7_discover_public_feed_checklist.md](./docs/v7_discover_public_feed_checklist.md)、架構表 v7 Discover 章。
+- **`專案開始`（預設）**：[`AGENTS.md`](./AGENTS.md) **「v7 程式段（排程 B）」**、本檔 **「## v7 程式段」**、當日 Phase checklist。
+- **v7 監察週（VM-1～4 · 已結案）**：[v7_monitoring_week_daily_checklist.md](./docs/v7_monitoring_week_daily_checklist.md)、[v7_dev_monitoring_discipline.md](./docs/v7_dev_monitoring_discipline.md)。
+- **v7 程式段（當前）**：[`docs/v7_program_line/`](./docs/v7_program_line/)（**`_GATE` → `index` → `active/`／`_completed/`**）；細項見 index 內連結。
 - **`專案開始 v6`（封存）**：[test_week_daily_checklist.md](./docs/test_week_daily_checklist.md)、`工作記錄` **R+T**、NW-1～NW-4；[calendar_2026_reference.md](./docs/calendar_2026_reference.md)。

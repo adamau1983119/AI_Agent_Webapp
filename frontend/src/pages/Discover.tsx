@@ -15,11 +15,18 @@ export default function Discover() {
   const { data, isLoading, isError, error, refetch, isFetching } = useQuery({
     queryKey: ['publicFeed', feedLang],
     queryFn: () => publicFeedAPI.getFeed(feedLang),
-    staleTime: 5 * 60 * 1000,
+    // 語系切換後必須拿新 payload；勿用長 stale 留住切語前（仍中文）的 ja 快取
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnMount: 'always',
     retry: 1,
   })
 
-  const cards = data?.data ?? []
+  const cards = Array.isArray(data)
+    ? data
+    : Array.isArray(data?.data)
+      ? data.data
+      : []
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6" data-testid="page-discover">
@@ -51,7 +58,7 @@ export default function Discover() {
         >
           {cards.map((card, index) => (
             <PublicFeedCard
-              key={card.id}
+              key={`${feedLang}-${card.id}`}
               card={card}
               testId={`card-discover-feed-${index}`}
             />

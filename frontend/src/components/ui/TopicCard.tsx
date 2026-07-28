@@ -40,6 +40,8 @@ interface TopicCardProps {
   topic: Topic
   /** 頻道列表等場景可覆寫 kol 按鈕 testid */
   kolStyleTestId?: string
+  /** Dashboard 列表關閉自動翻譯，避免一次 N 張卡打爆 API／Console */
+  enableAutoTranslate?: boolean
 }
 
 const gradientClasses = {
@@ -48,7 +50,11 @@ const gradientClasses = {
   trend: 'from-green-400 to-blue-400',
 }
 
-export default function TopicCard({ topic, kolStyleTestId }: TopicCardProps) {
+export default function TopicCard({
+  topic,
+  kolStyleTestId,
+  enableAutoTranslate = true,
+}: TopicCardProps) {
   const { t, language } = useTranslation()
   const [override, setOverride] = useState<TopicDisplayOverride | null>(null)
   const [standardLoading, setStandardLoading] = useState(false)
@@ -86,6 +92,12 @@ export default function TopicCard({ topic, kolStyleTestId }: TopicCardProps) {
       return () => window.clearTimeout(timer)
     }
 
+    if (!enableAutoTranslate) {
+      setStandardLoading(false)
+      setFadeReady(true)
+      return
+    }
+
     let cancelled = false
     setStandardLoading(true)
     setFadeReady(false)
@@ -112,7 +124,7 @@ export default function TopicCard({ topic, kolStyleTestId }: TopicCardProps) {
     return () => {
       cancelled = true
     }
-  }, [topic.id, language, needsTranslate, hasStandardCache])
+  }, [topic.id, language, needsTranslate, hasStandardCache, enableAutoTranslate])
 
   const contentProgress = (topic.wordCount || 0) > 0 ? Math.min(100, ((topic.wordCount || 0) / 500) * 100) : 0
   const imageProgress = (topic.imageCount || 0) >= 8 ? 100 : Math.min(100, ((topic.imageCount || 0) / 8) * 100)

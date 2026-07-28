@@ -36,8 +36,21 @@ class DeepSeekService(AIServiceBase):
         use_model = model or self.model
         is_pro = use_model == self.pro_model or "pro" in use_model.lower()
         if is_pro:
-            return int(getattr(settings, "DEEPSEEK_PRO_MAX_TOKENS", 1500))
+            # v4 thinking 與 content 共用預算；1500 常被 reasoning 吃光
+            return int(getattr(settings, "DEEPSEEK_PRO_MAX_TOKENS", 4096))
         return 2000
+
+    @staticmethod
+    def _extract_message_content(result: Dict[str, Any]) -> tuple[str, str]:
+        """回傳 (content, finish_reason)。v4 可能 content 空、reasoning 滿。"""
+        choices = result.get("choices") or []
+        if not choices:
+            return "", ""
+        choice = choices[0] or {}
+        msg = choice.get("message") or {}
+        content = (msg.get("content") or "").strip()
+        finish = str(choice.get("finish_reason") or "")
+        return content, finish
 
     async def _call_api(
         self, prompt: str, model: Optional[str] = None, max_tokens: Optional[int] = None
@@ -52,27 +65,46 @@ class DeepSeekService(AIServiceBase):
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json",
         }
+        # v4 預設 thinking=on；寫帖不需 CoT，關閉以免 max_tokens 全耗在 reasoning
         payload = {
             "model": use_model,
             "messages": [{"role": "user", "content": prompt}],
             "temperature": 0.7,
             "max_tokens": tokens,
+            "thinking": {"type": "disabled"},
         }
 
         try:
-            logger.info("DeepSeek API model=%s max_tokens=%s", use_model, tokens)
-            async with httpx.AsyncClient(timeout=60.0) as client:
+            logger.info("DeepSeek API model=%s max_tokens=%s thinking=off", use_model, tokens)
+            async with httpx.AsyncClient(timeout=120.0) as client:
                 response = await client.post(self.base_url, headers=headers, json=payload)
                 response.raise_for_status()
                 result = response.json()
-                if "choices" in result and len(result["choices"]) > 0:
-                    content = result["choices"][0].get("message", {}).get("content", "")
+                content, finish = self._extract_message_content(result)
+                if content:
+                    return content
+                # 仍空：一次加碼重試（相容舊端點忽略 thinking 時）
+                if finish == "length":
+                    retry_tokens = min(tokens * 2, 8192)
+                    logger.warning(
+                        "DeepSeek empty content finish=length; retry max_tokens=%s",
+                        retry_tokens,
+                    )
+                    payload["max_tokens"] = retry_tokens
+                    response = await client.post(self.base_url, headers=headers, json=payload)
+                    response.raise_for_status()
+                    result = response.json()
+                    content, finish = self._extract_message_content(result)
                     if content:
                         return content
-                raise ValueError(f"API 回應格式錯誤: {result}")
+                raise ValueError(
+                    f"DeepSeek 回應無 content（finish_reason={finish or 'unknown'}, max_tokens={tokens}）"
+                )
         except httpx.HTTPStatusError as e:
             logger.error("DeepSeek API 失敗: %s - %s", e.response.status_code, e.response.text)
             raise ValueError(f"DeepSeek API 調用失敗: {e.response.status_code}")
+        except ValueError:
+            raise
         except Exception as e:
             logger.error("DeepSeek API 錯誤: %s", e)
             raise

@@ -30,7 +30,7 @@ def _entry_snippet(entry: Dict[str, Any]) -> str:
 async def _feed_allowed(health: FeedHealthService, feed_url: str) -> bool:
     if await health.should_skip_feed(feed_url):
         return False
-    list_type = await health.get_list_type(feed_url)
+    list_type = await health.get_source_list_type(feed_url)
     if list_type == SourceListType.BLACKLIST:
         return False
     return list_type == SourceListType.WHITELIST or list_type == SourceListType.NORMAL

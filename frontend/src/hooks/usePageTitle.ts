@@ -27,6 +27,8 @@ export function usePageTitle(customTitle?: string) {
       '/preferences': 'nav.settings',
       '/schedule': 'nav.schedule',
       '/settings': 'nav.settings',
+      '/my-channel': 'myChannel.pageTitle',
+      '/onboarding/alter-ego': 'alterEgo.title',
       '/login': 'nav.login',
       '/register': 'nav.register',
     }

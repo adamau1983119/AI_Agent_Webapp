@@ -4,7 +4,7 @@
 > **環境**：前端 **`http://localhost:3000`**、後端 **`http://localhost:8000`** — 見 [test_week_gap_closure_plan.md](./test_week_gap_closure_plan.md) 第二節。  
 > **規則**：每項勾選須有證據（URL、Network status、一句話）；禁止虛報。  
 > **關聯**：[AGENTS.md](../AGENTS.md) 日曆、[architecture_test_matrix.md](./architecture_test_matrix.md)、[channel_create_new_scheme_checklist.md](./channel_create_new_scheme_checklist.md) **I 節**、[test_week_gap_closure_plan.md](./test_week_gap_closure_plan.md)。  
-> **最後修訂**：2026-06-02 — **NW-1 ☑**；新增 **Landing 功能簡介**（第三方討論用，**非測試 TC**）。快照 **`docs/backups/2026-06-02_landing-page-feature-brief_snapshot/`**（含 **`landing_page_feature_brief.md`**／**`.html`**）。
+> **最後修訂**：2026-06-18 — **L5/L6 Landing ☑**（`Welcome.tsx`、`landing.*`）；v7 程式段觸發詞見 [`工作記錄.md`](../工作記錄.md)「v7 程式段」。快照 **`docs/backups/2026-06-18_v7-program-line-trigger_snapshot/`**。
 
 ---
 
@@ -469,10 +469,10 @@
 | L2 | 首頁主打 6 項 + 討論題 7 項 | **☑** | 同上 頻道區塊 2、頻道區塊 7 |
 | L3 | 複製按鈕（純文字／MD／6 項） | **☑** | `landing_page_feature_brief.html` 頂部工具列 |
 | L4 | 第三方設計會議 | **☐** | 待 User 與外部設計／PM 詳談 |
-| L5 | 路由／頁面實作（`/welcome` 或行銷 `/`） | **☐** | **未開發**；對齊架構表路由缺口 |
-| L6 | i18n Landing 文案 | **☐** | 實作前須 `frontend/src/i18n/index.ts` |
+| L5 | 路由／頁面實作（`/welcome` 或行銷 `/`） | **☑** | `Welcome.tsx` + `App.tsx` `/welcome`；未登入導流 |
+| L6 | i18n Landing 文案 | **☑** | `landing.*` zh-TW／en／ja |
 
-**快照**：`docs/backups/2026-06-02_landing-page-feature-brief_snapshot/`（含本 checklist 更新前版）。
+**快照**：`docs/backups/2026-06-18_v7-program-line-trigger_snapshot/`（L5/L6 + 觸發詞）；`docs/backups/2026-06-02_landing-page-feature-brief_snapshot/`（需求 brief）。
 
 ---
 

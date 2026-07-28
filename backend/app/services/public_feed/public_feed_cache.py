@@ -7,12 +7,12 @@ from typing import Any, Dict, List, Optional
 
 from app.config import settings
 from app.services.cache_service import cache_service
-from app.services.public_feed.feed_card_mapper import topics_to_feed_cards
+from app.services.public_feed.feed_card_mapper import topics_to_feed_cards_async
 
 logger = logging.getLogger(__name__)
 
 _CACHE_PREFIX = "public_feed:feed:"
-_FEED_LANGS = ("zh-TW", "ja")
+_FEED_LANGS = ("zh-TW", "ja", "en")
 
 
 def _ttl_seconds() -> int:
@@ -50,6 +50,6 @@ async def set_cached_feed(lang: str, cards: List[Dict[str, Any]]) -> None:
 
 async def refresh_feed_cache(topics: List[Dict[str, Any]]) -> None:
     for lang in _FEED_LANGS:
-        cards = topics_to_feed_cards(topics, lang)
+        cards = await topics_to_feed_cards_async(topics, lang)
         await set_cached_feed(lang, cards)
     logger.info("public_feed cache refreshed (%d topics)", len(topics))

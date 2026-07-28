@@ -20,6 +20,7 @@ async def health_check(request: Request):
     overall_status = "healthy" if is_connected else "degraded"
     
     from app.utils.cost_controls import cost_controls_summary
+    from app.services.alter_ego_health import alter_ego_health_payload
 
     return {
         "status": overall_status,
@@ -27,6 +28,7 @@ async def health_check(request: Request):
         "version": settings.APP_VERSION,
         "database": "connected" if is_connected else "disconnected",
         "cost_controls": cost_controls_summary(),
+        "alter_ego": alter_ego_health_payload(),
         "timestamp": datetime.utcnow().isoformat() + "Z",
     }
 

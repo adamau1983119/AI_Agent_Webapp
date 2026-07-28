@@ -133,6 +133,23 @@ async def create_interaction(interaction_data: InteractionCreate):
                 interaction_data.topic_id,
                 sync_err,
             )
+
+        if interaction_data.action in (InteractionAction.LIKE, InteractionAction.DISLIKE):
+            try:
+                from app.services.alter_ego_service import alter_ego_service
+
+                await alter_ego_service.log_thumb_feedback(
+                    interaction_data.user_id,
+                    action=interaction_data.action.value,
+                    topic_id=interaction_data.topic_id,
+                    comment=interaction_data.comment,
+                )
+            except Exception as ae_err:
+                logger.warning(
+                    "Alter Ego feedback 同步例外 user=%s: %s",
+                    interaction_data.user_id,
+                    ae_err,
+                )
         
         return _convert_to_response(created)
     except Exception as e:

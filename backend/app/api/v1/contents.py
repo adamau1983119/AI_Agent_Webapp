@@ -45,20 +45,31 @@ def _require_summary_flash(topic: dict, language: str = "zh-TW") -> str:
     return sf
 
 
-async def _style_dna_hint(user_id: Optional[str]) -> str:
+def _style_hint_from_context(ctx: dict) -> str:
+    compressed = (ctx.get("compressed_dna") or "").strip()
+    if compressed:
+        return compressed
+    return (ctx.get("legacy_style_hint") or "").strip()
+
+
+def _generation_meta_from_context(ctx: dict) -> dict:
+    meta = {"dna_status": ctx.get("dna_status", "pending")}
+    version_id = ctx.get("dna_version_id")
+    if version_id:
+        meta["dna_version_id"] = version_id
+    return meta
+
+
+async def _resolve_generate_style(user_id: Optional[str]) -> tuple[str, dict]:
     if not user_id:
-        return ""
-    try:
-        from app.services.style_learning_service import style_learning_service
-        profile = await style_learning_service.get_profile(user_id)
-        if not profile:
-            return ""
-        tone = profile.get("tone") or {}
-        preset = profile.get("preset_style", "casual")
-        formal = tone.get("formal_score", 0.5)
-        return f"預設風格 {preset}；正式度 {formal:.1f}"
-    except Exception:
-        return ""
+        from app.services.content_style_service import _empty_context
+
+        ctx = _empty_context("contents_generate")
+        return "", _generation_meta_from_context(ctx)
+    from app.services.content_style_service import content_style_service
+
+    ctx = await content_style_service.resolve_for_route(user_id, "contents_generate")
+    return _style_hint_from_context(ctx), _generation_meta_from_context(ctx)
 
 
 def _convert_to_response(content_doc: dict) -> ContentResponse:
@@ -176,9 +187,12 @@ async def generate_content(
                 source_urls.append(source["url"])
 
         summary_flash = _require_summary_flash(topic, language)
-        style_hint = await _style_dna_hint(current_user.get("id") if current_user else None)
+        uid = None
+        if current_user:
+            uid = current_user.get("id") or current_user.get("user_id")
+        style_hint, generation_meta = await _resolve_generate_style(uid)
         pro_model = _pro_model()
-        pro_max_tokens = int(getattr(settings, "DEEPSEEK_PRO_MAX_TOKENS", 1500))
+        pro_max_tokens = int(getattr(settings, "DEEPSEEK_PRO_MAX_TOKENS", 4096))
         target_lang = body.language or topic.get("display_language", "zh-TW")
         from app.prompts.article_prompt import build_article_prompt
 
@@ -250,9 +264,10 @@ async def generate_content(
                 "word_count": word_count,
                 "estimated_duration": estimated_duration,
                 "model_used": pro_model if body.type in ("article", "both") else getattr(ai_service, "model", "unknown"),
-                "prompt_version": "v3.0-summary_flash",
+                "prompt_version": "v3.1-content-style-dna",
                 "source_urls": source_urls,
-                "source_images": source_images
+                "source_images": source_images,
+                "generation_meta": generation_meta,
             }
             
             updated = await content_repo.update_content(
@@ -272,9 +287,10 @@ async def generate_content(
                 "word_count": word_count,
                 "estimated_duration": estimated_duration,
                 "model_used": pro_model if body.type in ("article", "both") else getattr(ai_service, "model", "unknown"),
-                "prompt_version": "v3.0-summary_flash",
+                "prompt_version": "v3.1-content-style-dna",
                 "source_urls": source_urls,
                 "source_images": source_images,
+                "generation_meta": generation_meta,
                 "version": 1,
                 "generated_at": now,
                 "updated_at": now

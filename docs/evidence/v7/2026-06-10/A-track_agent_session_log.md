@@ -3,7 +3,7 @@
 > **執行者**：Cursor Agent（非用家手測）  
 > **分支**：`feature/v7-cost-pipeline`  
 > **後端**：本 session 啟動 `uvicorn` @ `127.0.0.1:8000`  
-> **前端**：未啟動（U 軌煙霧留用家）
+> **前端**：未啟動（U 軌 E2E留用家）
 
 ---
 
@@ -20,7 +20,7 @@
 | C3-3 gateway | PASS | 無 `summary_flash` → generate **400** |
 | C2 translate-display | PARTIAL | 200 + `[Fallback-JA]`（DeepL key 空或失敗，符合 D4 fallback） |
 | C1 資料面 | DEFER | DB **0** 筆 `summary_flash`（96 筆舊資料）；需新 collect（耗 Token，本輪未跑） |
-| U 軌 | 待做 | 登入後 5 步煙霧（約 20～30′） |
+| U 軌 | 待做 | 登入後 5 步 E2E（約 20～30′） |
 
 ---
 
@@ -65,7 +65,7 @@
 
 ---
 
-## API 煙霧
+## API 健康檢查
 
 | 請求 | 狀態 | 說明 |
 |------|------|------|

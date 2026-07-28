@@ -158,14 +158,19 @@ async def get_current_user(request: Request) -> Dict[str, Any]:
 async def get_current_user_optional(request: Request) -> Optional[Dict[str, Any]]:
     """
     從請求中獲取當前用戶（可選，不會拋出異常）
-    
-    Args:
-        request: FastAPI 請求對象
-        
-    Returns:
-        用戶資訊字典，如果未認證則返回 None
+
+    有 Authorization 時須實際驗 JWT（與 get_current_user 對稱）；
+    僅讀 request.state.user 會導致 contents/generate 永遠無 DNA meta。
     """
-    return getattr(request.state, "user", None)
+    if getattr(request.state, "user", None):
+        return request.state.user
+
+    jwt_auth_instance = JWTAuth(auto_error=False)
+    try:
+        return await jwt_auth_instance(request)
+    except Exception as e:
+        logger.debug("optional JWT skip: %s", e)
+        return None
 
 
 def require_role(*allowed_roles: UserRole):

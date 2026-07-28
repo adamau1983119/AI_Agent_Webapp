@@ -1,7 +1,8 @@
 # v7 實作基礎守則（BF · 改碼前必讀）
 
 > **適用**：**2026-06-09 起** v7 監察週（VM-1～4）、Token Phase 0～4、Discover SKU（PF-*）之**任何程式 commit**。  
-> **觸發**：對話 **`專案開始`**／**`專案開始 v7`** → 須先完成 [`AGENTS.md`](../AGENTS.md) **「專案開始前檢查」**（六必讀 + 啟動檢查），**再**勾本檔當日適用之 **BF-***。  
+> **觸發**：對話 **`專案開始`**／**`專案開始 v7`**（推薦：先 [`v7_program_line/_GATE.md`](./v7_program_line/_GATE.md)，再 [`index.md`](./v7_program_line/index.md)）→ 須先完成 [`AGENTS.md`](../AGENTS.md) **「專案開始前檢查」**，**再**勾本檔 **BF-***。  
+> **今日任務 SoT**：[`v7_program_line/index.md`](./v7_program_line/index.md) + [`工作記錄.md`](../工作記錄.md) **「## v7 程式段」**
 > **SoT**：[`README.md`](../README.md) 規則 **3、4、6、8、11～14**；[`開發人員必讀規則.md`](../開發人員必讀規則.md)。
 
 ---
@@ -49,8 +50,10 @@
 | 工作流 | 額外必過項 |
 |--------|------------|
 | Token Phase 4 | 本檔 **BF-UI-*** + [`v7_token_cost_phase_checklist.md`](./v7_token_cost_phase_checklist.md) **P4-03、P4-04** |
-| Discover PF-4 | 本檔 **BF-UI-*** + **PD-4-04、CD-4-5**（[`v7_discover_public_feed_checklist.md`](./v7_discover_public_feed_checklist.md)） |
-| 監察週 VM-1～4 | 每日開工見 [`v7_monitoring_week_daily_checklist.md`](./v7_monitoring_week_daily_checklist.md)；**VM-2+** 後端為主 |
+| v7 Discover PF-4 | 本檔 **BF-UI-*** + **PD-4-04、CD-4-5**（[`v7_discover_public_feed_checklist.md`](./v7_discover_public_feed_checklist.md)） |
+| Post Kit L0 | 本檔 **BF-UI-*** + **`scripts/check_postkit_bf_ui.py`**（對齊 Landing） |
+| PF-B 程式段 | **`scripts/check_pf_b_static.py`**（A 軌）+ **`scripts/check_pf_b_mongo.py`**（批次後 Mongo） |
+| v7 程式段閘門 | [`docs/v7_program_line/_GATE.md`](./v7_program_line/_GATE.md) + [`index.md`](./v7_program_line/index.md) |
 
 ---
 

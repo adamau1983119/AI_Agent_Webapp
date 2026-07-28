@@ -50,14 +50,14 @@
 
 ## 5. 防護清單（測試期必做）
 
-- [x] **DeepSeek**：作廢 `ai-agent-webapp-production`、`production 2`；新建 **僅本機測試** key（**2026-06-13**；尾碼 **ebe36**，勿 commit `.env`）  
+- [x] **DeepSeek**：作廢 `ai-agent-webapp-production`、`production 2`；新建 **僅本機測試** key（**2026-06-11**；尾碼 **ebe36**，勿 commit `.env`）  
 - [x] **勿**將完整 `sk-…` 貼入對話／截圖（政策持續）  
 - [x] 本機 `.env`（**2026-06-03 程式預設**）：`AUTO_START_SCHEDULER=false`、`ENABLE_SCHEDULED_TOPIC_COLLECTION=false`、`ENABLE_AI_TOPIC_TRANSLATION=false`、`ENABLE_AI_TOPIC_FALLBACK=false`  
 - [x] **2026-06-03**：程式預設 **`DEEPSEEK_MODEL=deepseek-v4-flash`**（全功能統一 Flash）；`.env` 若仍寫 v3-pro 會覆寫預設，請改為 flash  
 - [ ] DeepSeek 後台：每日預算／用量告警（**新 key** 須重設）  
-- [x] 調查 **production 第一把 key** 6/6 尖峰 → 見 **§8**（本機後端常駐 + 排程全開 + V7-1 雙 Flash）  
+- [x] 調查 **production 第一把 key** 6/6 尖峰 → 見 **頻道區塊 8**（本機後端常駐 + 排程全開 + V7-1 雙 Flash）  
 - [x] 程式（2026-06-03）：`app/utils/cost_controls.py`；排程收集／`generate-today` 受 `ENABLE_SCHEDULED_TOPIC_COLLECTION` 控制；收集翻譯受 `ENABLE_AI_TOPIC_TRANSLATION` 控制  
-- [x] 驗證：`GET /health` 回傳 `cost_controls` 皆為預期 false（**2026-06-13** 重驗）
+- [x] 驗證：`GET /health` 回傳 `cost_controls` 皆為預期 false（**2026-06-11** 重驗）
 
 ---
 
@@ -75,15 +75,15 @@
 
 ## 7. 相關文件
 
-- [`工作記錄.md`](../工作記錄.md)「DeepSeek 費用調查（2026-05）」＋ **6/6 尖峰（2026-06-13）**  
+- [`工作記錄.md`](../工作記錄.md)「DeepSeek 費用調查（2026-05）」＋ **6/6 尖峰（2026-06-11）**  
 - [`docs/環境重建指南與Checklist.md`](./環境重建指南與Checklist.md)  
 - [`docs/test_week_daily_checklist.md`](./test_week_daily_checklist.md)「測試期 DeepSeek」  
 - [`docs/v7_token_cost_phase_checklist.md`](./v7_token_cost_phase_checklist.md) **雙軌驗收（A／U）**  
-- 備份：`docs/backups/2026-05-28_deepseek-cost-investigation_snapshot/`、`docs/backups/2026-06-13_deepseek-key-rotation_snapshot/`
+- 備份：`docs/backups/2026-05-28_deepseek-cost-investigation_snapshot/`、`docs/backups/2026-06-11_deepseek-key-rotation_snapshot/`
 
 ---
 
-## 8. 附錄 — 2026-06-06 Flash 尖峰（結案 2026-06-13）
+## 8. 附錄 — 2026-06-06 Flash 尖峰（結案 2026-06-11）
 
 | 項目 | 數據 |
 |------|------|

@@ -10,9 +10,9 @@
 
 | 項 | 產出 | 狀態 |
 |----|------|------|
-| 新增 §7 | `frontend/src/i18n/index.ts` — 跨境傳輸、DeepL／DeepSeek、APPI、**不使用 NLLB** | ✅ |
-| 聯繫 §8 | 原 §7 聯繫我們改為 §8 | ✅ |
-| 頁面 | `frontend/src/pages/Privacy.tsx` — 渲染 §7 列表 + §8 | ✅ |
+| 新增 頻道區塊 7 | `frontend/src/i18n/index.ts` — 跨境傳輸、DeepL／DeepSeek、APPI、**不使用 NLLB** | ✅ |
+| 聯繫 頻道區塊 8 | 原 頻道區塊 7 聯繫我們改為 頻道區塊 8 | ✅ |
+| 頁面 | `frontend/src/pages/Privacy.tsx` — 渲染 頻道區塊 7 列表 + 頻道區塊 8 | ✅ |
 | 三語 | zh-TW／en／ja 齊 | ✅ |
 | 更新日期 | `lastUpdate` → 2026 年 6 月 | ✅ |
 
@@ -33,7 +33,7 @@ backend/requirements.txt → 無 nllb／transformers／torch 翻譯堆疊
 |--------|-----------|------|
 | `backend/`、`frontend/src/`（除 i18n 揭露句） | 0 | — |
 | `專案完整架構表_v7.md`、`AGENTS.md`、checklist | 3 處 | **禁止**政策文字 |
-| `i18n` §7 | 3 語各 1 句 | 使用者揭露「不使用 NLLB」 |
+| `i18n` 頻道區塊 7 | 3 語各 1 句 | 使用者揭露「不使用 NLLB」 |
 
 **結論**：v7 翻譯路徑為 **DeepL + 字串 Fallback**（D4）；**未引入** NLLB-200 或自架模型依賴。✅
 

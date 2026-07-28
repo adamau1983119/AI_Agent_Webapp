@@ -28,7 +28,7 @@
 | **C0-1** | `cost_controls.scheduled_topic_collection` | `false` | PASS |
 | **C0-2** | `cost_controls.ai_topic_translation` | `false` | PASS |
 | **C0-3** | `cost_controls.deepseek_model` | `deepseek-v4-flash` | PASS（非 production 全站 Pro） |
-| **C0-4** | 架構表 v7 § D1～D5 | `專案完整架構表_v7.md` L104～L164 | PASS（文件存在） |
+| **C0-4** | 架構表 v7 D1～D5 | `專案完整架構表_v7.md` L104～L164 | PASS（文件存在） |
 
 ### `cost_controls` 摘錄
 
@@ -49,10 +49,10 @@
 
 | Checklist 項 | 證據 |
 |--------------|------|
-| MD-M2-1 | 本檔 § MD-M2；grep 0 筆 |
+| MD-M2-1 | 本檔 MD-M2；grep 0 筆 |
 | MD-M2-2 | 本檔；`logger.py` 133 行 |
 | C0-1 / C0-2 | `2026-06-06_v7_VM3_health_cost_controls.json` |
-| C0-4 | `專案完整架構表_v7.md` § D1～D5 |
+| C0-4 | `專案完整架構表_v7.md` D1～D5 |
 | E0-B 嚴格項 | 同上 JSON（根 `/health` 含 `cost_controls`） |
 
 ## 待辦

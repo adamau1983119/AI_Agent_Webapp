@@ -3,25 +3,9 @@
 BEFORE (active files)
 ============================================================
 
-docs/landing_page_客戶開發需求.md
-  section_symbol: 1
-    L249: > 詳細盤點見 [landing_page_feature_brief.md](./landing_page_feature_brief.md) §3～§5。
+--- totals: section_symbol=0, smoke_zh=0, smoke_en=0 ---
 
-docs/test_week_daily_checklist.md
-  section_symbol: 2
-    L468: | L1 | 功能＋好處盤點（≤20 字） | **☑** | `landing_page_feature_brief.md` §2～§5 |
-    L469: | L2 | 首頁主打 6 項 + 討論題 7 項 | **☑** | 同上 §2、§7 |
-
-工作記錄.md
-  section_symbol: 1
-    L252: | 第三方設計會議 | **☐** | 討論題見 brief §7（路由、i18n、CTA、Post Kit 表述等） |
-
---- totals: section_symbol=4, smoke_zh=0, smoke_en=0 ---
-
-Fixed active: 3 file(s)
-  docs/landing_page_客戶開發需求.md: section_symbol 2 -> 0
-  docs/test_week_daily_checklist.md: section_symbol 4 -> 0
-  工作記錄.md: section_symbol 1 -> 0
+Fixed active: 0 file(s)
 
 ============================================================
 AFTER (active files)

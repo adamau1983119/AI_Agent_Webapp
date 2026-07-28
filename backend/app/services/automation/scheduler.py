@@ -80,6 +80,9 @@ class SchedulerService:
 
         # v7 Discover: 公共主題牆 8h 批次
         self._setup_public_feed()
+
+        # v7 Alter Ego: 週 batch DNA patch（AE-2）
+        self._setup_alter_ego_weekly_batch()
         
         self.scheduler.start()
         self.is_running = True
@@ -203,6 +206,28 @@ class SchedulerService:
 
         logger.info("開始 public_feed_batch")
         await run_public_feed_batch()
+
+    def _setup_alter_ego_weekly_batch(self):
+        from app.config import settings
+
+        if settings.ENVIRONMENT == "development":
+            logger.info(
+                "alter_ego_weekly_batch 未註冊 cron（development 僅 scripts/run_alter_ego_weekly_batch.py）"
+            )
+            return
+        self.scheduler.add_job(
+            self._run_alter_ego_weekly_batch,
+            CronTrigger(day_of_week="sun", hour=5, minute=0, timezone="UTC"),
+            id="alter_ego_weekly_batch",
+            replace_existing=True,
+        )
+        logger.info("alter_ego_weekly_batch 已排程: 每週日 05:00 UTC")
+
+    async def _run_alter_ego_weekly_batch(self):
+        from app.services.alter_ego_weekly_batch import alter_ego_weekly_batch
+
+        logger.info("開始 alter_ego_weekly_batch")
+        await alter_ego_weekly_batch.run_all()
 
     def _setup_rss_validation(self):
         """設定 RSS 驗證任務（v4.1: 每週日 04:00 UTC）"""

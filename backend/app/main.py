@@ -365,7 +365,10 @@ logger.info(f"解析後的 CORS_ORIGINS: {cors_origins_list}")
 
 # 0. v7 Token Gateway（最內層 · 最早 add · 僅 generate/regenerate body 重放）
 from app.middleware.token_gateway import TokenGatewayMiddleware
+from app.middleware.alter_ego_body_gateway import AlterEgoBodyGatewayMiddleware
+
 app.add_middleware(TokenGatewayMiddleware)
+app.add_middleware(AlterEgoBodyGatewayMiddleware)
 
 # 1. 先添加 API Key 認證中間件（最先執行）
 if settings.API_KEY:
@@ -409,6 +412,7 @@ async def root():
 async def health_check():
     """健康檢查（含 cost_controls，對齊 /api/v1/health）"""
     from app.utils.cost_controls import cost_controls_summary
+    from app.services.alter_ego_health import alter_ego_health_payload
 
     db_status, reason = await check_connection()
     return {
@@ -419,11 +423,12 @@ async def health_check():
             "reason": reason if not db_status else None
         },
         "cost_controls": cost_controls_summary(),
+        "alter_ego": alter_ego_health_payload(),
     }
 
 
 # 註冊 API 路由
-from app.api.v1 import topics, contents, images, user, health, schedules, interactions, recommendations, discover, validate, test_db, feeds, articles, auth, feature_flags, channels, inspiration, ratings, style_profile, generate, social, public_topics
+from app.api.v1 import topics, contents, images, user, health, schedules, interactions, recommendations, discover, validate, test_db, feeds, articles, auth, feature_flags, channels, inspiration, ratings, style_profile, generate, social, public_topics, alter_ego, my_channel
 
 app.include_router(health.router, prefix="/api/v1")
 app.include_router(test_db.router, prefix="/api/v1")  # 測試端點，用於驗證資料庫連接
@@ -447,6 +452,9 @@ app.include_router(ratings.router, prefix="/api/v1")  # Phase 4: Ratings API
 app.include_router(style_profile.router, prefix="/api/v1")  # Phase 4: Style Profile API
 app.include_router(generate.router, prefix="/api/v1")  # Phase 4: Content Generation API
 app.include_router(social.router, prefix="/api/v1")  # Phase 5: Social Distribution API
+app.include_router(alter_ego.router, prefix="/api/v1")  # v7 Alter Ego SKU
+app.include_router(my_channel.router, prefix="/api/v1")  # v7.1 MyChannel SKU
+app.include_router(my_channel.admin_router, prefix="/api/v1")
 
 
 if __name__ == "__main__":

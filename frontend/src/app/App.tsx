@@ -31,25 +31,26 @@ import StyleProfile from '@/pages/StyleProfile'
 // Phase 5: 分發與整合頁面
 import SocialConnect from '@/pages/SocialConnect'
 import Publish from '@/pages/Publish'
+import Welcome from '@/pages/Welcome'
+import AlterEgoOnboarding from '@/pages/AlterEgoOnboarding'
+import MyChannel from '@/pages/MyChannel'
+import { AlterEgoGateRedirect } from '@/components/auth/AlterEgoGateRedirect'
 import { initializeAuth } from '@/stores/authStore'
 
-// 根路徑重定向：已登入 → Dashboard，新用戶 → 語言選擇，已選語言 → 登入
+// 根路徑重定向：已登入 → AE 導流；新用戶 → 語言；已選語言 → Landing
 function RootRedirect() {
   const hasLanguage = localStorage.getItem('preferred-language');
   const token = localStorage.getItem('auth_token');
   
-  // 已登入用戶直接進入 Dashboard
   if (token) {
-    return <Navigate to="/dashboard" replace />;
+    return <AlterEgoGateRedirect />;
   }
   
-  // 新用戶（未選語言）→ 語言選擇
   if (!hasLanguage) {
     return <Navigate to="/language" replace />;
   }
   
-  // 已選語言但未登入 → 登入頁
-  return <Navigate to="/login" replace />;
+  return <Navigate to="/welcome" replace />;
 }
 
 function App() {
@@ -66,6 +67,7 @@ function App() {
         
         {/* Phase 1: 認證頁面（無 Layout） */}
         <Route path="/language" element={<LanguageSelection />} />
+        <Route path="/welcome" element={<Welcome />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -74,6 +76,7 @@ function App() {
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/terms" element={<Terms />} />
         <Route path="/privacy" element={<Privacy />} />
+        <Route path="/onboarding/alter-ego" element={<AlterEgoOnboarding />} />
         
         {/* 主要頁面（有 Layout） */}
         <Route
@@ -82,6 +85,7 @@ function App() {
             <MainLayout>
               <Routes>
                 <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/my-channel" element={<MyChannel />} />
                 <Route path="/topics" element={<Topics />} />
                 <Route path="/topics/:id" element={<TopicDetail />} />
                 <Route path="/discover" element={<Discover />} />

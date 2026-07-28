@@ -1,7 +1,7 @@
 /**
  * Discover 公共主題牆 — 只讀 feed（零 LLM）
  */
-import { fetchAPI } from './client'
+import { fetchAPIEnvelope } from './client'
 
 export interface PublicFeedCard {
   id: string
@@ -22,15 +22,18 @@ export interface PublicFeedResponse {
   count: number
 }
 
-export type PublicFeedLang = 'zh-TW' | 'ja'
+export type PublicFeedLang = 'zh-TW' | 'ja' | 'en'
 
 export function resolvePublicFeedLang(uiLanguage: string): PublicFeedLang {
-  return uiLanguage === 'ja' ? 'ja' : 'zh-TW'
+  if (uiLanguage === 'ja') return 'ja'
+  if (uiLanguage === 'en') return 'en'
+  return 'zh-TW'
 }
 
 export const publicFeedAPI = {
+  /** 勿用 fetchAPI unwrap，否則 data[] 被拆掉後 Discover 讀 data.data → 永遠空牆 */
   getFeed(lang: PublicFeedLang): Promise<PublicFeedResponse> {
     const params = new URLSearchParams({ lang })
-    return fetchAPI<PublicFeedResponse>(`/public/topics/feed?${params.toString()}`)
+    return fetchAPIEnvelope<PublicFeedResponse>(`/public/topics/feed?${params.toString()}`)
   },
 }

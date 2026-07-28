@@ -41,7 +41,7 @@
 |----|------|
 | MD-ALL-1 | M1～M3 結案判定 **PASS** |
 | MD-ALL-2 | P0-06、P0-07 → **`[x]`**（見主 checklist） |
-| MD-ALL-3 | 證據已貼 **`工作記錄.md`** § Phase 0 監察線結案 |
+| MD-ALL-3 | 證據已貼 **`工作記錄.md`** 「Phase 0 監察線結案」 |
 
 ## Phase 0 — C0 與工作項
 
@@ -50,7 +50,7 @@
 | **C0-1** | `[x]` | E0-B PNG — `scheduled_topic_collection: false` |
 | **C0-2** | `[x]` | E0-B PNG — `ai_topic_translation: false` |
 | **C0-3** | `[x]` | E0-B PNG — `deepseek_model: deepseek-v4-flash` |
-| **C0-4** | `[x]` | `專案完整架構表_v7.md` § D1～D5 |
+| **C0-4** | `[x]` | `專案完整架構表_v7.md` D1～D5 |
 | **C0-5** | `[x]` | 基線參照 [`docs/deepseek_cost_investigation_2026-05.md`](../../deepseek_cost_investigation_2026-05.md)（2026-05 全月 ¥63.43；本日無新後台截圖） |
 | **P0-01** | `[!]` | `.env.example` 完整表 — **延後**至 V7-1 前 |
 | **P0-02** | `[x]` | `.env` 省 Token 組（本機；不提交） |

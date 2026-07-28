@@ -1,4 +1,4 @@
-# DeepSeek Key 輪換 + 雙軌驗收 — 2026-06-13
+# DeepSeek Key 輪換 + 雙軌驗收 — 2026-06-11
 
 > **分支**：`feature/v7-cost-pipeline`  
 > **不含**：完整 `sk-…`（僅尾碼稽核）
@@ -37,13 +37,13 @@
 | 軌 | 負責 | 內容 |
 |----|------|------|
 | **A 軌** | 助手 | `/health`、build、靜態 grep、curl（**不** collect／generate-today） |
-| **U 軌** | 用家 | 登入煙霧 ~20～30′（5 步） |
+| **U 軌** | 用家 | 登入驗證 ~20～30′（5 步） |
 
-證據 A 軌：`docs/evidence/v7/2026-06-10/A-track_agent_session_log.md`
+證據 A 軌：`docs/evidence/v7/2026-06-10/A-track_agent_session_log.md`、本日重跑 `A-track_agent_session_log.md`
 
 ---
 
 ## 待辦（不變）
 
-- ⏳ `feature/v7-cost-pipeline` **commit**（排除 `.env`）
-- ⏳ 測試段 **06-16 起**（C*／CD*；U 軌煙霧可併任一日）
+- ✅ `feature/v7-cost-pipeline` **commit** `bebf6d0`（排除 `.env`）
+- ⏳ 測試段 **整批測試週**（C*／CD*；U 軌 E2E可併任一日）

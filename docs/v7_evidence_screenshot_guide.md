@@ -1,7 +1,7 @@
 # v7 本機驗證 — 截圖證據指南（:8000 / :3000）
 
 > **政策（不變）**：凡在 **`http://localhost:8000`**、**`http://localhost:3000`** 上確認 checklist 是否 PASS，**必須以截圖為證**；助手／編程人員**不得**僅憑口頭、log 複製或「應該可以」勾 `[x]`。  
-> **對照**：[`v7_token_cost_phase_checklist.md`](./v7_token_cost_phase_checklist.md)、[`v7_implementation_basics.md`](./v7_implementation_basics.md)（**BF-UI** 與 Phase 4／Discover）、[`工作記錄.md`](../工作記錄.md) § v7 Token 開發核證（V7）、[`AGENTS.md`](../AGENTS.md)「專案開始（v7）」。
+> **對照**：[`v7_token_cost_phase_checklist.md`](./v7_token_cost_phase_checklist.md)、[`v7_implementation_basics.md`](./v7_implementation_basics.md)（**BF-UI** 與 Phase 4／Discover）、[`工作記錄.md`](../工作記錄.md) 「v7 Token 開發核證（V7）」、[`AGENTS.md`](../AGENTS.md)「專案開始（v7）」。
 
 ---
 
@@ -78,7 +78,7 @@ docs/evidence/v7/YYYY-MM-DD/
 |------|----------|
 | C0-1、C0-2 | **E0-B**：`/health` 內 `cost_controls` 各開關為 false／預期值 |
 | C0-3 | **終端**或文字編輯器：`.env` 片段（**馬賽克** API key）顯示 FLASH/PRO 分離 |
-| C0-4 | 開著 **`專案完整架構表_v7.md`** § D1～D5 的編輯器視窗（文件驗收） |
+| C0-4 | 開著 **`專案完整架構表_v7.md`** D1～D5 的編輯器視窗（文件驗收） |
 | C0-5 | DeepSeek 後台統計頁（可非 localhost） |
 
 ### Phase 1
@@ -117,9 +117,9 @@ docs/evidence/v7/YYYY-MM-DD/
 | CD-3-2 | Redis 停用後同一 feed 仍 **200** |
 | CD-4-1 | `/discover` ≥1 張卡可讀 |
 | CD-4-2 | Network：**無** `assist`／`generate`／`translate-display`／DeepL 網域 |
-| **E0-Discover-i18n** | **兩張**：UI 語系 **zh-TW** 與 **ja** 各一全屏；Network 翻譯 API **= 0**；標題為母語非 i18n key |
+| **E0-Discover-i18n** | **前置 PF-B**；zh-TW／ja；Network 翻譯 API **= 0** |
+| **E0-MC** | MyChannel：feed 免費層 + unlock 1 點 + URL 可點 — 見 [`v7_mychannel_checklist.md`](./v7_mychannel_checklist.md) |
 | CD-B-2 | 併入 **E0-Discover-i18n**（港日同質結案必備） |
-| CD-S-1 | Mock 腳本跑完後 feed JSON ≥3 卡（零 AI 演示） |
 
 ### Phase 4
 
@@ -167,4 +167,5 @@ docs/evidence/v7/YYYY-MM-DD/
 | 日期 | 說明 |
 |------|------|
 | 2026-06-05 | 初版：v7 本機 :8000/:3000 截圖證據強制政策與 C* 對照表 |
-| 2026-06-13 | 增 Discover／E0-Discover-i18n／PF-S mock 截圖對照 |
+| 2026-06-11 | 增 Discover／E0-Discover-i18n（PF-B 硬門檻）／PF-S mock 截圖對照 |
+| 2026-06-11 | CD-H-4：須重啟 uvicorn 後 `/health` 含 `safe_batch_size` |

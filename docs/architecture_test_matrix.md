@@ -1,7 +1,7 @@
 # 全專案架構測試對照表（對齊 `專案完整架構表.md`）
 
 > **用途**：補足 **[channel_create_new_scheme_checklist.md](./channel_create_new_scheme_checklist.md)** 範圍外之模組—依 **`專案完整架構表.md`** 路由、API、服務與 Mongo 集合，排定 **迴歸 TC** 勾選，方便 **測試週**（`AGENTS.md` 第 10～14 工作天、**2026-05-12 起**）逐日執行。  
-> **建立／更新**：2026-06-03（**NW-2**：矩陣 **I1～I3**、**A3**、**B1/B4**、**D1**、**E1**、**J1** 補勾；頻道 **33/42**）  
+> **建立／更新**：2026-06-03（**NW-2** …）／**2026-06-16** 增 **矩陣 L**（MyChannel v7.1）  
 > **命名**：本檔 **矩陣 A～K**＝大區（對應下方標題）；**A1、C2**＝該區內列號。**禁止**使用分節符號。**頻道 42 點**用 **頻道區塊 N**（見 `test_week_daily_checklist`）。  
 > **非本表範圍**：**`/channels/create` 助手主導** 之 B～D 細項—請用 **建立頻道清單**；**I.1～I.3** 與 **清單 H** 仍為 SoT。
 
@@ -164,6 +164,26 @@
 | J2 | RSS 健康／管理 API（若 QA 有權限）抽樣 | API | [ ] | v4 Phase 1.3 |
 | J3 | 全站 rate limit／CSRF：不誤擋主流程 | 可選 | [ ] | 對齊架構表 middleware |
 | J4 | **收集排程**（6h／清理）：staging／日誌知情即可 | 文件／日誌 | [ ] | 非必手動 |
+
+---
+
+## 矩陣 L — MyChannel v7.1（登入預設 · 2026-06-16）
+
+> **SoT**：[`docs/V7.1-SPEC.md`](./V7.1-SPEC.md)、[`v7_mychannel_checklist.md`](./v7_mychannel_checklist.md)  
+> **禁止模糊签收**：每列須 **UI + Network**；**沒 URL 不出卡**（MC-1）
+
+| 列 | 檢查 | 證據 |
+|:--:|------|------|
+| L1 | 登入後預設 **MyChannel**（非 Discover 首屏） | 路由 URL + 截圖 |
+| L2 | 免費 feed 含 heading + ≤30 字 intro | feed JSON + 截圖 |
+| L3 | 免費 feed **不含**可點 `source_url` | GET response 欄位 |
+| L4 | unlock **1 點** → URL + digest_300；balance -1 | POST 200 + ledger |
+| L5 | 解鎖後 URL **http(s)** 可開原文 | 手測 1 卡 |
+| L6 | 無 URL 的 topic **不在** feed | DB/API 抽樣 |
+| L7 | RSS 空 →「暫無更新」；**無** AI 假卡 | UI + 無 DeepSeek 外連 |
+| L8 | Redis key **`my_channel:feed:*`**；**0** `public_feed:feed:` 於 MC 路徑 | redis-cli／log |
+| L9 | 餘額 0 unlock → 402；**無** DeepSeek | Network |
+| L10 | README 禁止模糊驗收／Mock | 不得空 feed PASS |
 
 ---
 

@@ -11,6 +11,7 @@ import ImageGallery from '@/components/features/ImageGallery'
 import ImageSearch from '@/components/features/ImageSearch'
 import InteractionButtons from '@/components/features/InteractionButtons'
 import ContentGenerationPanel from '@/components/features/ContentGenerationPanel'
+import PostKitPanel from '@/components/features/PostKitPanel'
 import type { GenerationSettings } from '@/components/features/ContentGenerationPanel'
 import { usePageTitle } from '@/hooks/usePageTitle'
 import { useAuthStore } from '@/stores/authStore'
@@ -731,6 +732,17 @@ export default function TopicDetail() {
             </div>
           </div>
         </div>
+      </div>
+
+      <div className="mt-6">
+        <PostKitPanel
+          displayTitle={displayCopy?.title || topic.title}
+          category={topic.category}
+          content={content ?? null}
+          images={images}
+          previewImages={topic.previewImages || []}
+          topicId={topic.id}
+        />
       </div>
     </div>
   )
