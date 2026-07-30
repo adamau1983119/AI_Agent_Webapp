@@ -20,8 +20,8 @@
 
 - [x] **PD-DNS0-01** [`alter_ego_launch_dns_checklist.md`](./alter_ego_launch_dns_checklist.md) 建立（一頁 checklist + 附錄 A Spaceship／`.env`）  
 - [x] **PD-DNS0-02** [`專案完整架構表_v7.md`](../專案完整架構表_v7.md) **品牌與網域** 章、本檔互鏈  
-- [ ] **CD-DNS0-1** 上線日依 checklist **D1～F3** 逐項勾選（瀏覽器 + `check_meta_config.py`）  
-- [ ] **CD-DNS0-2** 正式域 E2E **S1～S5**（禁止 Mock）+ 證據目錄
+- [ ] **CD-DNS0-1** 上線日依 checklist **D1～F3** 逐項勾選（瀏覽器 + `check_meta_config.py`）— **2026-07-30**：D1～D5／H1～H4／P4／E1～E7／S1／S3 ✅；O2～O3／S2／E8／F2 ⏳
+- [ ] **CD-DNS0-2** 正式域 E2E **S1～S5**（禁止 Mock）+ 證據目錄 — S1／S3 ✅；S2／S4／S5 ⏳
 
 ---
 

@@ -1,6 +1,6 @@
 # v7 程式段總表（index · SoT）
 
-> **日期 SoT**：2026-07-29（星期三）— 見 [`工作記錄.md`](../../工作記錄.md) 頂部  
+> **日期 SoT**：2026-07-30（星期四）— 見 [`工作記錄.md`](../../工作記錄.md) 頂部  
 > **閘門**：[`_GATE.md`](./_GATE.md)  
 > **策略**：**v7 已 code-freeze** → 後續測試／上架走 **v8**（`feature/v8-launch`）  
 > **v7 保全**：[`../archives/v7.0.0_CODE_FREEZE_MANIFEST.md`](../archives/v7.0.0_CODE_FREEZE_MANIFEST.md) · tag `v7.0.0-code-freeze`  
@@ -13,7 +13,7 @@
 
 | Phase | 排程 | PD | CD／PK | Checklist | 結案 Python | 最後證據 |
 |-------|------|----|--------|-----------|-------------|----------|
-| **v8 上架** | **07-29～** · DNS／正式域 | — | 真實運行 | [`../alter_ego_launch_dns_checklist.md`](../alter_ego_launch_dns_checklist.md) · 架構表 v8 | `check_git_v7_refs.py` + 線上 health | PR #17 merged |
+| **v8 上架** | **07-29～** · DNS／正式域 | — | 真實運行 | [`../alter_ego_launch_dns_checklist.md`](../alter_ego_launch_dns_checklist.md) · 架構表 v8 | 線上 health + DNS | **07-30**：api health ✅；Vercel API URL ✅；Google Console／登入 E2E ⏳ · 備份 `2026-07-30_v8_hosting_b_day2_snapshot` |
 
 > **v7 程式段＋上架衝刺主路已結**（07-28 補測；07-29 freeze＋PR #17 → `main`）。  
 > **禁止**再開 v7 功能 PD；**禁止**改 archives v7 凍結檔。  

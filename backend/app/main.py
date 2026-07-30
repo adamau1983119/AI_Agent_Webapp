@@ -289,6 +289,35 @@ async def lifespan(app: FastAPI):
         logger.info("ℹ️ 開發環境：排程服務未自動啟動")
         logger.info("   可通過 POST /api/v1/schedules/start 手動啟動")
         logger.info("   或使用 POST /api/v1/schedules/generate-today 立即生成今日主題")
+
+    # Observability：Watchdog（紅燈）與／或每日報告（綠燈也寄）
+    import os as _os
+
+    _wd = _os.getenv("OBS_WATCHDOG_ENABLED", "false").lower() == "true"
+    _dg = _os.getenv("OBS_DAILY_DIGEST_ENABLED", "false").lower() == "true"
+    if _wd or _dg:
+        try:
+            from app.services.observability.ops_watchdog import watchdog_loop
+
+            asyncio.create_task(watchdog_loop())
+            logger.info(
+                "Observability loop 已啟動（watchdog=%s digest=%s）",
+                _wd,
+                _dg,
+            )
+        except Exception as e:
+            logger.warning("Observability loop 啟動失敗: %s", e)
+    elif _os.getenv("OBS_ALERTING_ENABLED", "false").lower() == "true":
+        try:
+            from app.services.observability.ops_agent import run_ops_agent_once
+
+            async def _obs_ops_boot() -> None:
+                await asyncio.to_thread(run_ops_agent_once)
+
+            asyncio.create_task(_obs_ops_boot())
+            logger.info("Observability Ops Agent 已排程（啟動檢查一次）")
+        except Exception as e:
+            logger.warning("Observability Ops Agent 啟動失敗: %s", e)
     
     yield
     

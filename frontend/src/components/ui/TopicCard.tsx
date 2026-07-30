@@ -76,7 +76,7 @@ export default function TopicCard({
 
   useEffect(() => {
     setOverride(null)
-  }, [topic.id])
+  }, [topic.id, language])
 
   useEffect(() => {
     if (!needsTranslate) {
