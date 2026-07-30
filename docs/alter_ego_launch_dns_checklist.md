@@ -2,9 +2,9 @@
 
 > **品牌**：**Alter Ego**（對外寫法；程式庫名仍為 `AI_Agent_Webapp`）  
 > **網域**：**`ai-alterego.com`**（Spaceship 註冊；2026-06-02 購入，自動續約至 2027-06-02）  
-> **開發階段**：Spaceship DNS **暫不改**；本機 `localhost:3000`／`localhost:8000` 繼續開發  
-> **上線觸發**：MVP 程式結案 + 整批測試通過後，依本檔與 [**附錄 A**](#附錄-a-spaceship-dns-要填哪幾行--alter-ego-env-對照表) 一次設定  
-> **SoT 交叉**：[`專案完整架構表_v7.md`](../專案完整架構表_v7.md) **品牌與網域**、[`工作記錄.md`](../工作記錄.md) 頂部
+> **託管**：**方案 B**（2026-07-29 定案）— **Vercel** 前端 + **Railway** 後端  
+> **進度（2026-07-30 收工）**：API／health／Vercel／**Google Console O2～O3** ✅；正式域登入 E2E／Meta／密鑰輪換 ⏳  
+> **SoT 交叉**：[`專案完整架構表_v8.md`](../專案完整架構表_v8.md) **品牌與網域**、[`工作記錄.md`](../工作記錄.md) 頂部 · 備份 [`docs/backups/2026-07-30_v8_hosting_b_day2_snapshot/`](./backups/2026-07-30_v8_hosting_b_day2_snapshot/SNAPSHOT_README.md)
 
 ---
 
@@ -18,11 +18,11 @@
 
 | # | 項目 | 狀態 | 備註 |
 |---|------|:----:|------|
-| P1 | 決定託管方案 | ☐ | **A** 單機 VPS（Nginx 反代前後端）或 **B** Vercel 前端 + Railway／Render 後端 |
-| P2 | 備妥主機 IP 或平台預設網址 | ☐ | VPS：公網 IPv4；Vercel：專案已建立；Railway：服務已 deploy |
-| P3 | TLS 策略 | ☐ | VPS：Let's Encrypt（Certbot）；託管：平台內建 HTTPS |
-| P4 | MongoDB Atlas／Redis 生產連線 | ☐ | **勿** commit `.env`；僅 `backend/.env` + 託管平台 Secret |
-| P5 | 備份本機 `.env` | ☐ | `backend/.env.backup`（已慣例）；上線前再匯出一份離線保管 |
+| P1 | 決定託管方案 | ☑ | **B** Vercel 前端 + Railway 後端（**2026-07-29 定案**） |
+| P2 | 備妥主機 IP 或平台預設網址 | ☑ | Vercel：`ai-agent-webapp`；Railway：`AI_Agent_Webapp` · `aiagentwebapp-production.up.railway.app` |
+| P3 | TLS 策略 | ☑ | 平台內建 HTTPS；`api` Port **443** 綠（2026-07-30） |
+| P4 | MongoDB Atlas／Redis 生產連線 | ☑ | Railway Variables → `/health` **`database: connected`**（2026-07-30） |
+| P5 | 備份本機 `.env` | ☑ | 慣例 `backend/.env.backup`；**勿**貼聊天／commit；⚠️ 曾誤貼 Raw Editor → **須輪換密鑰** |
 
 ---
 
@@ -32,51 +32,51 @@
 
 | # | 項目 | 狀態 | 備註 |
 |---|------|:----:|------|
-| D1 | 登入 Spaceship → **Domains** → `ai-alterego.com` → **DNS Records** | ☐ | 開發期可維持預設／空白 |
-| D2 | 依 [**附錄 A**](#附錄-a-spaceship-dns-要填哪幾行--alter-ego-env-對照表) 填入 **A／CNAME**（方案 A 或 B 擇一） | ☐ | 建議先加 **`www`**，根域 `@` 依平台要求 |
-| D3 | 若有 **`api` 子域**：一併新增 **A 或 CNAME** | ☐ | 與 `BACKEND_URL` 一致 |
-| D4 | `dig`／`nslookup` 確認解析 | ☐ | `ai-alterego.com`、`www`、`api`（若用）指向預期 |
-| D5 | 等待 TTL 傳播（常見 5～30 分；最長 48h） | ☐ | 傳播前勿改 OAuth 白名單以免半套失敗 |
+| D1 | 登入 Spaceship → **Domains** → `ai-alterego.com` → **DNS Records** | ☑ | Advanced DNS；NS 維持 Spaceship 預設 |
+| D2 | 依 [**附錄 A**](#附錄-a-spaceship-dns-要填哪幾行--alter-ego-env-對照表) 填入 **A／CNAME**（方案 A 或 B 擇一） | ☑ | **A** `@`→`76.76.21.21`；**CNAME** `www`→`ddf259fcf353023f.vercel-dns.com` |
+| D3 | 若有 **`api` 子域**：一併新增 **A 或 CNAME** | ☑ | **CNAME** `api`→`a0nsx9p5.up.railway.app`；**TXT** `_railway-verify.api` |
+| D4 | `dig`／`nslookup` 確認解析 | ☑ | 8.8.8.8／1.1.1.1 已驗（2026-07-30） |
+| D5 | 等待 TTL 傳播（常見 5～30 分；最長 48h） | ☑ | Railway DNS 綠勾 + SSL |
 
 ### 2. HTTPS 與反向代理
 
 | # | 項目 | 狀態 | 備註 |
 |---|------|:----:|------|
-| H1 | 前端 **`https://ai-alterego.com`**（及 `www`）可開、憑證有效 | ☐ | 瀏覽器無 Mixed Content |
-| H2 | 後端 **`https://api.ai-alterego.com`**（或同域 `/api`）**200** on `/health` | ☐ | `curl -I` 或瀏覽器 |
-| H3 | Nginx／平台：前端靜態 + API 反代規則與 [**附錄 A**](#附錄-a-spaceship-dns-要填哪幾行--alter-ego-env-對照表) 一致 | ☐ | VPS 需手寫 `location /api` |
-| H4 | **強制 HTTPS**（301 http→https） | ☐ | OAuth 廠商通常要求 https 回呼 |
+| H1 | 前端 **`https://ai-alterego.com`**（及 `www`）可開、憑證有效 | ☑ | `/language` 可開 |
+| H2 | 後端 **`https://api.ai-alterego.com`**（或同域 `/api`）**200** on `/health` | ☑ | **healthy**／**production**／**connected**（2026-07-30） |
+| H3 | Nginx／平台：前端靜態 + API 反代規則與 [**附錄 A**](#附錄-a-spaceship-dns-要填哪幾行--alter-ego-env-對照表) 一致 | ☑ | 方案 B：Vercel + Railway |
+| H4 | **強制 HTTPS**（301 http→https） | ☑ | Vercel 根域 308→www；API HTTPS |
 
 ### 3. Alter Ego 環境變數（後端 + 前端）
 
 | # | 項目 | 狀態 | 備註 |
 |---|------|:----:|------|
-| E1 | `backend/.env`（或託管 Secret）依 **附錄 A** 生產欄位更新 | ☐ | `ENVIRONMENT=production`、`DEBUG=false` |
-| E2 | `FRONTEND_URL` = 正式前端根 URL（含 `https`，無尾斜線） | ☐ | 郵件驗證／重設密碼連結用 |
-| E3 | `BACKEND_URL` = 正式後端根 URL | ☐ | Meta `redirect_uri` 由此衍生 |
-| E4 | `CORS_ORIGINS` 含正式前端域 | ☐ | JSON 陣列字串，見 `config_module` |
-| E5 | `GOOGLE_OAUTH_REDIRECT_URI` = `{BACKEND_URL}/api/v1/auth/google/callback` | ☐ | 與 Google Cloud Console 一致 |
-| E6 | `frontend/.env` **`VITE_API_URL`** 指向正式 API | ☐ | 改後須 **重建** 前端（`npm run build`） |
-| E7 | 重啟後端／重新 deploy 前後端 | ☐ | uvicorn 不會熱載入所有 Secret |
-| E8 | `python backend/check_meta_config.py` → **[OK]** | ☐ | 上線域下的 `redirect_uri` |
+| E1 | `backend/.env`（或託管 Secret）依 **附錄 A** 生產欄位更新 | ☑ | Railway Variables 已設（**勿**再貼明文） |
+| E2 | `FRONTEND_URL` = 正式前端根 URL（含 `https`，無尾斜線） | ☑ | `https://ai-alterego.com` |
+| E3 | `BACKEND_URL` = 正式後端根 URL | ☑ | `https://api.ai-alterego.com` |
+| E4 | `CORS_ORIGINS` 含正式前端域 | ☑ | 含 `ai-alterego.com`／`www` |
+| E5 | `GOOGLE_OAUTH_REDIRECT_URI` = `{BACKEND_URL}/api/v1/auth/google/callback` | ☑ | 鍵名須 **URI**（非 URL）；Raw Editor **禁前導空白**；線上 login Location 已驗正式域 |
+| E6 | `frontend/.env` **`VITE_API_URL`** 指向正式 API | ☑ | Vercel Production+Preview + Redeploy；bundle 含 `api.ai-alterego.com` |
+| E7 | 重啟後端／重新 deploy 前後端 | ☑ | Railway ACTIVE Success（修空白鍵／Infrastructure 失敗後） |
+| E8 | `python backend/check_meta_config.py` → **[OK]** | ☐ | 正式域 Meta 待測 |
 
 ### 4. OAuth／第三方白名單
 
 | # | 項目 | 狀態 | 備註 |
 |---|------|:----:|------|
 | O1 | **Meta** App → Valid OAuth Redirect URIs：`{BACKEND_URL}/api/v1/social/meta/callback` | ☐ | 與 `check_meta_config.py` 輸出逐字相同 |
-| O2 | **Google** Cloud → Authorized redirect URIs：同 **E5** | ☐ | |
-| O3 | **Google** Authorized JavaScript origins：`https://ai-alterego.com`（及 `www` 若用） | ☐ | |
+| O2 | **Google** Cloud → Authorized redirect URIs：同 **E5** | ☑ | `https://api.ai-alterego.com/api/v1/auth/google/callback`（2026-07-30） |
+| O3 | **Google** Authorized JavaScript origins：`https://ai-alterego.com`（及 `www` 若用） | ☑ | 已加；並修正誤填 `ai-always.com` |
 | O4 | Meta **App Domains**／隱私權 URL（若上架審核） | ☐ | 指向正式 `/privacy` |
 
 ### 5. 上線驗證（禁止 Mock；須真實 API）
 
 | # | 項目 | 狀態 | 備註 |
 |---|------|:----:|------|
-| S1 | `https://ai-alterego.com` → 語言／登入頁正常 | ☐ | Network 無大量 4xx |
-| S2 | 登入（Email 或 Google）→ **MyChannel／dashboard** | ☐ | 對齊 v7.1 規格 |
-| S3 | `GET /health` → `database: connected`（Atlas） | ☐ | |
-| S4 | `/discover` 讀取真實 feed（**非** mock topics） | ☐ | 對齊 README 禁止模糊驗收 |
+| S1 | `https://ai-alterego.com` → 語言／登入頁正常 | ☑ | `/language` 可開（2026-07-30） |
+| S2 | 登入（Email 或 Google）→ **MyChannel／dashboard** | ☐ | Google 曾誤導 localhost（已修後端 URI）；⏳ Console 白名單後重測 |
+| S3 | `GET /health` → `database: connected`（Atlas） | ☑ | `https://api.ai-alterego.com/health` |
+| S4 | `/discover` 讀取真實 feed（**非** mock topics） | ☐ | 登入後 |
 | S5 | `/social-connect` → Meta OAuth URL 域名正確 | ☐ | 可進授權頁即 PASS |
 | S6 | 截圖存 **`docs/evidence/v7/YYYY-MM-DD/`** | ☐ | 見 `v7_evidence_screenshot_guide.md` |
 
@@ -84,9 +84,9 @@
 
 | # | 項目 | 狀態 | 備註 |
 |---|------|:----:|------|
-| F1 | `工作記錄.md` 頂部：DNS 上線日 + 方案 A/B 一句 | ☐ | |
-| F2 | 本檔各表勾選完成或標 **BLOCK** + 原因 | ☐ | |
-| F3 | 確認 **未** commit `.env`／`.env.backup` | ☐ | git status 審核 |
+| F1 | `工作記錄.md` 頂部：DNS 上線日 + 方案 A/B 一句 | ☑ | 2026-07-30 日收句 |
+| F2 | 本檔各表勾選完成或標 **BLOCK** + 原因 | ☐ | **BLOCK**：正式域登入 E2E（S2）；Meta O1／E8；密鑰輪換 |
+| F3 | 確認 **未** commit `.env`／`.env.backup` | ☑ | 僅文件／快照；Secrets 不上 git |
 
 ---
 
@@ -189,19 +189,23 @@ VITE_API_URL=https://ai-alterego.com/api/v1
 | 類型 | Host／Name | Value／Points to | TTL | 用途 |
 |------|------------|------------------|-----|------|
 | **A** | `@` | `76.76.21.21` | 300 | Vercel 根域（以 Vercel 專案 **Domains** 頁為準） |
-| **CNAME** | `www` | `cname.vercel-dns.com` | 300 | 或 Vercel 指定 target |
-| **CNAME** | `api` | `<RAILWAY_HOST>` | 300 | 例：`xxx.up.railway.app`（Railway **Custom Domain** 綁 `api.ai-alterego.com` 後顯示） |
+| **CNAME** | `www` | `ddf259fcf353023f.vercel-dns.com` | 300 | **2026-07-29 實填**（以 Vercel Domains 為準） |
+| **CNAME** | `api` | `a0nsx9p5.up.railway.app` | 300 | **2026-07-30 實填** |
+| **TXT** | `_railway-verify.api` | `railway-verify=<token>` | 300 | Railway 驗證（值以平台為準；勿貼公開處） |
 
-> **注意**：Vercel／Railway 畫面會給**精確** CNAME／A 值；上表為常見模板，**以平台當下指示覆蓋本表**。
+> **注意**：Vercel／Railway 畫面會給**精確** CNAME／A／TXT 值；上表為常見模板＋當日實填，**以平台當下指示覆蓋本表**。
 
-#### 平台內設定
+#### 平台內設定（2026-07-30 實況）
 
-| 平台 | 設定項 | 值 |
-|------|--------|-----|
-| Vercel | Project → Domains | `ai-alterego.com`、`www.ai-alterego.com` |
-| Vercel | Environment Variables | `VITE_API_URL=https://api.ai-alterego.com/api/v1` |
-| Railway | Service → Settings → Domains | `api.ai-alterego.com` |
-| Railway | Variables | 同下方 `backend/.env` 區塊（勿進 git） |
+| 平台 | 設定項 | 值／狀態 |
+|------|--------|----------|
+| Vercel | Project → Domains | ✅ `ai-alterego.com`（308→www）、`www.ai-alterego.com` Production |
+| Vercel | Environment Variables | ✅ `VITE_API_URL=https://api.ai-alterego.com/api/v1`（Production+Preview）+ Redeploy |
+| Railway | Project／Service | `alert-emotion`／`AI_Agent_Webapp`；root `/backend`；`uvicorn … $PORT` |
+| Railway | Public URL | ✅ `https://aiagentwebapp-production.up.railway.app` |
+| Railway | Custom Domain | ✅ `api.ai-alterego.com`（Port **443** 綠；`/health` healthy） |
+| Railway | Variables | ✅ production／Mongo／OAuth 等；鍵名 **`GOOGLE_OAUTH_REDIRECT_URI`**（禁前導空白） |
+| Google Console | OAuth 白名單 | ✅ redirect + JS origins（`ai-alterego.com`／www）；⏳ 登入 E2E |
 
 #### `backend/.env` 生產範例（方案 B）
 
@@ -257,7 +261,10 @@ VITE_USE_MOCK=false
 
 ## 相關文件
 
-- [`專案完整架構表_v7.md`](../專案完整架構表_v7.md) — 品牌與網域、部署邏輯視圖  
+- [`專案完整架構表_v8.md`](../專案完整架構表_v8.md) — **v8** 品牌與網域／託管 SoT  
+- [`docs/archives/v7.0.0_專案完整架構表_凍結.md`](./archives/v7.0.0_專案完整架構表_凍結.md) — v7 唯讀  
 - [`docs/v7_mychannel_checklist.md`](./v7_mychannel_checklist.md) — **DNS-0** 上線前交叉引用  
 - [`backend/check_meta_config.py`](../backend/check_meta_config.py) — Meta OAuth 診斷  
-- [`docs/環境重建指南與Checklist.md`](./環境重建指南與Checklist.md) — 本機重建（與上線 DNS 分離）
+- [`docs/環境重建指南與Checklist.md`](./環境重建指南與Checklist.md) — 本機重建（與上線 DNS 分離）  
+- [`docs/backups/2026-07-30_v8_hosting_b_day2_snapshot/`](./backups/2026-07-30_v8_hosting_b_day2_snapshot/SNAPSHOT_README.md) — **2026-07-30** 日收  
+- [`docs/backups/2026-07-29_v8_hosting_b_snapshot/`](./backups/2026-07-29_v8_hosting_b_snapshot/SNAPSHOT_README.md) — 07-29 日收

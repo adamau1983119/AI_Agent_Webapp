@@ -1,0 +1,38 @@
+{
+  "id": "collection_min_cost_v1",
+  "title": "最小成本開通產卡（只開 collection）",
+  "dt5": {
+    "platform": "https://platform.deepseek.com/usage",
+    "alert_type": "cny_balance_alert",
+    "threshold_cny_recommended": 20,
+    "note": "DeepSeek 無每日硬上限；低餘額預警 + 少預付為硬煞車"
+  },
+  "railway_variables": {
+    "ENABLE_SCHEDULED_TOPIC_COLLECTION": "true",
+    "ENABLE_AI_TOPIC_TRANSLATION": "false",
+    "ENABLE_AI_TOPIC_FALLBACK": "false",
+    "ENABLE_CHANNEL_PREFETCH_PIPELINE": "false",
+    "ENABLE_PUBLIC_FEED_PIPELINE": "false"
+  },
+  "leave_unchanged": [
+    "DEEPSEEK_API_KEY",
+    "MONGODB_URL",
+    "JWT_SECRET_KEY",
+    "CORS_ORIGINS",
+    "GOOGLE_OAUTH_CLIENT_ID",
+    "GOOGLE_OAUTH_CLIENT_SECRET",
+    "GOOGLE_OAUTH_REDIRECT_URI"
+  ],
+  "health_cost_controls_expected_after": {
+    "scheduled_topic_collection": true,
+    "ai_topic_translation": false,
+    "ai_topic_fallback": false,
+    "channel_prefetch_pipeline": false,
+    "public_feed_pipeline": false
+  },
+  "health_cost_controls_expected_before": {
+    "scheduled_topic_collection": false,
+    "ai_topic_translation": false,
+    "ai_topic_fallback": false
+  }
+}

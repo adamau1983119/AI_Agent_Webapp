@@ -1,0 +1,44 @@
+{
+  "id": "observability_alerting_v2_traffic_light",
+  "title": "Observability — 紅綠燈 + 24h Watchdog（異常才電郵）",
+  "master_switch_env": "OBS_ALERTING_ENABLED",
+  "master_switch_default": "false",
+  "watchdog_env": "OBS_WATCHDOG_ENABLED",
+  "watchdog_default": "false",
+  "only_on_red_env": "OBS_ALERT_ONLY_ON_RED",
+  "only_on_red_default": "true",
+  "ops_email_env": "OBS_OPS_EMAIL",
+  "ops_email_default": "a.adam1983119@gmail.com",
+  "channels": {
+    "crash": {
+      "id": "crash",
+      "label": "系統異常／崩潰",
+      "saas_name": "Uptime + Incident alerting",
+      "env_enable": "OBS_ALERT_CRASH",
+      "default": "false",
+      "triggers": ["health_unreachable", "status_not_healthy", "database_down"]
+    },
+    "cost": {
+      "id": "cost",
+      "label": "Token／成本",
+      "saas_name": "FinOps",
+      "env_enable": "OBS_ALERT_COST",
+      "default": "false",
+      "triggers": ["cost_spike_future"]
+    },
+    "customer": {
+      "id": "customer",
+      "label": "客戶訊息",
+      "saas_name": "Helpdesk notify",
+      "env_enable": "OBS_ALERT_CUSTOMER",
+      "default": "false",
+      "triggers": ["user_feedback_new"]
+    }
+  },
+  "safety": {
+    "wire_into_main": true,
+    "gated_by_env": true,
+    "mutate_email_service": false,
+    "note": "Defaults OFF; green=quiet; red emails with cooldown"
+  }
+}

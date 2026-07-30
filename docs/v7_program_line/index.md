@@ -1,10 +1,11 @@
 # v7 程式段總表（index · SoT）
 
-> **日期 SoT**：2026-07-21（週二）— 見 [`工作記錄.md`](../../工作記錄.md) 頂部  
-> **閘門**：[`_GATE.md`](./_GATE.md)（每次 `專案開始` 第一步）  
-> **策略**：程式段已結 → **上架衝刺測試**（07-22～24 · 每日 1.5h）  
-> **測試 SoT**：[`launch_test_sprint_2026-07-22.md`](./launch_test_sprint_2026-07-22.md)  
-> **備份**：[`2026-07-21_launch-sprint-trigger_snapshot`](../backups/2026-07-21_launch-sprint-trigger_snapshot/SNAPSHOT_README.md) · [`2026-06-25_f05-mychannel-program_snapshot`](../backups/2026-06-25_f05-mychannel-program_snapshot/SNAPSHOT_README.md)
+> **日期 SoT**：2026-07-30（星期四）— 見 [`工作記錄.md`](../../工作記錄.md) 頂部  
+> **閘門**：[`_GATE.md`](./_GATE.md)  
+> **策略**：**v7 已 code-freeze** → 後續測試／上架走 **v8**（`feature/v8-launch`）  
+> **v7 保全**：[`../archives/v7.0.0_CODE_FREEZE_MANIFEST.md`](../archives/v7.0.0_CODE_FREEZE_MANIFEST.md) · tag `v7.0.0-code-freeze`  
+> **v8 架構 SoT**：[`../../專案完整架構表_v8.md`](../../專案完整架構表_v8.md)  
+> **上架 DNS**：[`../alter_ego_launch_dns_checklist.md`](../alter_ego_launch_dns_checklist.md)
 
 ---
 
@@ -12,15 +13,24 @@
 
 | Phase | 排程 | PD | CD／PK | Checklist | 結案 Python | 最後證據 |
 |-------|------|----|--------|-----------|-------------|----------|
-| **上架衝刺測試** | **07-22～24** · 每日 **1.5h** | — | 見三日表 | [`launch_test_sprint_2026-07-22.md`](./launch_test_sprint_2026-07-22.md) | 手測 + 截圖 | 待 Day1 |
+| **v8 上架** | **07-29～** · DNS／正式域 | — | 真實運行 | [`../alter_ego_launch_dns_checklist.md`](../alter_ego_launch_dns_checklist.md) · 架構表 v8 | 線上 health + DNS | **07-30**：api health ✅；Vercel API URL ✅；Google Console／登入 E2E ⏳ · 備份 `2026-07-30_v8_hosting_b_day2_snapshot` |
 
-> **程式段主線已結**（含 **2026-07-21**）：Post Kit L0；**AE-0～AE-2（程式）**；**MC-1～6**。  
-> **下一步**：依上架衝刺三日表跑 CD／E0／PK；**勿**再開新 PD 主線。  
-> **觸發**：`專案開始，先讀 …/_GATE.md 與 launch_test_sprint_2026-07-22.md 當日 Day，再開測 @AGENTS.md`
+> **v7 程式段＋上架衝刺主路已結**（07-28 補測；07-29 freeze＋PR #17 → `main`）。  
+> **禁止**再開 v7 功能 PD；**禁止**改 archives v7 凍結檔。  
+> **觸發（上架）**：在 `feature/v8-launch` 工作；對照架構表 **v8** + DNS checklist。
 
 ---
 
-## 上架衝刺 · 三日總覽（2026-07-22～24）
+## Completed（封存 · 含上架衝刺）
+
+| Phase | 結果 | 錨點 |
+|-------|------|------|
+| **v7 code-freeze** | ✅ | tag `v7.0.0-code-freeze` · `9556ea7` · PR #17 |
+| **上架衝刺 Day1～3** | ✅ 條件上架 | [`launch_test_sprint_2026-07-22.md`](./launch_test_sprint_2026-07-22.md) |
+
+---
+
+## 上架衝刺 · 三日總覽（歷史 · 2026-07-22～24／補測 07-28）
 
 | 日期 | 週 | 時長 | 主題 | 必過（摘要） |
 |------|-----|------|------|--------------|
