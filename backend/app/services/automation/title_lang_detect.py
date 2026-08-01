@@ -3,26 +3,44 @@ from __future__ import annotations
 
 import re
 
-_CJK = re.compile(r"[\u3000-\u9fff\u3040-\u30ff\uff66-\uff9d]")
+_HAN = re.compile(r"[\u4e00-\u9fff]")
 _KANA = re.compile(r"[\u3040-\u30ff\uff66-\uff9d]")
 _LATIN = re.compile(r"[A-Za-z]")
 _OK = frozenset({"zh-TW", "en", "ja"})
 
 
 def detect_title_language(title: str) -> str:
+    """Latin brand names must not override real CJK/kana script."""
     text = (title or "").strip()
     if not text:
         return "en"
-    cjk = len(_CJK.findall(text))
+    han = len(_HAN.findall(text))
     kana = len(_KANA.findall(text))
     latin = len(_LATIN.findall(text))
-    if kana >= 2 and kana >= cjk * 0.3:
+    if kana >= 2:
         return "ja"
-    if cjk >= 2 and cjk >= latin:
+    if han >= 2:
         return "zh-TW"
     if latin >= 3:
         return "en"
-    return "zh-TW" if cjk else "en"
+    return "zh-TW" if han else "en"
+
+
+def text_matches_lang(text: str, lang: str) -> bool:
+    """Reject mis-tagged slots (e.g. Chinese stored under en)."""
+    t = (text or "").strip()
+    if not t:
+        return False
+    han = bool(_HAN.search(t))
+    kana = bool(_KANA.search(t))
+    latin = bool(_LATIN.search(t))
+    if lang == "en":
+        return not han and not kana and latin
+    if lang == "ja":
+        return kana or han
+    if lang == "zh-TW":
+        return han and not kana
+    return False
 
 
 def resolve_stored_display_language(

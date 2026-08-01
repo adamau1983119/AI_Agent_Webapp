@@ -18,25 +18,52 @@ export function getTopicI18nMaps(topic: Topic) {
   }
 }
 
+function hasHan(text: string): boolean {
+  return /[\u4e00-\u9fff]/.test(text)
+}
+
+function hasKana(text: string): boolean {
+  return /[\u3040-\u30ff\uff66-\uff9d]/.test(text)
+}
+
+/** Drop mis-tagged slots (Chinese under en, etc.). */
+export function pickI18nText(
+  map: Record<string, string>,
+  ui: UiLanguage
+): string | undefined {
+  const candidates = [map[ui]]
+  if (ui === 'en') candidates.push(map['en-US'], map['EN'])
+  if (ui === 'ja') candidates.push(map['ja-JP'], map['JA'])
+  if (ui === 'zh-TW') candidates.push(map['zh'], map['zh-Hant'])
+
+  for (const raw of candidates) {
+    const text = (raw || '').trim()
+    if (!text) continue
+    if (ui === 'en' && (hasHan(text) || hasKana(text))) continue
+    if (ui === 'ja' && !hasHan(text) && !hasKana(text)) continue
+    if (ui === 'zh-TW' && !hasHan(text)) continue
+    return text
+  }
+  return undefined
+}
+
 /** Prefer script truth when display_language was mis-tagged at collect. */
 export function getCollectionLanguage(topic: Topic): UiLanguage {
   const declared = normalizeUiLanguage(topic.displayLanguage || topic.display_language)
   const title = (topic.title || '').trim()
-  const hasCjk = /[\u3000-\u9fff]/.test(title)
-  const hasKana = /[\u3040-\u30ff\uff66-\uff9d]/.test(title)
-  if (hasKana) return 'ja'
-  if (hasCjk && declared === 'en') return 'zh-TW'
+  if (hasKana(title)) return 'ja'
+  if (hasHan(title) && declared === 'en') return 'zh-TW'
   return declared
 }
 
 export function needsTranslateToCurrentLanguage(topic: Topic, uiLanguage: string): boolean {
   const ui = normalizeUiLanguage(uiLanguage)
   const { titles } = getTopicI18nMaps(topic)
-  if (titles[ui]) return false
+  if (pickI18nText(titles, ui)) return false
   return ui !== getCollectionLanguage(topic)
 }
 
-/** Prefer titles_i18n[ui] for fluent language switch. */
+/** Prefer titles_i18n / description_i18n for fluent language switch. */
 export function resolveTopicDisplayCopy(
   topic: Topic,
   uiLanguage: string,
@@ -54,9 +81,9 @@ export function resolveTopicDisplayCopy(
     }
   }
 
-  const title = titles[ui] || topic.title
-  const description = descriptions[ui] || topic.description
-  const fromPrefetch = Boolean(titles[ui] || descriptions[ui])
+  const title = pickI18nText(titles, ui) || topic.title
+  const description = pickI18nText(descriptions, ui) || topic.description
+  const fromPrefetch = Boolean(pickI18nText(titles, ui) || pickI18nText(descriptions, ui))
 
   return {
     title,

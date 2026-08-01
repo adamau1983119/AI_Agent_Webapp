@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Static checks for fluent topic i18n atoms (≤150-line modules)."""
+"""Static checks for fluent topic i18n — especially en/ja correctness."""
 from __future__ import annotations
 
 import sys
@@ -25,59 +25,40 @@ def main() -> int:
 
     from app.services.automation.title_lang_detect import (
         detect_title_language,
+        text_matches_lang,
         resolve_stored_display_language,
     )
 
     assert detect_title_language("今日旺角美食") == "zh-TW"
+    assert detect_title_language("今日 UNIQLO 東京開幕") == "zh-TW"
     assert detect_title_language("Hello fashion week runway") == "en"
+    assert detect_title_language("渋谷で新しいカフェ") == "ja"
+    assert not text_matches_lang("今日旺角美食", "en")
+    assert text_matches_lang("Shibuya cafe opens", "en")
+    assert text_matches_lang("渋谷カフェ", "ja")
     assert (
         resolve_stored_display_language(
-            source_title="今日旺角美食",
-            stored_title="今日旺角美食",
+            source_title="今日 UNIQLO 東京開幕",
+            stored_title="今日 UNIQLO 東京開幕",
             requested_lang="en",
             translation_applied=False,
         )
         == "zh-TW"
     )
-    print("PASS | detect + no false en tag")
+    print("PASS | en/ja detect + reject CJK-under-en")
 
-    dash = (ROOT / "frontend/src/pages/Dashboard.tsx").read_text(encoding="utf-8")
-    if "topicsSectionLoading" not in dash:
-        print("FAIL | Dashboard missing topicsSectionLoading")
-        fails += 1
-    else:
-        print("PASS | Dashboard topicsSectionLoading")
-
-    disp = (ROOT / "frontend/src/lib/topicDisplay.ts").read_text(encoding="utf-8")
-    if "titles[ui]" not in disp or "descriptions[ui]" not in disp:
-        print("FAIL | topicDisplay must prefer titles/descriptions[ui]")
-        fails += 1
-    else:
-        print("PASS | topicDisplay titles+descriptions[ui]")
-
-    if "_finalize_topics_i18n" not in (
-        ROOT / "backend/app/services/automation/topic_collector.py"
-    ).read_text(encoding="utf-8"):
-        print("FAIL | collector missing _finalize_topics_i18n")
-        fails += 1
-    else:
-        print("PASS | collector finalize after dedup")
-
-    ch = (ROOT / "backend/app/services/channel_collector.py").read_text(encoding="utf-8")
-    if "finalize_topic_languages" not in ch:
-        print("FAIL | channel_collector must finalize i18n")
-        fails += 1
-    else:
-        print("PASS | channel_collector finalize")
-
-    pref = (BACKEND / "app/services/automation/topic_i18n_prefetch.py").read_text(
-        encoding="utf-8"
-    )
-    if "description_i18n" not in pref:
-        print("FAIL | prefetch must write description_i18n")
-        fails += 1
-    else:
-        print("PASS | prefetch description_i18n")
+    for label, path, needle in [
+        ("Dashboard", ROOT / "frontend/src/pages/Dashboard.tsx", "topicsSectionLoading"),
+        ("topicDisplay", ROOT / "frontend/src/lib/topicDisplay.ts", "pickI18nText"),
+        ("prefetch", FILES[1], "description_i18n"),
+        ("collector", BACKEND / "app/services/automation/topic_collector.py", "_finalize_topics_i18n"),
+        ("channel", BACKEND / "app/services/channel_collector.py", "finalize_topic_languages"),
+    ]:
+        if needle not in path.read_text(encoding="utf-8"):
+            print(f"FAIL | {label} missing {needle}")
+            fails += 1
+        else:
+            print(f"PASS | {label}")
 
     if fails:
         print(f"FAIL | {fails}")
