@@ -38,12 +38,17 @@ def auto_start_scheduler_enabled() -> bool:
     )
 
 
+def topic_i18n_prefetch_enabled() -> bool:
+    return _flag("ENABLE_TOPIC_I18N_PREFETCH", "true")
+
+
 def cost_controls_summary() -> dict:
     return {
         "auto_start_scheduler": auto_start_scheduler_enabled(),
         "scheduled_topic_collection": scheduled_topic_collection_enabled(),
         "ai_topic_translation": ai_topic_translation_enabled(),
         "ai_topic_fallback": ai_topic_fallback_enabled(),
+        "topic_i18n_prefetch": topic_i18n_prefetch_enabled(),
         "channel_prefetch_pipeline": channel_prefetch_pipeline_enabled(),
         "public_feed_pipeline": public_feed_pipeline_enabled(),
         "safe_batch_size": settings.safe_batch_size,

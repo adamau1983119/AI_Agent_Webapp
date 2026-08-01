@@ -27,6 +27,7 @@ from app.config.feed_roles import (
 from app.services.scoring_service import ScoringService, DiversityScorer
 from app.services.repositories.feed_health_repository import FeedHealthRepository
 from app.services.feed_health_service import FeedHealthService
+from app.services.automation.topic_i18n_prefetch import finalize_topic_languages
 
 # Phase 6 整合
 from app.services.automation.image_extractor import OriginalImageExtractor
@@ -185,7 +186,7 @@ class TopicCollector:
                 if self.enable_dedup and self.deduplicator:
                     stats = self.deduplicator.get_stats()
                     logger.info(f"📊 去重統計: {stats['duplicate_rate']} 重複率")
-                return topics[:count]
+                return await self._finalize_topics_i18n(topics[:count], display_language)
             
             # 如果不足且允許使用備用方案，使用備用關鍵字生成主題
             from app.utils.cost_controls import ai_topic_fallback_enabled
@@ -207,8 +208,31 @@ class TopicCollector:
             if use_fallback and ai_topic_fallback_enabled():
                 topics = await self._generate_from_keywords(category, count)
         
-        return topics[:count]
-    
+        return await self._finalize_topics_i18n(topics[:count], display_language)
+
+    async def _finalize_topics_i18n(
+        self,
+        topics: List[Dict[str, Any]],
+        requested_lang: str,
+    ) -> List[Dict[str, Any]]:
+        """一次寫齊支援語系（去重後、入庫前）。"""
+        from app.utils.cost_controls import ai_topic_translation_enabled
+
+        for topic in topics:
+            source = str(topic.get("original_title") or topic.get("title") or "")
+            stored = str(topic.get("title") or "")
+            await finalize_topic_languages(
+                topic,
+                source_title=source,
+                requested_lang=requested_lang or "zh-TW",
+                translation_applied=(
+                    ai_topic_translation_enabled()
+                    and bool(topic.get("original_title"))
+                    and stored.strip() != source.strip()
+                ),
+            )
+        return topics
+
     async def _collect_by_roles(
         self,
         category: Category,
@@ -420,14 +444,12 @@ class TopicCollector:
                         "role": role_name,
                         "score": score_result["score"],
                         "score_breakdown": score_result["score_breakdown"],
-                        # Phase 6: 新增欄位
                         "hashtags": hashtags,
-                        "preview_images_v2": preview_images,  # 帶有 photo_id 的完整結構
-                        # Phase 7: 多語言支援
+                        "preview_images_v2": preview_images,
                         "display_language": display_language,
                         "original_title": title,
                     }
-                    
+
                     # Phase 6: 雙寫機制
                     if self.enable_dual_write and self.dual_write_service:
                         try:
@@ -454,7 +476,10 @@ class TopicCollector:
                             logger.warning(f"雙寫失敗，繼續使用舊格式: {e}")
                     
                     topics.append(topic)
-                    logger.info(f"✅ 收集主題: {translated_title[:30]}... (score: {score_result['score']:.2f}, lang: {display_language}, hashtags: {len(hashtags)})")
+                    logger.info(
+                        f"✅ 收集主題: {translated_title[:30]}... "
+                        f"(score: {score_result['score']:.2f}, hashtags: {len(hashtags)})"
+                    )
                 
                 # 健康監控：記錄成功
                 try:

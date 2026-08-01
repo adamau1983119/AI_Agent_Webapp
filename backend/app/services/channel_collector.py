@@ -13,9 +13,11 @@ from app.services.repositories.channel_repository import ChannelRepository
 from app.services.repositories.topic_repository import TopicRepository
 from app.services.channel_service import ChannelService
 from app.services.automation.topic_collector import TopicCollector
+from app.services.automation.topic_i18n_prefetch import finalize_topic_languages
 from app.models.topic import Status, Category
 from app.models.channel import ChannelCollectionStatus
 from app.services.ai.ai_service_factory import AIServiceFactory
+from app.utils.cost_controls import ai_topic_translation_enabled
 import logging
 
 logger = logging.getLogger(__name__)
@@ -391,6 +393,15 @@ class ChannelCollector:
                     "updated_at": now,
                     "created_at": now,
                 }
+                await finalize_topic_languages(
+                    topic_doc,
+                    source_title=original_title,
+                    requested_lang=display_lang,
+                    translation_applied=(
+                        ai_topic_translation_enabled()
+                        and title.strip() != original_title.strip()
+                    ),
+                )
                 await self.topic_repo.create_topic(topic_doc)
                 saved += 1
             except Exception as e:

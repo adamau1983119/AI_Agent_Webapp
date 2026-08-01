@@ -18,23 +18,31 @@ export function getTopicI18nMaps(topic: Topic) {
   }
 }
 
+/** Prefer script truth when display_language was mis-tagged at collect. */
 export function getCollectionLanguage(topic: Topic): UiLanguage {
-  return normalizeUiLanguage(topic.displayLanguage || topic.display_language)
+  const declared = normalizeUiLanguage(topic.displayLanguage || topic.display_language)
+  const title = (topic.title || '').trim()
+  const hasCjk = /[\u3000-\u9fff]/.test(title)
+  const hasKana = /[\u3040-\u30ff\uff66-\uff9d]/.test(title)
+  if (hasKana) return 'ja'
+  if (hasCjk && declared === 'en') return 'zh-TW'
+  return declared
 }
 
-/** 是否顯示「譯為目前語言」按鈕 */
 export function needsTranslateToCurrentLanguage(topic: Topic, uiLanguage: string): boolean {
-  return normalizeUiLanguage(uiLanguage) !== getCollectionLanguage(topic)
+  const ui = normalizeUiLanguage(uiLanguage)
+  const { titles } = getTopicI18nMaps(topic)
+  if (titles[ui]) return false
+  return ui !== getCollectionLanguage(topic)
 }
 
-/** 方案 C：預設顯示收集時標題；若已有目前語言快取則優先顯示譯文 */
+/** Prefer titles_i18n[ui] for fluent language switch. */
 export function resolveTopicDisplayCopy(
   topic: Topic,
   uiLanguage: string,
   override?: TopicDisplayOverride | null
 ) {
   const ui = normalizeUiLanguage(uiLanguage)
-  const collectionLang = getCollectionLanguage(topic)
   const { titles, descriptions } = getTopicI18nMaps(topic)
 
   if (override) {
@@ -46,20 +54,15 @@ export function resolveTopicDisplayCopy(
     }
   }
 
-  if (ui !== collectionLang && titles[ui]) {
-    return {
-      title: titles[ui],
-      description: descriptions[ui] ?? topic.description,
-      usingTranslation: true,
-      fromCache: true,
-    }
-  }
+  const title = titles[ui] || topic.title
+  const description = descriptions[ui] || topic.description
+  const fromPrefetch = Boolean(titles[ui] || descriptions[ui])
 
   return {
-    title: topic.title,
-    description: topic.description,
-    usingTranslation: false,
-    fromCache: false,
+    title,
+    description,
+    usingTranslation: fromPrefetch && ui !== getCollectionLanguage(topic),
+    fromCache: fromPrefetch,
   }
 }
 

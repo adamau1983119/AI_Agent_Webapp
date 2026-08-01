@@ -74,6 +74,7 @@ export default function Dashboard() {
   })
 
   const isLoading = topicsLoading || schedulesLoading
+  const topicsSectionLoading = topicsLoading
   const hasError = topicsError || schedulesError
 
   const handleRetry = () => {
@@ -85,9 +86,8 @@ export default function Dashboard() {
   // 或者如果載入時間過長（超過 10 秒），也顯示錯誤提示
   const shouldShowError = hasError || (isLoading && (topicsError || schedulesError))
 
-  // 從分頁響應中提取 topics 數組
-  // 重要：如果有錯誤，不使用緩存數據，返回空數組
-  const topics = (topicsError || schedulesError) ? [] : (topicsResponse?.data || [])
+  // 主題列表不因排程 API 失敗而清空
+  const topics = topicsError ? [] : (topicsResponse?.data || [])
   
   // 計算今日主題數量（統一使用 UTC 日期比較）
   const getTodayTopicsCount = () => {
@@ -594,7 +594,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* 主題卡片網格 - 顯示所有今日主題 */}
         <div className="lg:col-span-8">
-          {isLoading ? (
+          {topicsSectionLoading ? (
             <div className="text-center py-16">
               <div className="inline-block animate-spin rounded-full h-6 w-6 border-b border-black"></div>
               <p className="mt-4 text-[11px] tracking-[0.1em] uppercase text-gray-500">{t('dashboard.loading')}</p>

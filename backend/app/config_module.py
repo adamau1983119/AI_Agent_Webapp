@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     ENABLE_SCHEDULED_TOPIC_COLLECTION: str = "false"  # false=暫停每 6h 主打分類主題卡
     ENABLE_AI_TOPIC_TRANSLATION: str = "false"  # false=收集時不逐則呼叫 DeepSeek 翻譯標題
     ENABLE_AI_TOPIC_FALLBACK: str = "false"  # false=RSS 不足時不用 AI 補滿主題
+    ENABLE_TOPIC_I18N_PREFETCH: str = "true"  # 收集時一次預寫三語 titles/descriptions_i18n
     ENABLE_CHANNEL_PREFETCH_PIPELINE: str = "false"  # v7：港日定向夜間 DeepL 預載
     ENABLE_PUBLIC_FEED_PIPELINE: str = "false"  # v7 Discover：公共 8h RSS 批次
     PUBLIC_FEED_BATCH_SIZE: int = 30
