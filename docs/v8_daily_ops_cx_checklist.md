@@ -4,7 +4,7 @@
 > **觸發**：`專案開始，正式域日常運作，客戶體驗優先 @AGENTS.md`  
 > **證據**：`docs/evidence/v8/YYYY-MM-DD/`（截圖或 Network／信箱一句才可勾）  
 > **改碼**：僅 **CX／OPS FAIL 阻塞客戶** 才開 `feature/v8-*`＋PR。  
-> **OBS／日報 SoT**：[`v8_observability_alerting.md`](./v8_observability_alerting.md) · 備份 [`2026-08-11_ops_digest_resend_pass_snapshot`](./backups/2026-08-11_ops_digest_resend_pass_snapshot/SNAPSHOT_README.md)
+> **OBS／日報 SoT**：[`v8_observability_alerting.md`](./v8_observability_alerting.md) · 備份 [`2026-08-11_topic_dashboard_hkt_pr24_snapshot`](./backups/2026-08-11_topic_dashboard_hkt_pr24_snapshot/SNAPSHOT_README.md) · [`2026-08-11_ops_digest_resend_pass_snapshot`](./backups/2026-08-11_ops_digest_resend_pass_snapshot/SNAPSHOT_README.md)
 
 ---
 
@@ -26,7 +26,20 @@
 
 ---
 
-## OPS-DIGEST 現況（2026-08-11）
+## PR #24 主題卡修復（2026-08-11 · 已 merge `main`）
+
+| 項 | 狀態 | 一句 |
+|----|------|------|
+| **FIX-TOPIC-HKT** | ✅ **已部署** | Dashboard HKT 今日 filter；`N/15`；Vercel Ready |
+| **FIX-TOPIC-UX** | ✅ | 空狀態「準備中」；schedules 失敗不清空卡 |
+| **CX-LOGIN** | ✅ **對齊程式** | AE 完成 → `/dashboard`（pending → onboarding） |
+| **OPS-I18N 預載** | ⏳ **env** | 需 Railway `ENABLE_TOPIC_TRIPLE_PRELOAD=true` + DeepL key |
+| **回歸腳本** | ✅ | `python scripts/check_topic_core_regression.py` |
+| **備份** | ✅ | `backup/2026-08-11-topic-dashboard-hkt-pr24` · snapshot README |
+
+**明日 OPS 第一步**：正式域登入 → Dashboard 確認 **OPS-CARD N/15**；若 I18N 待開 → 設 triple preload env 後等下一批產卡。
+
+---
 
 | 項 | 狀態 | 一句 |
 |----|------|------|
@@ -57,10 +70,10 @@
 ```text
 日期：2026-08-11
 OPS-HEALTH：PASS（healthy／connected）
-OPS-CARD：
-OPS-I18N：
-CX-（選）：
+OPS-CARD：⏳ PR #24 已 merge — 登入 Dashboard 驗 N/15 + TopicCard 網格
+OPS-I18N：⏳ triple preload env 未開則僅驗 zh-TW；開 env 後驗 en/ja
+CX-LOGIN：⏳ AE 完成 → /dashboard（截圖）
 OPS-DIGEST／COST：DIGEST PASS（Resend）；COST：
-FAIL／FIX：無 DIGEST 阻塞；⏳ 密鑰輪換（PD-OBS-TL-08）
-明日第一步：例行確認自動日報寄件 noreply@ai-alterego.com
+FAIL／FIX：FIX-TOPIC-HKT 已 merge PR #24；⏳ 密鑰輪換（PD-OBS-TL-08）
+明日第一步：Dashboard OPS-CARD 手測 + 視需要開 ENABLE_TOPIC_TRIPLE_PRELOAD
 ```
