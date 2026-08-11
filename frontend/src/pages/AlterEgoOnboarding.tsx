@@ -11,7 +11,7 @@ import {
   type AlterEgoPlatform,
   type DnaStatusResponse,
 } from '@/api/alterEgo';
-import { MY_CHANNEL_PATH, isAlterEgoOnboardingDone } from '@/lib/alterEgoRouting';
+import { pathAfterDnaStatus, isAlterEgoOnboardingDone } from '@/lib/alterEgoRouting';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 
 const PLATFORMS: AlterEgoPlatform[] = ['facebook', 'threads', 'x'];
@@ -51,7 +51,7 @@ export default function AlterEgoOnboarding() {
   }
 
   if (isAlterEgoOnboardingDone(status?.dna_status)) {
-    return <Navigate to={MY_CHANNEL_PATH} replace />;
+    return <Navigate to={pathAfterDnaStatus(status?.dna_status)} replace />;
   }
 
   const filledExemplars = exemplars.map((e) => e.trim()).filter(Boolean);
@@ -61,7 +61,7 @@ export default function AlterEgoOnboarding() {
     try {
       await alterEgoApi.skip();
       toast.success(t('alterEgo.skipDone'));
-      navigate(MY_CHANNEL_PATH, { replace: true });
+      navigate(pathAfterDnaStatus('skipped'), { replace: true });
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : t('common.error');
       toast.error(msg);
@@ -117,7 +117,7 @@ export default function AlterEgoOnboarding() {
   };
 
   const handleContinue = () => {
-    navigate(MY_CHANNEL_PATH, { replace: true });
+    navigate(pathAfterDnaStatus('active'), { replace: true });
   };
 
   return (

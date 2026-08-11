@@ -3,6 +3,7 @@
 interface ImportMetaEnv {
   readonly VITE_API_URL: string
   readonly VITE_USE_MOCK?: string
+  readonly VITE_POST_LOGIN_PATH?: string
   readonly DEV: boolean
   readonly PROD: boolean
   readonly MODE: string

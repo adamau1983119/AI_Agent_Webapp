@@ -12,14 +12,14 @@
 
 | 族 | 代號 | 客戶／營運問題 | 最短驗法 |
 |----|------|----------------|----------|
-| **CX** | **CX-LOGIN** | 能登入正式域、語系可切 | `ai-alterego.com` 登入 → Dashboard |
+| **CX** | **CX-LOGIN** | 能登入正式域、語系可切 | 登入 → **`/dashboard`**（AE pending 仍進 onboarding） |
 | **CX** | **CX-AE** | Alter Ego 主路可用 | extract／skip／regenerate 其一＋截圖 |
-| **CX** | **CX-TOPIC** | 主題卡隨介面語系（尤其 **en／ja**） | 切 en／ja → 標題摘要對語系 |
+| **CX** | **CX-TOPIC** | 主題卡隨介面語系（尤其 **en／ja**） | Dashboard 切 en／ja → 標題摘要對語系 |
 | **CX** | **CX-MC** | My Channel 真實 feed | `/my-channel` 有卡或可解鎖 |
 | **CX** | **CX-PK** | Post Kit 可仿文／複製 | 詳情 Post Kit copy＋toast |
 | **OPS** | **OPS-HEALTH** | API／DB 活著 | `api…/health` → 200、`database: connected` |
-| **OPS** | **OPS-CARD** | 當日有自動產卡 | Dashboard／Mongo 今日新 topic |
-| **OPS** | **OPS-I18N** | 新卡含三語預寫 | 新 topic 有 `titles_i18n.en`＋`.ja` |
+| **OPS** | **OPS-CARD** | 當日有自動產卡 | Dashboard **今日主題 N/15**、底部 TopicCard 網格；或 Mongo `generated_at` HKT 當日 |
+| **OPS** | **OPS-I18N** | 新卡含三語預寫 | 新 topic 有 `titles_i18n.en`＋`.ja`（需 `ENABLE_TOPIC_TRIPLE_PRELOAD=true`） |
 | **OPS** | **OPS-DIGEST** | 正式域每日營運報告進信箱 | Deploy log `Email 發送成功 (resend)` 或信箱自動收到 |
 | **OPS** | **OPS-COST** | 成本未失控 | DeepSeek／DeepL 用量或告警一句 |
 | **FIX** | **FIX-*** | 上列 FAIL 且阻塞客戶 | 最小 PR；結案對回 CX／OPS |
@@ -45,6 +45,10 @@
 3. 任選 **1～2 個 CX-***（真實帳號）  
 4. **OPS-DIGEST**／**OPS-COST**（DIGEST 已 PASS；例行看信箱即可）  
 5. 有 FAIL → 記 **FIX-***；無則不改碼  
+
+**OPS-CARD 證據句範例**：`Dashboard 今日 12/15；GET /topics 200；HKT 2026-08-11 generated_at 12 筆`  
+**OPS-I18N 證據句範例**：`抽樣 topic_xxx titles_i18n.en+ja 皆有；Dashboard 切 ja 標題為日文`  
+**回滾首登 landing**：Vercel 設 `VITE_POST_LOGIN_PATH=/my-channel`（預設不設＝Dashboard）
 
 ---
 

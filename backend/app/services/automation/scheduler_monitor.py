@@ -52,13 +52,9 @@ class SchedulerMonitor:
 
     async def _count_topics_hkt_today(self) -> int:
         start_utc, end_utc = hkt_day_utc_bounds()
-        items = await self.topic_repo.find_many(
-            {"generated_at": {"$gte": start_utc, "$lte": end_utc}},
-            skip=0,
-            limit=200,
-            sort=[("generated_at", -1)],
+        return await self.topic_repo.count(
+            {"generated_at": {"$gte": start_utc, "$lte": end_utc}}
         )
-        return len(items)
 
     async def _check_scheduler_health(self):
         try:

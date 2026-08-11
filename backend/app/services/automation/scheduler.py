@@ -412,6 +412,10 @@ class SchedulerService:
                     continue
             
             logger.info(f"{category_name} 分類完成，共建立 {len(created_topics)} 個主題")
+            if created_topics:
+                from app.services.automation.topic_triple_preload import preload_topic_titles
+                ids = [t["id"] for t in created_topics if t.get("id")]
+                await preload_topic_titles(ids)
             
         except Exception as e:
             logger.error(f"為 {category_name} 分類生成主題失敗: {e}")
@@ -427,9 +431,9 @@ class SchedulerService:
             True 如果今天已經生成過，False 如果還沒生成
         """
         try:
-            from datetime import date
-            today = date.today()
-            today_str = today.strftime("%Y-%m-%d")
+            from app.services.automation.topic_day_hkt import today_hkt_str
+
+            today_str = today_hkt_str()
             
             # 查詢今天是否已經有該分類的主題
             unique_key = self.config.get_daily_limit_unique_key()
@@ -528,6 +532,10 @@ class SchedulerService:
                     continue
             
             logger.info(f"手動生成完成，共建立 {len(created_topics)} 個主題")
+            if created_topics:
+                from app.services.automation.topic_triple_preload import preload_topic_titles
+                ids = [t["id"] for t in created_topics if t.get("id")]
+                await preload_topic_titles(ids)
             return created_topics
             
         except Exception as e:

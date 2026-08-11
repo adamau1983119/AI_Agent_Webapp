@@ -21,6 +21,8 @@ class Settings(BaseSettings):
     ENABLE_AI_TOPIC_TRANSLATION: str = "false"  # false=收集時不逐則呼叫 DeepSeek 翻譯標題
     ENABLE_AI_TOPIC_FALLBACK: str = "false"  # false=RSS 不足時不用 AI 補滿主題
     ENABLE_CHANNEL_PREFETCH_PIPELINE: str = "false"  # v7：港日定向夜間 DeepL 預載
+    ENABLE_TOPIC_TRIPLE_PRELOAD: str = "false"  # v8：產卡後批次 DeepL en/ja（非收集時 AI 翻譯）
+    TOPIC_TRIPLE_PRELOAD_CAP: int = 30  # 單次流水線 DeepL 呼叫上限（約 15 卡 × 2 語）
     ENABLE_PUBLIC_FEED_PIPELINE: str = "false"  # v7 Discover：公共 8h RSS 批次
     PUBLIC_FEED_BATCH_SIZE: int = 30
     PUBLIC_FEED_INTERVAL_HOURS: int = 8
