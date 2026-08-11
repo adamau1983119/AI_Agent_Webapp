@@ -65,6 +65,7 @@ def main() -> int:
         ("PD-AE1-F02 skip API client", "skip:" in api and "alterEgoApi.skip" in onboarding, ""),
         ("PD-AE1-F02 skip testid", "btn-alter-ego-skip" in onboarding, ""),
         ("PD-AE1-F03 routing helper", "resolvePostLoginPath" in routing and "AlterEgoGateRedirect" in app_py, ""),
+        ("PD-AE1-F03 dashboard-first", "DASHBOARD_PATH" in routing and "/dashboard" in routing, ""),
         ("PD-AE1-F03 my-channel route", "/my-channel" in app_py and "MyChannel" in app_py, ""),
         ("PD-AE1-F04 settings CTA", "btn-settings-alter-ego-setup" in settings, ""),
         ("PD-AE1-F05 PostKit platform tabs", "btn-postkit-platform-" in postkit, ""),

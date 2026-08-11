@@ -3,6 +3,7 @@ import type { Schedule, Topic } from '@/types'
 import { getProxyUrl, IMAGE_PLACEHOLDER_DATA_URI } from '@/utils/imageProxy'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from '@/i18n'
+import { filterTopicsForHktDay } from '@/lib/topicDayHkt'
 
 interface TodayTopicsProps {
   schedules?: Schedule[]  // 可選，目前未使用
@@ -32,41 +33,10 @@ export default function TodayTopics({ topics }: TodayTopicsProps) {
     },
   ]
 
-  // 只顯示今日主題；無今日卡時不回退舊卡（避免誤當成「今日新卡」）
-  const displayTopics = React.useMemo(() => {
-    const now = new Date()
-    const todayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()))
-    const today = todayUTC.toISOString().split('T')[0]
-    
-    return topics.filter((t) => {
-      try {
-        const dateValue = (t as any).generated_at || (t as any).generatedAt || 
-                         (t as any).created_at || (t as any).createdAt
-        if (!dateValue) return false
-        
-        let date: Date
-        if (typeof dateValue === 'string') {
-          date = new Date(dateValue)
-        } else if (dateValue instanceof Date) {
-          date = dateValue
-        } else {
-          date = new Date(dateValue)
-        }
-        
-        if (isNaN(date.getTime())) return false
-        
-        const topicDateUTC = new Date(Date.UTC(
-          date.getUTCFullYear(),
-          date.getUTCMonth(),
-          date.getUTCDate()
-        ))
-        const topicDate = topicDateUTC.toISOString().split('T')[0]
-        return topicDate === today
-      } catch {
-        return false
-      }
-    })
-  }, [topics])
+  const displayTopics = React.useMemo(
+    () => filterTopicsForHktDay(topics as Record<string, unknown>[]) as Topic[],
+    [topics]
+  )
 
   // 按分類分組主題
   const getTopicsByCategory = (category: string) => {
@@ -102,7 +72,6 @@ export default function TodayTopics({ topics }: TodayTopicsProps) {
         </h3>
       </div>
       
-      {/* 如果完全沒有主題，顯示 Agent 收集中 */}
       {displayTopics.length === 0 ? (
         <div className="text-center py-12">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-50 rounded-full mb-4">
@@ -110,8 +79,8 @@ export default function TodayTopics({ topics }: TodayTopicsProps) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
             </svg>
           </div>
-          <p className="text-gray-600 font-medium mb-2">🤖 {t('common.loading')}</p>
-          <p className="text-gray-400 text-sm">{t('dashboard.noContent')}</p>
+          <p className="text-gray-600 font-medium mb-2">{t('dashboard.todayTopicsPreparing')}</p>
+          <p className="text-gray-400 text-sm">{t('dashboard.nextCollectionHint')}</p>
         </div>
       ) : (
         <div className="space-y-8">
@@ -185,7 +154,7 @@ export default function TodayTopics({ topics }: TodayTopicsProps) {
                   </div>
                 ) : (
                   <div className="text-center py-6 text-gray-400 bg-gray-50 rounded-lg">
-                    <p className="text-sm">🤖 {t('common.loading')}</p>
+                    <p className="text-sm">{t('dashboard.collecting').replace('{category}', category.label)}</p>
                   </div>
                 )}
               </div>

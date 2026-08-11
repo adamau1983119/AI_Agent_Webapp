@@ -345,14 +345,15 @@ async def generate_today_all_topics(
         
         logger.info(f"✅ 從 app.state.db 獲取資料庫實例，ID: {id(db)}")
         
-        # 2. 查詢現有主題（直接使用 Motor 集合，避免 Repository 層的複雜性）
-        today = datetime.now().strftime("%Y-%m-%d")
+        # 2. 查詢現有主題（HKT 營運日 + generated_at）
         existing_topics = []
         
         try:
-            # 直接使用 Motor 集合查詢，更簡單直接
+            from app.services.automation.topic_day_hkt import hkt_day_utc_bounds
+
+            start_utc, end_utc = hkt_day_utc_bounds()
             existing_topics_cursor = db["topics"].find({
-                "created_at": {"$gte": f"{today}T00:00:00", "$lt": f"{today}T23:59:59"}
+                "generated_at": {"$gte": start_utc, "$lte": end_utc}
             })
             existing_topics = await existing_topics_cursor.to_list(length=100)
             logger.info(f"📊 現有主題數量: {len(existing_topics)}")

@@ -11,6 +11,12 @@ import ConnectionErrorDisplay from '@/components/ui/ConnectionErrorDisplay'
 import toast from 'react-hot-toast'
 import { usePageTitle } from '@/hooks/usePageTitle'
 import { useTranslation } from '@/i18n'
+import {
+  EXPECTED_DAILY_TOPICS,
+  countTopicsForHktDay,
+  filterTopicsForHktDay,
+  todayHktDateString,
+} from '@/lib/topicDayHkt'
 
 export default function Dashboard() {
   usePageTitle()
@@ -85,54 +91,10 @@ export default function Dashboard() {
   // 或者如果載入時間過長（超過 10 秒），也顯示錯誤提示
   const shouldShowError = hasError || (isLoading && (topicsError || schedulesError))
 
-  // 從分頁響應中提取 topics 數組
-  // 重要：如果有錯誤，不使用緩存數據，返回空數組
-  const topics = (topicsError || schedulesError) ? [] : (topicsResponse?.data || [])
-  
-  // 計算今日主題數量（統一使用 UTC 日期比較）
-  const getTodayTopicsCount = () => {
-    if (!topics || topics.length === 0) return 0
-    
-    const now = new Date()
-    const todayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()))
-    const today = todayUTC.toISOString().split('T')[0]
-    
-    return topics.filter((t) => {
-      try {
-        // 優先使用 generatedAt（前端轉換後的欄位），其次使用 generated_at（後端原始欄位）
-        // 如果都沒有，使用 created_at 或 createdAt
-        const dateValue = (t as any).generatedAt || (t as any).generated_at || 
-                         (t as any).createdAt || (t as any).created_at
-        if (!dateValue) return false
-        
-        let date: Date
-        if (typeof dateValue === 'string') {
-          date = new Date(dateValue)
-        } else if (dateValue instanceof Date) {
-          date = dateValue
-        } else {
-          date = new Date(dateValue)
-        }
-        
-        if (isNaN(date.getTime())) return false
-        
-        // 使用 UTC 日期比較，避免時區問題
-        const topicDateUTC = new Date(Date.UTC(
-          date.getUTCFullYear(),
-          date.getUTCMonth(),
-          date.getUTCDate()
-        ))
-        const topicDate = topicDateUTC.toISOString().split('T')[0]
-        return topicDate === today
-      } catch (error) {
-        // 調試：記錄無法解析的日期
-        console.warn('無法解析主題日期:', t, error)
-        return false
-      }
-    }).length
-  }
-  
-  const todayTopics = getTodayTopicsCount()
+  // 從分頁響應中提取 topics 數組（僅 topics 失敗時清空；schedules 失敗不影響主題卡）
+  const topics = topicsError ? [] : (topicsResponse?.data || [])
+
+  const todayTopics = countTopicsForHktDay(topics)
 
   // 生成今日主題的 mutation
   const generateTodayMutation = useMutation({
@@ -140,12 +102,12 @@ export default function Dashboard() {
     onMutate: () => {
       setIsGenerating(true)
       // 初始化進度狀態
-      const currentCount = getTodayTopicsCount()
+      const currentCount = countTopicsForHktDay(topics)
       setGenerationProgress({
         isGenerating: true,
         current: currentCount,
-        total: 30,
-        percentage: Math.round((currentCount / 30) * 100)
+        total: EXPECTED_DAILY_TOPICS,
+        percentage: Math.round((currentCount / EXPECTED_DAILY_TOPICS) * 100)
       })
       toast.loading(t('dashboard.generating'), { id: 'generate-today' })
     },
@@ -209,10 +171,10 @@ export default function Dashboard() {
   // Debug: Log topic data (development only)
   useEffect(() => {
     if (!import.meta.env.PROD && topics.length > 0) {
-      const today = new Date().toISOString().split('T')[0]
+      const today = todayHktDateString()
       console.log('📊 Topic Data Debug:')
       console.log(`  Total topics: ${topics.length}`)
-      console.log(`  Today's date: ${today}`)
+      console.log(`  Today (HKT): ${today}`)
       console.log('  First 3 topics date info:', topics.slice(0, 3).map(t => {
         const dateValue = (t as any).generated_at || (t as any).generatedAt || 
                          (t as any).created_at || (t as any).createdAt
@@ -253,24 +215,30 @@ export default function Dashboard() {
   }>({
     isGenerating: false,
     current: 0,
-    total: 30,
+    total: EXPECTED_DAILY_TOPICS,
     percentage: 0
   })
   
-  // 計算今日主題數量（使用 useMemo 避免重複計算）
-  const todayTopicsCount = useMemo(() => getTodayTopicsCount(), [topics])
+  const todayTopicsCount = useMemo(() => countTopicsForHktDay(topics), [topics])
+
+  // 產卡進行中：每 2 分鐘輕量刷新（避免 429 仍可追蹤 N/15）
+  useEffect(() => {
+    if (topicsError || todayTopicsCount >= EXPECTED_DAILY_TOPICS) return
+    const id = window.setInterval(() => {
+      refetchTopics()
+    }, 120_000)
+    return () => window.clearInterval(id)
+  }, [todayTopicsCount, topicsError, refetchTopics])
   
   // Debug: Log detailed date comparison (development only) - 只在 topics 變化時執行
   useEffect(() => {
     if (!import.meta.env.PROD && topics.length > 0) {
-      const now = new Date()
-      const todayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()))
-      const today = todayUTC.toISOString().split('T')[0]
+      const today = todayHktDateString()
       
       console.log('='.repeat(60))
       console.log('📊 Date Filtering Debug:')
       console.log(`  Total topics: ${topics.length}`)
-      console.log(`  Today's date (UTC): ${today}`)
+      console.log(`  Today's date (HKT): ${today}`)
       console.log(`  Today's topics count: ${todayTopicsCount}`)
       console.log('='.repeat(60))
       
@@ -343,11 +311,10 @@ export default function Dashboard() {
     previousTopicsCountRef.current = currentCount
     
     // 計算百分比
-    const percentage = Math.round((currentCount / 30) * 100)
+    const percentage = Math.round((currentCount / EXPECTED_DAILY_TOPICS) * 100)
     
-    // 判斷是否應該顯示「正在生成中」
     const shouldShowGenerating = isGenerating || 
-      (currentCount > 0 && currentCount < 30 && currentCount >= previousCount)
+      (currentCount > 0 && currentCount < EXPECTED_DAILY_TOPICS && currentCount >= previousCount)
     
     // 更新進度狀態（只在真正需要時更新）
     if (currentCount === 0 && !isGenerating) {
@@ -355,7 +322,7 @@ export default function Dashboard() {
         setGenerationProgress({
           isGenerating: false,
           current: 0,
-          total: 30,
+          total: EXPECTED_DAILY_TOPICS,
           percentage: 0
         })
       }
@@ -367,19 +334,18 @@ export default function Dashboard() {
         setGenerationProgress({
           isGenerating: shouldShowGenerating,
           current: currentCount,
-          total: 30,
+          total: EXPECTED_DAILY_TOPICS,
           percentage
         })
       }
     }
 
-    // 如果達到30個主題，顯示完成提示（只顯示一次）
-    if (currentCount >= 30 && !hasShownCompleteToast.current) {
+    if (currentCount >= EXPECTED_DAILY_TOPICS && !hasShownCompleteToast.current) {
       hasShownCompleteToast.current = true
       setIsGenerating(false)
       setGenerationProgress(prev => ({ ...prev, isGenerating: false }))
       toast.success(t('dashboard.generateSuccess'), { id: 'generate-today-complete' })
-    } else if (currentCount < 30) {
+    } else if (currentCount < EXPECTED_DAILY_TOPICS) {
       // 重置標記，如果主題數量減少
       hasShownCompleteToast.current = false
       if (currentCount === 0 && !isGenerating) {
@@ -493,18 +459,18 @@ export default function Dashboard() {
               {t('dashboard.todaysTopicsCard')}
             </h3>
             <span className="text-[10px] text-gray-400 font-light">
-              {Math.round((todayTopics / 30) * 100)}%
+              {Math.round((todayTopics / EXPECTED_DAILY_TOPICS) * 100)}%
             </span>
           </div>
           <div className="w-full h-px bg-gray-100 mb-3">
             <div 
               className="h-full bg-black transition-all duration-500"
-              style={{ width: `${Math.round((todayTopics / 30) * 100)}%` }}
+              style={{ width: `${Math.round((todayTopics / EXPECTED_DAILY_TOPICS) * 100)}%` }}
           />
           </div>
-          <p className="text-xl font-light tracking-wide text-black mb-1">{todayTopics}/30</p>
+          <p className="text-xl font-light tracking-wide text-black mb-1">{todayTopics}/{EXPECTED_DAILY_TOPICS}</p>
           <p className="text-[10px] text-gray-400 font-light tracking-wide mb-3">
-            {todayTopics >= 30 ? t('dashboard.completed') : t('dashboard.inProgress')}
+            {todayTopics >= EXPECTED_DAILY_TOPICS ? t('dashboard.completed') : t('dashboard.inProgress')}
           </p>
           
           {/* 操作按鈕 */}
@@ -603,40 +569,7 @@ export default function Dashboard() {
             <>
               <h3 className="text-[11px] tracking-[0.15em] uppercase text-gray-500 mb-4">{t('dashboard.topicCards')}</h3>
               {(() => {
-                // 只顯示今日主題；無今日卡時顯示收集中（不回退舊卡）
-                const now = new Date()
-                const todayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()))
-                const today = todayUTC.toISOString().split('T')[0]
-                
-                const todayTopicsList = topics.filter((t) => {
-                  try {
-                    const dateValue = (t as any).generated_at || (t as any).generatedAt || 
-                                     (t as any).created_at || (t as any).createdAt
-                    if (!dateValue) return false
-                    
-                    let date: Date
-                    if (typeof dateValue === 'string') {
-                      date = new Date(dateValue)
-                    } else if (dateValue instanceof Date) {
-                      date = dateValue
-                    } else {
-                      date = new Date(dateValue)
-                    }
-                    
-                    if (isNaN(date.getTime())) return false
-                    
-                    const topicDateUTC = new Date(Date.UTC(
-                      date.getUTCFullYear(),
-                      date.getUTCMonth(),
-                      date.getUTCDate()
-                    ))
-                    const topicDate = topicDateUTC.toISOString().split('T')[0]
-                    return topicDate === today
-                  } catch {
-                    return false
-                  }
-                })
-                
+                const todayTopicsList = filterTopicsForHktDay(topics)
                 const displayTopics = todayTopicsList
                 const displayTitle = t('dashboard.todayTopics')
                 const showNotice = todayTopicsList.length === 0

@@ -27,6 +27,18 @@ def channel_prefetch_pipeline_enabled() -> bool:
     return _flag("ENABLE_CHANNEL_PREFETCH_PIPELINE", "false")
 
 
+def topic_triple_preload_enabled() -> bool:
+    """產卡後批次 DeepL 預載 en/ja（與 ENABLE_AI_TOPIC_TRANSLATION 互斥政策）。"""
+    return _flag("ENABLE_TOPIC_TRIPLE_PRELOAD", "false")
+
+
+def topic_triple_preload_cap() -> int:
+    try:
+        return max(0, int(getattr(settings, "TOPIC_TRIPLE_PRELOAD_CAP", 30)))
+    except (TypeError, ValueError):
+        return 30
+
+
 def public_feed_pipeline_enabled() -> bool:
     return _flag("ENABLE_PUBLIC_FEED_PIPELINE", "false")
 
@@ -45,6 +57,8 @@ def cost_controls_summary() -> dict:
         "ai_topic_translation": ai_topic_translation_enabled(),
         "ai_topic_fallback": ai_topic_fallback_enabled(),
         "channel_prefetch_pipeline": channel_prefetch_pipeline_enabled(),
+        "topic_triple_preload": topic_triple_preload_enabled(),
+        "topic_triple_preload_cap": topic_triple_preload_cap(),
         "public_feed_pipeline": public_feed_pipeline_enabled(),
         "safe_batch_size": settings.safe_batch_size,
         "public_feed_batch_size": int(settings.PUBLIC_FEED_BATCH_SIZE),

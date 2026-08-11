@@ -1,15 +1,29 @@
 /**
- * Alter Ego 登入後導流（PD-AE1-F03）
+ * Alter Ego 登入後導流（PD-AE1-F03 · v8 Dashboard-first）
  */
 import { alterEgoApi, type DnaStatus } from '@/api/alterEgo';
 
 export const ONBOARDING_PATH = '/onboarding/alter-ego';
 export const MY_CHANNEL_PATH = '/my-channel';
+export const DASHBOARD_PATH = '/dashboard';
 
-/** 僅明確完成態離開 onboarding；未知／缺欄位視為 pending（避免誤跳 my-channel） */
+const ALLOWED_POST_LOGIN = new Set([
+  DASHBOARD_PATH,
+  MY_CHANNEL_PATH,
+  '/topics',
+  '/inspiration',
+]);
+
+function envPostLoginPath(): string | null {
+  const raw = import.meta.env.VITE_POST_LOGIN_PATH?.trim();
+  if (!raw) return null;
+  return ALLOWED_POST_LOGIN.has(raw) ? raw : null;
+}
+
+/** 僅明確完成態離開 onboarding；未知／缺欄位視為 pending */
 export function pathAfterDnaStatus(status: DnaStatus | string | null | undefined): string {
   if (status === 'active' || status === 'skipped' || status === 'legacy_only') {
-    return MY_CHANNEL_PATH;
+    return envPostLoginPath() ?? DASHBOARD_PATH;
   }
   return ONBOARDING_PATH;
 }
@@ -23,9 +37,10 @@ export function isAlterEgoOnboardingDone(
 export async function resolvePostLoginPath(): Promise<string> {
   try {
     const status = await alterEgoApi.getStatus();
-    return pathAfterDnaStatus(status?.dna_status);
+    const path = pathAfterDnaStatus(status?.dna_status);
+    if (path === ONBOARDING_PATH) return ONBOARDING_PATH;
+    return envPostLoginPath() ?? path;
   } catch {
-    // 狀態讀取失敗時進 onboarding，利於 E0-AE-1 手測（勿默默進 my-channel）
     return ONBOARDING_PATH;
   }
 }

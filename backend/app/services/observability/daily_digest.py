@@ -62,6 +62,27 @@ async def maybe_send_daily_digest(*, health_url: str = DEFAULT_HEALTH) -> dict[s
     return await _send_digest(health_url, force=False)
 
 
+async def _topics_hkt_summary() -> tuple[int, int]:
+    """(今日 generated_at 卡數, 預期每日上限)。"""
+    try:
+        from app.services.automation.topic_day_hkt import (
+            expected_topics_today,
+            hkt_day_utc_bounds,
+        )
+        from app.services.repositories.topic_repository import TopicRepository
+
+        start, end = hkt_day_utc_bounds()
+        total = await TopicRepository().count(
+            {"generated_at": {"$gte": start, "$lte": end}}
+        )
+        return total, expected_topics_today()
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("topics_hkt_summary failed: %s", exc)
+        from app.services.automation.topic_day_hkt import expected_topics_today
+
+        return -1, expected_topics_today()
+
+
 async def _send_digest(health_url: str, *, force: bool) -> dict[str, Any]:
     global _last_digest_day
     err: str | None = None
@@ -75,12 +96,20 @@ async def _send_digest(health_url: str, *, force: bool) -> dict[str, Any]:
     verdict = verdict_zh(signal.light)
     day = _today_hkt()
     cc = (body or {}).get("cost_controls") or {}
+    topics_today, topics_expected = await _topics_hkt_summary()
+    topics_line = (
+        f"今日產卡={topics_today}/{topics_expected}（HKT）；"
+        if topics_today >= 0
+        else "今日產卡=查詢失敗；"
+    )
     title = f"每日營運報告 {day}"
     detail = (
         f"【{lamp}】{verdict}。"
         f"正式域 health：{signal.detail}。"
+        f"{topics_line}"
         f"產卡收集={cc.get('scheduled_topic_collection')}；"
-        f"翻譯={cc.get('ai_topic_translation')}；"
+        f"三語預載={cc.get('topic_triple_preload')}（cap={cc.get('topic_triple_preload_cap')}）；"
+        f"收集翻譯={cc.get('ai_topic_translation')}；"
         f"備援={cc.get('ai_topic_fallback')}。"
         f"說明：初期每日一封；紅燈另有即時告警。"
     )

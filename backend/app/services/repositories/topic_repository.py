@@ -84,14 +84,9 @@ class TopicRepository(BaseRepository):
             filter["status"] = status.value if hasattr(status, 'value') else status
         
         if date:
-            # 日期範圍：當天的 00:00:00 到 23:59:59
-            start_date = datetime.strptime(date, "%Y-%m-%d")
-            end_date = datetime(
-                start_date.year,
-                start_date.month,
-                start_date.day,
-                23, 59, 59, 999999
-            )
+            from app.services.automation.topic_day_hkt import hkt_day_utc_bounds
+
+            start_date, end_date = hkt_day_utc_bounds(date)
             filter["generated_at"] = {
                 "$gte": start_date,
                 "$lte": end_date
