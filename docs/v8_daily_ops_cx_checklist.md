@@ -37,7 +37,16 @@
 | **回歸腳本** | ✅ | `python scripts/check_topic_core_regression.py` |
 | **備份** | ✅ | `backup/2026-08-11-topic-dashboard-hkt-pr24` · snapshot README |
 
-**明日 OPS 第一步**：正式域登入 → Dashboard 確認 **OPS-CARD N/15**；若 I18N 待開 → 設 triple preload env 後等下一批產卡。
+--- 
+
+### 本日異常（PR #27 部署檔案路徑）
+
+| 項 | 狀態 | 一句 |
+|----|------|------|
+| **FIX-TOPIC-I18N-CONFIG** | ❌ 已觀察 | 正式域 `/api/v1/topics` 回 `total>0` 但 `data=[]`；根因 `/shared/topic_languages.json` 不存在（Railway Root = `backend/`）。 |
+| 熱修復 | ⏳ 待合併 | 已在 `fix/topic-languages-railway-config` 移到 `backend/config/topic_languages.json` + embedded fallback；待合併 redeploy。 |
+
+**明日 OPS 第一步**：正式域登入 → Dashboard 確認 **OPS-CARD N/15**（不再是空列表）；若 I18N 待開 → 設 triple preload env 後等下一批產卡。
 
 ---
 
@@ -70,10 +79,10 @@
 ```text
 日期：2026-08-11
 OPS-HEALTH：PASS（healthy／connected）
-OPS-CARD：⏳ PR #24 已 merge — 登入 Dashboard 驗 N/15 + TopicCard 網格
-OPS-I18N：⏳ triple preload env 未開則僅驗 zh-TW；開 env 後驗 en/ja
+OPS-CARD：❌ 目前 Dashboard TopicCard 空列表；已定位為 PR #27 部署路徑問題（`/shared` 不存在）
+OPS-I18N：⏳ triple preload env 未開則僅驗 zh-TW；開 env 後驗 en/ja（修復合併後再驗）
 CX-LOGIN：⏳ AE 完成 → /dashboard（截圖）
 OPS-DIGEST／COST：DIGEST PASS（Resend）；COST：
 FAIL／FIX：FIX-TOPIC-HKT 已 merge PR #24；⏳ 密鑰輪換（PD-OBS-TL-08）
-明日第一步：Dashboard OPS-CARD 手測 + 視需要開 ENABLE_TOPIC_TRIPLE_PRELOAD
+明日第一步：Dashboard OPS-CARD 手測（需恢復 TopicCard） + 視需要開 ENABLE_TOPIC_TRIPLE_PRELOAD
 ```
