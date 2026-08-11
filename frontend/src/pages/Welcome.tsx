@@ -20,10 +20,6 @@ import { useAuthStore } from '@/stores/authStore';
 import { resolvePostLoginPath } from '@/lib/alterEgoRouting';
 import WelcomeInkBackground from '@/components/welcome/WelcomeInkBackground';
 
-const BRAND = {
-  name: 'Alter-ego',
-};
-
 const FEATURE_KEYS = ['trends', 'aiWrite', 'channel', 'inspiration', 'style', 'postKit'] as const;
 const FEATURE_ICONS = [TrendingUp, Sparkles, MessageCircle, Lightbulb, Star, Copy];
 
@@ -58,8 +54,8 @@ export default function Welcome() {
 
       <header className="relative z-10 bg-transparent">
         <div className="max-w-[1120px] mx-auto px-4 sm:px-9 py-5 sm:py-6 flex items-center justify-between gap-4">
-          <div className="font-display text-base sm:text-lg tracking-[0.32em] uppercase font-medium">
-            {BRAND.name}
+          <div className="font-display text-base sm:text-lg tracking-[0.18em] uppercase font-medium">
+            {t('brand.name')}
           </div>
           <div className="flex items-center gap-3 sm:gap-4">
             <div className="flex text-[10px] sm:text-[11px] tracking-[0.14em] uppercase">
@@ -187,7 +183,7 @@ export default function Welcome() {
 
       <footer className="relative z-[2] border-t border-black/[0.06] py-8">
         <div className="max-w-[1120px] mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] text-[#a3a3a3] tracking-[0.15em] uppercase">
-          <span>© 2026 {BRAND.name}</span>
+          <span>© 2026 {t('brand.name')}</span>
           <div className="flex gap-6">
             <Link
               to="/terms"
