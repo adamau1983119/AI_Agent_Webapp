@@ -63,7 +63,7 @@ export default function TopicCard({
   const uiLang = normalizeUiLanguage(language)
   const needsTranslate = needsTranslateToCurrentLanguage(topic, language)
   const { titles } = getTopicI18nMaps(topic)
-  const hasStandardCache = needsTranslate && Boolean(titles[uiLang])
+  const hasStandardCache = Boolean(titles[uiLang])
 
   const display = useMemo(
     () => resolveTopicDisplayCopy(topic, language, override),
