@@ -20,7 +20,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { resolvePostLoginPath } from '@/lib/alterEgoRouting';
 
 const BRAND = {
-  name: 'INFLUENCERS',
+  name: 'Alter-ego',
   slogan: 'AI-POWERED CONTENT CREATION',
 };
 
