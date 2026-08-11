@@ -1,92 +1,126 @@
 """
 Email 服務
 Phase 2: 會員系統
-使用 Gmail SMTP 發送郵件（支援異步）
+正式域優先 Resend HTTPS；本機可回退 Gmail SMTP。
 """
-import aiosmtplib
-from email.mime.text import MIMEText
+import logging
 from email.mime.multipart import MIMEMultipart
-from typing import Optional, Dict, Any
+from email.mime.text import MIMEText
+from typing import Any, Dict, Optional
+
+import aiosmtplib
+import httpx
+
 from app.config_module import settings
 from app.models.user import Language
-import logging
 
 logger = logging.getLogger(__name__)
 
-# Gmail SMTP 設定
 GMAIL_SMTP_HOST = "smtp.gmail.com"
 GMAIL_SMTP_PORT = 587
+RESEND_API_URL = "https://api.resend.com/emails"
+DEFAULT_RESEND_FROM = "Alter Ego <onboarding@resend.dev>"
 
 
 class EmailService:
-    """Email 服務（使用 Gmail SMTP）"""
-    
+    """Email 服務（Resend HTTPS 優先，否則 Gmail SMTP）"""
+
     def __init__(self):
         self.smtp_host = GMAIL_SMTP_HOST
         self.smtp_port = GMAIL_SMTP_PORT
         self.username = settings.GMAIL_USER
         self.password = settings.GMAIL_APP_PASSWORD
         self.from_email = settings.GMAIL_USER
-        self.from_name = "Influencers AI Agents"
-    
+        self.from_name = "Alter Ego"
+        self.resend_api_key = (settings.RESEND_API_KEY or "").strip()
+        self.email_from = (settings.EMAIL_FROM or "").strip()
+
     def is_configured(self) -> bool:
-        """檢查 Email 服務是否已配置"""
+        if self.resend_api_key:
+            return True
         return bool(self.username and self.password)
-    
+
+    def _from_header(self) -> str:
+        if self.email_from:
+            return self.email_from
+        if self.resend_api_key:
+            return DEFAULT_RESEND_FROM
+        return f"{self.from_name} <{self.from_email}>"
+
+    async def _send_via_resend(
+        self,
+        to_email: str,
+        subject: str,
+        html_content: str,
+        text_content: Optional[str] = None,
+    ) -> bool:
+        payload: Dict[str, Any] = {
+            "from": self._from_header(),
+            "to": [to_email],
+            "subject": subject,
+            "html": html_content,
+        }
+        if text_content:
+            payload["text"] = text_content
+        try:
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                resp = await client.post(
+                    RESEND_API_URL,
+                    headers={
+                        "Authorization": f"Bearer {self.resend_api_key}",
+                        "Content-Type": "application/json",
+                    },
+                    json=payload,
+                )
+            if resp.status_code >= 400:
+                logger.error(
+                    "Email 發送失敗 (resend): %s %s",
+                    resp.status_code,
+                    resp.text[:500],
+                )
+                return False
+            logger.info("Email 發送成功 (resend): %s", to_email)
+            return True
+        except Exception as e:
+            logger.error("Email 發送失敗 (resend): %s", e)
+            return False
+
     async def send_email(
         self,
         to_email: str,
         subject: str,
         html_content: str,
-        text_content: Optional[str] = None
+        text_content: Optional[str] = None,
     ) -> bool:
-        """
-        發送 Email
-        
-        Args:
-            to_email: 收件人 Email
-            subject: 郵件主題
-            html_content: HTML 內容
-            text_content: 純文字內容（可選）
-            
-        Returns:
-            是否發送成功
-        """
         if not self.is_configured():
             logger.warning("Email 服務未配置，跳過發送")
             return False
-        
+
+        if self.resend_api_key:
+            return await self._send_via_resend(
+                to_email, subject, html_content, text_content
+            )
+
         try:
-            # 建立郵件
             message = MIMEMultipart("alternative")
-            message["From"] = f"{self.from_name} <{self.from_email}>"
+            message["From"] = self._from_header()
             message["To"] = to_email
             message["Subject"] = subject
-            
-            # 添加純文字版本
             if text_content:
-                text_part = MIMEText(text_content, "plain", "utf-8")
-                message.attach(text_part)
-            
-            # 添加 HTML 版本
-            html_part = MIMEText(html_content, "html", "utf-8")
-            message.attach(html_part)
-            
-            # 發送郵件
+                message.attach(MIMEText(text_content, "plain", "utf-8"))
+            message.attach(MIMEText(html_content, "html", "utf-8"))
             await aiosmtplib.send(
                 message,
                 hostname=self.smtp_host,
                 port=self.smtp_port,
                 username=self.username,
                 password=self.password,
-                start_tls=True
+                start_tls=True,
             )
-            
-            logger.info(f"Email 發送成功: {to_email}")
+            logger.info("Email 發送成功 (smtp): %s", to_email)
             return True
-            
         except Exception as e:
-            logger.error(f"Email 發送失敗: {e}")
+            logger.error("Email 發送失敗 (smtp): %s", e)
             return False
     
     async def send_verification_email(
