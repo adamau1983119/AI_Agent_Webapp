@@ -1,6 +1,6 @@
-"""產卡後 DeepL 批次預載 en/ja → topic_translations + titles_i18n（OPS-I18N）。
+"""產卡後 DeepL 批次預載 → topic_translations + titles_i18n（OPS-I18N）。
 
-MD-M2：本檔 ≤150 行（目前約 93 行）；擴充請拆 topic_triple_preload_sync.py。
+MD-M2：本檔 ≤150 行；擴充請拆 topic_triple_preload_sync.py。
 """
 from __future__ import annotations
 
@@ -8,20 +8,20 @@ import logging
 from datetime import datetime
 from typing import Any, Dict, List
 
-from app.services.automation.topic_preload_zh import ensure_zh_tw_title
 from app.models.topic_translation import TranslationType
+from app.services.automation.topic_title_normalize import normalize_topic_title_for_display_lang
 from app.services.repositories.topic_repository import TopicRepository
 from app.services.repositories.topic_translation_repository import TopicTranslationRepository
 from app.services.translation.deepl_provider import translate_with_fallback
 from app.utils.cost_controls import topic_triple_preload_cap, topic_triple_preload_enabled
 from app.utils.logger import log_cost_event
+from app.utils.topic_languages import normalize_topic_language, preload_languages_for
 
 logger = logging.getLogger(__name__)
-_PRELOAD_LANGS = ("en", "ja")
 
 
 async def preload_topic_titles(topic_ids: List[str]) -> Dict[str, Any]:
-    """批次預載標題；受 TOPIC_TRIPLE_PRELOAD_CAP 限制（每語言 1 次 DeepL）。"""
+    """批次預載：先正規化收集語言 title，再 DeepL 其餘 supported 語言。"""
     if not topic_triple_preload_enabled():
         return {"status": "disabled", "processed": 0, "translated": 0}
     cap = topic_triple_preload_cap()
@@ -41,27 +41,25 @@ async def preload_topic_titles(topic_ids: List[str]) -> Dict[str, Any]:
         if not title_src:
             skipped += 1
             continue
-        titles_i18n: Dict[str, str] = dict(topic.get("titles_i18n") or {})
-        src_lang = topic.get("display_language") or "zh-TW"
 
         try:
-            title_src, did_zh = await ensure_zh_tw_title(
+            title_src, did_norm = await normalize_topic_title_for_display_lang(
                 topic_id, topic, repo=repo, trans_repo=trans_repo
             )
-            if did_zh:
+            if did_norm:
                 translated += 1
                 topic = await repo.get_topic_by_id(topic_id) or topic
-                titles_i18n = dict(topic.get("titles_i18n") or {})
         except Exception as exc:
-            logger.warning("preload zh-TW %s: %s", topic_id, exc)
+            logger.warning("preload normalize %s: %s", topic_id, exc)
             skipped += 1
+            continue
 
-        if src_lang == "zh-TW" and titles_i18n.get("zh-TW"):
-            titles_i18n.setdefault("zh-TW", titles_i18n["zh-TW"])
-        elif src_lang == "zh-TW":
-            titles_i18n.setdefault("zh-TW", title_src)
+        titles_i18n: Dict[str, str] = dict(topic.get("titles_i18n") or {})
+        display_lang = normalize_topic_language(topic.get("display_language"))
+        titles_i18n.setdefault(display_lang, title_src[:200])
         changed = False
-        for lang in _PRELOAD_LANGS:
+
+        for lang in preload_languages_for(display_lang):
             if translated >= cap:
                 break
             if titles_i18n.get(lang):
@@ -97,7 +95,8 @@ async def preload_topic_titles(topic_ids: List[str]) -> Dict[str, Any]:
             except Exception as exc:
                 logger.warning("preload %s %s: %s", topic_id, lang, exc)
                 skipped += 1
-        if changed:
+
+        if changed or did_norm:
             await repo.update_topic(topic_id, {
                 "titles_i18n": titles_i18n,
                 "updated_at": datetime.utcnow(),

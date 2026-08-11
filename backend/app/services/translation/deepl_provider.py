@@ -8,24 +8,13 @@ import httpx
 
 from app.config import settings
 from app.utils.logger import log_cost_event
+from app.utils.topic_languages import deepl_target_lang, fallback_prefix, normalize_topic_language
 
 logger = logging.getLogger(__name__)
 
-_DEEPL_LANG = {
-    "zh-TW": "ZH-HANT",
-    "en": "EN-US",
-    "ja": "JA",
-}
-
-_FALLBACK_PREFIX = {
-    "ja": "[Fallback-JA]",
-    "en": "[Fallback-EN]",
-    "zh-TW": "[Fallback-ZH]",
-}
-
 
 def _fallback_text(lang: str, summary_flash: str) -> str:
-    prefix = _FALLBACK_PREFIX.get(lang, "[Fallback]")
+    prefix = fallback_prefix(normalize_topic_language(lang))
     log_cost_event(
         "TRANSLATION_FALLBACK_TRIGGERED",
         lang=lang,
@@ -42,7 +31,7 @@ async def translate_deepl_once(text: str, target_lang: str) -> Optional[str]:
     api_key = getattr(settings, "DEEPL_API_KEY", "") or ""
     if not api_key:
         return None
-    deepl_lang = _DEEPL_LANG.get(target_lang)
+    deepl_lang = deepl_target_lang(target_lang)
     if not deepl_lang:
         return None
     timeout = float(getattr(settings, "TRANSLATION_TIMEOUT_SEC", 5) or 5)
@@ -84,7 +73,7 @@ async def translate_with_fallback(
     if not api_key:
         return _fallback_text(target_lang, fallback_src), "fallback"
 
-    deepl_lang = _DEEPL_LANG.get(target_lang)
+    deepl_lang = deepl_target_lang(target_lang)
     if not deepl_lang:
         return _fallback_text(target_lang, fallback_src), "fallback"
 

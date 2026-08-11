@@ -35,6 +35,8 @@ export interface Topic {
   titles_i18n?: Record<string, string>
   descriptionI18n?: Record<string, string>
   description_i18n?: Record<string, string>
+  titleScriptMismatch?: boolean
+  title_script_mismatch?: boolean
 }
 
 // 內容類型

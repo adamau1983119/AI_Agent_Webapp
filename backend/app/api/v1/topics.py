@@ -26,6 +26,7 @@ from app.services.search_service import SearchService, UserRole
 from app.models.topic import Category, Status
 from app.database import check_connection_from_request, get_database_from_request
 from app.utils.i18n import get_error_message, get_user_language
+from app.utils.topic_languages import title_script_mismatch as topic_title_script_mismatch
 from fastapi import Request
 from app.config import settings
 # 使用統一的 exceptions 模組，避免循環導入問題
@@ -88,6 +89,10 @@ def _convert_to_response(topic_doc: dict) -> TopicResponse:
         topic_doc["preview_images"] = _normalize_preview_images(
             topic_doc.get("preview_images")
         )
+    title = (topic_doc.get("title") or "").strip()
+    topic_doc["title_script_mismatch"] = topic_title_script_mismatch(
+        title, topic_doc.get("display_language")
+    )
     return TopicResponse(**topic_doc)
 
 
@@ -319,7 +324,12 @@ async def get_topic_detail(
                     topic["status"] = Status(topic["status"])
                 except:
                     logger.warning(f"無法轉換 status: {topic.get('status')}")
-            
+
+            detail_title = (topic.get("title") or "").strip()
+            topic["title_script_mismatch"] = topic_title_script_mismatch(
+                detail_title, topic.get("display_language")
+            )
+
             response = TopicDetailResponse(
                 **topic,
                 content=content_response,

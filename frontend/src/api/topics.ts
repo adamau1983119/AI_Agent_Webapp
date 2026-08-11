@@ -30,6 +30,8 @@ export function convertTopic(apiTopic: any): Topic {
     originalTitle: apiTopic.original_title || apiTopic.originalTitle || undefined,
     titlesI18n: apiTopic.titles_i18n || apiTopic.titlesI18n,
     descriptionI18n: apiTopic.description_i18n || apiTopic.descriptionI18n,
+    titleScriptMismatch:
+      apiTopic.title_script_mismatch ?? apiTopic.titleScriptMismatch,
   }
 }
 

@@ -11,25 +11,13 @@ from app.models.topic_translation import TranslationType, TranslationProvider
 from app.services.translation.deepl_provider import translate_with_fallback
 from app.services.translation.inflight_guard import with_inflight, translation_key
 from app.utils.logger import log_cost_event
+from app.utils.topic_languages import (
+    normalize_topic_language as normalize_language,
+    title_script_mismatch,
+)
 import logging
 
 logger = logging.getLogger(__name__)
-
-_SUPPORTED = frozenset({"zh-TW", "en", "ja"})
-
-
-def normalize_language(lang: Optional[str]) -> str:
-    if not lang:
-        return "zh-TW"
-    raw = str(lang).strip()
-    low = raw.lower()
-    if low in ("zh", "zh-tw", "zh-hk", "zh-hant"):
-        return "zh-TW"
-    if low.startswith("en"):
-        return "en"
-    if low in ("ja", "jp", "ja-jp"):
-        return "ja"
-    return raw if raw in _SUPPORTED else "zh-TW"
 
 
 class TopicDisplayTranslationService:
@@ -56,7 +44,9 @@ class TopicDisplayTranslationService:
         )
 
         if target == collection_lang and trans_type == TranslationType.STANDARD:
-            return self._build_result(topic, target, collection_lang, cached=True), None
+            title = (topic.get("title") or "").strip()
+            if not title_script_mismatch(title, collection_lang):
+                return self._build_result(topic, target, collection_lang, cached=True), None
 
         key = translation_key(topic_id, target, trans_type)
 
