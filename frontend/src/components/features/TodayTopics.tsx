@@ -4,6 +4,7 @@ import { getProxyUrl, IMAGE_PLACEHOLDER_DATA_URI } from '@/utils/imageProxy'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from '@/i18n'
 import { filterTopicsForHktDay } from '@/lib/topicDayHkt'
+import { resolveTopicDisplayCopy } from '@/lib/topicDisplay'
 
 interface TodayTopicsProps {
   schedules?: Schedule[]  // 可選，目前未使用
@@ -11,7 +12,7 @@ interface TodayTopicsProps {
 }
 
 export default function TodayTopics({ topics }: TodayTopicsProps) {
-  const { t } = useTranslation()
+  const { t, language } = useTranslation()
   const navigate = useNavigate()
   
   // 分類配置
@@ -106,6 +107,7 @@ export default function TodayTopics({ topics }: TodayTopicsProps) {
                     {categoryTopics.map((topic) => {
                       const imageUrl = getTopicImage(topic)
                       const source = topic.source || t('topics.source')
+                      const display = resolveTopicDisplayCopy(topic, language)
                       
                       return (
                         <div 
@@ -142,7 +144,7 @@ export default function TodayTopics({ topics }: TodayTopicsProps) {
                                 textOverflow: 'ellipsis',
                               }}
                             >
-                              {topic.title}
+                              {display.title}
                             </h5>
                             <p className="text-xs text-gray-500 mt-1">
                               {source}

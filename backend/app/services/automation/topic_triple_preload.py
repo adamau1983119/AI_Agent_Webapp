@@ -8,6 +8,7 @@ import logging
 from datetime import datetime
 from typing import Any, Dict, List
 
+from app.services.automation.topic_preload_zh import ensure_zh_tw_title
 from app.models.topic_translation import TranslationType
 from app.services.repositories.topic_repository import TopicRepository
 from app.services.repositories.topic_translation_repository import TopicTranslationRepository
@@ -42,7 +43,22 @@ async def preload_topic_titles(topic_ids: List[str]) -> Dict[str, Any]:
             continue
         titles_i18n: Dict[str, str] = dict(topic.get("titles_i18n") or {})
         src_lang = topic.get("display_language") or "zh-TW"
-        if src_lang == "zh-TW":
+
+        try:
+            title_src, did_zh = await ensure_zh_tw_title(
+                topic_id, topic, repo=repo, trans_repo=trans_repo
+            )
+            if did_zh:
+                translated += 1
+                topic = await repo.get_topic_by_id(topic_id) or topic
+                titles_i18n = dict(topic.get("titles_i18n") or {})
+        except Exception as exc:
+            logger.warning("preload zh-TW %s: %s", topic_id, exc)
+            skipped += 1
+
+        if src_lang == "zh-TW" and titles_i18n.get("zh-TW"):
+            titles_i18n.setdefault("zh-TW", titles_i18n["zh-TW"])
+        elif src_lang == "zh-TW":
             titles_i18n.setdefault("zh-TW", title_src)
         changed = False
         for lang in _PRELOAD_LANGS:
