@@ -19,7 +19,7 @@ export default function Terms() {
         >
           ← {t('common.back')}
         </Link>
-        <span className="font-display text-lg tracking-[0.2em] uppercase">INFLUENCERS</span>
+        <span className="font-display text-lg tracking-[0.2em] uppercase">{t('brand.name')}</span>
         <div className="w-16"></div>
       </header>
       

@@ -8,12 +8,7 @@ import { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { useTranslation } from '../i18n';
 import { authApi } from '../api/auth';
-
-// 統一品牌設定
-const BRAND = {
-  name: 'INFLUENCERS',
-  slogan: 'AI-POWERED CONTENT CREATION',
-};
+import { BRAND } from '@/lib/brand';
 
 export default function VerifyEmail() {
   const { t } = useTranslation();

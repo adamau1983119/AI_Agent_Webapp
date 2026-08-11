@@ -8,12 +8,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation, languageOptions, Language } from '../i18n';
 import { authApi } from '../api/auth';
-
-// 統一品牌設定
-const BRAND = {
-  name: 'INFLUENCERS',
-  slogan: 'AI-POWERED CONTENT CREATION',
-};
+import { BRAND } from '@/lib/brand';
 
 export default function ForgotPassword() {
   const { t, language, setLanguage } = useTranslation();

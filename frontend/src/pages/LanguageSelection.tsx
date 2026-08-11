@@ -8,12 +8,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation, languageOptions, Language } from '../i18n';
-
-// 統一品牌設定
-const BRAND = {
-  name: 'INFLUENCERS',
-  slogan: 'AI-POWERED CONTENT CREATION',
-};
+import { BRAND } from '@/lib/brand';
 
 export default function LanguageSelection() {
   const navigate = useNavigate();
