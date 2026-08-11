@@ -7,7 +7,7 @@ import { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useTranslation } from '@/i18n'
 
-const BRAND_NAME = 'Influencers AI'
+const BRAND_NAME = 'Alter-ego'
 
 export function usePageTitle(customTitle?: string) {
   const location = useLocation()

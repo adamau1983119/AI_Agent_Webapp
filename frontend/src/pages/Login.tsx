@@ -10,12 +10,7 @@ import { useTranslation } from '../i18n';
 import { useAuthStore } from '../stores/authStore';
 import { authApi } from '../api/auth';
 import { resolvePostLoginPath } from '@/lib/alterEgoRouting';
-
-// 統一品牌設定
-const BRAND = {
-  name: 'INFLUENCERS',
-  slogan: 'AI-POWERED CONTENT CREATION',
-};
+import { BRAND } from '@/lib/brand';
 
 export default function Login() {
   const { t } = useTranslation();

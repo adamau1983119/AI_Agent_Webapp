@@ -54,7 +54,7 @@ export default function Welcome() {
 
       <header className="relative z-10 bg-transparent">
         <div className="max-w-[1120px] mx-auto px-4 sm:px-9 py-5 sm:py-6 flex items-center justify-between gap-4">
-          <div className="font-display text-base sm:text-lg tracking-[0.18em] uppercase font-medium">
+          <div className="font-display text-base sm:text-lg tracking-[0.32em] uppercase font-medium">
             {t('brand.name')}
           </div>
           <div className="flex items-center gap-3 sm:gap-4">

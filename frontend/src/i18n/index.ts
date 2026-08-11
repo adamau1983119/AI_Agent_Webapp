@@ -66,7 +66,7 @@ const zhTW = {
   'nav.profile': '個人資料',
   
   // 品牌
-  'brand.name': 'Influencers AI',
+  'brand.name': 'Alter-ego',
   'brand.tagline': '網紅 AI 助手',
   
   // 問候語
@@ -170,7 +170,7 @@ const zhTW = {
   'legal.terms.subtitle': 'TERMS OF SERVICE',
   'legal.terms.lastUpdate': '最後更新：2026 年 2 月',
   'legal.terms.section1.title': '1. 服務說明',
-  'legal.terms.section1.content': 'Influencers AI（以下簡稱「本服務」）是一個 AI 驅動的內容創作平台，旨在幫助用戶生成高品質的社群媒體內容。',
+  'legal.terms.section1.content': 'Alter-ego（以下簡稱「本服務」）是一個 AI 驅動的內容創作平台，旨在幫助用戶生成高品質的社群媒體內容。',
   'legal.terms.section2.title': '2. 帳號註冊',
   'legal.terms.section2.content': '您必須提供真實、準確的個人資訊來註冊帳號。您有責任保護您的帳號安全，並對帳號下的所有活動負責。',
   'legal.terms.section3.title': '3. 內容所有權',
@@ -1283,7 +1283,7 @@ const en: typeof zhTW = {
   'nav.profile': 'Profile',
   
   // Brand
-  'brand.name': 'Influencers AI',
+  'brand.name': 'Alter-ego',
   'brand.tagline': 'AI Assistant for Influencers',
   
   // Greeting
@@ -1387,7 +1387,7 @@ const en: typeof zhTW = {
   'legal.terms.subtitle': 'TERMS OF SERVICE',
   'legal.terms.lastUpdate': 'Last updated: February 2026',
   'legal.terms.section1.title': '1. Service Description',
-  'legal.terms.section1.content': 'Influencers AI (hereinafter referred to as "the Service") is an AI-powered content creation platform designed to help users generate high-quality social media content.',
+  'legal.terms.section1.content': 'Alter-ego (hereinafter referred to as "the Service") is an AI-powered content creation platform designed to help users generate high-quality social media content.',
   'legal.terms.section2.title': '2. Account Registration',
   'legal.terms.section2.content': 'You must provide true and accurate personal information to register an account. You are responsible for protecting your account security and all activities under your account.',
   'legal.terms.section3.title': '3. Content Ownership',
@@ -2491,7 +2491,7 @@ const ja: typeof zhTW = {
   'nav.profile': 'プロフィール',
   
   // ブランド
-  'brand.name': 'Influencers AI',
+  'brand.name': 'Alter-ego',
   'brand.tagline': 'インフルエンサーAIアシスタント',
   
   // 挨拶
@@ -2595,7 +2595,7 @@ const ja: typeof zhTW = {
   'legal.terms.subtitle': 'TERMS OF SERVICE',
   'legal.terms.lastUpdate': '最終更新：2026年2月',
   'legal.terms.section1.title': '1. サービス説明',
-  'legal.terms.section1.content': 'Influencers AI（以下「本サービス」）は、ユーザーが高品質なソーシャルメディアコンテンツを生成できるAI駆動のコンテンツ作成プラットフォームです。',
+  'legal.terms.section1.content': 'Alter-ego（以下「本サービス」）は、ユーザーが高品質なソーシャルメディアコンテンツを生成できるAI駆動のコンテンツ作成プラットフォームです。',
   'legal.terms.section2.title': '2. アカウント登録',
   'legal.terms.section2.content': 'アカウント登録には真実かつ正確な個人情報を提供する必要があります。アカウントのセキュリティを保護し、アカウント下のすべての活動に責任を負います。',
   'legal.terms.section3.title': '3. コンテンツの所有権',
