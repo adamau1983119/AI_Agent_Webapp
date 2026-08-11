@@ -1,15 +1,14 @@
 import type { Topic } from '@/types'
 import type { TopicDisplayOverride } from '@/components/ui/TopicTranslateDisplayButton'
+import {
+  collectionTitleMatchesUi,
+  getCollectionLanguage,
+  normalizeUiLanguage,
+  topicTitleScriptMismatch,
+  type UiLanguage,
+} from '@/lib/topicLanguages'
 
-export type UiLanguage = 'zh-TW' | 'en' | 'ja'
-
-export function normalizeUiLanguage(lang?: string): UiLanguage {
-  if (!lang) return 'zh-TW'
-  const low = lang.toLowerCase()
-  if (low.startsWith('en')) return 'en'
-  if (low === 'ja' || low.startsWith('ja')) return 'ja'
-  return 'zh-TW'
-}
+export type { UiLanguage }
 
 export function getTopicI18nMaps(topic: Topic) {
   return {
@@ -18,22 +17,11 @@ export function getTopicI18nMaps(topic: Topic) {
   }
 }
 
-export function getCollectionLanguage(topic: Topic): UiLanguage {
-  return normalizeUiLanguage(topic.displayLanguage || topic.display_language)
-}
-
-export function titleHasCjk(text: string): boolean {
-  return /[\u4e00-\u9fff]/.test(text)
-}
-
-/** 收集語言與標題實際文字是否一致（避免 display_language=zh-TW 但 RSS 英文） */
-export function collectionTitleMatchesUi(topic: Topic, ui: UiLanguage): boolean {
-  const collectionLang = getCollectionLanguage(topic)
-  if (ui !== collectionLang) return false
-  const title = (topic.title || '').trim()
-  if (ui === 'zh-TW') return titleHasCjk(title)
-  if (ui === 'en') return /[A-Za-z]/.test(title)
-  return true
+export {
+  collectionTitleMatchesUi,
+  getCollectionLanguage,
+  normalizeUiLanguage,
+  topicTitleScriptMismatch,
 }
 
 /** 是否顯示「譯為目前語言」按鈕 */
@@ -43,7 +31,7 @@ export function needsTranslateToCurrentLanguage(topic: Topic, uiLanguage: string
   const { titles } = getTopicI18nMaps(topic)
   if (titles[ui]?.trim()) return false
   if (ui !== collectionLang) return true
-  return !collectionTitleMatchesUi(topic, ui)
+  return topicTitleScriptMismatch(topic)
 }
 
 /** 方案 C：預設顯示收集時標題；若已有目前語言快取則優先顯示譯文 */
@@ -69,7 +57,7 @@ export function resolveTopicDisplayCopy(
     return {
       title: titles[ui],
       description: descriptions[ui] ?? topic.description,
-      usingTranslation: ui !== collectionLang || !collectionTitleMatchesUi(topic, ui),
+      usingTranslation: ui !== collectionLang || topicTitleScriptMismatch(topic),
       fromCache: true,
     }
   }

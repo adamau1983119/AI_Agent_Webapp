@@ -41,6 +41,10 @@ def _static_checks() -> list[tuple[str, bool, str]]:
     today = ROOT / "frontend/src/components/features/TodayTopics.tsx"
     repo = ROOT / "backend/app/services/repositories/topic_repository.py"
     preload = ROOT / "backend/app/services/automation/topic_triple_preload.py"
+    normalize_mod = ROOT / "backend/app/services/automation/topic_title_normalize.py"
+    lang_cfg = ROOT / "shared/topic_languages.json"
+    lang_util = ROOT / "backend/app/utils/topic_languages.py"
+    topic_langs_fe = ROOT / "frontend/src/lib/topicLanguages.ts"
     routing = ROOT / "frontend/src/lib/alterEgoRouting.ts"
     schedules = ROOT / "backend/app/api/v1/schedules.py"
     cost_ctrl = ROOT / "backend/app/utils/cost_controls.py"
@@ -76,6 +80,21 @@ def _static_checks() -> list[tuple[str, bool, str]]:
         text = repo.read_text(encoding="utf-8")
         out.append(("repo uses hkt_day_utc_bounds", "hkt_day_utc_bounds" in text, ""))
     out.append(("topic_triple_preload module", preload.exists(), ""))
+    out.append(("topic_title_normalize module", normalize_mod.exists(), ""))
+    out.append(("shared topic_languages.json", lang_cfg.exists(), ""))
+    out.append(("backend topic_languages util", lang_util.exists(), ""))
+    out.append(("frontend topicLanguages.ts", topic_langs_fe.exists(), ""))
+    if preload.exists():
+        pt = preload.read_text(encoding="utf-8")
+        out.append(
+            (
+                "preload uses normalize + preload_languages_for",
+                "normalize_topic_title_for_display_lang" in pt
+                and "preload_languages_for" in pt
+                and "topic_preload_zh" not in pt,
+                "",
+            )
+        )
     if cost_ctrl.exists():
         out.append(
             (
@@ -114,9 +133,20 @@ def _hkt_import_check() -> tuple[str, bool, str]:
         sys.path.insert(0, str(ROOT / "backend"))
         from app.services.automation.topic_day_hkt import expected_topics_today, hkt_day_utc_bounds
         from app.utils.cost_controls import topic_triple_preload_cap
+        from app.utils.topic_languages import (
+            preload_languages_for,
+            title_script_mismatch,
+        )
 
         start, end = hkt_day_utc_bounds("2026-08-11")
-        ok = start < end and expected_topics_today() == 15 and topic_triple_preload_cap() == 30
+        ok = (
+            start < end
+            and expected_topics_today() == 15
+            and topic_triple_preload_cap() == 30
+            and preload_languages_for("zh-TW") == ("en", "ja")
+            and title_script_mismatch("Hello fashion", "zh-TW")
+            and not title_script_mismatch("時尚潮流", "zh-TW")
+        )
         return ("topic_day_hkt bounds + daily=15", ok, f"{start}..{end}")
     except Exception as exc:  # pragma: no cover
         return ("topic_day_hkt import", False, str(exc))

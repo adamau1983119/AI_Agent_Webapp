@@ -1,0 +1,19 @@
+{
+  "default": "zh-TW",
+  "supported": ["zh-TW", "en", "ja"],
+  "deepl_target": {
+    "zh-TW": "ZH-HANT",
+    "en": "EN-US",
+    "ja": "JA"
+  },
+  "fallback_prefix": {
+    "zh-TW": "[Fallback-ZH]",
+    "en": "[Fallback-EN]",
+    "ja": "[Fallback-JA]"
+  },
+  "script_profile": {
+    "zh-TW": "han",
+    "en": "latin",
+    "ja": "japanese"
+  }
+}
