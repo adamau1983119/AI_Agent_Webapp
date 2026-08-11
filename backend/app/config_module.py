@@ -106,8 +106,10 @@ class Settings(BaseSettings):
     GOOGLE_OAUTH_REDIRECT_URI: str = "http://localhost:8000/api/v1/auth/google/callback"
     
     # ============================================
-    # Phase 2: Gmail SMTP 配置
+    # Phase 2: Email（正式域優先 Resend HTTPS；本機可 Gmail SMTP）
     # ============================================
+    RESEND_API_KEY: str = ""
+    EMAIL_FROM: str = ""  # 例：Alter Ego <onboarding@resend.dev>
     GMAIL_USER: str = ""
     GMAIL_APP_PASSWORD: str = ""
     
