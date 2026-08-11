@@ -1,0 +1,124 @@
+.welcome-ink-field {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.welcome-ink-field::before {
+  content: '';
+  position: absolute;
+  inset: -8%;
+  background:
+    radial-gradient(ellipse 58% 48% at 50% 40%, rgba(80, 80, 80, 0.08), transparent 72%),
+    radial-gradient(ellipse 40% 34% at 42% 48%, rgba(100, 100, 100, 0.05), transparent 70%);
+}
+
+.welcome-ink-event {
+  position: absolute;
+  top: 0;
+  width: 0;
+  height: 0;
+}
+
+.welcome-ink-drop {
+  position: absolute;
+  left: 0;
+  top: -12vh;
+  width: var(--dw, 11px);
+  height: var(--dh, 18px);
+  margin-left: calc(var(--dw, 11px) / -2);
+  border-radius: var(--br, 50% 50% 45% 45% / 55% 55% 45% 45%);
+  background: radial-gradient(
+    ellipse at 35% 22%,
+    rgba(30, 30, 30, var(--dop, 0.78)),
+    rgba(60, 60, 60, 0.28)
+  );
+  opacity: 0;
+  filter: blur(var(--dblur, 0.25px));
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  animation: welcomeInkDropFall var(--dur) var(--delay) cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+  z-index: 5;
+}
+
+.welcome-ink-stain {
+  position: absolute;
+  left: 0;
+  top: var(--land);
+  width: var(--sw, 90px);
+  height: var(--sh, 80px);
+  margin-left: calc(var(--sw, 90px) / -2 + var(--ox, 0px));
+  margin-top: calc(var(--sh, 80px) / -2 + var(--oy, 0px));
+  border-radius: var(--sbr, 42% 58% 55% 45% / 48% 42% 58% 52%);
+  background: var(--sg);
+  filter: blur(var(--sblur, 7px));
+  opacity: 0;
+  transform: scale(0.15) rotate(var(--srot, 0deg));
+  mix-blend-mode: multiply;
+  animation: welcomeInkStainBloom var(--dur) var(--stain-delay, var(--delay)) ease-out infinite;
+  z-index: 1;
+}
+
+@keyframes welcomeInkDropFall {
+  0% {
+    transform: translate3d(0, 0, 0);
+    opacity: 0;
+  }
+  3% {
+    opacity: 0.9;
+  }
+  6% {
+    opacity: 1;
+  }
+  70% {
+    transform: translate3d(0, var(--fall), 0);
+    opacity: 1;
+  }
+  73% {
+    transform: translate3d(0, var(--fall), 0) scale(1.2, 0.4);
+    opacity: 0.5;
+  }
+  76% {
+    transform: translate3d(0, var(--fall), 0) scale(0.35, 0.12);
+    opacity: 0;
+  }
+  100% {
+    transform: translate3d(0, var(--fall), 0) scale(0.35, 0.12);
+    opacity: 0;
+  }
+}
+
+@keyframes welcomeInkStainBloom {
+  0%,
+  68% {
+    transform: scale(0.12) rotate(var(--srot, 0deg));
+    opacity: 0;
+  }
+  71% {
+    transform: scale(0.55) rotate(calc(var(--srot, 0deg) + 4deg));
+    opacity: var(--speak, 0.55);
+  }
+  82% {
+    transform: scale(var(--speak-scale, 2.8)) rotate(calc(var(--srot, 0deg) + 10deg));
+    opacity: calc(var(--speak, 0.55) * 0.55);
+  }
+  100% {
+    transform: scale(var(--send-scale, 4.6)) rotate(calc(var(--srot, 0deg) + 16deg));
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .welcome-ink-drop {
+    animation: none !important;
+    opacity: 0;
+  }
+
+  .welcome-ink-stain {
+    animation: none !important;
+    opacity: 0.2;
+    transform: scale(2.5);
+  }
+}
