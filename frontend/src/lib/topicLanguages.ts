@@ -1,7 +1,7 @@
 /**
  * Topic UI 語言表（SoT：shared/topic_languages.json）+ 標題腳本檢測。
  */
-import langConfig from '@shared/topic_languages.json'
+import langConfig from '@lang-config/topic_languages.json'
 import type { Topic } from '@/types'
 
 export type UiLanguage = 'zh-TW' | 'en' | 'ja'

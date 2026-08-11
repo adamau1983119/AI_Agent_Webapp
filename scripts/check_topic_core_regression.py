@@ -42,7 +42,8 @@ def _static_checks() -> list[tuple[str, bool, str]]:
     repo = ROOT / "backend/app/services/repositories/topic_repository.py"
     preload = ROOT / "backend/app/services/automation/topic_triple_preload.py"
     normalize_mod = ROOT / "backend/app/services/automation/topic_title_normalize.py"
-    lang_cfg = ROOT / "shared/topic_languages.json"
+    lang_cfg = ROOT / "backend/config/topic_languages.json"
+    lang_cfg_legacy = ROOT / "shared/topic_languages.json"
     lang_util = ROOT / "backend/app/utils/topic_languages.py"
     topic_langs_fe = ROOT / "frontend/src/lib/topicLanguages.ts"
     routing = ROOT / "frontend/src/lib/alterEgoRouting.ts"
@@ -81,7 +82,15 @@ def _static_checks() -> list[tuple[str, bool, str]]:
         out.append(("repo uses hkt_day_utc_bounds", "hkt_day_utc_bounds" in text, ""))
     out.append(("topic_triple_preload module", preload.exists(), ""))
     out.append(("topic_title_normalize module", normalize_mod.exists(), ""))
-    out.append(("shared topic_languages.json", lang_cfg.exists(), ""))
+    out.append(("backend/config topic_languages.json", lang_cfg.exists(), ""))
+    if lang_cfg_legacy.exists() and lang_cfg.exists():
+        out.append(
+            (
+                "legacy shared json matches backend/config",
+                lang_cfg.read_text(encoding="utf-8") == lang_cfg_legacy.read_text(encoding="utf-8"),
+                "",
+            )
+        )
     out.append(("backend topic_languages util", lang_util.exists(), ""))
     out.append(("frontend topicLanguages.ts", topic_langs_fe.exists(), ""))
     if preload.exists():

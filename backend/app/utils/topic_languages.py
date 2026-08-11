@@ -1,19 +1,45 @@
-"""Topic UI 語言表（SoT：shared/topic_languages.json）+ 標題腳本檢測。"""
+"""Topic UI 語言表 + 標題腳本檢測（SoT：backend/config/topic_languages.json）。"""
 from __future__ import annotations
 
 import json
+import logging
 from functools import lru_cache
 from pathlib import Path
 from typing import FrozenSet, Optional, Tuple
 
-_CONFIG_PATH = (
-    Path(__file__).resolve().parents[3] / "shared" / "topic_languages.json"
-)
+logger = logging.getLogger(__name__)
+
+_EMBEDDED_CONFIG = {
+    "default": "zh-TW",
+    "supported": ["zh-TW", "en", "ja"],
+    "deepl_target": {"zh-TW": "ZH-HANT", "en": "EN-US", "ja": "JA"},
+    "fallback_prefix": {
+        "zh-TW": "[Fallback-ZH]",
+        "en": "[Fallback-EN]",
+        "ja": "[Fallback-JA]",
+    },
+    "script_profile": {"zh-TW": "han", "en": "latin", "ja": "japanese"},
+}
+
+
+def _config_candidates() -> Tuple[Path, ...]:
+    here = Path(__file__).resolve()
+    return (
+        here.parents[2] / "config" / "topic_languages.json",
+        here.parents[3] / "shared" / "topic_languages.json",
+    )
 
 
 @lru_cache(maxsize=1)
 def _load_config() -> dict:
-    return json.loads(_CONFIG_PATH.read_text(encoding="utf-8"))
+    for path in _config_candidates():
+        if path.is_file():
+            return json.loads(path.read_text(encoding="utf-8"))
+    logger.warning(
+        "topic_languages.json not found (checked %s); using embedded defaults",
+        ", ".join(str(p) for p in _config_candidates()),
+    )
+    return dict(_EMBEDDED_CONFIG)
 
 
 def supported_languages() -> Tuple[str, ...]:
