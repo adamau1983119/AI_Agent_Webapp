@@ -24,10 +24,10 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
-      "@shared/*": ["../shared/*"]
+      "@lang-config/*": ["../backend/config/*"]
     }
   },
-  "include": ["src", "../shared/topic_languages.json"],
+  "include": ["src", "../backend/config/topic_languages.json"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
 

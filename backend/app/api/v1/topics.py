@@ -90,9 +90,13 @@ def _convert_to_response(topic_doc: dict) -> TopicResponse:
             topic_doc.get("preview_images")
         )
     title = (topic_doc.get("title") or "").strip()
-    topic_doc["title_script_mismatch"] = topic_title_script_mismatch(
-        title, topic_doc.get("display_language")
-    )
+    try:
+        topic_doc["title_script_mismatch"] = topic_title_script_mismatch(
+            title, topic_doc.get("display_language")
+        )
+    except Exception as exc:
+        logger.warning("title_script_mismatch skipped for topic list: %s", exc)
+        topic_doc["title_script_mismatch"] = None
     return TopicResponse(**topic_doc)
 
 
@@ -326,9 +330,13 @@ async def get_topic_detail(
                     logger.warning(f"無法轉換 status: {topic.get('status')}")
 
             detail_title = (topic.get("title") or "").strip()
-            topic["title_script_mismatch"] = topic_title_script_mismatch(
-                detail_title, topic.get("display_language")
-            )
+            try:
+                topic["title_script_mismatch"] = topic_title_script_mismatch(
+                    detail_title, topic.get("display_language")
+                )
+            except Exception as exc:
+                logger.warning("title_script_mismatch skipped for topic detail: %s", exc)
+                topic["title_script_mismatch"] = None
 
             response = TopicDetailResponse(
                 **topic,
