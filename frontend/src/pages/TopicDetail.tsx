@@ -56,9 +56,20 @@ export default function TopicDetail() {
     error: topicError,
     refetch: refetchTopic,
   } = useQuery({
-    queryKey: ['topic', id],
-    queryFn: () => topicsAPI.getTopic(id!),
+    queryKey: ['topic', id, language],
+    queryFn: () => topicsAPI.getTopic(id!, language),
     enabled: !!id,
+  })
+
+  const {
+    data: content,
+    isLoading: contentLoading,
+    error: contentError,
+  } = useQuery({
+    queryKey: ['content', id, language],
+    queryFn: () => contentsAPI.getContent(id!, language),
+    enabled: !!id,
+    retry: false,
   })
 
   const displayCopy = useMemo(() => {
@@ -74,17 +85,6 @@ export default function TopicDetail() {
     return resolveTopicDisplayCopy(topic, language, displayOverride)
   }, [topic, language, displayOverride, showCollectionTitle])
 
-  const {
-    data: content,
-    isLoading: contentLoading,
-    error: contentError,
-  } = useQuery({
-    queryKey: ['content', id, language],
-    queryFn: () => contentsAPI.getContent(id!, language),
-    enabled: !!id,
-    retry: false, // 404 不重試
-  })
-
   useEffect(() => {
     setDisplayOverride(null)
     setShowCollectionTitle(false)
@@ -95,7 +95,6 @@ export default function TopicDetail() {
     const bodyLang = normalizeUiLanguage(content.contentLanguage)
     const ui = normalizeUiLanguage(language)
     if (bodyLang !== ui) {
-      // 正文回落收集語時，標題也回落，禁止混語
       setShowCollectionTitle(true)
     }
   }, [content?.contentLanguage, language])
@@ -108,11 +107,9 @@ export default function TopicDetail() {
       setViewStartTime(Date.now())
       
       return () => {
-        // 組件卸載時記錄瀏覽時間
         if (viewStartTime) {
           const duration = Math.floor((Date.now() - viewStartTime) / 1000)
           if (duration > 5) {
-            // 只記錄超過 5 秒的瀏覽
             interactionsAPI.createInteraction({
               user_id: user?.id ?? 'user_default',
               topic_id: id!,
@@ -355,6 +352,11 @@ export default function TopicDetail() {
                 ui: t(`language.${language}`),
               })}
             </p>
+            {displayCopy?.description && (
+              <p className="text-sm text-gray-600 dark:text-gray-300 mt-3 break-words">
+                {displayCopy.description}
+              </p>
+            )}
           </div>
           <div className="flex flex-wrap gap-2 w-full sm:w-auto shrink-0">
           <button

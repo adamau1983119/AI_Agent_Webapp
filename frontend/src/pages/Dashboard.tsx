@@ -20,7 +20,7 @@ const COLLECTION_LANGUAGE = 'zh-TW'
  */
 export default function Dashboard() {
   usePageTitle()
-  const { t } = useTranslation()
+  const { t, language } = useTranslation()
   const autoTriggered = useRef(false)
   const [isGenerating, setIsGenerating] = useState(false)
 
@@ -30,8 +30,8 @@ export default function Dashboard() {
     error: topicsError,
     refetch: refetchTopics,
   } = useQuery({
-    queryKey: ['topics'],
-    queryFn: () => topicsAPI.getTopics({ limit: 30 }),
+    queryKey: ['topics', language],
+    queryFn: () => topicsAPI.getTopics({ limit: 30, lang: language }),
     retry: false,
     staleTime: 30000,
     gcTime: 5 * 60 * 1000,
@@ -236,7 +236,7 @@ export default function Dashboard() {
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         {category.topics.map((topic) => (
                           <div key={topic.id} className="h-full">
-                            <TopicCard topic={topic} enableAutoTranslate />
+                            <TopicCard topic={topic} enableAutoTranslate={false} />
                           </div>
                         ))}
                       </div>

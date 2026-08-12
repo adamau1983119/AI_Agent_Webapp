@@ -66,6 +66,12 @@ class TopicResponse(BaseModel):
         None,
         description="標題文字腳本是否與 display_language 不一致（前端可省略自行檢測）",
     )
+    content_locale: Optional[str] = Field(
+        None, description="本次回應 title/description 所屬語言（ui_lang 解析後）"
+    )
+    locale_resolved: Optional[bool] = Field(
+        None, description="title+description 成套是否已符合請求語言"
+    )
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -121,6 +127,8 @@ class TopicDetailResponse(BaseModel):
     title_script_mismatch: Optional[bool] = Field(
         None, description="標題腳本與 display_language 不一致"
     )
+    content_locale: Optional[str] = Field(None, description="本次回應 title/description 所屬語言")
+    locale_resolved: Optional[bool] = Field(None, description="成套是否已符合請求語言")
 
     model_config = ConfigDict(from_attributes=True)
 

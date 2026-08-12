@@ -114,6 +114,9 @@ async def list_topics(
     include_legacy: bool = Query(
         False, description="True＝含 v8 cutover 前舊卡（預設只顯示新世代）"
     ),
+    lang: Optional[str] = Query(
+        None, description="Content Locale：ui_lang（zh-TW/en/ja）伺服器端解析標題／摘要"
+    ),
 ):
     """
     取得主題列表
@@ -154,6 +157,11 @@ async def list_topics(
             order=order,
             include_legacy=include_legacy,
         )
+
+        ui_lang = normalize_language(lang) if lang else None
+        if ui_lang:
+            from app.services.content_locale.topic_locale_resolver import resolve_topics_list_locale
+            topics = await resolve_topics_list_locale(topics, ui_lang)
         
         # 批量 image／word count（避免 N+1）
         topic_ids = [t.get("id") for t in topics if t.get("id")]
@@ -215,6 +223,9 @@ async def list_topics(
 async def get_topic_detail(
     request: Request,
     topic_id: str = Path(..., description="主題 ID"),
+    lang: Optional[str] = Query(
+        None, description="Content Locale：ui_lang 解析標題／摘要；Miss 時 Flash 譯"
+    ),
 ):
     """
     取得主題詳情
@@ -229,15 +240,29 @@ async def get_topic_detail(
                 status_code=404,
                 detail=get_error_message("topic.not_found", language)
             )
+
+        ui_lang = normalize_language(lang) if lang else None
+        if ui_lang:
+            from app.services.content_locale.topic_locale_resolver import resolve_topic_locale
+            topic = await resolve_topic_locale(topic, ui_lang, translate_on_miss=True)
         
         # 取得內容
         content = await content_repo.get_content_by_topic_id(topic_id)
         content_response = None
         if content:
             try:
-                from app.schemas.content import ContentResponse
                 from app.api.v1.contents import _convert_to_response
-                content_response = _convert_to_response(content)
+                if ui_lang:
+                    from app.services.content_display_translation_service import (
+                        content_display_translation_service,
+                    )
+                    content, err = await content_display_translation_service.resolve_for_ui(
+                        topic_id, ui_lang
+                    )
+                    if err in ("deepseek_not_configured", "translation_fallback") or not content:
+                        content = await content_repo.get_content_by_topic_id(topic_id)
+                if content:
+                    content_response = _convert_to_response(content)
             except Exception as e:
                 logger.warning(f"轉換內容資料失敗，跳過: {e}, content keys: {list(content.keys()) if isinstance(content, dict) else 'not dict'}")
                 content_response = None

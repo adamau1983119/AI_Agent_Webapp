@@ -1,4 +1,4 @@
-/** Dashboard 多卡 translate-display 併發閘門（避免 429）。 */
+/** Dashboard 多卡 translate-display 併發閘門（Content Locale 主路徑下為 fallback）。 */
 type Task = () => Promise<void>
 
 const queue: Task[] = []

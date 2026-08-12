@@ -12,6 +12,7 @@ import TopicTranslateDisplayButton, {
 import {
   getOriginalTitleLine,
   hasCompleteDisplayPack,
+  isServerLocaleResolved,
   needsTranslateToCurrentLanguage,
   resolveTopicDisplayCopy,
 } from '@/lib/topicDisplay'
@@ -58,7 +59,7 @@ const gradientClasses = {
 export default function TopicCard({
   topic,
   kolStyleTestId,
-  enableAutoTranslate = true,
+  enableAutoTranslate = false,
 }: TopicCardProps) {
   const { t, language } = useTranslation()
   const [override, setOverride] = useState<TopicDisplayOverride | null>(null)
@@ -66,7 +67,8 @@ export default function TopicCard({
   const [fadeReady, setFadeReady] = useState(true)
 
   const needsTranslate = needsTranslateToCurrentLanguage(topic, language)
-  const hasStandardCache = hasCompleteDisplayPack(topic, language)
+  const serverResolved = isServerLocaleResolved(topic, language)
+  const hasStandardCache = serverResolved || hasCompleteDisplayPack(topic, language)
   const translateBlocked = isTranslateHardBlocked() || isTranslateRateLimited()
 
   const display = useMemo(
@@ -83,7 +85,7 @@ export default function TopicCard({
   }, [topic.id, language])
 
   useEffect(() => {
-    if (!needsTranslate) {
+    if (!needsTranslate || serverResolved) {
       setStandardLoading(false)
       setFadeReady(true)
       return
@@ -162,7 +164,15 @@ export default function TopicCard({
       cancelled = true
       cancelQueue()
     }
-  }, [topic.id, language, needsTranslate, hasStandardCache, enableAutoTranslate, translateBlocked])
+  }, [
+    topic.id,
+    language,
+    needsTranslate,
+    hasStandardCache,
+    enableAutoTranslate,
+    translateBlocked,
+    serverResolved,
+  ])
 
   const contentProgress = (topic.wordCount || 0) > 0 ? Math.min(100, ((topic.wordCount || 0) / 500) * 100) : 0
   const imageProgress = (topic.imageCount || 0) >= 8 ? 100 : Math.min(100, ((topic.imageCount || 0) / 8) * 100)
