@@ -35,7 +35,7 @@
 | **OPS-ENV-GOOGLE-IMAGE** | ✅ | Railway `GOOGLE_API_KEY`＋`GOOGLE_SEARCH_ENGINE_ID`；API 搜圖 PASS |
 | **OPS-ENV-OAUTH-META** | ✅ 使用者已設 | 正式域 `BACKEND_URL`／`FRONTEND_URL`／`CORS`／OAuth redirect／`META_*` |
 | **FIX-TOPIC-DEDUP** | ✅ **PR #38** | 補生成只填缺口；Dashboard 去重；merge `4819e99` |
-| **FIX-IMAGE-GOOGLE-ONLY** | ⏳ PR | `feature/v8-image-search-ddgs-fix` — 移除 DuckDuckGo |
+| **FIX-IMAGE-GOOGLE-ONLY** | ✅ PR #39 | `main` `6fa295d` — Google 優先、移除 DuckDuckGo |
 | **CX-IMAGE** | ⏳ 手測 | 瀏覽器 Topic 詳情搜圖截圖 |
 | **備份** | ✅ | `backup/2026-08-12-railway-env-image-ops` · [snapshot](./backups/2026-08-12_railway_env_image_ops_snapshot/SNAPSHOT_README.md) |
 | **範本** | ✅ | `backend/.env.railway.example` |
@@ -105,6 +105,6 @@ OPS-CARD：⏳ PR #38 部署後觀察是否仍重複卡
 CX-IMAGE：⏳ API PASS；瀏覽器手測待截圖
 CX-LOGIN／CX-TOPIC：⏳ Google 登入／三語切換
 OPS-DIGEST／COST：維持 PASS
-FAIL／FIX：FIX-TOPIC-DEDUP ✅ #38；FIX-IMAGE-GOOGLE ⏳ PR
-明日第一步：merge 圖片搜尋 PR；Dashboard 確認無重複卡
+FAIL／FIX：FIX-TOPIC-DEDUP ✅ #38；FIX-IMAGE-GOOGLE ✅ #39
+明日第一步：瀏覽器 CX-IMAGE 截圖；Dashboard 確認無重複卡
 ```
