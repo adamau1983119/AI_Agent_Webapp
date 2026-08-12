@@ -50,6 +50,29 @@ def category_counts() -> Dict[str, int]:
     return {c: cfg.get_category_count(c) for c in _CATEGORIES}
 
 
+def hkt_today_topics_filter(*, include_legacy: bool = False) -> Dict:
+    """Mongo filter：HKT 今日 + 可選世代過濾。"""
+    from app.utils.topic_pipeline import list_topics_generation_filter
+
+    start_utc, end_utc = hkt_day_utc_bounds()
+    clauses = [{"generated_at": {"$gte": start_utc, "$lte": end_utc}}]
+    gen_f = list_topics_generation_filter(include_legacy=include_legacy)
+    if gen_f:
+        clauses.append(gen_f)
+    if len(clauses) == 1:
+        return clauses[0]
+    return {"$and": clauses}
+
+
+def category_deficits(current_by_category: Dict[str, int]) -> Dict[str, int]:
+    """各分類距離 yaml 配額尚缺幾張（不小於 0）。"""
+    targets = category_counts()
+    return {
+        cat: max(0, targets.get(cat, 0) - int(current_by_category.get(cat, 0)))
+        for cat in _CATEGORIES
+    }
+
+
 def is_daily_mode() -> bool:
     from app.config.topic_config import get_topic_config
 

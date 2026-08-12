@@ -55,6 +55,32 @@ export function filterTopicsForHktDay<T extends Record<string, unknown>>(
   return topics.filter((t) => isTopicOnHktDay(t, hktDay))
 }
 
+/** 標準化標題（對齊後端 ContentDeduplicator） */
+export function normalizeTopicTitle(title: string): string {
+  return title
+    .replace(/[^\w\s\u4e00-\u9fff]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase()
+}
+
+/** 列表去重：同標題只保留第一張（通常較新） */
+export function dedupeTopicsByTitle<T extends { id?: string; title?: string }>(
+  topics: T[]
+): T[] {
+  const seen = new Set<string>()
+  const result: T[] = []
+  for (const topic of topics) {
+    const key = normalizeTopicTitle(topic.title || '')
+    if (key.length >= 5) {
+      if (seen.has(key)) continue
+      seen.add(key)
+    }
+    result.push(topic)
+  }
+  return result
+}
+
 export function countTopicsForHktDay(
   topics: Record<string, unknown>[],
   hktDay: string = todayHktDateString()

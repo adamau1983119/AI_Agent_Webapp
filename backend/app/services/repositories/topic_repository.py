@@ -129,6 +129,30 @@ class TopicRepository(BaseRepository):
         
         return topics, total
 
+    async def count_hkt_today_by_category(
+        self,
+        *,
+        include_legacy: bool = False,
+    ) -> Dict[str, int]:
+        """HKT 今日各分類主題數（預設只計目前世代）。"""
+        from app.services.automation.topic_day_hkt import (
+            _CATEGORIES,
+            hkt_today_topics_filter,
+        )
+
+        base_filter = hkt_today_topics_filter(include_legacy=include_legacy)
+        counts = {cat: 0 for cat in _CATEGORIES}
+        collection = await self._get_collection()
+        pipeline = [
+            {"$match": base_filter},
+            {"$group": {"_id": "$category", "count": {"$sum": 1}}},
+        ]
+        async for row in collection.aggregate(pipeline):
+            cat = row.get("_id")
+            if cat in counts:
+                counts[cat] = int(row.get("count", 0))
+        return counts
+
     async def list_by_channel_id(
         self,
         channel_id: str,

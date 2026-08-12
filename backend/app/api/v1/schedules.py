@@ -1,7 +1,7 @@
 """
 排程 API 端點
 """
-from typing import Optional, List
+from typing import Optional, List, Dict
 from fastapi import APIRouter, HTTPException, Query, BackgroundTasks, Body, Request
 from fastapi.responses import JSONResponse
 from datetime import datetime
@@ -383,6 +383,16 @@ async def generate_today_all_topics(
             existing_topics = []
         
         # 4. 檢查是否已達到上限
+        existing_by_category: Dict[str, int] = {cat.value: 0 for cat in [Category.FASHION, Category.FOOD, Category.TREND]}
+        for topic in existing_topics:
+            cat = topic.get("category")
+            if cat in existing_by_category:
+                existing_by_category[cat] += 1
+
+        from app.services.automation.topic_day_hkt import category_deficits
+
+        deficits = category_deficits(existing_by_category)
+
         if not request_body.force and len(existing_topics) >= expected_total:
             logger.info("今日主題已完整，無需重新生成")
             return {
@@ -392,6 +402,7 @@ async def generate_today_all_topics(
                 "expected_count": expected_total,
                 "existing_count": len(existing_topics),
                 "per_category": per_category,
+                "deficits": deficits,
             }
         
         # 5. 在背景任務中執行生成
@@ -407,7 +418,15 @@ async def generate_today_all_topics(
                 
                 for category in [Category.FASHION, Category.FOOD, Category.TREND]:
                     try:
-                        cat_count = per_category[category.value]
+                        cat_count = (
+                            per_category[category.value]
+                            if request_body.force
+                            else deficits.get(category.value, 0)
+                        )
+                        if cat_count <= 0:
+                            logger.info(f"{category.value} 已達配額，略過生成")
+                            results[category.value] = {"count": 0, "topics": []}
+                            continue
                         logger.info(
                             f"📝 開始生成 {category.value} 主題"
                             f"（目標：{cat_count} 個, 語言: {target_language}）..."
@@ -415,7 +434,8 @@ async def generate_today_all_topics(
                         topics = await scheduler_service.trigger_manual_generation(
                             category=category,
                             count=cat_count,
-                            display_language=target_language
+                            display_language=target_language,
+                            respect_quota=not request_body.force,
                         )
                         generated_count = len(topics) if topics else 0
                         total_generated += generated_count

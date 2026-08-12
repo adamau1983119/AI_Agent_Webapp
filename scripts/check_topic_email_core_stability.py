@@ -53,16 +53,16 @@ def main() -> int:
     assert "list_topics_generation_filter" in mon
 
     dash = (ROOT / "frontend/src/pages/Dashboard.tsx").read_text(encoding="utf-8")
-    assert "generateTodayAllTopics(true" in dash
-    assert "COLLECTION_LANGUAGE" in dash
-    assert "btn-dashboard-generate" in dash
+    assert "btn-dashboard-generate" not in dash
+    assert "systemUpdatesEvery6h" in dash
+    assert "generateTodayAllTopics" not in dash
 
     print("CORE_DOUBLE_CHECK_PASS")
     print("  pipeline_version=", current_topic_pipeline_version())
     print("  list_filter=", filt)
     print("  digest_subjects=每日基本檢查 / 即時告警")
     print("  generate_today=v8 count filter")
-    print("  dashboard=force generate + auto empty")
+    print("  dashboard=scheduler-only (no manual generate)")
     return 0
 
 
