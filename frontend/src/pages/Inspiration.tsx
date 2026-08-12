@@ -47,17 +47,27 @@ export default function Inspiration() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedContent, setGeneratedContent] = useState<AssistantGenerateResponse | null>(null);
   
-  // 載入熱門趨勢
+  // 載入熱門趨勢（切語／類別時重載）
   useEffect(() => {
     loadTrending();
   }, [selectedCategory, language]);
+
+  // 切語時清空搜尋結果，若有關鍵字則重搜
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setResults([]);
+      return;
+    }
+    handleSearch(searchQuery);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- 僅隨 UI 語言重搜
+  }, [language]);
   
   // 搜尋建議
   useEffect(() => {
     if (searchQuery.length >= 2) {
       const timer = setTimeout(async () => {
         try {
-          const response = await inspirationApi.getSuggestions(searchQuery);
+          const response = await inspirationApi.getSuggestions(searchQuery, language);
           setSuggestions(response.suggestions);
           setShowSuggestions(true);
         } catch (err) {
@@ -70,7 +80,7 @@ export default function Inspiration() {
       setSuggestions([]);
       setShowSuggestions(false);
     }
-  }, [searchQuery]);
+  }, [searchQuery, language]);
   
   const loadTrending = async () => {
     setIsSearching(true);

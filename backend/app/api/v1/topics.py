@@ -402,9 +402,7 @@ async def translate_topic_display(
     """
     language = get_user_language(user=current_user, request=request)
     target = normalize_language(
-        body.target_language
-        or (current_user.get("language") if current_user else None)
-        or language
+        body.target_language or language
     )
 
     trans_type = body.translation_type or "standard_translation"
@@ -626,6 +624,7 @@ async def search_topics(
     category: Optional[Category] = Query(None, description="分類篩選（fashion/food/trend）"),
     page: int = Query(1, ge=1, le=100, description="頁碼（1-100）"),
     limit: int = Query(10, ge=1, le=50, description="每頁數量（1-50）"),
+    lang: Optional[str] = Query(None, description="Content Locale：ui_lang（zh-TW/en/ja）"),
     x_user_role: Optional[str] = Header(None, alias="X-User-Role", description="用戶角色（guest/user/premium/admin）")
 ):
     """
@@ -684,6 +683,14 @@ async def search_topics(
             limit=limit,
             role=role
         )
+
+        ui_lang = normalize_language(lang) if lang else None
+        if ui_lang:
+            from app.services.content_locale.topic_locale_resolver import resolve_topics_list_locale
+
+            result["results"] = await resolve_topics_list_locale(
+                result.get("results") or [], ui_lang
+            )
         
         logger.info(f"搜尋: '{query}' by role {role.value}, found {result['pagination']['total']} results")
         

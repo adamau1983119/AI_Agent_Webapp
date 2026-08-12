@@ -148,9 +148,29 @@ async def get_trending_topics(
     )
 
 
+_POPULAR_TERMS: Dict[str, List[str]] = {
+    "zh-TW": [
+        "時尚穿搭", "美食探店", "科技新品", "旅遊攻略", "健身教學",
+        "美妝教程", "投資理財", "職場技巧", "生活小技巧", "電影推薦",
+        "音樂推薦", "寵物日常",
+    ],
+    "en": [
+        "fashion style", "food review", "tech news", "travel guide", "fitness tips",
+        "beauty tutorial", "investing", "career advice", "life hacks", "movie picks",
+        "music trends", "pet care",
+    ],
+    "ja": [
+        "ファッション", "グルメ", "テック", "旅行", "フィットネス",
+        "美容", "投資", "キャリア", "ライフハック", "映画",
+        "音楽", "ペット",
+    ],
+}
+
+
 @router.get("/suggestions")
 async def get_search_suggestions(
     q: str = Query(..., min_length=1, max_length=50, description="搜尋前綴"),
+    language: str = Query("zh-TW", description="UI 語言（zh-TW/en/ja）"),
     current_user: Optional[dict] = Depends(get_current_user_optional)
 ):
     """
@@ -200,20 +220,7 @@ async def get_search_suggestions(
         
         # 2. 如果資料庫建議不足，補充預定義的熱門搜尋詞
         if len(suggestions) < 5:
-            popular_terms = [
-                "時尚穿搭",
-                "美食探店",
-                "科技新品",
-                "旅遊攻略",
-                "健身教學",
-                "美妝教程",
-                "投資理財",
-                "職場技巧",
-                "生活小技巧",
-                "電影推薦",
-                "音樂推薦",
-                "寵物日常",
-            ]
+            popular_terms = _POPULAR_TERMS.get(language, _POPULAR_TERMS["zh-TW"])
             
             # 篩選匹配的預定義詞彙
             for term in popular_terms:

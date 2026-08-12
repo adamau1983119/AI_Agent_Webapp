@@ -171,6 +171,25 @@ def _static_checks() -> list[tuple[str, bool, str]]:
                 "",
             )
         )
+    topics_api = ROOT / "backend/app/api/v1/topics.py"
+    channels_api = ROOT / "backend/app/api/v1/channels.py"
+    if topics_api.exists():
+        out.append(
+            (
+                "topics search lang param",
+                'lang: Optional[str] = Query(None' in topics_api.read_text(encoding="utf-8")
+                and "/search" in topics_api.read_text(encoding="utf-8"),
+                "",
+            )
+        )
+    if channels_api.exists():
+        ca = channels_api.read_text(encoding="utf-8")
+        out.append(
+            ("channels collect UI lang", "language: str = Query" in ca and "collect" in ca, "")
+        )
+        out.append(
+            ("channels topics lang", "resolve_topics_list_locale" in ca, "")
+        )
     return out
 
 

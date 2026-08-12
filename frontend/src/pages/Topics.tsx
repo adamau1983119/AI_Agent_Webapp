@@ -88,14 +88,15 @@ export default function Topics() {
     error: searchError,
     refetch: refetchSearch,
   } = useQuery<SearchResponse>({
-    queryKey: ['topics', 'search', filters.search, filters.category, filters.page, filters.limit],
+    queryKey: ['topics', 'search', filters.search, filters.category, filters.page, filters.limit, language],
     queryFn: () =>
       topicsAPI.searchTopics({
         query: filters.search!,
         category: filters.category,
         page: filters.page || 1,
         limit: filters.limit || 12,
-        role: 'user', // 可以從用戶狀態獲取
+        role: 'user',
+        lang: language,
       }),
     enabled: useSearchEndpoint,
   })

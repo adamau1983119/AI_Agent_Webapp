@@ -100,8 +100,10 @@ export const inspirationApi = {
   /**
    * 取得搜尋建議
    */
-  getSuggestions: async (query: string): Promise<SearchSuggestionsResponse> => {
-    return fetchAPI<SearchSuggestionsResponse>(`/inspiration/suggestions?q=${encodeURIComponent(query)}`);
+  getSuggestions: async (query: string, language?: string): Promise<SearchSuggestionsResponse> => {
+    const params = new URLSearchParams({ q: query });
+    if (language) params.set('language', language);
+    return fetchAPI<SearchSuggestionsResponse>(`/inspiration/suggestions?${params.toString()}`);
   },
 
   /**

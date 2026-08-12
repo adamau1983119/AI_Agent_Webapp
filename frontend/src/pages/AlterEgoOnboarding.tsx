@@ -80,7 +80,7 @@ export default function AlterEgoOnboarding() {
       await alterEgoApi.extract(filledExemplars, language as Language);
       setExtracted(true);
       toast.success(t('alterEgo.extractDone'));
-      const preview = await alterEgoApi.preview(platform, t('alterEgo.defaultTopicHint'));
+      const preview = await alterEgoApi.preview(platform, t('alterEgo.defaultTopicHint'), language);
       setPreviewText(preview.preview_text);
     } catch (err: unknown) {
       const raw = err instanceof Error ? err.message : String(err ?? '');
@@ -102,7 +102,7 @@ export default function AlterEgoOnboarding() {
     if (!extracted) return;
     setBusy('preview');
     try {
-      const preview = await alterEgoApi.preview(platform, t('alterEgo.defaultTopicHint'));
+      const preview = await alterEgoApi.preview(platform, t('alterEgo.defaultTopicHint'), language);
       setPreviewText(preview.preview_text);
     } catch (err: unknown) {
       const raw = err instanceof Error ? err.message : String(err ?? '');
