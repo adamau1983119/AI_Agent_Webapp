@@ -24,6 +24,14 @@ def _interval_sec() -> int:
         return 300
 
 
+def _startup_delay_sec() -> int:
+    """等 Uvicorn accept 後再第一次 health check，避免 redeploy 誤紅燈。"""
+    try:
+        return max(0, int(os.getenv("OBS_WATCHDOG_STARTUP_DELAY_SEC", "15")))
+    except ValueError:
+        return 15
+
+
 def watchdog_enabled() -> bool:
     return os.getenv("OBS_WATCHDOG_ENABLED", "false").lower() == "true"
 
@@ -33,10 +41,14 @@ async def watchdog_loop() -> None:
         logger.info("WATCHDOG_SKIP disabled")
         return
     logger.info(
-        "WATCHDOG_START interval=%ss digest=%s",
+        "WATCHDOG_START interval=%ss digest=%s startup_delay=%ss",
         _interval_sec(),
         digest_enabled(),
+        _startup_delay_sec(),
     )
+    delay = _startup_delay_sec()
+    if delay:
+        await asyncio.sleep(delay)
     while True:
         try:
             if watchdog_enabled():
