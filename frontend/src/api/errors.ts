@@ -131,11 +131,16 @@ export function handleHTTPError(status: number, errorData?: any): APIError {
       message = errorData?.message || errorData?.detail || 'Internal server error'
       code = 'INTERNAL_ERROR'
       break
-    case 503:
-      message = errorData?.message || errorData?.detail || 'Service temporarily unavailable'
-      code = 'SERVICE_UNAVAILABLE'
+    case 503: {
+      const biz = getErrorDetailCode(errorData)
+      message =
+        errorData?.message ||
+        normalizeDetailMessage(errorData?.detail) ||
+        (typeof errorData?.detail === 'string' ? errorData.detail : undefined) ||
+        'Service temporarily unavailable'
+      code = biz || 'SERVICE_UNAVAILABLE'
       break
-    default:
+    }    default:
       message = errorData?.message || errorData?.detail || `HTTP error: ${status}`
       code = `HTTP_${status}`
   }

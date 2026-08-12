@@ -28,7 +28,7 @@ def channel_prefetch_pipeline_enabled() -> bool:
 
 
 def topic_triple_preload_enabled() -> bool:
-    """產卡後批次 DeepL 預載 en/ja（與 ENABLE_AI_TOPIC_TRANSLATION 互斥政策）。"""
+    """產卡後批次 Flash 成套預載 en/ja（與 ENABLE_AI_TOPIC_TRANSLATION 互斥政策）。"""
     return _flag("ENABLE_TOPIC_TRIPLE_PRELOAD", "false")
 
 
@@ -37,6 +37,20 @@ def topic_triple_preload_cap() -> int:
         return max(0, int(getattr(settings, "TOPIC_TRIPLE_PRELOAD_CAP", 30)))
     except (TypeError, ValueError):
         return 30
+
+
+def deepseek_configured() -> bool:
+    """DeepSeek 金鑰是否已設（translate-display／預載／長文同語）。"""
+    return bool((getattr(settings, "DEEPSEEK_API_KEY", "") or "").strip())
+
+
+def deepl_configured() -> bool:
+    """DeepL 金鑰（觀測用；標準 UI 路徑已改 Flash）。"""
+    return bool((getattr(settings, "DEEPL_API_KEY", "") or "").strip())
+
+
+def translation_engine() -> str:
+    return "deepseek-flash-native"
 
 
 def public_feed_pipeline_enabled() -> bool:
@@ -61,6 +75,9 @@ def cost_controls_summary() -> dict:
         "channel_prefetch_pipeline": channel_prefetch_pipeline_enabled(),
         "topic_triple_preload": topic_triple_preload_enabled(),
         "topic_triple_preload_cap": topic_triple_preload_cap(),
+        "translation_engine": translation_engine(),
+        "deepseek_configured": deepseek_configured(),
+        "deepl_configured": deepl_configured(),
         "topic_pipeline_version": current_topic_pipeline_version(),
         "public_feed_pipeline": public_feed_pipeline_enabled(),
         "safe_batch_size": settings.safe_batch_size,

@@ -23,6 +23,7 @@ import {
   getCollectionLanguage,
   getOriginalTitleLine,
   needsTranslateToCurrentLanguage,
+  normalizeUiLanguage,
   resolveTopicDisplayCopy,
 } from '@/lib/topicDisplay'
 
@@ -78,6 +79,16 @@ export default function TopicDetail() {
     setShowCollectionTitle(false)
   }, [id, language])
 
+  useEffect(() => {
+    if (!content?.contentLanguage) return
+    const bodyLang = normalizeUiLanguage(content.contentLanguage)
+    const ui = normalizeUiLanguage(language)
+    if (bodyLang !== ui) {
+      // 正文回落收集語時，標題也回落，禁止混語
+      setShowCollectionTitle(true)
+    }
+  }, [content?.contentLanguage, language])
+
   usePageTitle(displayCopy?.title || (topic ? topic.title : t('nav.topics')))
 
   const {
@@ -85,8 +96,8 @@ export default function TopicDetail() {
     isLoading: contentLoading,
     error: contentError,
   } = useQuery({
-    queryKey: ['content', id],
-    queryFn: () => contentsAPI.getContent(id!),
+    queryKey: ['content', id, language],
+    queryFn: () => contentsAPI.getContent(id!, language),
     enabled: !!id,
     retry: false, // 404 不重試
   })

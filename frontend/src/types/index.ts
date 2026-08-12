@@ -49,6 +49,8 @@ export interface Content {
   estimatedDuration: number
   modelUsed: string
   version: number
+  /** 目前 article/script 所屬語言；缺則視為收集語 */
+  contentLanguage?: string
 }
 
 // 圖片類型

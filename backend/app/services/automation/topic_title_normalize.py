@@ -1,13 +1,13 @@
-"""產卡後：依 display_language 正規化 canonical title（取代 topic_preload_zh）。"""
+"""產卡後：依 display_language 正規化 canonical title（Flash 成套；取代 DeepL）。"""
 from __future__ import annotations
 
 from datetime import datetime
 from typing import Any, Dict, Tuple
 
-from app.models.topic_translation import TranslationType
+from app.models.topic_translation import TranslationProvider, TranslationType
 from app.services.repositories.topic_repository import TopicRepository
 from app.services.repositories.topic_translation_repository import TopicTranslationRepository
-from app.services.translation.deepl_provider import translate_with_fallback
+from app.services.translation.flash_pack_provider import translate_title_desc_pack
 from app.utils.logger import log_cost_event
 from app.utils.topic_languages import (
     normalize_topic_language,
@@ -26,6 +26,7 @@ async def normalize_topic_title_for_display_lang(
     """確保 title／titles_i18n[display_language] 符合收集語言腳本。回傳 (譯文源, 是否新翻譯)。"""
     display_lang = normalize_topic_language(topic.get("display_language"))
     titles_i18n: Dict[str, str] = dict(topic.get("titles_i18n") or {})
+    desc_i18n: Dict[str, str] = dict(topic.get("description_i18n") or {})
     cached = usable_cached_title(titles_i18n.get(display_lang))
 
     if cached and not title_script_mismatch(cached, display_lang):
@@ -51,16 +52,20 @@ async def normalize_topic_title_for_display_lang(
             })
         return title_src, False
 
-    title_t, provider = await translate_with_fallback(
-        title_src[:500], display_lang, title_src[:500]
+    desc_src = (topic.get("description") or topic.get("summary_flash") or title_src)[:800]
+    title_t, desc_t, provider = await translate_title_desc_pack(
+        title_src[:500], desc_src, display_lang
     )
     if provider == "fallback" or usable_cached_title(title_t) is None:
         return title_src, False
 
     titles_i18n[display_lang] = title_t[:200]
+    if desc_t:
+        desc_i18n[display_lang] = desc_t[:200]
     patch: Dict[str, Any] = {
         "title": title_t[:200],
         "titles_i18n": titles_i18n,
+        "description_i18n": desc_i18n,
         "updated_at": datetime.utcnow(),
     }
     if not topic.get("original_title"):
@@ -70,8 +75,8 @@ async def normalize_topic_title_for_display_lang(
         "lang": display_lang,
         "type": TranslationType.STANDARD,
         "cached_title": title_t[:200],
-        "cached_content": None,
-        "provider": provider,
+        "cached_content": (desc_t or "")[:400],
+        "provider": provider or TranslationProvider.FLASH,
     })
     await repo.update_topic(topic_id, patch)
     log_cost_event(
