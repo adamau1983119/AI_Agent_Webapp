@@ -51,6 +51,8 @@ def auto_start_scheduler_enabled() -> bool:
 
 
 def cost_controls_summary() -> dict:
+    from app.utils.topic_pipeline import current_topic_pipeline_version
+
     return {
         "auto_start_scheduler": auto_start_scheduler_enabled(),
         "scheduled_topic_collection": scheduled_topic_collection_enabled(),
@@ -59,6 +61,7 @@ def cost_controls_summary() -> dict:
         "channel_prefetch_pipeline": channel_prefetch_pipeline_enabled(),
         "topic_triple_preload": topic_triple_preload_enabled(),
         "topic_triple_preload_cap": topic_triple_preload_cap(),
+        "topic_pipeline_version": current_topic_pipeline_version(),
         "public_feed_pipeline": public_feed_pipeline_enabled(),
         "safe_batch_size": settings.safe_batch_size,
         "public_feed_batch_size": int(settings.PUBLIC_FEED_BATCH_SIZE),

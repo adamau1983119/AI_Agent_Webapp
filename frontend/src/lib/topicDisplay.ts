@@ -5,14 +5,21 @@ import {
   getCollectionLanguage,
   normalizeUiLanguage,
   topicTitleScriptMismatch,
+  usableCachedTitle,
   type UiLanguage,
 } from '@/lib/topicLanguages'
 
 export type { UiLanguage }
 
 export function getTopicI18nMaps(topic: Topic) {
+  const rawTitles = (topic.titlesI18n || topic.titles_i18n || {}) as Record<string, string>
+  const titles: Record<string, string> = {}
+  for (const [k, v] of Object.entries(rawTitles)) {
+    const ok = usableCachedTitle(v)
+    if (ok) titles[k] = ok
+  }
   return {
-    titles: (topic.titlesI18n || topic.titles_i18n || {}) as Record<string, string>,
+    titles,
     descriptions: (topic.descriptionI18n || topic.description_i18n || {}) as Record<string, string>,
   }
 }
@@ -29,7 +36,7 @@ export function needsTranslateToCurrentLanguage(topic: Topic, uiLanguage: string
   const ui = normalizeUiLanguage(uiLanguage)
   const collectionLang = getCollectionLanguage(topic)
   const { titles } = getTopicI18nMaps(topic)
-  if (titles[ui]?.trim()) return false
+  if (usableCachedTitle(titles[ui])) return false
   if (ui !== collectionLang) return true
   return topicTitleScriptMismatch(topic)
 }
@@ -44,7 +51,7 @@ export function resolveTopicDisplayCopy(
   const collectionLang = getCollectionLanguage(topic)
   const { titles, descriptions } = getTopicI18nMaps(topic)
 
-  if (override) {
+  if (override && usableCachedTitle(override.title)) {
     return {
       title: override.title,
       description: override.description ?? topic.description,
@@ -53,17 +60,19 @@ export function resolveTopicDisplayCopy(
     }
   }
 
-  if (titles[ui]?.trim()) {
+  const cached = usableCachedTitle(titles[ui])
+  if (cached) {
     return {
-      title: titles[ui],
+      title: cached,
       description: descriptions[ui] ?? topic.description,
       usingTranslation: ui !== collectionLang || topicTitleScriptMismatch(topic),
       fromCache: true,
     }
   }
 
+  const rawTitle = topic.title || ''
   return {
-    title: topic.title,
+    title: usableCachedTitle(rawTitle) || rawTitle,
     description: topic.description,
     usingTranslation: false,
     fromCache: false,

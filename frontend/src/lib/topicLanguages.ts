@@ -63,6 +63,17 @@ export function titleScriptMismatch(title: string, displayLang?: string): boolea
   return !titleMatchesDisplayLanguage(title, displayLang)
 }
 
+export function isFallbackTitle(text?: string | null): boolean {
+  const t = (text || '').trim()
+  return t.startsWith('[Fallback-') || t.startsWith('[Fallback]')
+}
+
+export function usableCachedTitle(text?: string | null): string | null {
+  const t = (text || '').trim()
+  if (!t || isFallbackTitle(t)) return null
+  return t
+}
+
 export function getCollectionLanguage(topic: Topic): UiLanguage {
   return normalizeUiLanguage(topic.displayLanguage || topic.display_language)
 }

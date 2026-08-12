@@ -9,7 +9,11 @@ from app.services.repositories.topic_repository import TopicRepository
 from app.services.repositories.topic_translation_repository import TopicTranslationRepository
 from app.services.translation.deepl_provider import translate_with_fallback
 from app.utils.logger import log_cost_event
-from app.utils.topic_languages import normalize_topic_language, title_script_mismatch
+from app.utils.topic_languages import (
+    normalize_topic_language,
+    title_script_mismatch,
+    usable_cached_title,
+)
 
 
 async def normalize_topic_title_for_display_lang(
@@ -22,7 +26,7 @@ async def normalize_topic_title_for_display_lang(
     """確保 title／titles_i18n[display_language] 符合收集語言腳本。回傳 (譯文源, 是否新翻譯)。"""
     display_lang = normalize_topic_language(topic.get("display_language"))
     titles_i18n: Dict[str, str] = dict(topic.get("titles_i18n") or {})
-    cached = (titles_i18n.get(display_lang) or "").strip()
+    cached = usable_cached_title(titles_i18n.get(display_lang))
 
     if cached and not title_script_mismatch(cached, display_lang):
         if (topic.get("title") or "").strip() != cached:
@@ -33,6 +37,8 @@ async def normalize_topic_title_for_display_lang(
         return cached, False
 
     title_src = (topic.get("title") or topic.get("original_title") or "").strip()
+    if usable_cached_title(title_src) is None and topic.get("original_title"):
+        title_src = str(topic.get("original_title") or "").strip()
     if not title_src:
         return "", False
 
@@ -48,6 +54,9 @@ async def normalize_topic_title_for_display_lang(
     title_t, provider = await translate_with_fallback(
         title_src[:500], display_lang, title_src[:500]
     )
+    if provider == "fallback" or usable_cached_title(title_t) is None:
+        return title_src, False
+
     titles_i18n[display_lang] = title_t[:200]
     patch: Dict[str, Any] = {
         "title": title_t[:200],

@@ -128,3 +128,16 @@ def title_matches_display_language(title: str, display_lang: Optional[str]) -> b
 
 def title_script_mismatch(title: str, display_lang: Optional[str]) -> bool:
     return not title_matches_display_language(title, display_lang)
+
+
+def is_fallback_title(text: Optional[str]) -> bool:
+    """DeepL 失敗字串前綴；不可當真譯文快取。"""
+    t = (text or "").strip()
+    return t.startswith("[Fallback-") or t.startswith("[Fallback]")
+
+
+def usable_cached_title(text: Optional[str]) -> Optional[str]:
+    t = (text or "").strip()
+    if not t or is_fallback_title(t):
+        return None
+    return t

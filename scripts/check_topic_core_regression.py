@@ -145,9 +145,16 @@ def _hkt_import_check() -> tuple[str, bool, str]:
         from app.utils.topic_languages import (
             preload_languages_for,
             title_script_mismatch,
+            is_fallback_title,
+            usable_cached_title,
+        )
+        from app.utils.topic_pipeline import (
+            current_topic_pipeline_version,
+            list_topics_generation_filter,
         )
 
         start, end = hkt_day_utc_bounds("2026-08-11")
+        gen_f = list_topics_generation_filter(include_legacy=False)
         ok = (
             start < end
             and expected_topics_today() == 15
@@ -155,6 +162,10 @@ def _hkt_import_check() -> tuple[str, bool, str]:
             and preload_languages_for("zh-TW") == ("en", "ja")
             and title_script_mismatch("Hello fashion", "zh-TW")
             and not title_script_mismatch("時尚潮流", "zh-TW")
+            and is_fallback_title("[Fallback-ZH] Hello")
+            and usable_cached_title("[Fallback-JA] x") is None
+            and current_topic_pipeline_version() >= 8
+            and "pipeline_version" in str(gen_f)
         )
         return ("topic_day_hkt bounds + daily=15", ok, f"{start}..{end}")
     except Exception as exc:  # pragma: no cover

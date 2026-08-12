@@ -32,8 +32,11 @@ def build_zh_email(
     ch = _CHANNEL_ZH[channel]
     ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     color = "#b91c1c" if light is TrafficLight.RED else "#15803d"
+    is_digest = str(extra.get("report_type") or "") == "daily_digest"
+    kind = "每日基本檢查" if is_digest else "即時告警"
     lines = [
         f"【{lamp}】{verdict}",
+        f"信種：{kind}",
         f"通道：{ch}",
         f"標題：{title}",
         f"時間：{ts}",
@@ -41,12 +44,16 @@ def build_zh_email(
     if detail:
         lines.append(f"說明：{detail}")
     for k, v in extra.items():
-        if k == "traffic_light":
+        if k in ("traffic_light", "report_type"):
             continue
         lines.append(f"  - {k}：{v}")
-    lines += ["", "此信由後台 Observability Agent 發出（異常才通知）。請勿回覆。"]
+    if is_digest:
+        lines += ["", "此信為每日基本檢查（綠／紅燈都會寄）。紅燈另有「即時告警」信。請勿回覆。"]
+        subject = f"【{lamp}】[Alter Ego][每日基本檢查] {title}"
+    else:
+        lines += ["", "此信為即時告警（異常才通知）。每日另有「基本檢查」報告。請勿回覆。"]
+        subject = f"【{lamp}】[Alter Ego][即時告警][{ch}] {title}"
     text = "\n".join(lines)
-    subject = f"【{lamp}】[Alter Ego][{ch}] {title}"
     body = "<br>".join(lines)
     html = (
         "<html><body style='font-family:sans-serif;line-height:1.6'>"
