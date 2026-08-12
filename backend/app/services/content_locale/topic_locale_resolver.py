@@ -18,7 +18,7 @@ from app.utils.topic_languages import (
 
 logger = logging.getLogger(__name__)
 _LIST_BATCH = 5
-_LIST_MAX_BATCHES = 2
+_LIST_MAX_BATCHES = 6
 
 
 def _need_desc(topic: Dict[str, Any]) -> bool:

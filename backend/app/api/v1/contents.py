@@ -139,7 +139,8 @@ async def get_content(
                     detail=get_error_message("content.not_found", language),
                 )
             if err in ("deepseek_not_configured", "translation_fallback"):
-                # 降級：回收集語言原文，並標 content_language 避免混語
+                if content and content.get("translation_pending"):
+                    return _convert_to_response(content)
                 content = await content_repo.get_content_by_topic_id(topic_id)
                 if not content:
                     raise HTTPException(
@@ -153,6 +154,7 @@ async def get_content(
                 content["content_language"] = normalize_topic_language(
                     (topic or {}).get("display_language") or "zh-TW"
                 )
+                content["translation_pending"] = True
                 return _convert_to_response(content)
             return _convert_to_response(content)
 

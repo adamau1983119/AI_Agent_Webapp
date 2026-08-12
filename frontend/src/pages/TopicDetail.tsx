@@ -70,7 +70,27 @@ export default function TopicDetail() {
     queryFn: () => contentsAPI.getContent(id!, language),
     enabled: !!id,
     retry: false,
+    refetchInterval: (query) => {
+      if ((query.state.dataUpdateCount ?? 0) >= 10) return false
+      const data = query.state.data
+      if (!data) return false
+      if (data.translationPending) return 2500
+      if (
+        data.contentLanguage &&
+        normalizeUiLanguage(data.contentLanguage) !== normalizeUiLanguage(language)
+      ) {
+        return 2500
+      }
+      return false
+    },
   })
+
+  const contentTranslating = Boolean(
+    content &&
+      (content.translationPending ||
+        (content.contentLanguage &&
+          normalizeUiLanguage(content.contentLanguage) !== normalizeUiLanguage(language)))
+  )
 
   const displayCopy = useMemo(() => {
     if (!topic) return null
@@ -89,15 +109,6 @@ export default function TopicDetail() {
     setDisplayOverride(null)
     setShowCollectionTitle(false)
   }, [id, language])
-
-  useEffect(() => {
-    if (!content?.contentLanguage) return
-    const bodyLang = normalizeUiLanguage(content.contentLanguage)
-    const ui = normalizeUiLanguage(language)
-    if (bodyLang !== ui) {
-      setShowCollectionTitle(true)
-    }
-  }, [content?.contentLanguage, language])
 
   usePageTitle(displayCopy?.title || (topic ? topic.title : t('nav.topics')))
 
@@ -609,6 +620,12 @@ export default function TopicDetail() {
                   <h3 className="font-semibold text-gray-700 dark:text-gray-200">{t('content.title')}</h3>
                 </div>
 
+                {contentTranslating && (
+                  <p className="text-sm text-amber-700 dark:text-amber-300 mb-3">
+                    {t('topics.translating')}
+                  </p>
+                )}
+
                 {/* 重新生成面板 */}
                 <ContentGenerationPanel
                   onGenerate={(settings) => requireAuth(() => regenerateContentMutation.mutate(settings))}
@@ -618,9 +635,13 @@ export default function TopicDetail() {
                 <div>
                   <h3 className="font-semibold text-gray-700 dark:text-gray-200 mb-2">{t('content.article')}</h3>
                   <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 max-h-96 overflow-y-auto">
-                    <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line text-sm leading-relaxed">
-                      {content.article || t('common.noContent')}
-                    </p>
+                    {contentTranslating ? (
+                      <LoadingSpinner size="sm" text={t('topics.translating')} />
+                    ) : (
+                      <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line text-sm leading-relaxed">
+                        {content.article || t('common.noContent')}
+                      </p>
+                    )}
                   </div>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
                     {t('content.wordCount')}: {content.wordCount} {t('common.words')}
@@ -629,9 +650,13 @@ export default function TopicDetail() {
                 <div>
                   <h3 className="font-semibold text-gray-700 dark:text-gray-200 mb-2">{t('content.script')}</h3>
                   <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 max-h-64 overflow-y-auto">
-                    <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line text-sm leading-relaxed">
-                      {content.script || t('common.noContent')}
-                    </p>
+                    {contentTranslating ? (
+                      <LoadingSpinner size="sm" text={t('topics.translating')} />
+                    ) : (
+                      <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line text-sm leading-relaxed">
+                        {content.script || t('common.noContent')}
+                      </p>
+                    )}
                   </div>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
                     {t('content.duration')}: {t('common.about')} {content.estimatedDuration} {t('common.seconds')}

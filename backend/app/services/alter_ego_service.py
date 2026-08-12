@@ -191,14 +191,14 @@ Return ONLY a JSON object with these keys (no extra keys):
     )
 
 
-def _build_soul_prompt(dna: AlterEgoDnaJson, topic_hint: str) -> str:
+def _build_soul_prompt(dna: AlterEgoDnaJson, topic_hint: str, output_lang: str) -> str:
     topic = topic_hint or "分享一則生活近況"
     return (
         "You are the author's digital voice (Soul layer). Write a SHORT platform-neutral post draft.\n"
         "Match the DNA voice exactly. No hashtags. No platform-specific formatting.\n"
         f"Topic: {topic}\n"
         f"DNA:\n{_dna_block(dna)}\n"
-        f"Write in {dna.language_primary}. Return only the post body text."
+        f"Write in {output_lang}. Return only the post body text."
     )
 
 
@@ -207,6 +207,7 @@ def _build_shell_prompt(
     soul_text: str,
     platform: str,
     constraints: str,
+    output_lang: str,
 ) -> str:
     return (
         f"You are the Shell layer for {platform}. Format the Soul draft for this platform.\n"
@@ -214,7 +215,7 @@ def _build_shell_prompt(
         f"DNA voice (preserve tone): {_dna_block(dna)}\n"
         f"Hashtag style hint: {dna.hashtag_style or 'use relevant tags from lexicon'}\n"
         f"Soul draft:\n{soul_text}\n"
-        f"Return ONLY the final copy-ready post in {dna.language_primary} "
+        f"Return ONLY the final copy-ready post in {output_lang} "
         "(include hashtags per platform rules)."
     )
 
@@ -340,6 +341,7 @@ class AlterEgoService:
             raise ValueError("dna_not_found")
 
         dna = AlterEgoDnaJson.model_validate(doc["dna_json"])
+        output_lang = request.language or dna.language_primary
         client = get_llm_client("alter_ego")
         shell = get_shell_manager()
         constraints = shell.build_prompt_constraints(request.platform)
@@ -349,7 +351,7 @@ class AlterEgoService:
         last_soul_err: Optional[Exception] = None
         for attempt in range(_MAX_PREVIEW_RETRIES + 1):
             try:
-                soul_raw = await client.generate(_build_soul_prompt(dna, topic))
+                soul_raw = await client.generate(_build_soul_prompt(dna, topic, output_lang))
                 soul_text = _strip_markdown_fence(soul_raw)
                 if len(soul_text) < 10:
                     raise ValueError("soul_too_short")
@@ -372,7 +374,7 @@ class AlterEgoService:
         for attempt in range(_MAX_PREVIEW_RETRIES + 1):
             try:
                 shell_raw = await client.generate(
-                    _build_shell_prompt(dna, soul_text, request.platform, constraints)
+                    _build_shell_prompt(dna, soul_text, request.platform, constraints, output_lang)
                 )
                 preview_text = _finalize_preview_text(
                     shell_raw, soul_text, request.platform, dna

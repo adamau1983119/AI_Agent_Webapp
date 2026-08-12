@@ -56,6 +56,8 @@ export interface Content {
   version: number
   /** 目前 article/script 所屬語言；缺則視為收集語 */
   contentLanguage?: string
+  /** 後端譯文尚未就緒，應自動重試 */
+  translationPending?: boolean
 }
 
 // 圖片類型

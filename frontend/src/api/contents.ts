@@ -20,6 +20,9 @@ function convertContent(apiContent: any): Content {
     modelUsed: apiContent.model_used || '',
     version: apiContent.version || 1,
     contentLanguage: apiContent.content_language || apiContent.contentLanguage,
+    translationPending: Boolean(
+      apiContent.translation_pending ?? apiContent.translationPending
+    ),
   }
 }
 
