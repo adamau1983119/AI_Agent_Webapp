@@ -109,20 +109,19 @@ async def validate_images():
     # 使用列表推導式過濾 None，確保只返回實際可用的服務
     available_services = [
         svc for svc in [
-            "duckduckgo",  # 總是可用
+            "google_custom_search" if (settings.GOOGLE_API_KEY and settings.GOOGLE_SEARCH_ENGINE_ID) else None,
             "unsplash" if settings.UNSPLASH_ACCESS_KEY else None,
             "pexels" if settings.PEXELS_API_KEY else None,
             "pixabay" if settings.PIXABAY_API_KEY else None,
-            "google_custom_search" if (settings.GOOGLE_API_KEY and settings.GOOGLE_SEARCH_ENGINE_ID) else None
         ] if svc
     ]
-    
+
     return {
         "unsplash": bool(settings.UNSPLASH_ACCESS_KEY),
         "pexels": bool(settings.PEXELS_API_KEY),
         "pixabay": bool(settings.PIXABAY_API_KEY),
         "google_api_key": bool(settings.GOOGLE_API_KEY),
         "google_search_engine_id": bool(settings.GOOGLE_SEARCH_ENGINE_ID),
-        "duckduckgo": True,  # DuckDuckGo 不需要 API Key
-        "available_services": available_services
+        "google_custom_search": bool(settings.GOOGLE_API_KEY and settings.GOOGLE_SEARCH_ENGINE_ID),
+        "available_services": available_services,
     }

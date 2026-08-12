@@ -27,9 +27,6 @@ loguru>=0.7.3
 # Utilities
 python-dateutil>=2.9.0
 
-# DuckDuckGo Image Search (no API key fallback)
-ddgs>=9.0.0
-
 # Scheduler
 APScheduler>=3.10.4
 

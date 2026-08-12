@@ -262,8 +262,8 @@ async def search_images(
     """
     搜尋圖片
     
-    支援多個圖片來源（Unsplash/Pexels/Pixabay/Google Custom Search），自動備援
-    如果所有 API Key 都未設定，會自動使用 DuckDuckGo
+    支援多個圖片來源（Google Custom Search 優先，Unsplash/Pexels/Pixabay 備援）
+    需在 Railway 設定 GOOGLE_API_KEY 與 GOOGLE_SEARCH_ENGINE_ID
     """
     import uuid
     from app.services.images.image_service_manager import ImageServiceManager
