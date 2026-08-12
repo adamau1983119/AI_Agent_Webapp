@@ -16,6 +16,7 @@ function pump(): void {
   }
 }
 
+/** 排入佇列；回傳 cancel（僅略過尚未開始的工作）。 */
 export function enqueueTranslateDisplay(task: Task): () => void {
   let cancelled = false
   const wrapped: Task = async () => {
@@ -38,7 +39,10 @@ export function isTranslateRateLimited(): boolean {
 export function markTranslateRateLimited(ms = 60_000): void {
   if (typeof sessionStorage === 'undefined') return
   try {
-    sessionStorage.setItem('flash_translate_rate_limited_until', String(Date.now() + ms))
+    sessionStorage.setItem(
+      'flash_translate_rate_limited_until',
+      String(Date.now() + ms)
+    )
   } catch {
     /* ignore */
   }
