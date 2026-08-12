@@ -2,7 +2,9 @@
 
 > **SaaS**：Incident Alerting + Uptime Watchdog  
 > **正確行為**：正式域 Webapp（Railway）每日 ≥**08:00 HKT** 由 `EmailService` 自動寄「**每日基本檢查**」到 `OBS_OPS_EMAIL`（綠燈也寄）；紅燈另寄主旨含「**即時告警**」的即時信。  
-> **寄信（2026-08-11）**：**Resend HTTPS** 優先（`RESEND_API_KEY`）；本機可回退 Gmail SMTP。禁止以本機排程／GitHub Actions 充當正式解。  
+> **本機腳本 ≠ 正式自動**：`python scripts/send_obs_daily_digest_now.py` 只證明 Resend／收件設定；**不能**代替 Railway Watchdog。  
+> **稽核（2026-08-12）**：Mongo `ops_digest_ledger`＋`/health.daily_digest.latest`；Railway 預設打本機 `/health`（免對外 hairpin 誤紅）。  
+> **寄信**：Resend HTTPS（`RESEND_API_KEY`）；From 例 `Alter Ego <noreply@ai-alterego.com>`。  
 > **日期**：2026-08-12（對照 [`calendar_2026_reference.md`](./calendar_2026_reference.md)）  
 > **備份**：`backup/2026-08-11-ops-digest-resend-pass` · [`docs/backups/2026-08-11_ops_digest_resend_pass_snapshot/`](./backups/2026-08-11_ops_digest_resend_pass_snapshot/SNAPSHOT_README.md)  
 > **程式**：PR #19 `feat(email): prefer Resend HTTPS…` 已合 `main`
