@@ -14,6 +14,7 @@ from app.utils.logger import log_cost_event
 from app.utils.topic_languages import (
     normalize_topic_language as normalize_language,
     title_script_mismatch,
+    usable_cached_title,
 )
 import logging
 
@@ -52,7 +53,11 @@ class TopicDisplayTranslationService:
 
         async def _work():
             cached = await self.trans_repo.get_translation(topic_id, target, trans_type)
-            if cached and cached.get("cached_title"):
+            cached_title = usable_cached_title(
+                (cached or {}).get("cached_title") if cached else None
+            )
+            if cached_title:
+                cached = {**(cached or {}), "cached_title": cached_title}
                 log_cost_event("I18N_CACHE_HIT", topic_id=topic_id, lang=target, type=trans_type)
                 return self._from_cache(topic, target, collection_lang, cached), None
 
@@ -65,6 +70,9 @@ class TopicDisplayTranslationService:
                 title, content, provider = await self._kol_style(topic, summary_flash, target)
             else:
                 title, content, provider = await self._standard(topic, summary_flash, target)
+
+            if provider == "fallback" or usable_cached_title(title) is None:
+                return None, "translation_fallback"
 
             await self.trans_repo.upsert_translation({
                 "topic_id": topic_id,
@@ -155,10 +163,10 @@ class TopicDisplayTranslationService:
         if target == collection_lang:
             title = topic.get("title") or ""
             description = topic.get("description")
-        elif override_title:
+        elif override_title and usable_cached_title(override_title):
             title = override_title
             description = override_desc or desc_i18n.get(target) or topic.get("description")
-        elif target in titles_i18n and titles_i18n[target]:
+        elif usable_cached_title(titles_i18n.get(target)):
             title = titles_i18n[target]
             description = desc_i18n.get(target) or topic.get("description")
         else:

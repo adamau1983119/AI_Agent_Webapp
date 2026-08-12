@@ -374,6 +374,8 @@ class SchedulerService:
                     topic_data["generated_at"] = datetime.utcnow()
                     topic_data["updated_at"] = datetime.utcnow()
                     topic_data["created_at"] = datetime.utcnow()
+                    from app.utils.topic_pipeline import stamp_pipeline_fields
+                    stamp_pipeline_fields(topic_data)
                     
                     # Phase 5A：從 sources[].images 提取預覽圖片
                     preview_images = []
@@ -504,6 +506,8 @@ class SchedulerService:
                     topic_data["generated_at"] = datetime.utcnow()
                     topic_data["updated_at"] = datetime.utcnow()
                     topic_data["created_at"] = datetime.utcnow()
+                    from app.utils.topic_pipeline import stamp_pipeline_fields
+                    stamp_pipeline_fields(topic_data)
                     
                     # Phase 5A：從 sources[].images 提取預覽圖片
                     preview_images = []

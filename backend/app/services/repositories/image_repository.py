@@ -137,3 +137,17 @@ class ImageRepository(BaseRepository):
             圖片數量
         """
         return await self.count({"topic_id": topic_id})
+
+    async def counts_by_topic_ids(self, topic_ids: List[str]) -> Dict[str, int]:
+        """批量圖片數量：{topic_id: count}。"""
+        if not topic_ids:
+            return {}
+        collection = await self._get_collection()
+        cursor = collection.aggregate([
+            {"$match": {"topic_id": {"$in": list(topic_ids)}}},
+            {"$group": {"_id": "$topic_id", "n": {"$sum": 1}}},
+        ])
+        out: Dict[str, int] = {tid: 0 for tid in topic_ids}
+        async for row in cursor:
+            out[str(row["_id"])] = int(row.get("n") or 0)
+        return out

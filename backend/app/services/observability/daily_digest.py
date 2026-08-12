@@ -102,7 +102,7 @@ async def _send_digest(health_url: str, *, force: bool) -> dict[str, Any]:
         if topics_today >= 0
         else "今日產卡=查詢失敗；"
     )
-    title = f"每日營運報告 {day}"
+    title = f"每日基本檢查 {day}"
     detail = (
         f"【{lamp}】{verdict}。"
         f"正式域 health：{signal.detail}。"
@@ -111,7 +111,7 @@ async def _send_digest(health_url: str, *, force: bool) -> dict[str, Any]:
         f"三語預載={cc.get('topic_triple_preload')}（cap={cc.get('topic_triple_preload_cap')}）；"
         f"收集翻譯={cc.get('ai_topic_translation')}；"
         f"備援={cc.get('ai_topic_fallback')}。"
-        f"說明：初期每日一封；紅燈另有即時告警。"
+        f"說明：每日必寄一封基本檢查；紅燈另寄即時告警。"
     )
     channel = (
         AlertChannel.CRASH

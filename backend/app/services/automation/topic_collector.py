@@ -427,6 +427,8 @@ class TopicCollector:
                         "display_language": display_language,
                         "original_title": title,
                     }
+                    from app.utils.topic_pipeline import stamp_pipeline_fields
+                    stamp_pipeline_fields(topic)
                     
                     # Phase 6: 雙寫機制
                     if self.enable_dual_write and self.dual_write_service:

@@ -39,14 +39,17 @@
 
 --- 
 
-### 本日異常（PR #27 部署檔案路徑）
+### 本日異常（PR #27 部署檔案路徑）— 已修
 
 | 項 | 狀態 | 一句 |
 |----|------|------|
-| **FIX-TOPIC-I18N-CONFIG** | ❌ 已觀察 | 正式域 `/api/v1/topics` 回 `total>0` 但 `data=[]`；根因 `/shared/topic_languages.json` 不存在（Railway Root = `backend/`）。 |
-| 熱修復 | ⏳ 待合併 | 已在 `fix/topic-languages-railway-config` 移到 `backend/config/topic_languages.json` + embedded fallback；待合併 redeploy。 |
+| **FIX-TOPIC-I18N-CONFIG** | ✅ merged | `backend/config/topic_languages.json` + Railway Root=`backend/` |
+| **FIX-TOPIC-DEEPL-FALLBACK** | ⏳ PR | Fallback 禁止寫 `titles_i18n`；前端忽略 `[Fallback-` |
+| **FIX-TOPIC-V8-CUTOVER** | ⏳ PR | 列表預設只顯示 `pipeline_version>=8`；舊卡留 DB |
+| **FIX-TOPIC-LIST-PERF** | ⏳ PR | `/topics` 批量 image／word count |
+| **OPS-DIGEST 雙軌** | ⏳ PR | 主旨「每日基本檢查」vs「即時告警」 |
 
-**明日 OPS 第一步**：正式域登入 → Dashboard 確認 **OPS-CARD N/15**（不再是空列表）；若 I18N 待開 → 設 triple preload env 後等下一批產卡。
+**明日 OPS 第一步**：merge 後確認 DeepL key → 產新卡（generate-today 或等 04:00）→ Dashboard 無舊 Fallback 卡；信箱搜「每日基本檢查」。
 
 ---
 
@@ -63,13 +66,13 @@
 ## 每日建議順序（約 45′～90′）
 
 1. **OPS-HEALTH**（正式域）  
-2. **OPS-CARD**＋**OPS-I18N**（今日新卡）  
+2. **OPS-CARD**＋**OPS-I18N**（今日新卡；僅 v8 世代）  
 3. 任選 **1～2 個 CX-***（真實帳號）  
-4. **OPS-DIGEST**／**OPS-COST**（DIGEST 已 PASS；例行看信箱即可）  
+4. **OPS-DIGEST**／**OPS-COST**（搜主旨「每日基本檢查」；紅燈另看「即時告警」）  
 5. 有 FAIL → 記 **FIX-***；無則不改碼  
 
-**OPS-CARD 證據句範例**：`Dashboard 今日 12/15；GET /topics 200；HKT 2026-08-11 generated_at 12 筆`  
-**OPS-I18N 證據句範例**：`抽樣 topic_xxx titles_i18n.en+ja 皆有；Dashboard 切 ja 標題為日文`  
+**OPS-CARD 證據句範例**：`Dashboard 今日 12/15；GET /topics 200；pipeline_version=8`  
+**OPS-I18N 證據句範例**：`抽樣無 [Fallback-；切 ja 標題為日文`  
 **回滾首登 landing**：Vercel 設 `VITE_POST_LOGIN_PATH=/my-channel`（預設不設＝Dashboard）
 
 ---
@@ -77,12 +80,12 @@
 ## 當日勾選（複製到工作記錄）
 
 ```text
-日期：2026-08-11
-OPS-HEALTH：PASS（healthy／connected）
-OPS-CARD：❌ 目前 Dashboard TopicCard 空列表；已定位為 PR #27 部署路徑問題（`/shared` 不存在）
-OPS-I18N：⏳ triple preload env 未開則僅驗 zh-TW；開 env 後驗 en/ja（修復合併後再驗）
-CX-LOGIN：⏳ AE 完成 → /dashboard（截圖）
-OPS-DIGEST／COST：DIGEST PASS（Resend）；COST：
-FAIL／FIX：FIX-TOPIC-HKT 已 merge PR #24；⏳ 密鑰輪換（PD-OBS-TL-08）
-明日第一步：Dashboard OPS-CARD 手測（需恢復 TopicCard） + 視需要開 ENABLE_TOPIC_TRIPLE_PRELOAD
+日期：2026-08-12
+OPS-HEALTH：PASS（healthy／connected；topic_pipeline_version=8）
+OPS-CARD：⏳ merge cutover 後產新卡再驗 N/15
+OPS-I18N：⏳ DeepL OK＋無 Fallback 寫庫
+CX-LOGIN／CX-TOPIC：⏳ 切 zh/en/ja
+OPS-DIGEST／COST：DIGEST 主旨「每日基本檢查」；即時告警分開
+FAIL／FIX：FIX-TOPIC-I18N-CONFIG ✅；⏳ DEEPL／CUTOVER／LIST／DIGEST PR
+明日第一步：正式域產乾淨 v8 卡並驗語言切換
 ```

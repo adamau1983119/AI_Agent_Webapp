@@ -15,7 +15,11 @@ from app.services.repositories.topic_translation_repository import TopicTranslat
 from app.services.translation.deepl_provider import translate_with_fallback
 from app.utils.cost_controls import topic_triple_preload_cap, topic_triple_preload_enabled
 from app.utils.logger import log_cost_event
-from app.utils.topic_languages import normalize_topic_language, preload_languages_for
+from app.utils.topic_languages import (
+    normalize_topic_language,
+    preload_languages_for,
+    usable_cached_title,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +32,7 @@ async def preload_topic_titles(topic_ids: List[str]) -> Dict[str, Any]:
     repo = TopicRepository()
     trans_repo = TopicTranslationRepository()
     processed = translated = skipped = 0
+    did_norm = False
 
     for topic_id in topic_ids:
         if translated >= cap:
@@ -56,25 +61,32 @@ async def preload_topic_titles(topic_ids: List[str]) -> Dict[str, Any]:
 
         titles_i18n: Dict[str, str] = dict(topic.get("titles_i18n") or {})
         display_lang = normalize_topic_language(topic.get("display_language"))
-        titles_i18n.setdefault(display_lang, title_src[:200])
+        if usable_cached_title(title_src):
+            titles_i18n.setdefault(display_lang, title_src[:200])
         changed = False
 
         for lang in preload_languages_for(display_lang):
             if translated >= cap:
                 break
-            if titles_i18n.get(lang):
+            if usable_cached_title(titles_i18n.get(lang)):
                 continue
             cached = await trans_repo.get_translation(
                 topic_id, lang, TranslationType.STANDARD
             )
-            if cached and cached.get("cached_title"):
-                titles_i18n[lang] = cached["cached_title"][:200]
+            cached_title = usable_cached_title(
+                (cached or {}).get("cached_title") if cached else None
+            )
+            if cached_title:
+                titles_i18n[lang] = cached_title[:200]
                 changed = True
                 continue
             try:
                 title_t, provider = await translate_with_fallback(
                     title_src[:500], lang, title_src[:500]
                 )
+                if provider == "fallback" or usable_cached_title(title_t) is None:
+                    skipped += 1
+                    continue
                 await trans_repo.upsert_translation({
                     "topic_id": topic_id,
                     "lang": lang,

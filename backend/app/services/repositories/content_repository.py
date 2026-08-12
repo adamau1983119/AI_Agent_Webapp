@@ -46,6 +46,22 @@ class ContentRepository(BaseRepository):
             Content 資料
         """
         return await self.find_one({"topic_id": topic_id})
+
+    async def word_counts_by_topic_ids(self, topic_ids: List[str]) -> Dict[str, int]:
+        """批量字數：{topic_id: word_count}。"""
+        if not topic_ids:
+            return {}
+        collection = await self._get_collection()
+        cursor = collection.find(
+            {"topic_id": {"$in": list(topic_ids)}},
+            {"topic_id": 1, "word_count": 1},
+        )
+        out: Dict[str, int] = {tid: 0 for tid in topic_ids}
+        async for row in cursor:
+            tid = str(row.get("topic_id") or "")
+            if tid:
+                out[tid] = int(row.get("word_count") or 0)
+        return out
     
     async def get_content_by_id(self, content_id: str) -> Optional[Dict[str, Any]]:
         """

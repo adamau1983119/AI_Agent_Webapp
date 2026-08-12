@@ -110,7 +110,10 @@ async def list_topics(
     page: int = Query(1, ge=1, description="頁碼"),
     limit: int = Query(10, ge=1, le=100, description="每頁數量"),
     sort: str = Query("generated_at", description="排序欄位"),
-    order: str = Query("desc", description="排序順序（asc/desc）")
+    order: str = Query("desc", description="排序順序（asc/desc）"),
+    include_legacy: bool = Query(
+        False, description="True＝含 v8 cutover 前舊卡（預設只顯示新世代）"
+    ),
 ):
     """
     取得主題列表
@@ -148,34 +151,32 @@ async def list_topics(
             page=page,
             limit=limit,
             sort=sort,
-            order=order
+            order=order,
+            include_legacy=include_legacy,
         )
         
-        # 轉換為回應格式
+        # 批量 image／word count（避免 N+1）
+        topic_ids = [t.get("id") for t in topics if t.get("id")]
+        try:
+            image_counts = await image_repo.counts_by_topic_ids(topic_ids)
+        except Exception as e:
+            logger.warning(f"批量圖片數量失敗: {e}")
+            image_counts = {}
+        try:
+            word_counts = await content_repo.word_counts_by_topic_ids(topic_ids)
+        except Exception as e:
+            logger.warning(f"批量字數失敗: {e}")
+            word_counts = {}
+
         topic_responses = []
         for topic in topics:
             try:
-                # 取得圖片數量和字數（如果查詢失敗，使用默認值）
-                try:
-                    image_count = await image_repo.count_by_topic_id(topic["id"])
-                except Exception as e:
-                    logger.warning(f"取得主題 {topic['id']} 的圖片數量失敗: {e}")
-                    image_count = 0
-                
-                try:
-                    content = await content_repo.get_content_by_topic_id(topic["id"])
-                    word_count = content.get("word_count", 0) if content else 0
-                except Exception as e:
-                    logger.warning(f"取得主題 {topic['id']} 的內容失敗: {e}")
-                    word_count = 0
-                
-                topic["image_count"] = image_count
-                topic["word_count"] = word_count
+                tid = topic.get("id") or ""
+                topic["image_count"] = image_counts.get(tid, 0)
+                topic["word_count"] = word_counts.get(tid, 0)
                 topic_responses.append(_convert_to_response(topic))
             except Exception as e:
                 logger.warning(f"處理主題 {topic.get('id', 'unknown')} 時發生錯誤: {e}")
-                # 即使處理單個主題失敗，也繼續處理其他主題
-                # 使用默認值
                 topic["image_count"] = 0
                 topic["word_count"] = 0
                 try:

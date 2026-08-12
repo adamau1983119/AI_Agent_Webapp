@@ -32,7 +32,10 @@ class TopicRepository(BaseRepository):
         topic_data.setdefault("created_at", now)
         topic_data.setdefault("generated_at", now)
         topic_data.setdefault("updated_at", now)
-        
+        from app.utils.topic_pipeline import stamp_pipeline_fields
+
+        stamp_pipeline_fields(topic_data)
+
         return await self.create(topic_data)
     
     async def get_topic_by_id(self, topic_id: str) -> Optional[Dict[str, Any]]:
@@ -56,7 +59,8 @@ class TopicRepository(BaseRepository):
         page: int = 1,
         limit: int = 10,
         sort: str = "generated_at",
-        order: str = "desc"
+        order: str = "desc",
+        include_legacy: bool = False,
     ) -> tuple[List[Dict[str, Any]], int]:
         """
         列出 Topics
@@ -70,36 +74,47 @@ class TopicRepository(BaseRepository):
             limit: 每頁數量
             sort: 排序欄位
             order: 排序順序（asc/desc）
+            include_legacy: True 時含 cutover 前舊卡
             
         Returns:
             (Topics 列表, 總數量)
         """
-        # 建立查詢條件
-        filter: Dict[str, Any] = {}
-        
+        # 建立查詢條件（$and 避免 generation $or 與 search $or 互蓋）
+        from app.utils.topic_pipeline import list_topics_generation_filter
+
+        clauses: List[Dict[str, Any]] = []
+        gen_f = list_topics_generation_filter(include_legacy=include_legacy)
+        if gen_f:
+            clauses.append(gen_f)
         if category:
-            filter["category"] = category.value if hasattr(category, 'value') else category
-        
+            clauses.append({
+                "category": category.value if hasattr(category, "value") else category
+            })
         if status:
-            filter["status"] = status.value if hasattr(status, 'value') else status
-        
+            clauses.append({
+                "status": status.value if hasattr(status, "value") else status
+            })
         if date:
             from app.services.automation.topic_day_hkt import hkt_day_utc_bounds
 
             start_date, end_date = hkt_day_utc_bounds(date)
-            filter["generated_at"] = {
-                "$gte": start_date,
-                "$lte": end_date
-            }
-        
-        # 搜尋功能：搜尋標題和來源
+            clauses.append({
+                "generated_at": {"$gte": start_date, "$lte": end_date}
+            })
         if search and search.strip():
             search_query = search.strip()
-            # 使用 MongoDB 的正則表達式進行不區分大小寫的搜尋
-            filter["$or"] = [
-                {"title": {"$regex": search_query, "$options": "i"}},
-                {"source": {"$regex": search_query, "$options": "i"}},
-            ]
+            clauses.append({
+                "$or": [
+                    {"title": {"$regex": search_query, "$options": "i"}},
+                    {"source": {"$regex": search_query, "$options": "i"}},
+                ]
+            })
+        if not clauses:
+            filter: Dict[str, Any] = {}
+        elif len(clauses) == 1:
+            filter = clauses[0]
+        else:
+            filter = {"$and": clauses}
         
         # 建立排序條件
         sort_order = -1 if order == "desc" else 1
