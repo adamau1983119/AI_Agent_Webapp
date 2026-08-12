@@ -28,14 +28,26 @@ from app.services.repositories.audit_log_repository import AuditLogRepository
 from app.services.repositories.user_feedback_repository import UserFeedbackRepository
 from app.models.audit_log import Action, EntityType
 from app.services.shells import get_shell_manager
+from app.utils.topic_languages import normalize_topic_language, title_matches_display_language
 from app.services.shells.shell_formatter import build_shell_output
 
 logger = logging.getLogger(__name__)
 
 _MAX_EXTRACT_RETRIES = 2
-_MAX_PREVIEW_RETRIES = 1
+_MAX_PREVIEW_RETRIES = 2
 _JSON_BLOCK_RE = re.compile(r"```(?:json)?\s*([\s\S]*?)\s*```", re.IGNORECASE)
 _FENCE_RE = re.compile(r"^```[\w]*\n?|```$", re.MULTILINE)
+
+_LANG_LABEL = {
+    "zh-TW": "Traditional Chinese (繁體中文)",
+    "en": "English",
+    "ja": "Japanese (日本語)",
+}
+
+
+def _output_lang_label(lang: str) -> str:
+    code = normalize_topic_language(lang)
+    return _LANG_LABEL.get(code, code)
 
 
 def _parse_llm_json(raw: str) -> Dict[str, Any]:
@@ -193,12 +205,14 @@ Return ONLY a JSON object with these keys (no extra keys):
 
 def _build_soul_prompt(dna: AlterEgoDnaJson, topic_hint: str, output_lang: str) -> str:
     topic = topic_hint or "分享一則生活近況"
+    label = _output_lang_label(output_lang)
     return (
         "You are the author's digital voice (Soul layer). Write a SHORT platform-neutral post draft.\n"
         "Match the DNA voice exactly. No hashtags. No platform-specific formatting.\n"
         f"Topic: {topic}\n"
         f"DNA:\n{_dna_block(dna)}\n"
-        f"Write in {output_lang}. Return only the post body text."
+        f"IMPORTANT: Write the entire post ONLY in {label}. Do not mix languages.\n"
+        "Return only the post body text."
     )
 
 
@@ -215,8 +229,8 @@ def _build_shell_prompt(
         f"DNA voice (preserve tone): {_dna_block(dna)}\n"
         f"Hashtag style hint: {dna.hashtag_style or 'use relevant tags from lexicon'}\n"
         f"Soul draft:\n{soul_text}\n"
-        f"Return ONLY the final copy-ready post in {output_lang} "
-        "(include hashtags per platform rules)."
+        f"IMPORTANT: Return ONLY the final copy-ready post in {_output_lang_label(output_lang)}. "
+        "Do not mix languages. Include hashtags per platform rules."
     )
 
 
@@ -341,7 +355,7 @@ class AlterEgoService:
             raise ValueError("dna_not_found")
 
         dna = AlterEgoDnaJson.model_validate(doc["dna_json"])
-        output_lang = request.language or dna.language_primary
+        output_lang = normalize_topic_language(request.language or dna.language_primary)
         client = get_llm_client("alter_ego")
         shell = get_shell_manager()
         constraints = shell.build_prompt_constraints(request.platform)
@@ -355,6 +369,8 @@ class AlterEgoService:
                 soul_text = _strip_markdown_fence(soul_raw)
                 if len(soul_text) < 10:
                     raise ValueError("soul_too_short")
+                if not title_matches_display_language(soul_text, output_lang):
+                    raise ValueError("soul_lang_mismatch")
                 break
             except ValueError as exc:
                 last_soul_err = exc
@@ -381,6 +397,8 @@ class AlterEgoService:
                 )
                 if len(preview_text) < 10:
                     raise ValueError("shell_too_short")
+                if not title_matches_display_language(preview_text, output_lang):
+                    raise ValueError("shell_lang_mismatch")
                 break
             except ValueError as exc:
                 last_shell_err = exc
@@ -394,6 +412,8 @@ class AlterEgoService:
                 )
         else:
             preview_text = _finalize_preview_text("", soul_text, request.platform, dna)
+            if not title_matches_display_language(preview_text, output_lang):
+                raise ValueError(f"preview_lang_mismatch:{output_lang}")
             logger.warning(
                 "[ALTER_EGO_SHELL_PREVIEW_FAIL] user_id=%s fallback=formatter",
                 user_id,

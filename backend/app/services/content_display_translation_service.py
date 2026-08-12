@@ -10,11 +10,25 @@ from app.services.repositories.content_repository import ContentRepository
 from app.services.repositories.topic_repository import TopicRepository
 from app.utils.cost_controls import deepseek_configured
 from app.utils.logger import log_cost_event
-from app.utils.topic_languages import normalize_topic_language, usable_cached_title
+from app.utils.topic_languages import (
+    normalize_topic_language,
+    title_matches_display_language,
+    usable_cached_title,
+)
 
 logger = logging.getLogger(__name__)
 _FLASH_RETRIES = 2
 _FLASH_RETRY_DELAY_SEC = 1.5
+
+
+def _usable_body_i18n(text: Optional[str], target: str) -> Optional[str]:
+    """快取譯文須通過字元集檢查，避免 zh 誤標為 ja。"""
+    cached = usable_cached_title(text)
+    if not cached:
+        return None
+    if not title_matches_display_language(cached, target):
+        return None
+    return cached
 
 
 async def _flash_long_text(text: str, target: str, field: str) -> Optional[str]:
@@ -83,10 +97,14 @@ class ContentDisplayTranslationService:
         scr_i18n: Dict[str, str] = dict(content.get("script_i18n") or {})
 
         need_a, need_s = bool(article), bool(script)
-        have_a = (not need_a) or bool(usable_cached_title(art_i18n.get(target)))
-        have_s = (not need_s) or bool(usable_cached_title(scr_i18n.get(target)))
+        have_a = (not need_a) or bool(_usable_body_i18n(art_i18n.get(target), target))
+        have_s = (not need_s) or bool(_usable_body_i18n(scr_i18n.get(target), target))
         if have_a and have_s:
-            out = self._overlay(content, art_i18n, scr_i18n, target, need_a, need_s)
+            out = self._overlay(
+                content, art_i18n, scr_i18n, target, collection, need_a, need_s
+            )
+            if out.get("translation_pending"):
+                return out, "translation_fallback"
             out["translation_pending"] = False
             return out, None
 
@@ -96,12 +114,12 @@ class ContentDisplayTranslationService:
         log_cost_event("CACHE_MISS", topic_id=topic_id, lang=target, type="content_body")
         if need_a and not have_a:
             translated = await _flash_long_text(article, target, "article")
-            if not translated:
+            if not translated or not title_matches_display_language(translated, target):
                 return self._pending_fallback(content, collection), "translation_fallback"
             art_i18n[target] = translated
         if need_s and not have_s:
             translated = await _flash_long_text(script, target, "script")
-            if not translated:
+            if not translated or not title_matches_display_language(translated, target):
                 return self._pending_fallback(content, collection), "translation_fallback"
             scr_i18n[target] = translated
 
@@ -113,7 +131,11 @@ class ContentDisplayTranslationService:
         )
         content["article_i18n"] = art_i18n
         content["script_i18n"] = scr_i18n
-        out = self._overlay(content, art_i18n, scr_i18n, target, need_a, need_s)
+        out = self._overlay(
+            content, art_i18n, scr_i18n, target, collection, need_a, need_s
+        )
+        if out.get("translation_pending"):
+            return out, "translation_fallback"
         out["translation_pending"] = False
         return out, None
 
@@ -123,13 +145,31 @@ class ContentDisplayTranslationService:
         out["translation_pending"] = True
         return out
 
-    def _overlay(self, content, art_i18n, scr_i18n, target, need_a, need_s):
+    def _overlay(
+        self, content, art_i18n, scr_i18n, target, collection, need_a, need_s
+    ):
         out = dict(content)
+        pending = False
         if need_a:
-            out["article"] = art_i18n.get(target) or content.get("article")
+            translated = _usable_body_i18n(art_i18n.get(target), target)
+            if translated:
+                out["article"] = translated
+            elif target != collection:
+                out["article"] = ""
+                pending = True
+            else:
+                out["article"] = content.get("article")
         if need_s:
-            out["script"] = scr_i18n.get(target) or content.get("script")
-        out["content_language"] = target
+            translated = _usable_body_i18n(scr_i18n.get(target), target)
+            if translated:
+                out["script"] = translated
+            elif target != collection:
+                out["script"] = ""
+                pending = True
+            else:
+                out["script"] = content.get("script")
+        out["content_language"] = collection if pending else target
+        out["translation_pending"] = pending
         return out
 
 

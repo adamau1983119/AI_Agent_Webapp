@@ -94,6 +94,7 @@ export function resolveTopicDisplayCopy(
       description: topic.description,
       usingTranslation: ui !== collectionLang || topicTitleScriptMismatch(topic),
       fromCache: true,
+      localePending: false,
     }
   }
 
@@ -105,6 +106,7 @@ export function resolveTopicDisplayCopy(
         description: needDesc ? (override.description || '') : topic.description,
         usingTranslation: true,
         fromCache: Boolean(override.cached),
+        localePending: false,
       }
     }
   }
@@ -116,6 +118,17 @@ export function resolveTopicDisplayCopy(
       description: needDesc ? descriptions[ui] : topic.description,
       usingTranslation: ui !== collectionLang || topicTitleScriptMismatch(topic),
       fromCache: true,
+      localePending: false,
+    }
+  }
+
+  if (ui !== collectionLang) {
+    return {
+      title: '',
+      description: '',
+      usingTranslation: true,
+      fromCache: false,
+      localePending: true,
     }
   }
 
@@ -125,7 +138,16 @@ export function resolveTopicDisplayCopy(
     description: topic.description,
     usingTranslation: false,
     fromCache: false,
+    localePending: false,
   }
+}
+
+export function isLocaleDisplayPending(
+  topic: Topic,
+  uiLanguage: string,
+  override?: TopicDisplayOverride | null
+): boolean {
+  return resolveTopicDisplayCopy(topic, uiLanguage, override).localePending === true
 }
 
 export function getOriginalTitleLine(topic: Topic, displayTitle: string): string | null {

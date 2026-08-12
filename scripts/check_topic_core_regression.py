@@ -190,6 +190,36 @@ def _static_checks() -> list[tuple[str, bool, str]]:
         out.append(
             ("channels topics lang", "resolve_topics_list_locale" in ca, "")
         )
+    content_svc = ROOT / "backend/app/services/content_display_translation_service.py"
+    topic_display = ROOT / "frontend/src/lib/topicDisplay.ts"
+    postkit = ROOT / "frontend/src/components/features/PostKitPanel.tsx"
+    if content_svc.exists():
+        cs = content_svc.read_text(encoding="utf-8")
+        out.append(
+            (
+                "content fail-closed translation_pending",
+                "translation_pending" in cs and "_usable_body_i18n" in cs,
+                "",
+            )
+        )
+    if topic_display.exists():
+        td = topic_display.read_text(encoding="utf-8")
+        out.append(
+            (
+                "topicDisplay localePending gate",
+                "localePending: true" in td and "ui !== collectionLang" in td,
+                "",
+            )
+        )
+    if postkit.exists():
+        pk = postkit.read_text(encoding="utf-8")
+        out.append(
+            (
+                "PostKit preparingContent gate",
+                "preparingContent" in pk and "titleScriptMismatch" in pk,
+                "",
+            )
+        )
     return out
 
 
