@@ -26,6 +26,7 @@ import {
   normalizeUiLanguage,
   resolveTopicDisplayCopy,
 } from '@/lib/topicDisplay'
+import { titleScriptMismatch } from '@/lib/topicLanguages'
 
 export default function TopicDetail() {
   const { id } = useParams<{ id: string }>()
@@ -75,9 +76,16 @@ export default function TopicDetail() {
       const data = query.state.data
       if (!data) return false
       if (data.translationPending) return 2500
+      const ui = normalizeUiLanguage(language)
       if (
         data.contentLanguage &&
-        normalizeUiLanguage(data.contentLanguage) !== normalizeUiLanguage(language)
+        normalizeUiLanguage(data.contentLanguage) !== ui
+      ) {
+        return 2500
+      }
+      if (
+        (data.script && titleScriptMismatch(data.script.slice(0, 800), language)) ||
+        (data.article && titleScriptMismatch(data.article.slice(0, 800), language))
       ) {
         return 2500
       }
@@ -85,9 +93,20 @@ export default function TopicDetail() {
     },
   })
 
+  const contentBodyMismatch = Boolean(
+    content &&
+      topic &&
+      normalizeUiLanguage(language) !== getCollectionLanguage(topic) &&
+      ((content.script &&
+        titleScriptMismatch(content.script.slice(0, 800), language)) ||
+        (content.article &&
+          titleScriptMismatch(content.article.slice(0, 800), language)))
+  )
+
   const contentTranslating = Boolean(
     content &&
       (content.translationPending ||
+        contentBodyMismatch ||
         (content.contentLanguage &&
           normalizeUiLanguage(content.contentLanguage) !== normalizeUiLanguage(language)))
   )
@@ -100,6 +119,7 @@ export default function TopicDetail() {
         description: topic.description,
         usingTranslation: false,
         fromCache: false,
+        localePending: false,
       }
     }
     return resolveTopicDisplayCopy(topic, language, displayOverride)
@@ -110,7 +130,11 @@ export default function TopicDetail() {
     setShowCollectionTitle(false)
   }, [id, language])
 
-  usePageTitle(displayCopy?.title || (topic ? topic.title : t('nav.topics')))
+  usePageTitle(
+    displayCopy?.localePending
+      ? t('topics.translating')
+      : displayCopy?.title || (topic ? topic.title : t('nav.topics'))
+  )
 
   // 記錄瀏覽時間
   useEffect(() => {
@@ -349,9 +373,13 @@ export default function TopicDetail() {
         <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
           <div className="flex-1 min-w-0">
             <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white break-words">
-              {displayCopy?.title ?? topic.title}
+              {displayCopy?.localePending ? (
+                <span className="text-gray-500 dark:text-gray-400">{t('topics.translating')}</span>
+              ) : (
+                displayCopy?.title ?? topic.title
+              )}
             </h1>
-            {displayCopy && getOriginalTitleLine(topic, displayCopy.title) && (
+            {displayCopy && !displayCopy.localePending && getOriginalTitleLine(topic, displayCopy.title) && (
               <p className="text-sm text-gray-500 dark:text-gray-400 italic mt-2 break-words">
                 {t('topics.originalTitlePrefix')}{' '}
                 {getOriginalTitleLine(topic, displayCopy.title)}
@@ -363,7 +391,7 @@ export default function TopicDetail() {
                 ui: t(`language.${language}`),
               })}
             </p>
-            {displayCopy?.description && (
+            {displayCopy?.description && !displayCopy.localePending && (
               <p className="text-sm text-gray-600 dark:text-gray-300 mt-3 break-words">
                 {displayCopy.description}
               </p>
@@ -774,12 +802,15 @@ export default function TopicDetail() {
 
       <div className="mt-6">
         <PostKitPanel
-          displayTitle={displayCopy?.title || topic.title}
+          displayTitle={
+            displayCopy?.localePending ? '' : displayCopy?.title || topic.title
+          }
           category={topic.category}
           content={content ?? null}
           images={images}
           previewImages={topic.previewImages || []}
           topicId={topic.id}
+          contentTranslating={contentTranslating}
         />
       </div>
     </div>

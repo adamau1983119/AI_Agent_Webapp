@@ -260,7 +260,18 @@ async def get_topic_detail(
                         topic_id, ui_lang
                     )
                     if err in ("deepseek_not_configured", "translation_fallback") or not content:
-                        content = await content_repo.get_content_by_topic_id(topic_id)
+                        if content and content.get("translation_pending"):
+                            pass
+                        else:
+                            content = await content_repo.get_content_by_topic_id(topic_id)
+                            if content:
+                                from app.utils.topic_languages import normalize_topic_language
+
+                                content = dict(content)
+                                content["content_language"] = normalize_topic_language(
+                                    topic.get("display_language") or "zh-TW"
+                                )
+                                content["translation_pending"] = True
                 if content:
                     content_response = _convert_to_response(content)
             except Exception as e:

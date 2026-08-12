@@ -4,6 +4,7 @@ import { useTranslation } from '@/i18n'
 import { alterEgoApi, type AlterEgoPlatform } from '@/api/alterEgo'
 import { copyToClipboard } from '@/utils/copyToClipboard'
 import { showError, showSuccess } from '@/utils/toast'
+import { normalizeUiLanguage, titleScriptMismatch } from '@/lib/topicLanguages'
 import type { Content, Image, Topic } from '@/types'
 
 type Props = {
@@ -13,6 +14,7 @@ type Props = {
   images: Image[]
   previewImages?: string[]
   topicId?: string
+  contentTranslating?: boolean
 }
 
 const PLATFORMS: AlterEgoPlatform[] = ['facebook', 'threads', 'x']
@@ -41,6 +43,7 @@ export default function PostKitPanel({
   images,
   previewImages = [],
   topicId,
+  contentTranslating = false,
 }: Props) {
   const { t, language } = useTranslation()
   const [selectedTitleIdx, setSelectedTitleIdx] = useState(0)
@@ -75,19 +78,60 @@ export default function PostKitPanel({
     [t, displayTitle, category, platform]
   )
 
+  const uiLang = normalizeUiLanguage(language)
+
+  const textMatchesUi = useCallback(
+    (text: string) => !titleScriptMismatch(text.slice(0, 800), uiLang),
+    [uiLang]
+  )
+
+  const bodyText = content?.article?.trim() || ''
+  const scriptText = content?.script?.trim() || ''
+
+  const contentLocaleReady = useMemo(() => {
+    if (contentTranslating) return false
+    const articleOk = !bodyText || textMatchesUi(bodyText)
+    const scriptOk = !scriptText || textMatchesUi(scriptText)
+    return articleOk && scriptOk
+  }, [bodyText, scriptText, contentTranslating, textMatchesUi])
+
+  const previewMatchesUi = Boolean(platformCopy.trim() && textMatchesUi(platformCopy))
+
+  const displayBody = useMemo(() => {
+    if (hasDna) {
+      if (previewMatchesUi) return platformCopy
+      if (contentLocaleReady && bodyText && textMatchesUi(bodyText)) return bodyText
+      return ''
+    }
+    if (contentLocaleReady && bodyText && textMatchesUi(bodyText)) return bodyText
+    return ''
+  }, [hasDna, previewMatchesUi, platformCopy, contentLocaleReady, bodyText, textMatchesUi])
+
+  const displayScript = useMemo(() => {
+    if (!contentLocaleReady || !scriptText || !textMatchesUi(scriptText)) return ''
+    return scriptText
+  }, [contentLocaleReady, scriptText, textMatchesUi])
+
+  const preparingContent = Boolean(
+    contentTranslating ||
+      previewLoading ||
+      ((bodyText || scriptText || hasDna) && !displayBody && !displayScript)
+  )
+
   const loadPlatformPreview = useCallback(async () => {
     if (!hasDna) return
     setPreviewLoading(true)
     try {
       const hint = displayTitle.trim().slice(0, 200)
-      const preview = await alterEgoApi.preview(platform, hint, language)
-      setPlatformCopy(preview.preview_text)
+      const preview = await alterEgoApi.preview(platform, hint, uiLang)
+      const text = preview.preview_text?.trim() || ''
+      setPlatformCopy(text && textMatchesUi(text) ? text : '')
     } catch {
       setPlatformCopy('')
     } finally {
       setPreviewLoading(false)
     }
-  }, [hasDna, platform, displayTitle, language])
+  }, [hasDna, platform, displayTitle, uiLang, textMatchesUi])
 
   useEffect(() => {
     alterEgoApi
@@ -113,7 +157,7 @@ export default function PostKitPanel({
   }
 
   const handleAdoptCopy = async () => {
-    const text = platformCopy || bodyText
+    const text = displayBody
     if (!text.trim()) return
     await handleCopy(text)
     try {
@@ -129,9 +173,6 @@ export default function PostKitPanel({
 
   const selectedTitle = titleOptions[selectedTitleIdx] || displayTitle
   const hashtagLine = hashtags.join(' ')
-  const bodyText = content?.article?.trim() || ''
-  const scriptText = content?.script?.trim() || ''
-  const displayBody = hasDna && platformCopy.trim() ? platformCopy : bodyText
 
   const copyAllText = [selectedTitle, displayBody, hashtagLine].filter(Boolean).join('\n\n')
 
@@ -191,7 +232,7 @@ export default function PostKitPanel({
               <button
                 type="button"
                 data-testid="btn-postkit-adopt-copy"
-                disabled={!displayBody || previewLoading}
+                disabled={!displayBody || previewLoading || preparingContent}
                 onClick={handleAdoptCopy}
                 className="min-h-[44px] px-3 py-1 text-xs font-medium border border-primary/30 rounded-md hover:bg-primary/10 disabled:opacity-50"
               >
@@ -202,7 +243,9 @@ export default function PostKitPanel({
               data-testid="section-postkit-platform-copy"
               className="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-line max-h-48 overflow-y-auto"
             >
-              {previewLoading ? t('common.loading') : displayBody || t('common.noContent')}
+              {preparingContent
+                ? t('postKit.preparingContent')
+                : displayBody || t('common.noContent')}
             </p>
           </div>
         )}
@@ -277,7 +320,7 @@ export default function PostKitPanel({
               <button
                 type="button"
                 data-testid="btn-postkit-copy-body"
-                disabled={!displayBody}
+                disabled={!displayBody || preparingContent}
                 aria-label={t('postKit.body')}
                 onClick={() => handleCopy(displayBody)}
                 className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-md bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 disabled:opacity-50"
@@ -286,7 +329,9 @@ export default function PostKitPanel({
               </button>
             </div>
             <p className="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-line max-h-40 overflow-y-auto">
-              {displayBody || t('common.noContent')}
+              {preparingContent
+                ? t('postKit.preparingContent')
+                : displayBody || t('common.noContent')}
             </p>
           </div>
 
@@ -296,16 +341,18 @@ export default function PostKitPanel({
               <button
                 type="button"
                 data-testid="btn-postkit-copy-script"
-                disabled={!scriptText}
+                disabled={!displayScript || preparingContent}
                 aria-label={t('postKit.script')}
-                onClick={() => handleCopy(scriptText)}
+                onClick={() => handleCopy(displayScript)}
                 className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-md bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 disabled:opacity-50"
               >
                 <Copy className="w-4 h-4" />
               </button>
             </div>
             <p className="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-line max-h-40 overflow-y-auto">
-              {scriptText || t('common.noContent')}
+              {preparingContent
+                ? t('postKit.preparingContent')
+                : displayScript || t('common.noContent')}
             </p>
           </div>
         </div>

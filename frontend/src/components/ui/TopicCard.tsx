@@ -75,6 +75,8 @@ export default function TopicCard({
     () => resolveTopicDisplayCopy(topic, language, override),
     [topic, language, override]
   )
+  const localePending = display.localePending === true
+  const shouldAutoTranslate = enableAutoTranslate || localePending
   const originalLine = useMemo(
     () => getOriginalTitleLine(topic, display.title),
     [topic, display.title]
@@ -98,7 +100,7 @@ export default function TopicCard({
       return () => window.clearTimeout(timer)
     }
 
-    if (!enableAutoTranslate || translateBlocked) {
+    if (!shouldAutoTranslate || translateBlocked) {
       setStandardLoading(false)
       setFadeReady(true)
       return
@@ -169,7 +171,7 @@ export default function TopicCard({
     language,
     needsTranslate,
     hasStandardCache,
-    enableAutoTranslate,
+    shouldAutoTranslate,
     translateBlocked,
     serverResolved,
   ])
@@ -201,11 +203,12 @@ export default function TopicCard({
     window.setTimeout(() => setFadeReady(true), 30)
   }
 
-  const showKolButton = needsTranslate && !standardLoading
+  const showKolButton = needsTranslate && !standardLoading && !localePending
   const showTranslateFooter = needsTranslate || display.fromCache || override?.translationType === 'kol_style'
+  const showTextPending = localePending && !standardLoading
 
   const textFadeClass = `transition-opacity duration-500 ease-out ${
-    fadeReady && !standardLoading ? 'opacity-100' : 'opacity-0'
+    fadeReady && !standardLoading && !showTextPending ? 'opacity-100' : 'opacity-0'
   }`
 
   return (
@@ -231,7 +234,7 @@ export default function TopicCard({
 
         <div className="flex-1 min-w-0">
           <Link to={`/topics/${topic.id}`} className="block">
-            {standardLoading ? (
+            {standardLoading || showTextPending ? (
               <TopicTextSkeleton />
             ) : (
               <div className={textFadeClass}>
@@ -241,7 +244,10 @@ export default function TopicCard({
               </div>
             )}
           </Link>
-          {!standardLoading && originalLine && (
+          {showTextPending && (
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{t('topics.translating')}</p>
+          )}
+          {!standardLoading && !showTextPending && originalLine && (
             <p className={`text-[11px] text-gray-500 dark:text-gray-400 italic line-clamp-1 mt-0.5 ${textFadeClass}`}>
               {t('topics.originalTitlePrefix')} {originalLine}
             </p>
@@ -253,7 +259,7 @@ export default function TopicCard({
       <Link to={`/topics/${topic.id}`} className="flex-1 flex flex-col justify-between min-h-0">
         <div className="flex-1 min-h-0">
           <div className="mb-3 md:mb-4">
-            {standardLoading ? (
+            {standardLoading || showTextPending ? (
               <TopicTextSkeleton />
             ) : (
               <p className={`text-xs md:text-sm text-gray-600 dark:text-gray-300 line-clamp-2 leading-snug ${textFadeClass}`}>

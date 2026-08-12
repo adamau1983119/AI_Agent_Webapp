@@ -2,6 +2,7 @@
  * Alter Ego API — onboarding / DNA（AE-1d）
  */
 import { fetchAPI, fetchAPIEnvelope } from './client';
+import { normalizeUiLanguage } from '@/lib/topicLanguages';
 
 export type DnaStatus = 'pending' | 'active' | 'skipped' | 'legacy_only';
 export type AlterEgoPlatform = 'facebook' | 'threads' | 'x';
@@ -45,7 +46,7 @@ export const alterEgoApi = {
       body: JSON.stringify({
         platform,
         topic_hint: topicHint,
-        ...(language ? { language } : {}),
+        ...(language ? { language: normalizeUiLanguage(language) } : {}),
       }),
       timeout: 120000,
     }),
