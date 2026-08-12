@@ -176,9 +176,6 @@ export default function TopicCard({
     serverResolved,
   ])
 
-  const contentProgress = (topic.wordCount || 0) > 0 ? Math.min(100, ((topic.wordCount || 0) / 500) * 100) : 0
-  const imageProgress = (topic.imageCount || 0) >= 8 ? 100 : Math.min(100, ((topic.imageCount || 0) / 8) * 100)
-
   const formatTimeAgo = (dateValue: string | Date | undefined): string => {
     if (!dateValue) return ''
     try {
@@ -212,7 +209,7 @@ export default function TopicCard({
   }`
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden hover:shadow-lg transition-shadow p-3 md:p-4 h-full min-h-[140px] flex flex-col">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden hover:shadow-lg transition-shadow p-3 md:p-4 h-full min-h-[120px] flex flex-col">
       <div className="flex items-start gap-3 mb-2 md:mb-3">
         <Link to={`/topics/${topic.id}`} className="flex-shrink-0">
           {previewImage ? (
@@ -258,7 +255,7 @@ export default function TopicCard({
 
       <Link to={`/topics/${topic.id}`} className="flex-1 flex flex-col justify-between min-h-0">
         <div className="flex-1 min-h-0">
-          <div className="mb-3 md:mb-4">
+          <div>
             {standardLoading || showTextPending ? (
               <TopicTextSkeleton />
             ) : (
@@ -271,30 +268,9 @@ export default function TopicCard({
               </p>
             )}
           </div>
-
-          <div className="space-y-1.5 md:space-y-2">
-            <div>
-              <div className="flex justify-between text-xs mb-0.5 md:mb-1">
-                <span className="text-gray-600 dark:text-gray-400">{t('topics.contentProgress')}</span>
-                <span className="font-semibold">{contentProgress}%</span>
-              </div>
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
-                <div className="bg-primary h-1.5 rounded-full transition-all" style={{ width: `${contentProgress}%` }} />
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between text-xs mb-0.5 md:mb-1">
-                <span className="text-gray-600 dark:text-gray-400">{t('topics.imageProgress')}</span>
-                <span className="font-semibold">{imageProgress}%</span>
-              </div>
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
-                <div className="bg-secondary h-1.5 rounded-full transition-all" style={{ width: `${imageProgress}%` }} />
-              </div>
-            </div>
-          </div>
         </div>
 
-        <span className="text-primary hover:text-primary-dark font-medium text-xs md:text-sm mt-3 md:mt-4 self-start">
+        <span className="text-primary hover:text-primary-dark font-medium text-xs md:text-sm mt-3 self-start">
           {t('common.viewDetails')} →
         </span>
       </Link>

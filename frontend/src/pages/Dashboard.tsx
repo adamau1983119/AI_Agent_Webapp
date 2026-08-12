@@ -1,7 +1,6 @@
-import { useEffect, useRef, useState } from 'react'
-import { useMutation, useQuery } from '@tanstack/react-query'
-import toast from 'react-hot-toast'
-import { schedulesAPI, topicsAPI } from '@/api/client'
+import { useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { topicsAPI } from '@/api/client'
 import TopicCard from '@/components/ui/TopicCard'
 import ConnectionErrorDisplay from '@/components/ui/ConnectionErrorDisplay'
 import { usePageTitle } from '@/hooks/usePageTitle'
@@ -13,16 +12,13 @@ import {
 } from '@/lib/topicDayHkt'
 
 /** 方案 C：收集語言固定 zh-TW（介面語系不影響產卡） */
-const COLLECTION_LANGUAGE = 'zh-TW'
 
 /**
- * Dashboard：只顯示今日主題卡；空列表時可強制各分類再產 5 張（測試／軟切換）。
+ * Dashboard：只顯示今日主題卡；排程每日 04:00 HKT 自動產卡。
  */
 export default function Dashboard() {
   usePageTitle()
   const { t, language } = useTranslation()
-  const autoTriggered = useRef(false)
-  const [isGenerating, setIsGenerating] = useState(false)
 
   const {
     data: topicsResponse,
@@ -44,50 +40,7 @@ export default function Dashboard() {
   const todayTopicsCount = countTopicsForHktDay(topics)
   const displayTopics = filterTopicsForHktDay(topics)
 
-  const generateMutation = useMutation({
-    mutationFn: () => schedulesAPI.generateTodayAllTopics(true, COLLECTION_LANGUAGE),
-    onMutate: () => {
-      setIsGenerating(true)
-      toast.loading(t('dashboard.generating'), { id: 'generate-today' })
-    },
-    onSuccess: (data) => {
-      toast.success(data.message || t('dashboard.generateStarted'), { id: 'generate-today' })
-      refetchTopics()
-    },
-    onError: (error: unknown) => {
-      setIsGenerating(false)
-      const err = error as { message?: string; status?: number; details?: { suggestion?: string } }
-      let msg = err?.message || t('dashboard.generateFailed')
-      if (err?.details?.suggestion) {
-        msg = `${msg}\n${err.details.suggestion}`
-      }
-      toast.error(msg, { id: 'generate-today', duration: 5000 })
-    },
-  })
-  const { mutate: triggerGenerate, isPending: generatePending } = generateMutation
-
-  // 產卡中：每 15s 刷新，直到滿額或逾時
-  useEffect(() => {
-    if (!isGenerating) return
-    const started = Date.now()
-    const id = window.setInterval(() => {
-      refetchTopics()
-      if (Date.now() - started > 180_000) {
-        setIsGenerating(false)
-      }
-    }, 15_000)
-    return () => window.clearInterval(id)
-  }, [isGenerating, refetchTopics])
-
-  useEffect(() => {
-    if (!isGenerating) return
-    if (todayTopicsCount >= EXPECTED_DAILY_TOPICS) {
-      setIsGenerating(false)
-      toast.success(t('dashboard.generateSuccess'), { id: 'generate-today-complete' })
-    }
-  }, [todayTopicsCount, isGenerating, t])
-
-  // 未滿日配額：每 2 分鐘輕量刷新
+  // 未滿日配額：每 2 分鐘輕量刷新（等候排程產卡）
   useEffect(() => {
     if (topicsError || todayTopicsCount >= EXPECTED_DAILY_TOPICS) return
     const id = window.setInterval(() => {
@@ -96,29 +49,8 @@ export default function Dashboard() {
     return () => window.clearInterval(id)
   }, [todayTopicsCount, topicsError, refetchTopics])
 
-  // 列表為空：自動強制各系列再產 5 張（方便測試／軟切換）
-  useEffect(() => {
-    if (autoTriggered.current || topicsLoading || topicsError) return
-    if (displayTopics.length > 0) return
-    if (generatePending || isGenerating) return
-    autoTriggered.current = true
-    triggerGenerate()
-  }, [
-    topicsLoading,
-    topicsError,
-    displayTopics.length,
-    generatePending,
-    isGenerating,
-    triggerGenerate,
-  ])
-
   const handleRetry = () => {
     refetchTopics()
-  }
-
-  const handleGenerateToday = () => {
-    if (generatePending || isGenerating) return
-    triggerGenerate()
   }
 
   const categories = [
@@ -159,36 +91,11 @@ export default function Dashboard() {
         </div>
       ) : null}
 
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+      <div className="mb-6">
         <h3 className="text-[11px] tracking-[0.15em] uppercase text-gray-500">
           {t('dashboard.topicCards')}
         </h3>
-        <button
-          type="button"
-          data-testid="btn-dashboard-generate"
-          onClick={handleGenerateToday}
-          disabled={generatePending || isGenerating}
-          className="px-5 py-2.5 bg-black text-white text-[10px] tracking-[0.15em] uppercase hover:bg-gray-900 disabled:opacity-50 transition-colors"
-        >
-          {generatePending || isGenerating
-            ? t('dashboard.generatingTopics')
-            : t('dashboard.generateTodayForce')}
-        </button>
       </div>
-
-      {(generatePending || isGenerating) && (
-        <div className="mb-6 bg-white border border-black p-6">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="animate-spin rounded-full h-4 w-4 border-b border-black" />
-            <h3 className="text-[11px] tracking-[0.15em] uppercase text-black">
-              {t('dashboard.generatingTopics')}
-            </h3>
-          </div>
-          <p className="text-[10px] text-gray-500 font-light tracking-wide">
-            {t('dashboard.generateTodayForceHint')}
-          </p>
-        </div>
-      )}
 
       {topicsLoading && !topicsError ? (
         <div className="text-center py-16">
@@ -210,10 +117,10 @@ export default function Dashboard() {
                 </svg>
               </div>
               <h4 className="text-sm tracking-[0.15em] uppercase text-black mb-4">
-                {isGenerating ? t('dashboard.generatingTopics') : t('dashboard.aiAgentCollecting')}
+                {t('dashboard.todayTopicsPreparing')}
               </h4>
               <div className="w-12 h-px bg-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500 font-light text-sm mb-2">{t('dashboard.generateTodayForceHint')}</p>
+              <p className="text-gray-500 font-light text-sm mb-2">{t('dashboard.systemUpdatesEvery6h')}</p>
               <p className="text-[10px] tracking-[0.1em] uppercase text-gray-400">{t('dashboard.categoryList')}</p>
             </div>
           ) : (

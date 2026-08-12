@@ -242,7 +242,7 @@ data-testid="{類型}-{位置}-{功能}"
 
 | Test ID | 元素 | 功能 |
 |---------|------|------|
-| `btn-dashboard-generate` | 按鈕 | 立即生成今日主題（`force=true`，各分類 5 張） |
+| `btn-dashboard-generate` | 按鈕 | ~~立即生成今日主題~~ **已移除**（改由排程 04:00 HKT 自動產卡） |
 | `btn-dashboard-delete` | 按鈕 | ~~刪除今日主題~~ **已移除** |
 | `btn-dashboard-retry` | 按鈕 | 重試載入（連線／429 錯誤區；無固定 testid） |
 
