@@ -171,15 +171,13 @@ class TopicDisplayTranslationService:
         desc_i18n = dict(topic.get("description_i18n") or {})
         need_desc = bool((topic.get("description") or topic.get("summary_flash") or "").strip())
 
-        if target == collection_lang:
-            title = topic.get("title") or ""
-            description = topic.get("description")
-        elif _pack_ready(override_title, override_desc, need_desc):
+        # 一語一包優先（含 target==收集語但 title 仍為外語腳本）
+        if _pack_ready(override_title, override_desc, need_desc):
             title = override_title
-            description = override_desc
+            description = override_desc if need_desc else topic.get("description")
         elif _pack_ready(titles_i18n.get(target), desc_i18n.get(target), need_desc):
             title = titles_i18n[target]
-            description = desc_i18n.get(target)
+            description = desc_i18n.get(target) if need_desc else topic.get("description")
         else:
             title = topic.get("title") or ""
             description = topic.get("description")

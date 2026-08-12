@@ -19,7 +19,7 @@ type ViewMode = 'infinite' | 'pagination'
 
 export default function Topics() {
   usePageTitle()
-  const { t } = useTranslation()
+  const { t, language } = useTranslation()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   // Phase 1: 預設使用無限滾動模式
@@ -28,7 +28,12 @@ export default function Topics() {
     page: 1,
     limit: 12,
     search: searchParams.get('search') || undefined,
+    lang: language,
   })
+
+  useEffect(() => {
+    setFilters((prev) => (prev.lang === language ? prev : { ...prev, lang: language, page: 1 }))
+  }, [language])
 
   // 當 URL 參數變化時，更新 filters
   useEffect(() => {
@@ -102,8 +107,8 @@ export default function Topics() {
     error: listError,
     refetch: refetchList,
   } = useQuery({
-    queryKey: ['topics', 'list', filters],
-    queryFn: () => topicsAPI.getTopics(filters),
+    queryKey: ['topics', 'list', filters, language],
+    queryFn: () => topicsAPI.getTopics({ ...filters, lang: language }),
     enabled: !useSearchEndpoint,
   })
 

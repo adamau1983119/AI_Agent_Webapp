@@ -37,6 +37,11 @@ export interface Topic {
   description_i18n?: Record<string, string>
   titleScriptMismatch?: boolean
   title_script_mismatch?: boolean
+  /** Content Locale：API 已解析之語言 */
+  contentLocale?: string
+  content_locale?: string
+  localeResolved?: boolean
+  locale_resolved?: boolean
 }
 
 // 內容類型

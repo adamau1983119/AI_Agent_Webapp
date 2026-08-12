@@ -12,9 +12,16 @@ import TopicTranslateDisplayButton, {
 import {
   getOriginalTitleLine,
   hasCompleteDisplayPack,
+  isServerLocaleResolved,
   needsTranslateToCurrentLanguage,
   resolveTopicDisplayCopy,
 } from '@/lib/topicDisplay'
+import {
+  enqueueTranslateDisplay,
+  isTranslateHardBlocked,
+  isTranslateRateLimited,
+  markTranslateRateLimited,
+} from '@/lib/translateDisplayQueue'
 
 function getProxyImageUrl(imageUrl: string): string {
   if (!imageUrl) return ''
@@ -52,7 +59,7 @@ const gradientClasses = {
 export default function TopicCard({
   topic,
   kolStyleTestId,
-  enableAutoTranslate = true,
+  enableAutoTranslate = false,
 }: TopicCardProps) {
   const { t, language } = useTranslation()
   const [override, setOverride] = useState<TopicDisplayOverride | null>(null)
@@ -60,10 +67,9 @@ export default function TopicCard({
   const [fadeReady, setFadeReady] = useState(true)
 
   const needsTranslate = needsTranslateToCurrentLanguage(topic, language)
-  const hasStandardCache = hasCompleteDisplayPack(topic, language)
-  const translateBlocked =
-    typeof sessionStorage !== 'undefined' &&
-    sessionStorage.getItem('flash_translate_unavailable') === '1'
+  const serverResolved = isServerLocaleResolved(topic, language)
+  const hasStandardCache = serverResolved || hasCompleteDisplayPack(topic, language)
+  const translateBlocked = isTranslateHardBlocked() || isTranslateRateLimited()
 
   const display = useMemo(
     () => resolveTopicDisplayCopy(topic, language, override),
@@ -79,7 +85,7 @@ export default function TopicCard({
   }, [topic.id, language])
 
   useEffect(() => {
-    if (!needsTranslate) {
+    if (!needsTranslate || serverResolved) {
       setStandardLoading(false)
       setFadeReady(true)
       return
@@ -102,9 +108,20 @@ export default function TopicCard({
     setStandardLoading(true)
     setFadeReady(false)
 
-    topicsAPI
-      .translateDisplay(topic.id, language, 'standard_translation')
-      .then((res) => {
+    const cancelQueue = enqueueTranslateDisplay(async () => {
+      if (cancelled || isTranslateHardBlocked() || isTranslateRateLimited()) {
+        if (!cancelled) {
+          setStandardLoading(false)
+          setFadeReady(true)
+        }
+        return
+      }
+      try {
+        const res = await topicsAPI.translateDisplay(
+          topic.id,
+          language,
+          'standard_translation'
+        )
         if (cancelled) return
         setOverride({
           title: res.title,
@@ -113,8 +130,7 @@ export default function TopicCard({
           translationType: 'standard_translation',
         })
         window.setTimeout(() => setFadeReady(true), 30)
-      })
-      .catch((err: unknown) => {
+      } catch (err: unknown) {
         const apiErr = err as {
           status?: number
           code?: string
@@ -123,7 +139,9 @@ export default function TopicCard({
         }
         const code = apiErr.code || apiErr.details?.code || ''
         const msg = String(apiErr.message || '')
-        if (
+        if (apiErr.status === 429 || code === 'RATE_LIMIT') {
+          markTranslateRateLimited(60_000)
+        } else if (
           apiErr.status === 503 ||
           code === 'deepseek_not_configured' ||
           code === 'translation_fallback' ||
@@ -137,15 +155,24 @@ export default function TopicCard({
           }
         }
         if (!cancelled) setFadeReady(true)
-      })
-      .finally(() => {
+      } finally {
         if (!cancelled) setStandardLoading(false)
-      })
+      }
+    })
 
     return () => {
       cancelled = true
+      cancelQueue()
     }
-  }, [topic.id, language, needsTranslate, hasStandardCache, enableAutoTranslate, translateBlocked])
+  }, [
+    topic.id,
+    language,
+    needsTranslate,
+    hasStandardCache,
+    enableAutoTranslate,
+    translateBlocked,
+    serverResolved,
+  ])
 
   const contentProgress = (topic.wordCount || 0) > 0 ? Math.min(100, ((topic.wordCount || 0) / 500) * 100) : 0
   const imageProgress = (topic.imageCount || 0) >= 8 ? 100 : Math.min(100, ((topic.imageCount || 0) / 8) * 100)

@@ -43,10 +43,12 @@ export default function InfiniteTopicsList({
   emptyMessage,
 }: InfiniteTopicsListProps) {
   const navigate = useNavigate()
-  const { t } = useTranslation()
+  const { t, language } = useTranslation()
   
-  // 使用翻譯的預設訊息
-  const defaultEmptyMessage = emptyMessage || t('topics.noTopics')
+  const localeFilters = useMemo(
+    () => ({ ...filters, lang: language }),
+    [filters, language]
+  )
   
   const {
     topics,
@@ -58,7 +60,9 @@ export default function InfiniteTopicsList({
     total,
     loadMore,
     refresh,
-  } = useInfiniteTopics({ filters, pageSize })
+  } = useInfiniteTopics({ filters: localeFilters, pageSize })
+
+  const defaultEmptyMessage = emptyMessage || t('topics.noTopics')
 
   // 處理主題點擊
   const handleTopicClick = (topicId: string) => {

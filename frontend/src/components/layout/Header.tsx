@@ -52,8 +52,10 @@ export default function Header() {
     setLanguage(lang)
     localStorage.setItem('preferred-language', lang)
     setShowLangMenu(false)
-    // Discover feed 依語系分 key；清掉以免留住切語前舊摘要
     void queryClient.invalidateQueries({ queryKey: ['publicFeed'] })
+    void queryClient.invalidateQueries({ queryKey: ['topics'] })
+    void queryClient.invalidateQueries({ queryKey: ['topic'] })
+    void queryClient.invalidateQueries({ queryKey: ['content'] })
   }
 
   // 當前語言的顯示信息

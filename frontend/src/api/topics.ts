@@ -32,6 +32,8 @@ export function convertTopic(apiTopic: any): Topic {
     descriptionI18n: apiTopic.description_i18n || apiTopic.descriptionI18n,
     titleScriptMismatch:
       apiTopic.title_script_mismatch ?? apiTopic.titleScriptMismatch,
+    contentLocale: apiTopic.content_locale || apiTopic.contentLocale,
+    localeResolved: apiTopic.locale_resolved ?? apiTopic.localeResolved,
   }
 }
 
@@ -59,6 +61,8 @@ export interface TopicFilters {
   limit?: number
   sort?: string
   order?: 'asc' | 'desc'
+  /** Content Locale：伺服器端解析標題／摘要 */
+  lang?: string
 }
 
 /**
@@ -135,6 +139,7 @@ export const topicsAPI = {
     params.append('limit', (filters?.limit || 30).toString())
     if (filters?.sort) params.append('sort', filters.sort)
     if (filters?.order) params.append('order', filters.order)
+    if (filters?.lang) params.append('lang', filters.lang)
 
     const response = await fetchAPIWithPagination<any>(
       `/topics?${params.toString()}`
@@ -183,8 +188,9 @@ export const topicsAPI = {
     })
   },
 
-  getTopic: async (id: string): Promise<Topic | null> => {
-    const topic = await fetchAPI<any>(`/topics/${id}`)
+  getTopic: async (id: string, lang?: string): Promise<Topic | null> => {
+    const qs = lang ? `?lang=${encodeURIComponent(lang)}` : ''
+    const topic = await fetchAPI<any>(`/topics/${id}${qs}`)
     if (!topic) {
       console.warn(`Topic not found: ${id}`)
       return null

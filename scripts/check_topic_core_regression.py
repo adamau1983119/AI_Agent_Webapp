@@ -41,6 +41,7 @@ def _static_checks() -> list[tuple[str, bool, str]]:
     today = ROOT / "frontend/src/components/features/TodayTopics.tsx"
     repo = ROOT / "backend/app/services/repositories/topic_repository.py"
     preload = ROOT / "backend/app/services/automation/topic_triple_preload.py"
+    locale_resolver = ROOT / "backend/app/services/content_locale/topic_locale_resolver.py"
     normalize_mod = ROOT / "backend/app/services/automation/topic_title_normalize.py"
     lang_cfg = ROOT / "backend/config/topic_languages.json"
     lang_cfg_legacy = ROOT / "shared/topic_languages.json"
@@ -81,6 +82,7 @@ def _static_checks() -> list[tuple[str, bool, str]]:
         text = repo.read_text(encoding="utf-8")
         out.append(("repo uses hkt_day_utc_bounds", "hkt_day_utc_bounds" in text, ""))
     out.append(("topic_triple_preload module", preload.exists(), ""))
+    out.append(("content_locale resolver module", locale_resolver.exists(), ""))
     out.append(("topic_title_normalize module", normalize_mod.exists(), ""))
     out.append(("backend/config topic_languages.json", lang_cfg.exists(), ""))
     if lang_cfg_legacy.exists() and lang_cfg.exists():
@@ -152,9 +154,15 @@ def _hkt_import_check() -> tuple[str, bool, str]:
             current_topic_pipeline_version,
             list_topics_generation_filter,
         )
+        from app.services.content_locale.topic_locale_resolver import apply_locale_overlay
 
         start, end = hkt_day_utc_bounds("2026-08-11")
         gen_f = list_topics_generation_filter(include_legacy=False)
+        sample = apply_locale_overlay(
+            {"id": "t1", "title": "Hello", "display_language": "zh-TW",
+             "titles_i18n": {"zh-TW": "時尚"}, "description_i18n": {"zh-TW": "摘要"}},
+            "zh-TW",
+        )
         ok = (
             start < end
             and expected_topics_today() == 15
@@ -166,6 +174,8 @@ def _hkt_import_check() -> tuple[str, bool, str]:
             and usable_cached_title("[Fallback-JA] x") is None
             and current_topic_pipeline_version() >= 8
             and "pipeline_version" in str(gen_f)
+            and sample.get("locale_resolved") is True
+            and sample.get("title") == "時尚"
         )
         return ("topic_day_hkt bounds + daily=15", ok, f"{start}..{end}")
     except Exception as exc:  # pragma: no cover

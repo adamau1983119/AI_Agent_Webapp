@@ -56,8 +56,17 @@ export {
   topicTitleScriptMismatch,
 }
 
+export function isServerLocaleResolved(topic: Topic, uiLanguage: string): boolean {
+  const ui = normalizeUiLanguage(uiLanguage)
+  const loc = topic.contentLocale || topic.content_locale
+  const resolved = topic.localeResolved ?? topic.locale_resolved
+  if (!resolved || !loc) return false
+  return normalizeUiLanguage(loc) === ui
+}
+
 /** 是否顯示「譯為目前語言」／觸發自動補齊 */
 export function needsTranslateToCurrentLanguage(topic: Topic, uiLanguage: string): boolean {
+  if (isServerLocaleResolved(topic, uiLanguage)) return false
   const ui = normalizeUiLanguage(uiLanguage)
   const collectionLang = getCollectionLanguage(topic)
   if (hasCompleteDisplayPack(topic, ui)) {
@@ -78,6 +87,15 @@ export function resolveTopicDisplayCopy(
   const collectionLang = getCollectionLanguage(topic)
   const { titles, descriptions } = getTopicI18nMaps(topic)
   const needDesc = sourceNeedsDescription(topic)
+
+  if (isServerLocaleResolved(topic, uiLanguage)) {
+    return {
+      title: topic.title || '',
+      description: topic.description,
+      usingTranslation: ui !== collectionLang || topicTitleScriptMismatch(topic),
+      fromCache: true,
+    }
+  }
 
   if (override && usableCachedTitle(override.title)) {
     const descOk = !needDesc || Boolean(usableCachedTitle(override.description))
