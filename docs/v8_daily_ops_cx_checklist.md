@@ -17,12 +17,30 @@
 | **CX** | **CX-TOPIC** | 主題卡隨介面語系（尤其 **en／ja**） | Dashboard 切 en／ja → 標題摘要對語系 |
 | **CX** | **CX-MC** | My Channel 真實 feed | `/my-channel` 有卡或可解鎖 |
 | **CX** | **CX-PK** | Post Kit 可仿文／複製 | 詳情 Post Kit copy＋toast |
+| **CX** | **CX-IMAGE** | 主題詳情可搜圖（Google） | 詳情 → 搜尋圖片 → 有結果；Network `images/search` 200 |
 | **OPS** | **OPS-HEALTH** | API／DB 活著 | `api…/health` → 200、`database: connected` |
 | **OPS** | **OPS-CARD** | 當日有自動產卡 | Dashboard **今日主題 N/15**、底部 TopicCard 網格；或 Mongo `generated_at` HKT 當日 |
 | **OPS** | **OPS-I18N** | 新卡含三語預寫 | 新 topic 有 `titles_i18n.en`＋`.ja`（需 `ENABLE_TOPIC_TRIPLE_PRELOAD=true`） |
 | **OPS** | **OPS-DIGEST** | 正式域每日營運報告進信箱 | Deploy log `Email 發送成功 (resend)` 或信箱自動收到 |
 | **OPS** | **OPS-COST** | 成本未失控 | DeepSeek／DeepL 用量或告警一句 |
+| **OPS** | **OPS-ENV** | Railway 變數對齊 v6 本機 | `validate/images` google=true；OAuth 正式域 URL |
 | **FIX** | **FIX-*** | 上列 FAIL 且阻塞客戶 | 最小 PR；結案對回 CX／OPS |
+
+---
+
+## 2026-08-12 Railway env ＋ 圖片搜尋 ＋ 主題去重（PR #38）
+
+| 項 | 狀態 | 一句 |
+|----|------|------|
+| **OPS-ENV-GOOGLE-IMAGE** | ✅ | Railway `GOOGLE_API_KEY`＋`GOOGLE_SEARCH_ENGINE_ID`；API 搜圖 PASS |
+| **OPS-ENV-OAUTH-META** | ✅ 使用者已設 | 正式域 `BACKEND_URL`／`FRONTEND_URL`／`CORS`／OAuth redirect／`META_*` |
+| **FIX-TOPIC-DEDUP** | ✅ **PR #38** | 補生成只填缺口；Dashboard 去重；merge `4819e99` |
+| **FIX-IMAGE-GOOGLE-ONLY** | ✅ PR #39 | `main` `6fa295d` — Google 優先、移除 DuckDuckGo |
+| **CX-IMAGE** | ⏳ 手測 | 瀏覽器 Topic 詳情搜圖截圖 |
+| **備份** | ✅ | `backup/2026-08-12-railway-env-image-ops` · [snapshot](./backups/2026-08-12_railway_env_image_ops_snapshot/SNAPSHOT_README.md) |
+| **範本** | ✅ | `backend/.env.railway.example` |
+
+**說明**：v6 圖片搜尋在 **本機 `.env`** 已驗證；`.env` 不進 Git，**Railway 須手動複製**。先前靠 DuckDuckGo 掩蓋未設 Google。
 
 ---
 
@@ -81,11 +99,12 @@
 
 ```text
 日期：2026-08-12
-OPS-HEALTH：PASS（healthy／connected；topic_pipeline_version=8）
-OPS-CARD：⏳ merge cutover 後產新卡再驗 N/15
-OPS-I18N：⏳ DeepL OK＋無 Fallback 寫庫
-CX-LOGIN／CX-TOPIC：⏳ 切 zh/en/ja
-OPS-DIGEST／COST：DIGEST 主旨「每日基本檢查」；即時告警分開
-FAIL／FIX：FIX-TOPIC-I18N-CONFIG ✅；⏳ DEEPL／CUTOVER／LIST／DIGEST PR
-明日第一步：正式域產乾淨 v8 卡並驗語言切換
+OPS-HEALTH：PASS（healthy／connected）
+OPS-ENV：PASS（Google 圖片 key；OAuth／Meta 正式域 URL 已貼 Railway）
+OPS-CARD：⏳ PR #38 部署後觀察是否仍重複卡
+CX-IMAGE：⏳ API PASS；瀏覽器手測待截圖
+CX-LOGIN／CX-TOPIC：⏳ Google 登入／三語切換
+OPS-DIGEST／COST：維持 PASS
+FAIL／FIX：FIX-TOPIC-DEDUP ✅ #38；FIX-IMAGE-GOOGLE ✅ #39
+明日第一步：瀏覽器 CX-IMAGE 截圖；Dashboard 確認無重複卡
 ```
