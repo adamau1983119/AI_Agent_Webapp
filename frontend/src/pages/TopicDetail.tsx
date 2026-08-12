@@ -74,6 +74,17 @@ export default function TopicDetail() {
     return resolveTopicDisplayCopy(topic, language, displayOverride)
   }, [topic, language, displayOverride, showCollectionTitle])
 
+  const {
+    data: content,
+    isLoading: contentLoading,
+    error: contentError,
+  } = useQuery({
+    queryKey: ['content', id, language],
+    queryFn: () => contentsAPI.getContent(id!, language),
+    enabled: !!id,
+    retry: false, // 404 不重試
+  })
+
   useEffect(() => {
     setDisplayOverride(null)
     setShowCollectionTitle(false)
@@ -90,17 +101,6 @@ export default function TopicDetail() {
   }, [content?.contentLanguage, language])
 
   usePageTitle(displayCopy?.title || (topic ? topic.title : t('nav.topics')))
-
-  const {
-    data: content,
-    isLoading: contentLoading,
-    error: contentError,
-  } = useQuery({
-    queryKey: ['content', id, language],
-    queryFn: () => contentsAPI.getContent(id!, language),
-    enabled: !!id,
-    retry: false, // 404 不重試
-  })
 
   // 記錄瀏覽時間
   useEffect(() => {

@@ -15,6 +15,12 @@ import {
   needsTranslateToCurrentLanguage,
   resolveTopicDisplayCopy,
 } from '@/lib/topicDisplay'
+import {
+  enqueueTranslateDisplay,
+  isTranslateHardBlocked,
+  isTranslateRateLimited,
+  markTranslateRateLimited,
+} from '@/lib/translateDisplayQueue'
 
 function getProxyImageUrl(imageUrl: string): string {
   if (!imageUrl) return ''
@@ -61,9 +67,7 @@ export default function TopicCard({
 
   const needsTranslate = needsTranslateToCurrentLanguage(topic, language)
   const hasStandardCache = hasCompleteDisplayPack(topic, language)
-  const translateBlocked =
-    typeof sessionStorage !== 'undefined' &&
-    sessionStorage.getItem('flash_translate_unavailable') === '1'
+  const translateBlocked = isTranslateHardBlocked() || isTranslateRateLimited()
 
   const display = useMemo(
     () => resolveTopicDisplayCopy(topic, language, override),
@@ -102,9 +106,20 @@ export default function TopicCard({
     setStandardLoading(true)
     setFadeReady(false)
 
-    topicsAPI
-      .translateDisplay(topic.id, language, 'standard_translation')
-      .then((res) => {
+    const cancelQueue = enqueueTranslateDisplay(async () => {
+      if (cancelled || isTranslateHardBlocked() || isTranslateRateLimited()) {
+        if (!cancelled) {
+          setStandardLoading(false)
+          setFadeReady(true)
+        }
+        return
+      }
+      try {
+        const res = await topicsAPI.translateDisplay(
+          topic.id,
+          language,
+          'standard_translation'
+        )
         if (cancelled) return
         setOverride({
           title: res.title,
@@ -113,8 +128,7 @@ export default function TopicCard({
           translationType: 'standard_translation',
         })
         window.setTimeout(() => setFadeReady(true), 30)
-      })
-      .catch((err: unknown) => {
+      } catch (err: unknown) {
         const apiErr = err as {
           status?: number
           code?: string
@@ -123,7 +137,9 @@ export default function TopicCard({
         }
         const code = apiErr.code || apiErr.details?.code || ''
         const msg = String(apiErr.message || '')
-        if (
+        if (apiErr.status === 429 || code === 'RATE_LIMIT') {
+          markTranslateRateLimited(60_000)
+        } else if (
           apiErr.status === 503 ||
           code === 'deepseek_not_configured' ||
           code === 'translation_fallback' ||
@@ -137,13 +153,14 @@ export default function TopicCard({
           }
         }
         if (!cancelled) setFadeReady(true)
-      })
-      .finally(() => {
+      } finally {
         if (!cancelled) setStandardLoading(false)
-      })
+      }
+    })
 
     return () => {
       cancelled = true
+      cancelQueue()
     }
   }, [topic.id, language, needsTranslate, hasStandardCache, enableAutoTranslate, translateBlocked])
 
