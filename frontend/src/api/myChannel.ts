@@ -44,8 +44,10 @@ export const myChannelApi = {
       `/my-channel/feed?lang=${encodeURIComponent(lang)}`
     ),
 
-  unlock: (topicId: string, idempotencyKey: string) =>
-    fetchAPIEnvelope<UnlockResponse>(`/my-channel/topics/${topicId}/unlock`, {
+  unlock: (topicId: string, idempotencyKey: string, lang: string) =>
+    fetchAPIEnvelope<UnlockResponse>(
+      `/my-channel/topics/${topicId}/unlock?lang=${encodeURIComponent(lang)}`,
+      {
       method: 'POST',
       body: JSON.stringify({ idempotency_key: idempotencyKey }),
     }),

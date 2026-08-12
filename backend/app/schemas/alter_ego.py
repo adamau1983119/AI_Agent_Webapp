@@ -22,6 +22,10 @@ class ExtractResponse(BaseModel):
 class PreviewRequest(BaseModel):
     platform: Literal["facebook", "threads", "x"]
     topic_hint: str = Field(default="", max_length=200)
+    language: Optional[PrimaryLanguage] = Field(
+        default=None,
+        description="UI 語言覆寫（優先於 DNA language_primary）",
+    )
 
 
 class PreviewResponse(BaseModel):

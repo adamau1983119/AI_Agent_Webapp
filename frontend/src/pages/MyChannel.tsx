@@ -17,8 +17,8 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 
 type UnlockedMap = Record<string, UnlockResponse>;
 
-function unlockKey(topicId: string): string {
-  return `mc-unlock:${topicId}`;
+function unlockKey(topicId: string, lang: string): string {
+  return `mc-unlock:${topicId}:${lang}`;
 }
 
 function templateCreateHref(tpl: ChannelTemplate): string {
@@ -71,13 +71,14 @@ export default function MyChannel() {
 
   useEffect(() => {
     loadFeed();
+    setUnlocked({});
   }, [loadFeed]);
 
   const handleUnlock = async (topicId: string) => {
     if (unlockingId) return;
     setUnlockingId(topicId);
     try {
-      const res = await myChannelApi.unlock(topicId, unlockKey(topicId));
+      const res = await myChannelApi.unlock(topicId, unlockKey(topicId, language), language);
       setUnlocked((prev) => ({ ...prev, [topicId]: res }));
       setBalance(res.balance);
       toast.success(t('myChannel.unlockSuccess'));

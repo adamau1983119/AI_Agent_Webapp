@@ -59,6 +59,7 @@ async def get_channel_templates(current_user: dict = Depends(get_current_user)):
 async def unlock_topic(
     topic_id: str,
     body: UnlockRequest,
+    lang: str = Query("zh-TW", description="UI 語言（zh-TW / en / ja）"),
     current_user: dict = Depends(get_current_user),
 ):
     """扣 1 點解鎖 URL + digest（MC-3 · 先扣點再回 body）。"""
@@ -67,6 +68,7 @@ async def unlock_topic(
             current_user["id"],
             topic_id,
             body.idempotency_key,
+            lang,
         )
         return UnlockResponse(**result)
     except InsufficientCreditsError as exc:

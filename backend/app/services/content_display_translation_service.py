@@ -1,6 +1,7 @@
 """詳情長文按需同語：Flash 譯 article/script → Mongo i18n 快取（MD-M2 ≤150）。"""
 from __future__ import annotations
 
+import asyncio
 import logging
 from typing import Any, Dict, Optional, Tuple
 
@@ -12,6 +13,8 @@ from app.utils.logger import log_cost_event
 from app.utils.topic_languages import normalize_topic_language, usable_cached_title
 
 logger = logging.getLogger(__name__)
+_FLASH_RETRIES = 2
+_FLASH_RETRY_DELAY_SEC = 1.5
 
 
 async def _flash_long_text(text: str, target: str, field: str) -> Optional[str]:
@@ -29,16 +32,26 @@ async def _flash_long_text(text: str, target: str, field: str) -> Optional[str]:
         "Preserve structure; no [Fallback-] prefix.\n"
         f"{(text or '')[:6000]}"
     )
-    try:
-        raw = await ai._call_api(prompt, model=flash, max_tokens=4096)
-        from app.services.translation.flash_pack_provider import _parse_json
+    last_err: Optional[Exception] = None
+    for attempt in range(_FLASH_RETRIES + 1):
+        try:
+            raw = await ai._call_api(prompt, model=flash, max_tokens=4096)
+            from app.services.translation.flash_pack_provider import _parse_json
 
-        data = _parse_json(raw)
-        out = usable_cached_title(str(data.get("description") or ""))
-        return out
-    except Exception as exc:
-        logger.warning("content flash %s fail: %s", field, exc)
-        return None
+            data = _parse_json(raw)
+            out = usable_cached_title(str(data.get("description") or ""))
+            if out:
+                return out
+            last_err = ValueError("empty_translation")
+        except Exception as exc:
+            last_err = exc
+            logger.warning(
+                "content flash %s fail attempt=%s: %s", field, attempt + 1, exc
+            )
+        if attempt < _FLASH_RETRIES:
+            await asyncio.sleep(_FLASH_RETRY_DELAY_SEC)
+    logger.warning("content flash %s exhausted: %s", field, last_err)
+    return None
 
 
 class ContentDisplayTranslationService:
@@ -59,7 +72,10 @@ class ContentDisplayTranslationService:
         )
         target = normalize_topic_language(ui_lang)
         if target == collection:
-            return content, None
+            out = dict(content)
+            out["content_language"] = collection
+            out["translation_pending"] = False
+            return out, None
 
         article = (content.get("article") or "").strip()
         script = (content.get("script") or "").strip()
@@ -70,7 +86,9 @@ class ContentDisplayTranslationService:
         have_a = (not need_a) or bool(usable_cached_title(art_i18n.get(target)))
         have_s = (not need_s) or bool(usable_cached_title(scr_i18n.get(target)))
         if have_a and have_s:
-            return self._overlay(content, art_i18n, scr_i18n, target, need_a, need_s), None
+            out = self._overlay(content, art_i18n, scr_i18n, target, need_a, need_s)
+            out["translation_pending"] = False
+            return out, None
 
         if not deepseek_configured():
             return None, "deepseek_not_configured"
@@ -79,12 +97,12 @@ class ContentDisplayTranslationService:
         if need_a and not have_a:
             translated = await _flash_long_text(article, target, "article")
             if not translated:
-                return None, "translation_fallback"
+                return self._pending_fallback(content, collection), "translation_fallback"
             art_i18n[target] = translated
         if need_s and not have_s:
             translated = await _flash_long_text(script, target, "script")
             if not translated:
-                return None, "translation_fallback"
+                return self._pending_fallback(content, collection), "translation_fallback"
             scr_i18n[target] = translated
 
         cid = content.get("id") or topic_id
@@ -95,7 +113,15 @@ class ContentDisplayTranslationService:
         )
         content["article_i18n"] = art_i18n
         content["script_i18n"] = scr_i18n
-        return self._overlay(content, art_i18n, scr_i18n, target, need_a, need_s), None
+        out = self._overlay(content, art_i18n, scr_i18n, target, need_a, need_s)
+        out["translation_pending"] = False
+        return out, None
+
+    def _pending_fallback(self, content: Dict[str, Any], collection: str) -> Dict[str, Any]:
+        out = dict(content)
+        out["content_language"] = collection
+        out["translation_pending"] = True
+        return out
 
     def _overlay(self, content, art_i18n, scr_i18n, target, need_a, need_s):
         out = dict(content)

@@ -69,6 +69,10 @@ class ContentResponse(BaseModel):
         default=None,
         description="目前回傳 article/script 所屬語言（ui_lang 成套或收集語）",
     )
+    translation_pending: Optional[bool] = Field(
+        default=None,
+        description="ui_lang 譯文尚未就緒；前端應重試而非顯示收集語混語",
+    )
     # 新增欄位
     source_urls: Optional[list[str]] = Field(default_factory=list, description="來源文章 URL 列表")
     source_images: Optional[list[str]] = Field(default_factory=list, description="來源文章圖片 URL 列表")

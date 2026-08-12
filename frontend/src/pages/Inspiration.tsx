@@ -16,7 +16,7 @@ import {
 import toast from 'react-hot-toast';
 
 export default function Inspiration() {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   
   const categories = [
     { value: 'general', label: t('filters.all'), icon: '✨' },
@@ -50,7 +50,7 @@ export default function Inspiration() {
   // 載入熱門趨勢
   useEffect(() => {
     loadTrending();
-  }, [selectedCategory]);
+  }, [selectedCategory, language]);
   
   // 搜尋建議
   useEffect(() => {
@@ -77,7 +77,7 @@ export default function Inspiration() {
     try {
       const response = await inspirationApi.getTrending({
         category: selectedCategory,
-        language: user?.language || 'zh-TW',
+        language,
         limit: 10,
       });
       setResults(response.topics);
@@ -102,7 +102,7 @@ export default function Inspiration() {
     
     try {
       const response = await inspirationApi.search(q, {
-        language: user?.language || 'zh-TW',
+        language,
         limit: 10,
       });
       setResults(response.results);
@@ -164,7 +164,7 @@ export default function Inspiration() {
       setIsSearching(true);
       const response = await inspirationApi.assistantStart(
         assistantTopic,
-        user?.language || 'zh-TW'
+        language,
       );
       
       setSessionId(response.session_id);

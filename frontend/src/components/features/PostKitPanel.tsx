@@ -78,14 +78,14 @@ export default function PostKitPanel({
     setPreviewLoading(true)
     try {
       const hint = displayTitle.trim().slice(0, 200)
-      const preview = await alterEgoApi.preview(platform, hint)
+      const preview = await alterEgoApi.preview(platform, hint, language)
       setPlatformCopy(preview.preview_text)
     } catch {
       setPlatformCopy('')
     } finally {
       setPreviewLoading(false)
     }
-  }, [hasDna, platform, displayTitle])
+  }, [hasDna, platform, displayTitle, language])
 
   useEffect(() => {
     alterEgoApi
@@ -96,9 +96,10 @@ export default function PostKitPanel({
 
   useEffect(() => {
     if (hasDna) {
+      setPlatformCopy('')
       loadPlatformPreview()
     }
-  }, [hasDna, platform, loadPlatformPreview])
+  }, [hasDna, platform, language, loadPlatformPreview])
 
   const handleCopy = async (text: string) => {
     const ok = await copyToClipboard(text)

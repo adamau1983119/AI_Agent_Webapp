@@ -69,10 +69,7 @@ async def search_inspiration(
     1. Google Custom Search（優先）
     2. AI 生成（當搜尋結果不足時）
     """
-    # 如果用戶已登入，使用用戶的語言偏好
-    if current_user:
-        language = current_user.get("language", language)
-    
+    # UI language query 為 SoT；不再覆寫為帳戶 profile 語言
     results = await inspiration_service.search_inspiration(
         query=q,
         language=language,
@@ -136,10 +133,6 @@ async def get_trending_topics(
     - 探索當前熱門話題
     - 尋找創作靈感
     """
-    # 如果用戶已登入，使用用戶的語言偏好
-    if current_user:
-        language = current_user.get("language", language)
-    
     topics = await inspiration_service.get_trending_topics(
         category=category,
         region=region,
@@ -311,7 +304,7 @@ async def start_assistant_conversation(
     
     try:
         user_id = current_user["id"]
-        language = request.language or current_user.get("language", "zh-TW")
+        language = request.language or "zh-TW"
         
         # 0. 成本檢查（預估問題生成需要 300-500 tokens）
         estimated_tokens = 500
