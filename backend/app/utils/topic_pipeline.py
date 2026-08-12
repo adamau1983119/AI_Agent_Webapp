@@ -50,4 +50,5 @@ def list_topics_generation_filter(*, include_legacy: bool = False) -> Dict[str, 
         clauses.append({"generated_at": {"$gte": cutover}})
     if len(clauses) == 1:
         return clauses[0]
-    return {"$or": clauses}
+    # 同時要求世代＋切換時刻（勿用 $or，否則 cutover 後未 stamp 舊卡會再擋滿額）
+    return {"$and": clauses}

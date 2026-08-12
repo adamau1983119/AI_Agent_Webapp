@@ -99,14 +99,17 @@ data-testid="{類型}-{位置}-{功能}"
 | `link-header-login` | 連結 | 登入 | `/login` |
 | `link-header-register` | 連結 | 註冊 | `/register` |
 
-### 1.3 Dashboard 快速操作
+### 1.3 Dashboard（v8 · 僅主題卡）
+
+> **2026-08-12**：Dashboard 精簡為只顯示主題卡；日曆／統計／快速操作／今日熱門列表已隱藏。側欄導航仍可進各頁。
 
 | Test ID | 元素 | 功能 | 目標路由 |
 |---------|------|------|----------|
-| `link-dashboard-topics` | 連結 | 瀏覽主題 | `/topics` |
-| `link-dashboard-channels` | 連結 | 我的頻道 | `/channels` |
-| `link-dashboard-inspiration` | 連結 | 靈感策劃 | `/inspiration` |
-| `link-dashboard-style` | 連結 | 風格檔案 | `/style-profile` |
+| `dashboard-topic-cards-only` | 頁面容器 | Dashboard 根節點（僅主題卡） | `/dashboard` |
+| `link-dashboard-topics` | 連結 | ~~瀏覽主題~~ **已移除（改側欄）** | — |
+| `link-dashboard-channels` | 連結 | ~~我的頻道~~ **已移除（改側欄）** | — |
+| `link-dashboard-inspiration` | 連結 | ~~靈感策劃~~ **已移除（改側欄）** | — |
+| `link-dashboard-style` | 連結 | ~~風格檔案~~ **已移除（改側欄）** | — |
 
 ### 1.4 Discover 公共主題牆（v7 PF-4）
 
@@ -239,9 +242,9 @@ data-testid="{類型}-{位置}-{功能}"
 
 | Test ID | 元素 | 功能 |
 |---------|------|------|
-| `btn-dashboard-generate` | 按鈕 | 生成今日主題 |
-| `btn-dashboard-delete` | 按鈕 | 刪除今日主題 |
-| `btn-dashboard-retry` | 按鈕 | 重試載入 |
+| `btn-dashboard-generate` | 按鈕 | 立即生成今日主題（`force=true`，各分類 5 張） |
+| `btn-dashboard-delete` | 按鈕 | ~~刪除今日主題~~ **已移除** |
+| `btn-dashboard-retry` | 按鈕 | 重試載入（連線／429 錯誤區；無固定 testid） |
 
 ### 4.2 主題操作
 

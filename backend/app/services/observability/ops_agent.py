@@ -20,6 +20,20 @@ _last_red_key = ""
 _last_red_sent_at = 0.0
 
 
+def resolve_health_url() -> str:
+    """
+    正式域優先打本機 /health，避免 Railway 對外 hairpin timeout 誤紅燈。
+    可用 OBS_HEALTH_URL 覆寫。
+    """
+    override = (os.getenv("OBS_HEALTH_URL") or "").strip()
+    if override:
+        return override
+    if os.getenv("RAILWAY_ENVIRONMENT") or os.getenv("RAILWAY_SERVICE_NAME"):
+        port = (os.getenv("PORT") or "8080").strip()
+        return f"http://127.0.0.1:{port}/health"
+    return DEFAULT_HEALTH
+
+
 def fetch_health(url: str, timeout: float = 20.0) -> dict[str, Any]:
     with urlopen(url, timeout=timeout) as resp:  # noqa: S310
         return json.loads(resp.read().decode("utf-8"))
@@ -50,13 +64,14 @@ def _mark_red_sent(headline: str) -> None:
     _last_red_sent_at = time.time()
 
 
-def run_ops_agent_once(*, health_url: str = DEFAULT_HEALTH) -> dict[str, Any]:
+def run_ops_agent_once(*, health_url: str | None = None) -> dict[str, Any]:
     err: str | None = None
     body: dict[str, Any] | None = None
+    url = health_url or resolve_health_url()
     try:
-        body = fetch_health(health_url)
+        body = fetch_health(url)
     except (URLError, TimeoutError, json.JSONDecodeError, OSError) as exc:
-        err = f"無法讀取 {health_url}：{exc}"
+        err = f"無法讀取 {url}：{exc}"
 
     signal = evaluate_health(body, error=err)
     base: dict[str, Any] = {
@@ -67,7 +82,7 @@ def run_ops_agent_once(*, health_url: str = DEFAULT_HEALTH) -> dict[str, Any]:
             if signal.light is TrafficLight.RED
             else "沒事・系統正常"
         ),
-        "health_url": health_url,
+        "health_url": url,
     }
     if signal.light is TrafficLight.GREEN and _only_on_red():
         out = {

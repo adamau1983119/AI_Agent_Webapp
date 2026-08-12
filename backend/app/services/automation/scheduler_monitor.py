@@ -51,10 +51,16 @@ class SchedulerMonitor:
         logger.info("排程監控服務已停止")
 
     async def _count_topics_hkt_today(self) -> int:
+        """只計目前世代（soft cutover）；舊卡不擋補生成。"""
+        from app.utils.topic_pipeline import list_topics_generation_filter
+
         start_utc, end_utc = hkt_day_utc_bounds()
-        return await self.topic_repo.count(
-            {"generated_at": {"$gte": start_utc, "$lte": end_utc}}
-        )
+        clauses = [{"generated_at": {"$gte": start_utc, "$lte": end_utc}}]
+        gen_f = list_topics_generation_filter(include_legacy=False)
+        if gen_f:
+            clauses.append(gen_f)
+        filt = clauses[0] if len(clauses) == 1 else {"$and": clauses}
+        return await self.topic_repo.count(filt)
 
     async def _check_scheduler_health(self):
         try:

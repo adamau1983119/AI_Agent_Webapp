@@ -351,12 +351,18 @@ async def generate_today_all_topics(
         try:
             from app.services.automation.topic_day_hkt import hkt_day_utc_bounds
 
+            from app.utils.topic_pipeline import list_topics_generation_filter
+
             start_utc, end_utc = hkt_day_utc_bounds()
-            existing_topics_cursor = db["topics"].find({
-                "generated_at": {"$gte": start_utc, "$lte": end_utc}
-            })
+            # soft cutover：只計目前世代，舊卡不擋 generate-today
+            clauses = [{"generated_at": {"$gte": start_utc, "$lte": end_utc}}]
+            gen_f = list_topics_generation_filter(include_legacy=False)
+            if gen_f:
+                clauses.append(gen_f)
+            day_filter = clauses[0] if len(clauses) == 1 else {"$and": clauses}
+            existing_topics_cursor = db["topics"].find(day_filter)
             existing_topics = await existing_topics_cursor.to_list(length=100)
-            logger.info(f"📊 現有主題數量: {len(existing_topics)}")
+            logger.info(f"📊 現有主題數量（含世代過濾）: {len(existing_topics)}")
         except ConnectionFailure as e:
             logger.error(f"❌ 查詢現有主題時資料庫連接失敗: {e}")
             language = get_user_language(request=request)
