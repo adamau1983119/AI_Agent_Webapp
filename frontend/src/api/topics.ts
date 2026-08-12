@@ -74,6 +74,7 @@ export interface SearchParams {
   page?: number // 頁碼（1-100）
   limit?: number // 每頁數量（1-50）
   role?: 'guest' | 'user' | 'premium' | 'admin' // 用戶角色
+  lang?: string // Content Locale ui_lang
 }
 
 /**
@@ -254,7 +255,7 @@ export const topicsAPI = {
    * 支援 Redis 快取和權限控制
    */
   searchTopics: async (params: SearchParams): Promise<SearchResponse> => {
-    const { query, category, page = 1, limit = 10, role = 'user' } = params
+    const { query, category, page = 1, limit = 10, role = 'user', lang } = params
 
     // 驗證查詢字串（防禦性檢查，主要驗證應在 UI 層進行）
     // 注意：這裡的錯誤訊息不會顯示給用戶，因為驗證已在組件層完成
@@ -274,6 +275,9 @@ export const topicsAPI = {
 
     if (category) {
       urlParams.append('category', category)
+    }
+    if (lang) {
+      urlParams.append('lang', lang)
     }
 
     // 使用 fetchAPI 並添加 X-User-Role header

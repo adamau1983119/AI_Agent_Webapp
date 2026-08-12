@@ -21,7 +21,7 @@ import type { Topic } from '@/types';
 
 export default function ChannelDetail() {
   const { id } = useParams<{ id: string }>();
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthStore();
   
@@ -43,13 +43,13 @@ export default function ChannelDetail() {
       loadChannel();
       loadChannelTopics();
     }
-  }, [id, isAuthenticated, navigate]);
+  }, [id, isAuthenticated, navigate, language]);
   
   const loadChannelTopics = async () => {
     if (!id) return;
     setTopicsLoading(true);
     try {
-      const res = await channelsApi.getChannelTopics(id, 1, 50);
+      const res = await channelsApi.getChannelTopics(id, 1, 50, language);
       setTopics(res.data);
       setTopicsTotal(res.pagination.total);
     } catch (err: any) {
@@ -82,7 +82,7 @@ export default function ChannelDetail() {
     
     setIsCollecting(true);
     try {
-      const result = await channelsApi.triggerCollection(id);
+      const result = await channelsApi.triggerCollection(id, language);
       const count = result?.topics_collected ?? 0;
       if (count > 0) {
         toast.success(t('channels.collectSuccessCount', { count }));

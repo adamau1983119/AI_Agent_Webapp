@@ -56,6 +56,7 @@ export default function Header() {
     void queryClient.invalidateQueries({ queryKey: ['topics'] })
     void queryClient.invalidateQueries({ queryKey: ['topic'] })
     void queryClient.invalidateQueries({ queryKey: ['content'] })
+    void queryClient.invalidateQueries({ queryKey: ['myChannel'] })
   }
 
   // 當前語言的顯示信息

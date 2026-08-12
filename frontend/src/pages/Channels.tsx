@@ -18,7 +18,7 @@ import {
 import toast from 'react-hot-toast';
 
 export default function Channels() {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthStore();
   
@@ -68,7 +68,7 @@ export default function Channels() {
   
   const handleTriggerCollection = async (channelId: string) => {
     try {
-      const result = await channelsApi.triggerCollection(channelId);
+      const result = await channelsApi.triggerCollection(channelId, language);
       const count = result?.topics_collected ?? 0;
       if (count > 0) {
         toast.success(t('channels.collectSuccessCount', { count }));

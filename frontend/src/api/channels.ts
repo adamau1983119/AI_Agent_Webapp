@@ -166,8 +166,9 @@ export const channelsApi = {
   /**
    * 手動觸發頻道收集
    */
-  triggerCollection: async (channelId: string): Promise<any> => {
-    return fetchAPI(`/channels/${channelId}/collect`, {
+  triggerCollection: async (channelId: string, language: string = 'zh-TW'): Promise<any> => {
+    const params = new URLSearchParams({ language });
+    return fetchAPI(`/channels/${channelId}/collect?${params.toString()}`, {
       method: 'POST',
     });
   },
@@ -178,12 +179,14 @@ export const channelsApi = {
   getChannelTopics: async (
     channelId: string,
     page: number = 1,
-    limit: number = 50
+    limit: number = 50,
+    lang?: string
   ): Promise<PaginatedResponse<Topic>> => {
     const params = new URLSearchParams({
       page: String(page),
       limit: String(limit),
     });
+    if (lang) params.append('lang', lang);
     const response = await fetchAPIWithPagination<any>(
       `/channels/${channelId}/topics?${params.toString()}`
     );

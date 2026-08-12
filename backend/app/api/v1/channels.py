@@ -327,6 +327,7 @@ async def list_channel_topics(
     channel_id: str,
     page: int = Query(1, ge=1, description="頁碼"),
     limit: int = Query(50, ge=1, le=100, description="每頁數量"),
+    lang: Optional[str] = Query(None, description="Content Locale：ui_lang（zh-TW/en/ja）"),
     current_user: dict = Depends(get_current_user),
 ):
     """
@@ -345,6 +346,13 @@ async def list_channel_topics(
         page=page,
         limit=limit,
     )
+
+    if lang:
+        from app.api.v1.topics import normalize_language
+        from app.services.content_locale.topic_locale_resolver import resolve_topics_list_locale
+
+        ui_lang = normalize_language(lang)
+        topics = await resolve_topics_list_locale(topics, ui_lang)
 
     topic_responses = []
     for topic in topics:
@@ -372,6 +380,7 @@ async def list_channel_topics(
 @router.post("/{channel_id}/collect")
 async def trigger_channel_collection(
     channel_id: str,
+    language: str = Query("zh-TW", description="UI 語言（zh-TW/en/ja）"),
     current_user: dict = Depends(get_current_user)
 ):
     """
@@ -388,8 +397,8 @@ async def trigger_channel_collection(
             detail="頻道不存在"
         )
     
-    # 取得用戶語言偏好
-    target_language = current_user.get("language", "zh-TW")
+    allowed = ("zh-TW", "en", "ja")
+    target_language = language if language in allowed else "zh-TW"
     
     # 執行收集
     result = await channel_collector.collect_for_channel(

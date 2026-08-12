@@ -17,10 +17,12 @@ type Props = {
 
 const PLATFORMS: AlterEgoPlatform[] = ['facebook', 'threads', 'x']
 
-const CATEGORY_TAGS: Record<Topic['category'], string[]> = {
-  fashion: ['fashion', 'style', 'ootd'],
-  food: ['food', 'foodie', 'recipe'],
-  trend: ['trend', 'viral', 'news'],
+function parseHashtagLine(raw: string): string[] {
+  return raw
+    .split(',')
+    .map((tag) => tag.trim())
+    .filter(Boolean)
+    .map((tag) => (tag.startsWith('#') ? tag : `#${tag}`))
 }
 
 function buildTitleOptions(base: string, t: (k: string, p?: Record<string, string>) => string): string[] {
@@ -53,9 +55,9 @@ export default function PostKitPanel({
   )
 
   const hashtags = useMemo(() => {
-    const tags = [...(CATEGORY_TAGS[category] || [])]
-    return tags.map((tag) => (tag.startsWith('#') ? tag : `#${tag}`))
-  }, [category])
+    const key = `postKit.hashtagTags.${category}` as 'postKit.hashtagTags.fashion'
+    return parseHashtagLine(t(key))
+  }, [category, t, language])
 
   const imageUrls = useMemo(() => {
     const fromGallery = images.map((img) => img.url).filter(Boolean)
