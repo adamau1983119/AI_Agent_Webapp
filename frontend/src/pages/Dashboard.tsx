@@ -8,6 +8,7 @@ import { useTranslation } from '@/i18n'
 import {
   EXPECTED_DAILY_TOPICS,
   countTopicsForHktDay,
+  dedupeTopicsByTitle,
   filterTopicsForHktDay,
 } from '@/lib/topicDayHkt'
 
@@ -38,7 +39,7 @@ export default function Dashboard() {
 
   const topics = topicsError ? [] : topicsResponse?.data || []
   const todayTopicsCount = countTopicsForHktDay(topics)
-  const displayTopics = filterTopicsForHktDay(topics)
+  const displayTopics = dedupeTopicsByTitle(filterTopicsForHktDay(topics))
 
   // 未滿日配額：每 2 分鐘輕量刷新（等候排程產卡）
   useEffect(() => {

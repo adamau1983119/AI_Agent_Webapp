@@ -10,7 +10,7 @@ from typing import Optional
 
 from app.services.automation.scheduler import SchedulerService
 from app.services.automation.topic_day_hkt import (
-    category_counts,
+    category_deficits,
     expected_topics_today,
     hkt_day_utc_bounds,
     is_daily_mode,
@@ -100,23 +100,32 @@ class SchedulerMonitor:
             return
         try:
             expected = expected_topics_today()
-            count = await self._count_topics_hkt_today()
-            if count >= expected:
+            current_by_cat = await self.topic_repo.count_hkt_today_by_category()
+            count = sum(current_by_cat.values())
+            deficits = category_deficits(current_by_cat)
+            if count >= expected and all(v == 0 for v in deficits.values()):
                 logger.info(f"今日主題已足（{count}/{expected}），略過補生成")
                 return
 
-            logger.info(f"今日主題不足（{count}/{expected}），自動觸發生成...")
+            logger.info(
+                f"今日主題不足（{count}/{expected}），依分類缺口補生成: {deficits}"
+            )
             from app.models.topic import Category
 
-            counts = category_counts()
             for category in [Category.FASHION, Category.FOOD, Category.TREND]:
-                need = counts.get(category.value, 5)
+                need = deficits.get(category.value, 0)
+                if need <= 0:
+                    logger.info(f"{category.value} 已達配額，略過補生成")
+                    continue
                 try:
-                    await self.scheduler_service.trigger_manual_generation(
+                    topics = await self.scheduler_service.trigger_manual_generation(
                         category=category,
                         count=need,
+                        respect_quota=True,
                     )
-                    logger.info(f"已觸發生成 {category.value} 主題 ×{need}")
+                    logger.info(
+                        f"已補生成 {category.value} 主題 ×{len(topics)}（目標缺口 {need}）"
+                    )
                 except Exception as e:
                     logger.error(f"觸發生成 {category.value} 主題失敗: {e}")
         except Exception as e:

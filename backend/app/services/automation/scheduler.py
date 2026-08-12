@@ -367,6 +367,10 @@ class SchedulerService:
             # 為每個主題建立資料庫記錄並處理
             for topic_data in topics_data:
                 try:
+                    title = topic_data.get("title", "")
+                    if await self._skip_duplicate_title(title):
+                        continue
+
                     # 生成唯一 ID
                     topic_id = f"topic_{category.value}_{datetime.utcnow().strftime('%Y%m%d%H%M%S')}_{len(created_topics)}"
                     topic_data["id"] = topic_id
@@ -422,6 +426,23 @@ class SchedulerService:
         except Exception as e:
             logger.error(f"為 {category_name} 分類生成主題失敗: {e}")
     
+    async def _category_deficit_today(self, category: Category) -> int:
+        """HKT 今日該分類尚缺幾張主題卡。"""
+        from app.services.automation.topic_day_hkt import category_deficits
+
+        current = await self.topic_repo.count_hkt_today_by_category()
+        return category_deficits(current).get(category.value, 0)
+
+    async def _skip_duplicate_title(self, title: str) -> bool:
+        """True＝應跳過（與近 48h 標題重複）。"""
+        dedup = getattr(self.topic_collector, "deduplicator", None)
+        if not dedup:
+            return False
+        is_dup, reason, _ = await dedup.is_duplicate(title)
+        if is_dup:
+            logger.info(f"跳過重複標題: {title[:50]}... ({reason})")
+        return is_dup
+
     async def _check_daily_limit(self, category: Category) -> bool:
         """
         檢查每日限制（是否今天已經生成過）
@@ -441,14 +462,14 @@ class SchedulerService:
             unique_key = self.config.get_daily_limit_unique_key()
             
             if unique_key == "date_category":
-                # 使用 list_topics 方法檢查今天是否有該分類的主題
+                target = self.config.get_category_count(category.value)
                 topics, total = await self.topic_repo.list_topics(
                     category=category,
                     date=today_str,
                     page=1,
-                    limit=1  # 只需要檢查是否有，不需要全部
+                    limit=1,
                 )
-                return total > 0
+                return total >= target
             else:
                 # 其他 unique_key 類型的處理
                 logger.warning(f"不支援的 unique_key 類型: {unique_key}")
@@ -462,7 +483,9 @@ class SchedulerService:
         self,
         category: Category,
         count: int = 10,
-        display_language: str = "zh-TW"
+        display_language: str = "zh-TW",
+        *,
+        respect_quota: bool = True,
     ) -> List[Dict[str, Any]]:
         """
         手動觸發主題生成（用於測試或立即執行）
@@ -483,6 +506,13 @@ class SchedulerService:
             )
             return []
 
+        if respect_quota and self.config.is_daily_limit_enabled():
+            deficit = await self._category_deficit_today(category)
+            if deficit <= 0:
+                logger.info(f"{category.value} 今日配額已滿，跳過手動生成")
+                return []
+            count = min(count, deficit)
+
         logger.info(f"手動觸發生成 {count} 個 {category.value} 主題 (語言: {display_language})")
         
         try:
@@ -499,6 +529,10 @@ class SchedulerService:
             # 為每個主題建立資料庫記錄並處理
             for topic_data in topics_data:
                 try:
+                    title = topic_data.get("title", "")
+                    if await self._skip_duplicate_title(title):
+                        continue
+
                     # 生成唯一 ID
                     topic_id = f"topic_{category.value}_{datetime.utcnow().strftime('%Y%m%d%H%M%S')}_{len(created_topics)}"
                     topic_data["id"] = topic_id
