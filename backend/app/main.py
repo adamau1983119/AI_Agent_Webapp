@@ -145,7 +145,7 @@ async def lifespan(app: FastAPI):
         if unsplash_key:
             logger.debug("✅ UNSPLASH_ACCESS_KEY 存在")
         else:
-            logger.debug("ℹ️ UNSPLASH_ACCESS_KEY 未設定（可選，將使用 DuckDuckGo）")
+            logger.debug("ℹ️ UNSPLASH_ACCESS_KEY 未設定（可選）")
         
         pexels_key = getattr(settings, 'PEXELS_API_KEY', '')
         if pexels_key:

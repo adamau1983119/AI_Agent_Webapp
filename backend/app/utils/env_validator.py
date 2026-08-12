@@ -108,20 +108,16 @@ class EnvironmentValidator:
         if google_api_key and google_search_id:
             image_services_configured.append("Google Custom Search")
         
-        # 只有當所有服務（包括 Google）都未設定時才警告
-        # 注意：DuckDuckGo 不需要 API Key，所以即使沒有其他服務也能使用
+        # 只有當 Google 與圖庫 API 都未設定時才警告
         if not image_services_configured:
             warnings.append(
-                "所有圖片服務的 API Key 都未設定（UNSPLASH_ACCESS_KEY、"
-                "PEXELS_API_KEY、PIXABAY_API_KEY、GOOGLE_API_KEY）。"
-                "圖片搜尋將使用 DuckDuckGo（不需要 API Key）作為後備服務。"
-                "建議至少設定一個圖片服務的 API Key 以獲得更好的搜尋結果。"
+                "圖片搜尋需要 GOOGLE_API_KEY 與 GOOGLE_SEARCH_ENGINE_ID（Google Custom Search）。"
+                "可選備援：UNSPLASH_ACCESS_KEY、PEXELS_API_KEY、PIXABAY_API_KEY。"
             )
         else:
             logger.info(f"已配置的圖片服務: {', '.join(image_services_configured)}")
-            # 如果有 Google Custom Search，也提醒有 DuckDuckGo 作為後備
             if "Google Custom Search" in image_services_configured:
-                logger.info("圖片搜尋服務：Google Custom Search 已配置，DuckDuckGo 作為後備服務")
+                logger.info("圖片搜尋服務：Google Custom Search 已配置")
         
         # 6. 檢查 CORS 配置
         if not settings.CORS_ORIGINS:
@@ -194,19 +190,17 @@ class EnvironmentValidator:
     
     @staticmethod
     def validate_image_services() -> bool:
-        """驗證圖片服務配置"""
-        # 檢查是否有任何圖片服務配置（包括 Google Custom Search）
-        # 注意：即使都沒有，DuckDuckGo 仍然可用，所以總是返回 True
-        has_unsplash = bool(getattr(settings, 'UNSPLASH_ACCESS_KEY', ''))
-        has_pexels = bool(getattr(settings, 'PEXELS_API_KEY', ''))
-        has_pixabay = bool(getattr(settings, 'PIXABAY_API_KEY', ''))
+        """驗證圖片服務配置（Google Custom Search 為相片搜尋所需）"""
         has_google = bool(
-            getattr(settings, 'GOOGLE_API_KEY', '') and 
+            getattr(settings, 'GOOGLE_API_KEY', '') and
             getattr(settings, 'GOOGLE_SEARCH_ENGINE_ID', '')
         )
-        
-        # 只要有任何一個服務配置，或者有 DuckDuckGo（總是可用），就返回 True
-        return has_unsplash or has_pexels or has_pixabay or has_google
+        has_stock = bool(
+            getattr(settings, 'UNSPLASH_ACCESS_KEY', '') or
+            getattr(settings, 'PEXELS_API_KEY', '') or
+            getattr(settings, 'PIXABAY_API_KEY', '')
+        )
+        return has_google or has_stock
     
     @staticmethod
     def get_validation_summary() -> Dict[str, Any]:

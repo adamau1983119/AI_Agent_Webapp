@@ -591,11 +591,10 @@ export default function ImageSearch({
             aria-label={t('images.sourceLabel')}
           >
             <option value="">{t('images.allSources')}</option>
+            <option value="google_custom_search">Google</option>
             <option value="unsplash">Unsplash</option>
             <option value="pexels">Pexels</option>
             <option value="pixabay">Pixabay</option>
-            <option value="google_custom_search">Google</option>
-            <option value="duckduckgo">DuckDuckGo</option>
           </select>
           <button
             type="submit"
