@@ -19,6 +19,7 @@ function convertContent(apiContent: any): Content {
     estimatedDuration: apiContent.estimated_duration || 0,
     modelUsed: apiContent.model_used || '',
     version: apiContent.version || 1,
+    contentLanguage: apiContent.content_language || apiContent.contentLanguage,
   }
 }
 
@@ -52,17 +53,17 @@ export const contentsAPI = {
   /**
    * 取得主題內容
    */
-  getContent: async (topicId: string): Promise<Content | null> => {
+  getContent: async (topicId: string, uiLang?: string): Promise<Content | null> => {
     try {
-      const content = await fetchAPI<any>(`/contents/${topicId}`)
+      const qs = uiLang ? `?ui_lang=${encodeURIComponent(uiLang)}` : ''
+      const content = await fetchAPI<any>(`/contents/${topicId}${qs}`, {
+        timeout: uiLang ? 120000 : undefined,
+      })
       return convertContent(content)
     } catch (error: any) {
-      // 如果是 404 錯誤（內容不存在），靜默返回 null（這是正常情況）
       if (error?.status === 404) {
-        // 不在控制台顯示 404 錯誤，因為內容可能尚未生成
         return null
       }
-      // 其他錯誤，直接拋出
       throw error
     }
   },

@@ -75,70 +75,94 @@ async def _resolve_generate_style(user_id: Optional[str]) -> tuple[str, dict]:
 def _convert_to_response(content_doc: dict) -> ContentResponse:
     """將 MongoDB 文檔轉換為 ContentResponse"""
     from datetime import datetime
-    
-    # 保存 _id（如果需要）
-    mongo_id = content_doc.pop("_id", None)
-    content_doc.pop("_id", None)  # 確保移除
-    
-    # 確保 id 欄位存在（如果沒有，使用 topic_id 或從 _id 生成）
-    if "id" not in content_doc:
-        if "topic_id" in content_doc:
-            # 通常內容的 id 和 topic_id 相同（一個主題只有一個內容）
-            content_doc["id"] = content_doc["topic_id"]
+
+    doc = dict(content_doc)
+    mongo_id = doc.pop("_id", None)
+    for key in ("article_i18n", "script_i18n", "versions"):
+        doc.pop(key, None)
+
+    if "id" not in doc:
+        if "topic_id" in doc:
+            doc["id"] = doc["topic_id"]
         elif mongo_id:
-            # 如果沒有 topic_id，使用 MongoDB 的 _id
-            content_doc["id"] = str(mongo_id)
+            doc["id"] = str(mongo_id)
         else:
             raise ValueError("Content document must have either 'id' or 'topic_id' field")
-    
-    # 確保所有必需欄位都存在
-    if "word_count" not in content_doc:
-        # 計算字數
-        article = content_doc.get("article", "") or ""
-        script = content_doc.get("script", "") or ""
-        content_doc["word_count"] = len(article) + len(script)
-    
-    if "estimated_duration" not in content_doc:
-        # 估算時長（每 150 字約 1 分鐘）
-        word_count = content_doc.get("word_count", 0)
-        content_doc["estimated_duration"] = max(10, int(word_count / 150 * 60))
-    
-    if "version" not in content_doc:
-        content_doc["version"] = 1
-    
-    if "model_used" not in content_doc:
-        content_doc["model_used"] = "unknown"
-    
-    if "prompt_version" not in content_doc:
-        content_doc["prompt_version"] = "v1.0"
-    
-    if "generated_at" not in content_doc:
-        content_doc["generated_at"] = datetime.utcnow()
-    
-    if "updated_at" not in content_doc:
-        content_doc["updated_at"] = content_doc.get("generated_at", datetime.utcnow())
-    
-    return ContentResponse(**content_doc)
+
+    if "word_count" not in doc:
+        article = doc.get("article", "") or ""
+        script = doc.get("script", "") or ""
+        doc["word_count"] = len(article) + len(script)
+
+    if "estimated_duration" not in doc:
+        word_count = doc.get("word_count", 0)
+        doc["estimated_duration"] = max(10, int(word_count / 150 * 60))
+
+    if "version" not in doc:
+        doc["version"] = 1
+    if "model_used" not in doc:
+        doc["model_used"] = "unknown"
+    if "prompt_version" not in doc:
+        doc["prompt_version"] = "v1.0"
+    if "generated_at" not in doc:
+        doc["generated_at"] = datetime.utcnow()
+    if "updated_at" not in doc:
+        doc["updated_at"] = doc.get("generated_at", datetime.utcnow())
+
+    return ContentResponse(**doc)
 
 
 @router.get("/{topic_id}", response_model=ContentResponse)
 async def get_content(
     http_request: Request,
     topic_id: str = Path(..., description="主題 ID"),
+    ui_lang: Optional[str] = None,
 ):
     """
-    取得主題內容
+    取得主題內容。ui_lang 有值時：Miss → Flash 成套譯文並寫入 Mongo i18n 快取。
     """
     try:
+        from app.utils.i18n import get_error_message, get_user_language
+
+        language = get_user_language(request=http_request)
+        if ui_lang:
+            from app.services.content_display_translation_service import (
+                content_display_translation_service,
+            )
+
+            content, err = await content_display_translation_service.resolve_for_ui(
+                topic_id, ui_lang
+            )
+            if err == "content_not_found" or not content:
+                raise HTTPException(
+                    status_code=404,
+                    detail=get_error_message("content.not_found", language),
+                )
+            if err in ("deepseek_not_configured", "translation_fallback"):
+                # 降級：回收集語言原文，並標 content_language 避免混語
+                content = await content_repo.get_content_by_topic_id(topic_id)
+                if not content:
+                    raise HTTPException(
+                        status_code=404,
+                        detail=get_error_message("content.not_found", language),
+                    )
+                topic = await topic_repo.get_topic_by_id(topic_id)
+                from app.utils.topic_languages import normalize_topic_language
+
+                content = dict(content)
+                content["content_language"] = normalize_topic_language(
+                    (topic or {}).get("display_language") or "zh-TW"
+                )
+                return _convert_to_response(content)
+            return _convert_to_response(content)
+
         content = await content_repo.get_content_by_topic_id(topic_id)
         if not content:
-            from app.utils.i18n import get_error_message, get_user_language
-            language = get_user_language(request=http_request)
             raise HTTPException(
                 status_code=404,
-                detail=get_error_message("content.not_found", language)
+                detail=get_error_message("content.not_found", language),
             )
-        
+
         return _convert_to_response(content)
     except HTTPException:
         raise

@@ -1,19 +1,23 @@
-"""產卡後 DeepL 批次預載 → topic_translations + titles_i18n（OPS-I18N）。
+"""產卡後 Flash 成套預載 → topic_translations + titles/description_i18n。
 
-MD-M2：本檔 ≤150 行；擴充請拆 topic_triple_preload_sync.py。
+MD-M2：本檔 ≤150；批次呼叫見 flash_pack_provider。
 """
 from __future__ import annotations
 
 import logging
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Tuple
 
-from app.models.topic_translation import TranslationType
+from app.models.topic_translation import TranslationProvider, TranslationType
 from app.services.automation.topic_title_normalize import normalize_topic_title_for_display_lang
 from app.services.repositories.topic_repository import TopicRepository
 from app.services.repositories.topic_translation_repository import TopicTranslationRepository
-from app.services.translation.deepl_provider import translate_with_fallback
-from app.utils.cost_controls import topic_triple_preload_cap, topic_triple_preload_enabled
+from app.services.translation.flash_pack_provider import translate_packs_batch
+from app.utils.cost_controls import (
+    deepseek_configured,
+    topic_triple_preload_cap,
+    topic_triple_preload_enabled,
+)
 from app.utils.logger import log_cost_event
 from app.utils.topic_languages import (
     normalize_topic_language,
@@ -24,29 +28,53 @@ from app.utils.topic_languages import (
 logger = logging.getLogger(__name__)
 
 
+def _pack_ready(title, desc, need_desc: bool) -> bool:
+    if usable_cached_title(title) is None:
+        return False
+    if need_desc and usable_cached_title(desc) is None:
+        return False
+    return True
+
+
+async def _write_pack(repo, trans_repo, topic, lang, title_t, desc_t) -> None:
+    topic_id = topic["id"]
+    titles_i18n = dict(topic.get("titles_i18n") or {})
+    desc_i18n = dict(topic.get("description_i18n") or {})
+    titles_i18n[lang] = title_t[:200]
+    desc_i18n[lang] = (desc_t or "")[:200]
+    await trans_repo.upsert_translation({
+        "topic_id": topic_id, "lang": lang, "type": TranslationType.STANDARD,
+        "cached_title": title_t[:200], "cached_content": (desc_t or "")[:400],
+        "provider": TranslationProvider.FLASH,
+    })
+    await repo.update_topic(topic_id, {
+        "titles_i18n": titles_i18n, "description_i18n": desc_i18n,
+        "updated_at": datetime.utcnow(),
+    })
+    topic["titles_i18n"], topic["description_i18n"] = titles_i18n, desc_i18n
+    log_cost_event("TRANSLATION_PRELOAD", topic_id=topic_id, lang=lang, provider="deepseek_flash")
+
+
 async def preload_topic_titles(topic_ids: List[str]) -> Dict[str, Any]:
-    """批次預載：先正規化收集語言 title，再 DeepL 其餘 supported 語言。"""
+    """批次預載：正規化收集語言後，Flash 成套預載其餘語言（每批 ≤5）。"""
     if not topic_triple_preload_enabled():
         return {"status": "disabled", "processed": 0, "translated": 0}
+    if not deepseek_configured():
+        logger.warning("TOPIC_TRIPLE_PRELOAD skipped: DEEPSEEK_API_KEY empty")
+        return {"status": "deepseek_not_configured", "processed": 0, "translated": 0}
+
     cap = topic_triple_preload_cap()
-    repo = TopicRepository()
-    trans_repo = TopicTranslationRepository()
+    repo, trans_repo = TopicRepository(), TopicTranslationRepository()
     processed = translated = skipped = 0
-    did_norm = False
+    pending: Dict[str, List[Tuple[Dict[str, Any], Dict[str, str]]]] = {}
 
     for topic_id in topic_ids:
         if translated >= cap:
-            logger.info("TOPIC_TRIPLE_PRELOAD cap=%s reached", cap)
             break
         processed += 1
         topic = await repo.get_topic_by_id(topic_id)
         if not topic:
             continue
-        title_src = (topic.get("title") or topic.get("original_title") or "").strip()
-        if not title_src:
-            skipped += 1
-            continue
-
         try:
             title_src, did_norm = await normalize_topic_title_for_display_lang(
                 topic_id, topic, repo=repo, trans_repo=trans_repo
@@ -59,60 +87,52 @@ async def preload_topic_titles(topic_ids: List[str]) -> Dict[str, Any]:
             skipped += 1
             continue
 
-        titles_i18n: Dict[str, str] = dict(topic.get("titles_i18n") or {})
+        title_src = (topic.get("title") or title_src or "").strip()
+        if not usable_cached_title(title_src):
+            skipped += 1
+            continue
         display_lang = normalize_topic_language(topic.get("display_language"))
-        if usable_cached_title(title_src):
-            titles_i18n.setdefault(display_lang, title_src[:200])
-        changed = False
+        titles_i18n = dict(topic.get("titles_i18n") or {})
+        desc_i18n = dict(topic.get("description_i18n") or {})
+        titles_i18n.setdefault(display_lang, title_src[:200])
+        desc_src = (topic.get("description") or topic.get("summary_flash") or "").strip()
+        need_desc = bool(desc_src)
+        if need_desc:
+            desc_i18n.setdefault(display_lang, desc_src[:200])
+        topic["titles_i18n"], topic["description_i18n"] = titles_i18n, desc_i18n
 
         for lang in preload_languages_for(display_lang):
             if translated >= cap:
                 break
-            if usable_cached_title(titles_i18n.get(lang)):
+            if _pack_ready(titles_i18n.get(lang), desc_i18n.get(lang), need_desc):
                 continue
-            cached = await trans_repo.get_translation(
-                topic_id, lang, TranslationType.STANDARD
-            )
-            cached_title = usable_cached_title(
-                (cached or {}).get("cached_title") if cached else None
-            )
-            if cached_title:
-                titles_i18n[lang] = cached_title[:200]
-                changed = True
+            cached = await trans_repo.get_translation(topic_id, lang, TranslationType.STANDARD)
+            c_t = usable_cached_title((cached or {}).get("cached_title") if cached else None)
+            c_d = usable_cached_title((cached or {}).get("cached_content") if cached else None)
+            if cached and _pack_ready(c_t, c_d, need_desc):
+                await _write_pack(repo, trans_repo, topic, lang, c_t, c_d or "")
                 continue
-            try:
-                title_t, provider = await translate_with_fallback(
-                    title_src[:500], lang, title_src[:500]
-                )
-                if provider == "fallback" or usable_cached_title(title_t) is None:
+            pending.setdefault(lang, []).append((topic, {
+                "id": topic_id,
+                "title": title_src[:500],
+                "description": desc_src[:800],
+            }))
+
+    for lang, rows in pending.items():
+        i = 0
+        while i < len(rows) and translated < cap:
+            chunk = rows[i:i + 5]
+            i += 5
+            mapped = await translate_packs_batch([r[1] for r in chunk], lang)
+            for topic, item in chunk:
+                pack = mapped.get(item["id"])
+                if not pack:
                     skipped += 1
                     continue
-                await trans_repo.upsert_translation({
-                    "topic_id": topic_id,
-                    "lang": lang,
-                    "type": TranslationType.STANDARD,
-                    "cached_title": title_t[:200],
-                    "cached_content": None,
-                    "provider": provider,
-                })
-                titles_i18n[lang] = title_t[:200]
+                await _write_pack(repo, trans_repo, topic, lang, pack[0], pack[1])
                 translated += 1
-                changed = True
-                log_cost_event(
-                    "TRANSLATION_PRELOAD",
-                    topic_id=topic_id,
-                    lang=lang,
-                    provider=provider,
-                )
-            except Exception as exc:
-                logger.warning("preload %s %s: %s", topic_id, lang, exc)
-                skipped += 1
-
-        if changed or did_norm:
-            await repo.update_topic(topic_id, {
-                "titles_i18n": titles_i18n,
-                "updated_at": datetime.utcnow(),
-            })
+                if translated >= cap:
+                    break
 
     return {
         "status": "ok",

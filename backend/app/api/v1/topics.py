@@ -391,6 +391,16 @@ async def translate_topic_display(
             status_code=404,
             detail=get_error_message("topic.not_found", language),
         )
+    if err == "deepseek_not_configured":
+        raise HTTPException(
+            status_code=503,
+            detail={"code": "deepseek_not_configured", "message": err},
+        )
+    if err == "translation_fallback":
+        raise HTTPException(
+            status_code=503,
+            detail={"code": "translation_fallback", "message": err},
+        )
     if err or not result:
         raise HTTPException(status_code=400, detail=err or "translate_failed")
 

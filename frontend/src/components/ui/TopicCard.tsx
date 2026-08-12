@@ -11,9 +11,8 @@ import TopicTranslateDisplayButton, {
 } from '@/components/ui/TopicTranslateDisplayButton'
 import {
   getOriginalTitleLine,
-  getTopicI18nMaps,
+  hasCompleteDisplayPack,
   needsTranslateToCurrentLanguage,
-  normalizeUiLanguage,
   resolveTopicDisplayCopy,
 } from '@/lib/topicDisplay'
 
@@ -60,10 +59,11 @@ export default function TopicCard({
   const [standardLoading, setStandardLoading] = useState(false)
   const [fadeReady, setFadeReady] = useState(true)
 
-  const uiLang = normalizeUiLanguage(language)
   const needsTranslate = needsTranslateToCurrentLanguage(topic, language)
-  const { titles } = getTopicI18nMaps(topic)
-  const hasStandardCache = Boolean(titles[uiLang])
+  const hasStandardCache = hasCompleteDisplayPack(topic, language)
+  const translateBlocked =
+    typeof sessionStorage !== 'undefined' &&
+    sessionStorage.getItem('flash_translate_unavailable') === '1'
 
   const display = useMemo(
     () => resolveTopicDisplayCopy(topic, language, override),
@@ -92,7 +92,7 @@ export default function TopicCard({
       return () => window.clearTimeout(timer)
     }
 
-    if (!enableAutoTranslate) {
+    if (!enableAutoTranslate || translateBlocked) {
       setStandardLoading(false)
       setFadeReady(true)
       return
@@ -114,7 +114,28 @@ export default function TopicCard({
         })
         window.setTimeout(() => setFadeReady(true), 30)
       })
-      .catch(() => {
+      .catch((err: unknown) => {
+        const apiErr = err as {
+          status?: number
+          code?: string
+          message?: string
+          details?: { code?: string }
+        }
+        const code = apiErr.code || apiErr.details?.code || ''
+        const msg = String(apiErr.message || '')
+        if (
+          apiErr.status === 503 ||
+          code === 'deepseek_not_configured' ||
+          code === 'translation_fallback' ||
+          msg.includes('deepseek') ||
+          msg.includes('translation_fallback')
+        ) {
+          try {
+            sessionStorage.setItem('flash_translate_unavailable', '1')
+          } catch {
+            /* ignore */
+          }
+        }
         if (!cancelled) setFadeReady(true)
       })
       .finally(() => {
@@ -124,7 +145,7 @@ export default function TopicCard({
     return () => {
       cancelled = true
     }
-  }, [topic.id, language, needsTranslate, hasStandardCache, enableAutoTranslate])
+  }, [topic.id, language, needsTranslate, hasStandardCache, enableAutoTranslate, translateBlocked])
 
   const contentProgress = (topic.wordCount || 0) > 0 ? Math.min(100, ((topic.wordCount || 0) / 500) * 100) : 0
   const imageProgress = (topic.imageCount || 0) >= 8 ? 100 : Math.min(100, ((topic.imageCount || 0) / 8) * 100)

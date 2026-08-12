@@ -65,6 +65,10 @@ class ContentResponse(BaseModel):
         default=None,
         description="Alter Ego：dna_version_id / dna_status（PD-AE1-06）",
     )
+    content_language: Optional[str] = Field(
+        default=None,
+        description="目前回傳 article/script 所屬語言（ui_lang 成套或收集語）",
+    )
     # 新增欄位
     source_urls: Optional[list[str]] = Field(default_factory=list, description="來源文章 URL 列表")
     source_images: Optional[list[str]] = Field(default_factory=list, description="來源文章圖片 URL 列表")
