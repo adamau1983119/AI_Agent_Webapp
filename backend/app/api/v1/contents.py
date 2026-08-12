@@ -219,6 +219,7 @@ async def generate_content(
         pro_max_tokens = int(getattr(settings, "DEEPSEEK_PRO_MAX_TOKENS", 4096))
         target_lang = body.language or topic.get("display_language", "zh-TW")
         from app.prompts.article_prompt import build_article_prompt
+        from app.prompts.script_prompt import build_script_prompt
 
         if body.type == "article":
             prompt = build_article_prompt(
@@ -236,12 +237,14 @@ async def generate_content(
             )
             script = None
         elif body.type == "script":
-            script = await ai_service.generate_script(
+            script_prompt = build_script_prompt(
                 topic_title=topic["title"],
                 topic_category=topic["category"],
                 keywords=keywords,
-                duration=body.script_duration,
+                target_duration=body.script_duration,
+                target_language=target_lang,
             )
+            script = await ai_service._call_api(script_prompt)
             article = None
         else:
             article_prompt = build_article_prompt(
@@ -257,12 +260,14 @@ async def generate_content(
             article = await ai_service._call_api(
                 article_prompt, model=pro_model, max_tokens=pro_max_tokens
             )
-            script = await ai_service.generate_script(
+            script_prompt = build_script_prompt(
                 topic_title=topic["title"],
                 topic_category=topic["category"],
                 keywords=keywords,
-                duration=body.script_duration,
+                target_duration=body.script_duration,
+                target_language=target_lang,
             )
+            script = await ai_service._call_api(script_prompt)
         
         # 計算字數和時長
         word_count = len(article or "") + len(script or "")

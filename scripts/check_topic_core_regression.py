@@ -136,6 +136,41 @@ def _static_checks() -> list[tuple[str, bool, str]]:
                 "",
             )
         )
+    script_prompt = ROOT / "backend/app/prompts/script_prompt.py"
+    contents_api = ROOT / "backend/app/api/v1/contents.py"
+    inspiration_api = ROOT / "backend/app/api/v1/inspiration.py"
+    inspiration_page = ROOT / "frontend/src/pages/Inspiration.tsx"
+    if script_prompt.exists():
+        sp = script_prompt.read_text(encoding="utf-8")
+        out.append(("script_prompt target_language", "target_language" in sp, ""))
+    if contents_api.exists():
+        ct = contents_api.read_text(encoding="utf-8")
+        out.append(
+            (
+                "contents script uses target_lang",
+                "build_script_prompt" in ct and "target_language=target_lang" in ct,
+                "",
+            )
+        )
+    if inspiration_api.exists():
+        ins = inspiration_api.read_text(encoding="utf-8")
+        out.append(
+            (
+                "inspiration UI lang SoT",
+                "current_user.get(\"language\"" not in ins,
+                "",
+            )
+        )
+    if inspiration_page.exists():
+        ip = inspiration_page.read_text(encoding="utf-8")
+        out.append(
+            (
+                "Inspiration uses useTranslation language",
+                "const { t, language } = useTranslation()" in ip
+                and "user?.language" not in ip,
+                "",
+            )
+        )
     return out
 
 

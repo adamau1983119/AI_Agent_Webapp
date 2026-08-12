@@ -9,6 +9,10 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 
 from app.services.credit_ledger_service import UNLOCK_COST, credit_ledger_service
+from app.services.content_locale.topic_locale_resolver import (
+    resolve_topic_locale,
+    resolve_topics_list_locale,
+)
 from app.services.my_channel.my_channel_cache import (
     can_assemble,
     get_cached_feed,
@@ -17,7 +21,6 @@ from app.services.my_channel.my_channel_cache import (
     set_cached_feed,
     set_unlock_result,
 )
-from app.services.public_feed.feed_translation_loader import title_map_for_topics
 from app.services.repositories.channel_repository import ChannelRepository
 from app.services.repositories.topic_repository import TopicRepository
 
@@ -57,14 +60,6 @@ def _digest_text(topic: Dict[str, Any]) -> str:
     if len(raw) <= _DIGEST_MAX:
         return raw
     return raw[:_DIGEST_MAX]
-
-
-def _resolve_heading(topic: Dict[str, Any], lang: str, title_map: Dict[str, str]) -> str:
-    tid = str(topic.get("id") or "")
-    if tid and tid in title_map:
-        return title_map[tid]
-    titles = topic.get("titles_i18n") or {}
-    return titles.get(lang) or topic.get("title") or ""
 
 
 class MyChannelService:
@@ -131,14 +126,14 @@ class MyChannelService:
         candidates.sort(key=_sort_key, reverse=True)
         candidates = candidates[:30]
 
-        title_map = await title_map_for_topics(candidates, lang)
+        localized = await resolve_topics_list_locale(candidates, lang)
         cards: List[Dict[str, Any]] = []
-        for topic in candidates:
+        for topic in localized:
             previews = topic.get("preview_images") or []
             cards.append(
                 {
                     "id": topic["id"],
-                    "heading": _resolve_heading(topic, lang, title_map),
+                    "heading": (topic.get("title") or "").strip(),
                     "intro": _intro_text(topic),
                     "category": topic.get("category"),
                     "image_url": previews[0] if previews else None,
@@ -151,7 +146,11 @@ class MyChannelService:
         user_id: str,
         topic_id: str,
         idempotency_key: str,
+        lang: str = "zh-TW",
     ) -> Dict[str, Any]:
+        if lang not in _ALLOWED_LANGS:
+            lang = "zh-TW"
+
         cached = await get_unlock_result(user_id, idempotency_key)
         if cached:
             return cached
@@ -166,7 +165,8 @@ class MyChannelService:
         if not source_url:
             raise ValueError("topic_missing_url")
 
-        digest = _digest_text(topic)
+        resolved = await resolve_topic_locale(topic, lang, translate_on_miss=True)
+        digest = _digest_text(resolved)
         balance = await credit_ledger_service.decr_credits(
             user_id,
             UNLOCK_COST,

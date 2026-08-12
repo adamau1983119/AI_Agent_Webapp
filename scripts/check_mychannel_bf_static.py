@@ -42,6 +42,8 @@ def main() -> int:
         ("PD-MC3-01 unlock route", "/topics/{topic_id}/unlock" in api, ""),
         ("PD-MC3-02 source_url digest", "digest_300" in schema and "source_url" in svc, ""),
         ("PD-MC3-03 idempotency", "idempotency_key" in api and "get_unlock_result" in cache, ""),
+        ("PD-MC3-04 unlock ui_lang", "lang: str = Query" in api and "resolve_topic_locale" in svc, ""),
+        ("PD-MC2-05 feed locale resolver", "resolve_topics_list_locale" in svc, ""),
         ("PD-MC4-01 MyChannel.tsx feed", "myChannelApi.getFeed" in page, ""),
         ("PD-MC4-02 unlock CTA testid", "btn-my-channel-unlock" in page, ""),
         ("PD-MC4-03 templates UI", "panel-my-channel-templates" in page and "getChannelTemplates" in client, ""),
@@ -50,6 +52,7 @@ def main() -> int:
         ("MC-4 no public_feed", "public_feed:feed:" not in svc and "public_feed:feed:" not in cache, ""),
         ("router registered", "my_channel.router" in main_py, ""),
         ("frontend API client", MY_CHANNEL_API.exists() and "unlock" in client, ""),
+        ("frontend unlock lang param", "lang=${encodeURIComponent(lang)}" in client, ""),
     ]
 
     for name, ok, detail in checks:
