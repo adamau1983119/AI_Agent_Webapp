@@ -18,8 +18,13 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def _pack_ready(title: Optional[str], desc: Optional[str], need_desc: bool) -> bool:
-    if usable_cached_title(title) is None:
+def _pack_ready(
+    title: Optional[str],
+    desc: Optional[str],
+    need_desc: bool,
+    lang: Optional[str] = None,
+) -> bool:
+    if usable_cached_title(title, lang) is None:
         return False
     if need_desc and usable_cached_title(desc) is None:
         return False
@@ -69,14 +74,16 @@ class TopicDisplayTranslationService:
     ):
         titles_i18n = dict(topic.get("titles_i18n") or {})
         desc_i18n = dict(topic.get("description_i18n") or {})
-        if _pack_ready(titles_i18n.get(target), desc_i18n.get(target), need_desc):
+        if _pack_ready(titles_i18n.get(target), desc_i18n.get(target), need_desc, target):
             log_cost_event("I18N_CACHE_HIT", topic_id=topic_id, lang=target, type=trans_type)
             return self._build_result(topic, target, collection_lang, cached=True), None
 
         cached = await self.trans_repo.get_translation(topic_id, target, trans_type)
-        c_title = usable_cached_title((cached or {}).get("cached_title") if cached else None)
+        c_title = usable_cached_title(
+            (cached or {}).get("cached_title") if cached else None, target
+        )
         c_desc = usable_cached_title((cached or {}).get("cached_content") if cached else None)
-        if cached and _pack_ready(c_title, c_desc, need_desc):
+        if cached and _pack_ready(c_title, c_desc, need_desc, target):
             log_cost_event("I18N_CACHE_HIT", topic_id=topic_id, lang=target, type=trans_type)
             await self._sync_pack(topic_id, topic, target, c_title, c_desc or "")
             topic = await self.topic_repo.get_topic_by_id(topic_id) or topic
@@ -98,7 +105,7 @@ class TopicDisplayTranslationService:
         else:
             title, content, provider = await self._standard(topic, summary, target)
 
-        if provider == "fallback" or not _pack_ready(title, content, need_desc):
+        if provider == "fallback" or not _pack_ready(title, content, need_desc, target):
             return None, "translation_fallback"
 
         await self.trans_repo.upsert_translation({
@@ -117,8 +124,12 @@ class TopicDisplayTranslationService:
         ), None
 
     async def _standard(self, topic, summary_flash, target):
-        title_src = (topic.get("title") or summary_flash)[:500]
-        desc_src = (topic.get("description") or summary_flash)[:800]
+        title_src = (
+            topic.get("original_title") or topic.get("title") or summary_flash
+        )[:500]
+        desc_src = (
+            topic.get("description") or topic.get("summary_flash") or summary_flash
+        )[:800]
         return await translate_title_desc_pack(title_src, desc_src, target)
 
     async def _kol_style(self, topic, summary_flash, target):
@@ -172,10 +183,10 @@ class TopicDisplayTranslationService:
         need_desc = bool((topic.get("description") or topic.get("summary_flash") or "").strip())
 
         # 一語一包優先（含 target==收集語但 title 仍為外語腳本）
-        if _pack_ready(override_title, override_desc, need_desc):
+        if _pack_ready(override_title, override_desc, need_desc, target):
             title = override_title
             description = override_desc if need_desc else topic.get("description")
-        elif _pack_ready(titles_i18n.get(target), desc_i18n.get(target), need_desc):
+        elif _pack_ready(titles_i18n.get(target), desc_i18n.get(target), need_desc, target):
             title = titles_i18n[target]
             description = desc_i18n.get(target) if need_desc else topic.get("description")
         else:

@@ -1,0 +1,30 @@
+---
+description: Multilingual & i18n Auto-Translation Safeguard Rules
+globs: frontend/src/i18n/**, frontend/src/components/**, frontend/src/pages/**, backend/app/services/**, backend/app/api/**
+alwaysApply: true
+---
+
+# 全端多語言自動轉換防護鐵律 (Rule 17)
+
+本規則在編輯任何前端組件、頁面、i18n 字典、後端服務或 API 端點時自動生效。
+
+## 1. 靜態 UI 字典層 (Static UI Invariant)
+- `frontend/src/i18n/index.ts` 中的 `zhTW`、`en`、`ja` 三個字典鍵值必須 100% 同步對齊（`en: typeof zhTW`、`ja: typeof zhTW`）。
+- 嚴禁在 TSX 視圖中硬編碼任何使用者可見文字，一律使用 `t('xxx')`。
+- 新增/隱藏功能時，**絕不刪除或打亂既有字典鍵值**。
+
+## 2. AI 生成模組層 (AI Generation Invariant)
+- 任何 LLM 生成服務必須接收並傳遞 `language` 參數。
+- 解析 AI 回應之正則表達式，**禁止寫死單一中文關鍵字**，必須支援多語言標頭 (`靈感|Inspiration|Idea|アイディア` 等) 並具備段落優雅降級 (Fallback)。
+
+## 3. 搜尋層 (Multilingual Search Invariant)
+- 資料庫搜尋關鍵字時，MongoDB 查詢子句必須涵蓋 `titles_i18n.ja`、`titles_i18n.en`、`titles_i18n.zh-TW` 與 `original_title`。
+
+## 4. 驗收門禁 (Mandatory Gatekeeper)
+在修改完成後，**必須執行**：
+```bash
+python scripts/audit_project_i18n.py --strict
+python -m unittest backend/tests/test_i18n_language_conversion.py
+npm run build (在 frontend 目錄)
+```
+只有當上述 3 項指令 100% PASS 時方可交付。

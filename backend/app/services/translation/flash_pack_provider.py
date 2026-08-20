@@ -12,7 +12,11 @@ from app.utils.topic_languages import normalize_topic_language, usable_cached_ti
 
 logger = logging.getLogger(__name__)
 
-_LANG = {"zh-TW": "Traditional Chinese", "en": "English", "ja": "Japanese"}
+_LANG = {
+    "zh-TW": "Traditional Chinese (繁體中文)",
+    "en": "English",
+    "ja": "Japanese (日本語)",
+}
 _FENCE = re.compile(r"```(?:json)?\s*([\s\S]*?)```", re.I)
 
 
@@ -28,8 +32,13 @@ def _parse_json(raw: str) -> Any:
     return json.loads(text)
 
 
-def _pack_ok(title: Optional[str], desc: Optional[str], need_desc: bool) -> bool:
-    if usable_cached_title(title) is None:
+def _pack_ok(
+    title: Optional[str],
+    desc: Optional[str],
+    need_desc: bool,
+    target_lang: Optional[str] = None,
+) -> bool:
+    if usable_cached_title(title, target_lang) is None:
         return False
     if need_desc and usable_cached_title(desc) is None:
         return False
@@ -50,7 +59,8 @@ async def translate_title_desc_pack(
     lang = normalize_topic_language(target_lang)
     label = _LANG.get(lang, lang)
     prompt = (
-        f"Translate the following topic card into {label}. "
+        f"Translate the following topic card completely into natural, fluent {label}. "
+        f"You MUST translate both title and description into {label} (do not leave text in the source language). "
         "Return ONLY JSON: {\"title\":\"...\",\"description\":\"...\"}. "
         "Keep meaning; do not add [Fallback-] prefixes.\n"
         f"title: {src_title[:500]}\n"
@@ -62,9 +72,9 @@ async def translate_title_desc_pack(
         ai = AIServiceFactory.get_service(settings.AI_SERVICE)
         raw = await ai._call_api(prompt, model=_flash_model(), max_tokens=800)
         data = _parse_json(raw)
-        out_t = usable_cached_title(str(data.get("title") or ""))
+        out_t = usable_cached_title(str(data.get("title") or ""), lang)
         out_d = usable_cached_title(str(data.get("description") or ""))
-        if not _pack_ok(out_t, out_d, need_desc):
+        if not _pack_ok(out_t, out_d, need_desc, lang):
             return None, None, "fallback"
         return out_t, (out_d or "")[:400], TranslationProvider.FLASH
     except Exception as exc:
@@ -91,7 +101,8 @@ async def translate_packs_batch(
         for it in batch
     ]
     prompt = (
-        f"Translate each topic card into {label}. "
+        f"Translate each topic card completely into natural, fluent {label}. "
+        f"You MUST translate both title and description of every item into {label} (do not leave text in the source language). "
         "Return ONLY a JSON array of "
         "{\"id\":\"...\",\"title\":\"...\",\"description\":\"...\"}. "
         "Keep the same ids; no markdown.\n"
@@ -113,9 +124,9 @@ async def translate_packs_batch(
             if not isinstance(row, dict):
                 continue
             tid = str(row.get("id") or "")
-            title = usable_cached_title(str(row.get("title") or ""))
+            title = usable_cached_title(str(row.get("title") or ""), lang)
             desc = usable_cached_title(str(row.get("description") or ""))
-            if not tid or not _pack_ok(title, desc, need_by_id.get(tid, False)):
+            if not tid or not _pack_ok(title, desc, need_by_id.get(tid, False), lang):
                 continue
             out[tid] = (title[:200], (desc or "")[:400])
         return out

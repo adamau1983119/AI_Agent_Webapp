@@ -25,8 +25,10 @@ def _need_desc(topic: Dict[str, Any]) -> bool:
     return bool((topic.get("description") or topic.get("summary_flash") or "").strip())
 
 
-def _pack_ready(title: Optional[str], desc: Optional[str], need_desc: bool) -> bool:
-    if usable_cached_title(title) is None:
+def _pack_ready(
+    title: Optional[str], desc: Optional[str], need_desc: bool, lang: Optional[str] = None
+) -> bool:
+    if usable_cached_title(title, lang) is None:
         return False
     if need_desc and usable_cached_title(desc) is None:
         return False
@@ -42,7 +44,7 @@ def apply_locale_overlay(topic: Dict[str, Any], ui_lang: str) -> Dict[str, Any]:
     titles = dict(out.get("titles_i18n") or {})
     descs = dict(out.get("description_i18n") or {})
     t, d = titles.get(lang), descs.get(lang)
-    if _pack_ready(t, d, need):
+    if _pack_ready(t, d, need, lang):
         out["title"] = t[:200]
         if need and d:
             out["description"] = d[:200]
@@ -121,12 +123,18 @@ async def resolve_topics_list_locale(
                 batches += 1
                 items = []
                 for t in chunk:
-                    title_src = (t.get("title") or t.get("original_title") or "").strip()
+                    title_src = (
+                        t.get("original_title") or t.get("title") or ""
+                    ).strip()
                     if not title_src:
                         continue
-                    desc_src = (t.get("description") or t.get("summary_flash") or "").strip()
+                    desc_src = (
+                        t.get("description") or t.get("summary_flash") or ""
+                    ).strip()
                     items.append({
-                        "id": t["id"], "title": title_src[:500], "description": desc_src[:800],
+                        "id": t["id"],
+                        "title": title_src[:500],
+                        "description": desc_src[:800],
                     })
                 if not items:
                     continue

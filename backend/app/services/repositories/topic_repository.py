@@ -106,7 +106,11 @@ class TopicRepository(BaseRepository):
             clauses.append({
                 "$or": [
                     {"title": {"$regex": search_query, "$options": "i"}},
+                    {"original_title": {"$regex": search_query, "$options": "i"}},
                     {"source": {"$regex": search_query, "$options": "i"}},
+                    {"titles_i18n.ja": {"$regex": search_query, "$options": "i"}},
+                    {"titles_i18n.en": {"$regex": search_query, "$options": "i"}},
+                    {"titles_i18n.zh-TW": {"$regex": search_query, "$options": "i"}},
                 ]
             })
         if not clauses:
