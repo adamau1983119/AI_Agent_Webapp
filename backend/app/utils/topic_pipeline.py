@@ -4,9 +4,14 @@ from __future__ import annotations
 import os
 from datetime import datetime
 from typing import Any, Dict, Optional
-from zoneinfo import ZoneInfo
-
-_HKT = ZoneInfo("Asia/Hong_Kong")
+try:
+    from zoneinfo import ZoneInfo
+    _HKT = ZoneInfo("Asia/Hong_Kong")
+    _UTC = ZoneInfo("UTC")
+except Exception:
+    from datetime import timezone, timedelta
+    _HKT = timezone(timedelta(hours=8))
+    _UTC = timezone.utc
 
 
 def current_topic_pipeline_version() -> int:
@@ -34,7 +39,7 @@ def _cutover_utc_naive() -> Optional[datetime]:
             local = datetime.strptime(raw[:10], "%Y-%m-%d")
         if local.tzinfo is None:
             local = local.replace(tzinfo=_HKT)
-        return local.astimezone(ZoneInfo("UTC")).replace(tzinfo=None)
+        return local.astimezone(_UTC).replace(tzinfo=None)
     except ValueError:
         return None
 
