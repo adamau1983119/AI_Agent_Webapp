@@ -11,17 +11,12 @@ from zoneinfo import ZoneInfo
 from app.services.observability.alert_mailer import send_alert_email
 from app.services.observability.channels import AlertChannel
 from app.services.observability.digest_ledger import (
-    latest_digest_summary,
-    record_digest_attempt,
-    was_digest_sent,
+    latest_digest_summary, record_digest_attempt, was_digest_sent,
 )
 from app.services.observability.digest_topics import topics_hkt_summary
 from app.services.observability.ops_agent import fetch_health, resolve_health_url
 from app.services.observability.traffic_light import (
-    TrafficLight,
-    evaluate_health,
-    light_zh,
-    verdict_zh,
+    TrafficLight, evaluate_health, light_zh, verdict_zh,
 )
 
 logger = logging.getLogger("observability.daily_digest")
@@ -77,14 +72,19 @@ async def _send_digest(
         body = await asyncio.to_thread(fetch_health, health_url)
     except Exception as exc:  # noqa: BLE001
         err = str(exc)
-    signal = evaluate_health(body, error=err)
-    day = _today_hkt()
-    cc = (body or {}).get("cost_controls") or {}
     try:
         topics_v8, topics_all, topics_expected = await topics_hkt_summary()
     except Exception as exc:  # noqa: BLE001
         logger.warning("topics_hkt_summary unexpected: %s", exc)
         topics_v8, topics_all, topics_expected = -1, -1, 15
+    signal = evaluate_health(
+        body,
+        error=err,
+        topics_v8=topics_v8 if topics_v8 >= 0 else None,
+        topics_expected=topics_expected if topics_expected > 0 else None,
+    )
+    day = _today_hkt()
+    cc = (body or {}).get("cost_controls") or {}
     topics_line = (
         f"今日產卡(v8)={topics_v8}/{topics_expected}（HKT；全日含舊={topics_all}）；"
         if topics_v8 >= 0

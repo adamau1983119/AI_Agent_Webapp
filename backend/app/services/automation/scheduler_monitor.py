@@ -29,6 +29,8 @@ class SchedulerMonitor:
         self.topic_repo = TopicRepository()
         self.monitoring = False
         self.last_check: Optional[datetime] = None
+        self._is_ensuring: bool = False
+        self._last_ensure_time: Optional[datetime] = None
 
     async def start_monitoring(self, check_interval: int = 300):
         if self.monitoring:
@@ -76,8 +78,19 @@ class SchedulerMonitor:
                 if count < expected:
                     logger.warning(
                         f"HKT 今日（{day}）主題不足：{count}/{expected}，"
-                        f"建議檢查 ENABLE_SCHEDULED_TOPIC_COLLECTION 或手動觸發"
+                        f"檢查自動補產卡條件..."
                     )
+                    from app.utils.cost_controls import scheduled_topic_collection_enabled
+
+                    if scheduled_topic_collection_enabled():
+                        now = datetime.utcnow()
+                        cooldown_passed = (
+                            self._last_ensure_time is None
+                            or (now - self._last_ensure_time).total_seconds() >= 900
+                        )
+                        if not self._is_ensuring and cooldown_passed:
+                            logger.info("自動觸發 ensure_today_topics 補生成今日主題卡")
+                            asyncio.create_task(self.ensure_today_topics())
                 else:
                     logger.debug(f"HKT 今日（{day}）主題 OK：{count}/{expected}")
             else:
@@ -98,6 +111,13 @@ class SchedulerMonitor:
                 "跳過 ensure_today_topics（ENABLE_SCHEDULED_TOPIC_COLLECTION=false）"
             )
             return
+
+        if self._is_ensuring:
+            logger.info("已有 ensure_today_topics 正在執行中，略過")
+            return
+
+        self._is_ensuring = True
+        self._last_ensure_time = datetime.utcnow()
         try:
             expected = expected_topics_today()
             current_by_cat = await self.topic_repo.count_hkt_today_by_category()
@@ -130,3 +150,5 @@ class SchedulerMonitor:
                     logger.error(f"觸發生成 {category.value} 主題失敗: {e}")
         except Exception as e:
             logger.error(f"確保今日主題失敗: {e}")
+        finally:
+            self._is_ensuring = False

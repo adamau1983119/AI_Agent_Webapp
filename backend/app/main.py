@@ -439,10 +439,11 @@ async def root():
 
 @app.get("/health")
 async def health_check():
-    """健康檢查（含 cost_controls／daily_digest，對齊正式域監察）"""
+    """健康檢查（含 cost_controls／daily_digest／topics_today，對齊正式域監察）"""
     from app.utils.cost_controls import cost_controls_summary
     from app.services.alter_ego_health import alter_ego_health_payload
     from app.services.observability.daily_digest import digest_health_blob
+    from app.services.observability.digest_topics import topics_hkt_summary
 
     db_status, reason = await check_connection()
     digest_blob: dict = {}
@@ -450,6 +451,18 @@ async def health_check():
         digest_blob = await digest_health_blob()
     except Exception as exc:  # noqa: BLE001
         digest_blob = {"error": str(exc)}
+
+    topics_blob: dict = {}
+    try:
+        v8_cnt, all_cnt, exp_cnt = await topics_hkt_summary()
+        topics_blob = {
+            "v8_count": v8_cnt,
+            "all_count": all_cnt,
+            "expected": exp_cnt,
+        }
+    except Exception as exc:  # noqa: BLE001
+        topics_blob = {"error": str(exc)}
+
     return {
         "status": "healthy" if db_status else "unhealthy",
         "environment": settings.ENVIRONMENT,
@@ -460,6 +473,7 @@ async def health_check():
         "cost_controls": cost_controls_summary(),
         "alter_ego": alter_ego_health_payload(),
         "daily_digest": digest_blob,
+        "topics_today": topics_blob,
     }
 
 
