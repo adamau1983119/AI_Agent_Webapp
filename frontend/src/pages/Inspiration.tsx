@@ -336,7 +336,7 @@ export default function Inspiration() {
                         {t(`inspiration.verification.${generatedContent.verification_status.status}`)}
                       </span>
                       <span className="text-sm text-gray-500 dark:text-gray-400">
-                        {Math.round(generatedContent.verification_status.confidence * 100)}% 可信度
+                        {t('inspiration.confidence', { score: String(Math.round(generatedContent.verification_status.confidence * 100)) })}
                       </span>
                     </div>
                   </div>
@@ -353,7 +353,7 @@ export default function Inspiration() {
                 {generatedContent.sources && generatedContent.sources.length > 0 && (
                   <div className="mb-6">
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-                      參考來源
+                      {t('inspiration.sources')}
                     </h3>
                     <div className="space-y-2">
                       {generatedContent.sources.map((source, index) => (
@@ -410,7 +410,10 @@ export default function Inspiration() {
                   <div>
                     <div className="mb-6">
                       <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-                        問題 {currentQuestionIndex + 1} / {questions.length}
+                        {t('inspiration.questionCount', {
+                          current: String(currentQuestionIndex + 1),
+                          total: String(questions.length),
+                        })}
                       </div>
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                         {questions[currentQuestionIndex].question}

@@ -206,5 +206,83 @@ class TestFlashPackValidation(unittest.TestCase):
         self.assertTrue(ok)
 
 
+class TestInspirationMultilingualParsing(unittest.TestCase):
+    """驗證靈感策劃 AI 回應多語言正則解析與降級機制"""
+
+    def test_parse_chinese_inspiration(self):
+        from app.services.inspiration_service import InspirationService
+        svc = InspirationService()
+        raw_zh = """靈感1: 2026年東京潮流穿搭指南
+描述: 探索原宿與澀谷最新街頭風格。
+
+靈感2: 必吃米其林拉麵特輯
+描述: 嚴選五大東京頂級拉麵名店。"""
+        results = svc._parse_ai_response(raw_zh, 5)
+        self.assertEqual(len(results), 2)
+        self.assertEqual(results[0]["title"], "2026年東京潮流穿搭指南")
+        self.assertEqual(results[0]["description"], "探索原宿與澀谷最新街頭風格。")
+
+    def test_parse_english_inspiration(self):
+        from app.services.inspiration_service import InspirationService
+        svc = InspirationService()
+        raw_en = """Inspiration 1: 2026 Tokyo Fashion Trend Guide
+Description: Explore the latest street style in Harajuku and Shibuya.
+
+Inspiration 2: Top Michelin Ramen Special
+Description: Curated guide to five top ramen shops in Tokyo."""
+        results = svc._parse_ai_response(raw_en, 5)
+        self.assertEqual(len(results), 2)
+        self.assertEqual(results[0]["title"], "2026 Tokyo Fashion Trend Guide")
+        self.assertEqual(results[0]["description"], "Explore the latest street style in Harajuku and Shibuya.")
+
+    def test_parse_japanese_inspiration(self):
+        from app.services.inspiration_service import InspirationService
+        svc = InspirationService()
+        raw_ja = """アイディア1: 2026年東京トレンドファッションガイド
+説明: 原宿と渋谷の最新ストリートスタイルを徹底解説。
+
+アイディア2: ミシュラン掲載ラーメン特集
+概要: 東京の厳選ラーメン店5選。"""
+        results = svc._parse_ai_response(raw_ja, 5)
+        self.assertEqual(len(results), 2)
+        self.assertEqual(results[0]["title"], "2026年東京トレンドファッションガイド")
+        self.assertEqual(results[0]["description"], "原宿と渋谷の最新ストリートスタイルを徹底解説。")
+
+    def test_parse_fallback_unstructured(self):
+        from app.services.inspiration_service import InspirationService
+        svc = InspirationService()
+        raw_unstructured = """1. 2026年東京潮流穿搭
+這是詳細的第一段靈感介紹。
+
+2. 必吃拉麵特輯
+這是詳細的第二段靈感介紹。"""
+        results = svc._parse_ai_response(raw_unstructured, 5)
+        self.assertEqual(len(results), 2)
+        self.assertIn("2026年東京潮流穿搭", results[0]["title"])
+
+
+class TestTopicRepositoryMultilingualSearchFilter(unittest.TestCase):
+    """驗證 TopicRepository 多語言搜尋 Filter 結構"""
+
+    def test_search_clauses_include_multilingual_fields(self):
+        # 建立模擬測試，不依賴資料庫連線
+        from app.services.repositories.topic_repository import TopicRepository
+        # 檢驗 list_topics 中的 clauses 構造
+        search_query = "wedding"
+        expected_fields = [
+            "title",
+            "original_title",
+            "source",
+            "titles_i18n.ja",
+            "titles_i18n.en",
+            "titles_i18n.zh-TW",
+        ]
+        # 驗證 topic_repository 代碼中確實構造了上述子句
+        import inspect
+        src = inspect.getsource(TopicRepository.list_topics)
+        for field in expected_fields:
+            self.assertIn(f'"{field}"', src, f"Search clause must include field '{field}'")
+
+
 if __name__ == "__main__":
     unittest.main()

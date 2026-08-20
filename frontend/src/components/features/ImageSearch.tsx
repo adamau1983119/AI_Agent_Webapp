@@ -199,14 +199,18 @@ function ImageItem({
 }
 
 /**
- * 從內容中提取關鍵字（改進版：提取與主題相關的準確關鍵字）
+ * 從內容中提取關鍵字（支援中英日多語言適配）
  */
-function extractKeywords(topic: Topic | null | undefined, content: Content | null | undefined): string[] {
+function extractKeywords(
+  topic: Topic | null | undefined,
+  content: Content | null | undefined,
+  currentLang?: string
+): string[] {
   const keywords: Set<string> = new Set()
   
-  // 擴展停用詞列表（移除這些詞以獲得更好的搜尋結果）
+  // 擴展停用詞列表（支援中英日三語常見助詞與過濾詞）
   const stopWords = new Set([
-    // 代詞和助詞
+    // 中文代詞和助詞
     '對我而言', '他', '她', '它', '的', '是', '在', '有', '和', '與', '及', '或',
     '一個', '一種', '這個', '那個', '這些', '那些', '什麼', '如何', '為何',
     // 形容詞和修飾詞
@@ -218,29 +222,70 @@ function extractKeywords(topic: Topic | null | undefined, content: Content | nul
     '可以', '應該', '能夠', '如果', '但是', '然而', '因為', '所以',
     '讓', '會', '要', '能', '可', '為', '了', '而', '但', '卻', '只', '還', '更',
     // 其他無關詞彙
-    'top', '排行榜', '第1', '第2', '第3', '第一', '第二', '第三'
+    'top', '排行榜', '第1', '第2', '第3', '第一', '第二', '第三',
+    // 英文常見停用詞
+    'the', 'a', 'an', 'and', 'or', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'is', 'are',
+    'this', 'that', 'these', 'those', 'what', 'how', 'why', 'will', 'from', 'by', 'about',
+    // 日文常見助詞與修飾詞
+    'について', 'のための', 'による', 'おすすめ', '特集'
   ])
   
+  // 收集所有可用的標題（優先當前 UI 語言快取，回退原生標題）
+  const titleCandidates: string[] = []
+  if (topic) {
+    if (currentLang && topic.titles_i18n && topic.titles_i18n[currentLang]) {
+      titleCandidates.push(topic.titles_i18n[currentLang]!)
+    }
+    if (topic.title && !titleCandidates.includes(topic.title)) {
+      titleCandidates.push(topic.title)
+    }
+    if (topic.original_title && !titleCandidates.includes(topic.original_title)) {
+      titleCandidates.push(topic.original_title)
+    }
+  }
+
   // 分類特定的關鍵字提取規則
   const category = topic?.category || 'trend'
   
-  // 從主題標題提取關鍵字（優先提取核心實體）
-  if (topic?.title) {
-    const title = topic.title.trim()
+  // 從所有標題候選中提取關鍵字
+  for (const titleCandidate of titleCandidates) {
+    const title = titleCandidate.trim()
+    if (!title) continue
     
-    // 1. 提取英文專有名詞（大寫字母開頭的單詞，優先級最高）
+    // 1. 提取日文/中文書名號或引號實體：『...』或「...」
+    const quoteMatches = title.match(/[『「](.+?)[』」]/g)
+    if (quoteMatches) {
+      quoteMatches.forEach(qm => {
+        const cleanQuote = qm.replace(/[『「』」]/g, '').trim()
+        if (cleanQuote.length >= 2 && cleanQuote.length <= 40 && !stopWords.has(cleanQuote)) {
+          keywords.add(cleanQuote)
+        }
+      })
+    }
+
+    // 2. 提取日文片假名專有名詞（如「フェタチーズ」「パスタ」「ラーメン」）
+    const katakanaMatches = title.match(/[\u30A1-\u30FA\u30FC]{2,15}/g)
+    if (katakanaMatches) {
+      katakanaMatches.forEach(k => {
+        const cleanK = k.trim()
+        if (cleanK.length >= 2 && !stopWords.has(cleanK)) {
+          keywords.add(cleanK)
+        }
+      })
+    }
+
+    // 3. 提取英文專有名詞（大寫字母開頭的單詞，優先級最高）
     const englishNames = title.match(/\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*\b/g)
     if (englishNames) {
       englishNames.forEach(name => {
         const cleanName = name.trim()
-        // 只保留長度適中的專有名詞（2-50字符）
         if (cleanName.length >= 2 && cleanName.length <= 50 && !stopWords.has(cleanName.toLowerCase())) {
           keywords.add(cleanName)
         }
       })
     }
     
-    // 2. 提取品牌名稱（時尚類別）
+    // 4. 提取品牌名稱（時尚類別）
     if (category === 'fashion') {
       const fashionBrands = [
         'Dior', 'Gucci', 'Chanel', 'LV', 'Prada', 'Valentino', 'Alessandro Michele',
@@ -254,7 +299,7 @@ function extractKeywords(topic: Topic | null | undefined, content: Content | nul
       })
     }
     
-    // 3. 提取地點名稱（包含「店」、「餐廳」、「地址」等關鍵字後的名稱）
+    // 5. 提取地點名稱（包含「店」、「餐廳」、「地址」等關鍵字後的名稱）
     const locationPatterns = [
       /([\u4e00-\u9fa5]{2,8})(店|餐廳|地址|地點)/g,
       /([\u4e00-\u9fa5]{2,6})(區|市|縣|鎮|街|路)/g,
@@ -271,45 +316,17 @@ function extractKeywords(topic: Topic | null | undefined, content: Content | nul
       }
     })
     
-    // 4. 提取具體名詞（2-4字，排除停用詞）
-    let chineseText = title
-      .replace(/[A-Za-z0-9]/g, ' ') // 移除英文和數字
-      .replace(/[、，,。！？：；()（）【】「」『』]/g, ' ') // 移除標點
+    // 6. 提取具體名詞（2-4字，排除停用詞）
+    let words = title
+      .replace(/[、，,。！？：；()（）【】「」『』]/g, ' ')
       .split(/\s+/)
       .filter(w => w.length > 0)
     
-    // 提取2-4字的中文詞組（適合圖片搜尋）
-    chineseText.forEach((word, index) => {
-      // 單個詞（2-4字，且不是停用詞）
-      if (word.length >= 2 && word.length <= 4 && !stopWords.has(word)) {
-        // 優先提取名詞（常見名詞後綴）
-        if (!word.match(/^(的|是|在|有|和|與|及|或|讓|會|要|能|可|為|了|而|但|卻|只|還|更)$/)) {
+    words.forEach((word) => {
+      if (word.length >= 2 && word.length <= 15 && !stopWords.has(word) && !stopWords.has(word.toLowerCase())) {
         keywords.add(word)
-        }
-      }
-      // 兩個詞的組合（2+2字或2+3字，但只在兩個詞都不是停用詞時）
-      if (index < chineseText.length - 1) {
-        const nextWord = chineseText[index + 1]
-        if (word.length >= 2 && nextWord.length >= 2 && 
-            word.length + nextWord.length <= 6 &&
-            !stopWords.has(word) && !stopWords.has(nextWord)) {
-          keywords.add(word + ' ' + nextWord)
-        }
       }
     })
-    
-    // 5. 如果標題較短且沒有提取到關鍵字，使用簡化版本（移除所有停用詞）
-    if (title.length <= 30 && keywords.size === 0) {
-      let simplified = title
-        .replace(/[A-Za-z0-9、，,。！？：；()（）【】「」『』]/g, ' ')
-        .split(/\s+/)
-        .filter(w => w.length > 0 && !stopWords.has(w))
-        .join(' ')
-        .trim()
-      if (simplified.length >= 2 && simplified.length <= 30) {
-        keywords.add(simplified)
-      }
-    }
   }
   
   // 從文章內容提取關鍵字（補充標題中未提取到的關鍵字）
@@ -439,7 +456,7 @@ export default function ImageSearch({
   onImageSelect,
   onClose,
 }: ImageSearchProps) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const queryClient = useQueryClient()
   const [keywords, setKeywords] = useState('')
   const [source, setSource] = useState<ImageSource | undefined>()
@@ -447,10 +464,10 @@ export default function ImageSearch({
   const [diagnosticMode, setDiagnosticMode] = useState(false) // 診斷模式開關
   const limit = 20
   
-  // 提取建議的關鍵字
+  // 提取建議的關鍵字（依據當前語言優先提取）
   const suggestedKeywords = useMemo(() => {
-    return extractKeywords(topic, content)
-  }, [topic, content])
+    return extractKeywords(topic, content, i18n.language)
+  }, [topic, content, i18n.language])
   
   // 當打開對話框時，如果有建議關鍵字，自動填入第一個
   useEffect(() => {

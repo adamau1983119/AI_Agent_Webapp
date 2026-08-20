@@ -789,6 +789,9 @@ const zhTW = {
   'inspiration.verification.sourceType.platform': '平台',
   'inspiration.verification.sourceType.other': '其他',
   'inspiration.verification.credibilityScore': '可信度分數',
+  'inspiration.confidence': '{score}% 可信度',
+  'inspiration.sources': '參考來源',
+  'inspiration.questionCount': '問題 {current} / {total}',
   // 靈感 - 偏好管理
   'inspiration.preference.anomalyDetected': '檢測到您的偏好變化，已自動更新為「{value}」',
   'inspiration.preference.undo': '撤銷',
@@ -1560,6 +1563,7 @@ const en: typeof zhTW = {
   'images.select': 'Select Image',
   'images.noResults': 'No images found',
   'images.searchTitle': 'Search Images',
+  'imageSearch.traceId': 'Trace ID',
   'images.suggestedKeywords': 'Suggested Keywords (extracted from content)',
   'images.sourceLabel': 'Source',
   'images.allSources': 'All Sources',
@@ -1711,6 +1715,7 @@ const en: typeof zhTW = {
   'channels.validation.nameRequired': 'Please enter channel name',
   'channels.validation.categoryRequired': 'Please select a category',
   'channels.validation.keywordsRequired': 'Please enter at least one keyword for "Other" category',
+  'channels.other': 'Other (Custom)',
   
   // AI Channel Assistant
   'channels.assist.minimizePanel': 'Minimize assistant',
@@ -2006,6 +2011,9 @@ const en: typeof zhTW = {
   'inspiration.verification.sourceType.platform': 'Platform',
   'inspiration.verification.sourceType.other': 'Other',
   'inspiration.verification.credibilityScore': 'Credibility Score',
+  'inspiration.confidence': '{score}% confidence',
+  'inspiration.sources': 'References',
+  'inspiration.questionCount': 'Question {current} / {total}',
   
   'inspiration.preference.anomalyDetected': 'Detected preference change, automatically updated to "{value}"',
   'inspiration.preference.undo': 'Undo',
@@ -2789,6 +2797,8 @@ const ja: typeof zhTW = {
   'images.license': 'ライセンス',
   'images.order': '順番',
   'images.imageUrl': '画像 URL',
+  'images.title': '画像',
+  'images.count': '画像数',
   'images.replacePhoto': '写真を置換',
   'images.photo': '写真',
   'images.loading': '画像を読み込み中...',
@@ -2930,6 +2940,7 @@ const ja: typeof zhTW = {
   'channels.validation.nameRequired': 'チャンネル名を入力してください',
   'channels.validation.categoryRequired': 'カテゴリを選択してください',
   'channels.validation.keywordsRequired': '「その他」カテゴリの場合、少なくとも1つのキーワードを入力してください',
+  'channels.other': 'その他（カスタム）',
   
   // AI チャンネルアシスタント
   'channels.assist.minimizePanel': 'アシスタントを折りたたむ',
@@ -3209,6 +3220,7 @@ const ja: typeof zhTW = {
   'inspiration.aiGenerated': 'AI生成',
   'inspiration.useThis': 'このインスピレーションを使用',
   'inspiration.viewOriginal': '原文を見る',
+  'inspiration.inspirationSaved': 'アイディアが保存されました。トピック一覧でご利用ください',
   // インスピレーション - ソース検証
   'inspiration.verification.verified': '検証済み',
   'inspiration.verification.partiallyVerified': '部分的に検証済み',
@@ -3222,6 +3234,9 @@ const ja: typeof zhTW = {
   'inspiration.verification.sourceType.platform': 'プラットフォーム',
   'inspiration.verification.sourceType.other': 'その他',
   'inspiration.verification.credibilityScore': '信頼度スコア',
+  'inspiration.confidence': '{score}% 信頼度',
+  'inspiration.sources': '参考ソース',
+  'inspiration.questionCount': '質問 {current} / {total}',
   // インスピレーション - 設定管理
   'inspiration.preference.anomalyDetected': '設定の変更を検出しました。「{value}」に自動更新されました',
   'inspiration.preference.undo': '元に戻す',

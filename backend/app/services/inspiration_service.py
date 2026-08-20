@@ -182,27 +182,58 @@ class InspirationService:
             return []
     
     def _parse_ai_response(self, response: str, limit: int) -> List[Dict[str, Any]]:
-        """解析 AI 回應"""
+        """解析 AI 回應（支援繁中、英文、日文多語言標頭，並具備優雅降級容錯）"""
         results = []
-        
-        # 使用正則表達式解析
-        pattern = r'靈感\d+:\s*(.+?)\n描述:\s*(.+?)(?=\n靈感|\n\n|$)'
-        matches = re.findall(pattern, response, re.DOTALL)
-        
+        if not response or not isinstance(response, str):
+            return results
+
+        # 1. 優先使用結構化多語言正則匹配（支援繁中「靈感/描述」、英文「Inspiration/Idea/Description」、日文「アイディア/アイデア/説明/概要」）
+        pattern = r'(?:靈感|Inspiration|Idea|アイディア|アイデア)\s*\d*[:：]\s*(.+?)\n(?:描述|Description|說明|説明|概要)[:：]\s*(.+?)(?=\n(?:靈感|Inspiration|Idea|アイディア|アイデア)|\n\n|$)'
+        matches = re.findall(pattern, response, re.DOTALL | re.IGNORECASE)
+
         for match in matches[:limit]:
             title = match[0].strip()
             description = match[1].strip()
-            
-            results.append({
-                "title": title,
-                "description": description,
-                "url": None,
-                "image_url": None,
-                "published_date": None,
-            })
-        
-        return results
-    
+            if title:
+                results.append({
+                    "title": title,
+                    "description": description,
+                    "url": None,
+                    "image_url": None,
+                    "published_date": None,
+                })
+
+        # 2. 若標準格式未匹配到，進行寬鬆段落降級解析（避免返回空陣列造成白屏）
+        if not results:
+            blocks = [b.strip() for b in re.split(r'\n\s*\n', response) if b.strip()]
+            for block in blocks[:limit]:
+                lines = [l.strip() for l in block.splitlines() if l.strip()]
+                if not lines:
+                    continue
+                raw_title = re.sub(
+                    r'^(?:\d+[\.\、\:\s]|[\*\-\#]+\s*|(?:靈感|Inspiration|Idea|アイディア|アイデア)\s*\d*[:：]\s*)',
+                    '',
+                    lines[0],
+                    flags=re.IGNORECASE,
+                ).strip()
+                raw_desc = " ".join(lines[1:]) if len(lines) > 1 else raw_title
+                raw_desc = re.sub(
+                    r'^(?:(?:描述|Description|說明|説明|概要)[:：]\s*)',
+                    '',
+                    raw_desc,
+                    flags=re.IGNORECASE,
+                ).strip()
+                if raw_title:
+                    results.append({
+                        "title": raw_title,
+                        "description": raw_desc,
+                        "url": None,
+                        "image_url": None,
+                        "published_date": None,
+                    })
+
+        return results[:limit]
+
     async def extract_keywords(
         self,
         text: str,
@@ -222,14 +253,21 @@ class InspirationService:
         """
         try:
             ai_service = AIServiceFactory.get_service()
-            
+            lang_labels = {
+                "zh-TW": "繁體中文",
+                "en": "English",
+                "ja": "日本語",
+            }
+            target_lang_label = lang_labels.get(language, "繁體中文")
+
             prompt = f"""從以下文本提取最多 {limit} 個關鍵字，用於內容搜尋。
 
 文本：{text}
+輸出語言：{target_lang_label}
 
 要求：
-1. 關鍵字應該是名詞或專有名詞
-2. 每個關鍵字 2-6 個字
+1. 關鍵字應該是名詞或專有名詞，語言使用 {target_lang_label}
+2. 每個關鍵字 2-6 個字（或 1-2 個單詞）
 3. 只返回關鍵字，用逗號分隔
 4. 不要返回其他內容
 
