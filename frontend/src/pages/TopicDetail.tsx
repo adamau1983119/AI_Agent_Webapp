@@ -1,12 +1,11 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { topicsAPI, contentsAPI, imagesAPI, interactionsAPI } from '@/api/client'
+import { topicsAPI, contentsAPI, imagesAPI, interactionsAPI, API_BASE_URL } from '@/api/client'
 import { showSuccess, showError } from '@/utils/toast'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import ErrorDisplay from '@/components/ui/ErrorDisplay'
 import EmptyState from '@/components/ui/EmptyState'
-import TopicEditor from '@/components/features/TopicEditor'
 import ImageGallery from '@/components/features/ImageGallery'
 import ImageSearch from '@/components/features/ImageSearch'
 import InteractionButtons from '@/components/features/InteractionButtons'
@@ -27,22 +26,32 @@ import {
   resolveTopicDisplayCopy,
 } from '@/lib/topicDisplay'
 import { titleScriptMismatch } from '@/lib/topicLanguages'
+import { copyToClipboard } from '@/utils/copyToClipboard'
+import { Copy, Sparkles, Image as ImageIcon, Search, ExternalLink, ArrowDownCircle, Trash2, CheckCircle2 } from 'lucide-react'
+
+function getProxyImageUrl(imageUrl: string): string {
+  if (!imageUrl) return ''
+  if (imageUrl.includes('/images/proxy') || imageUrl.startsWith('/')) return imageUrl
+  if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+    return `${API_BASE_URL}/images/proxy?url=${encodeURIComponent(imageUrl)}`
+  }
+  return imageUrl
+}
 
 export default function TopicDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const { t, language } = useTranslation()  // 獲取用戶語言偏好
+  const { t, language } = useTranslation()
   const { isAuthenticated, user } = useAuthStore()
-  const [showEditor, setShowEditor] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [showImageSearch, setShowImageSearch] = useState(false)
   const [showLoginPrompt, setShowLoginPrompt] = useState(false)
   const [viewStartTime, setViewStartTime] = useState<number | null>(null)
   const [displayOverride, setDisplayOverride] = useState<TopicDisplayOverride | null>(null)
   const [showCollectionTitle, setShowCollectionTitle] = useState(false)
+  const postKitRef = useRef<HTMLDivElement>(null)
 
-  // 檢查是否需要登入才能執行操作
   const requireAuth = (action: () => void) => {
     if (!isAuthenticated) {
       setShowLoginPrompt(true)
@@ -136,7 +145,6 @@ export default function TopicDetail() {
       : displayCopy?.title || (topic ? topic.title : t('nav.topics'))
   )
 
-  // 記錄瀏覽時間
   useEffect(() => {
     if (topic) {
       setViewStartTime(Date.now())
@@ -158,39 +166,24 @@ export default function TopicDetail() {
     }
   }, [topic, content, id, viewStartTime, user?.id])
 
-  // 生成內容的 mutation（支援自訂設定）
   const generateContentMutation = useMutation({
     mutationFn: (settings?: GenerationSettings) => {
-      console.log('🚀 開始生成內容，主題 ID:', id, '設定:', settings)
-      // 獲取用戶當前語言偏好
       const userLanguage = language || 'zh-TW'
       return contentsAPI.generateContent(id!, {
-        type: settings?.outputFormat || 'both',
-        article_length: settings?.articleLength || 500,
-        script_duration: settings?.scriptDuration || 30,
-        language: userLanguage,  // 傳遞用戶語言偏好
+        type: 'article',
+        article_length: settings?.articleLength || 300,
+        script_duration: 30,
+        language: userLanguage,
       })
     },
     onSuccess: (data) => {
-      console.log('✅ 內容生成成功:', data)
       queryClient.invalidateQueries({ queryKey: ['content', id] })
       queryClient.invalidateQueries({ queryKey: ['topic', id] })
       showSuccess(t('common.success'))
     },
     onError: (error: any) => {
-      console.error('❌ 生成內容失敗:', error)
-      console.error('錯誤詳情:', {
-        message: error?.message,
-        status: error?.status,
-        code: error?.code,
-        details: error?.details,
-      })
-      
-      // 根據錯誤類型顯示不同的錯誤訊息
       let errorMessage = t('error.generateFailed')
-      
       if (error?.status === 400) {
-        // 處理 API Key 未設定的錯誤
         const errorDetail = error?.details?.detail || error?.message || ''
         if (typeof errorDetail === 'string' && (errorDetail.includes('API Key') || errorDetail.includes('not configured') || errorDetail.includes('not set'))) {
           errorMessage = t('error.apiKeyNotSet')
@@ -211,43 +204,27 @@ export default function TopicDetail() {
       } else if (error?.details?.detail) {
         errorMessage = error.details.detail
       }
-      
       showError(errorMessage)
     },
   })
 
-  // 重新生成內容的 mutation（支援自訂設定）
   const regenerateContentMutation = useMutation({
     mutationFn: (settings?: GenerationSettings) => {
-      console.log('🔄 開始重新生成內容，主題 ID:', id, '設定:', settings)
-      // 獲取用戶當前語言偏好
       const userLanguage = language || 'zh-TW'
-      // 內容生成可能需要更長時間，已在 contentsAPI.regenerateContent 中設置 60 秒超時
       return contentsAPI.regenerateContent(id!, {
-        type: settings?.outputFormat || 'both',
-        article_length: settings?.articleLength || 500,
-        script_duration: settings?.scriptDuration || 30,
-        language: userLanguage,  // 傳遞用戶語言偏好
+        type: 'article',
+        article_length: settings?.articleLength || 300,
+        script_duration: 30,
+        language: userLanguage,
       })
     },
     onSuccess: (data) => {
-      console.log('✅ 內容重新生成成功:', data)
       queryClient.invalidateQueries({ queryKey: ['content', id] })
       queryClient.invalidateQueries({ queryKey: ['topic', id] })
       showSuccess(t('common.success'))
     },
     onError: (error: any) => {
-      console.error('❌ 重新生成內容失敗:', error)
-      console.error('錯誤詳情:', {
-        message: error?.message,
-        status: error?.status,
-        code: error?.code,
-        details: error?.details,
-      })
-      
-      // 根據錯誤類型顯示不同的錯誤訊息
       let errorMessage = t('error.regenerateFailed')
-      
       if (error?.status === 400) {
         errorMessage = error?.message || error?.details?.detail || t('error.badRequest')
       } else if (error?.status === 404) {
@@ -259,7 +236,6 @@ export default function TopicDetail() {
       } else if (error?.details?.detail) {
         errorMessage = error.details.detail
       }
-      
       showError(errorMessage)
     },
   })
@@ -274,20 +250,17 @@ export default function TopicDetail() {
     enabled: !!id,
   })
 
-  // 智能匹配照片的 mutation
   const matchPhotosMutation = useMutation({
     mutationFn: (minCount: number) => imagesAPI.matchPhotos(id!, minCount),
     onMutate: () => {
       showSuccess(t('common.loading'))
     },
-    onSuccess: async (data) => {
-      // 立即重新獲取圖片列表，確保UI更新
+    onSuccess: async () => {
       await queryClient.refetchQueries({ queryKey: ['images', id] })
       queryClient.invalidateQueries({ queryKey: ['topic', id] })
       showSuccess(t('common.success'))
     },
     onError: (error: any) => {
-      // 檢查是否為 404 錯誤（內容不存在）
       const status = error?.status || error?.response?.status
       if (status === 404) {
         showError(t('common.failed'))
@@ -295,11 +268,9 @@ export default function TopicDetail() {
         const errorMessage = error?.response?.data?.detail || error?.message || t('common.failed')
         showError(errorMessage)
       }
-      console.error('匹配照片失敗:', error)
     },
   })
 
-  // 刪除主題
   const deleteMutation = useMutation({
     mutationFn: () => topicsAPI.deleteTopic(id!),
     onSuccess: () => {
@@ -309,11 +280,9 @@ export default function TopicDetail() {
     },
     onError: (error) => {
       showError(t('common.failed'))
-      console.error('Failed to delete topic:', error)
     },
   })
 
-  // 確認主題
   const confirmMutation = useMutation({
     mutationFn: () => topicsAPI.updateTopicStatus(id!, 'confirmed'),
     onSuccess: () => {
@@ -323,30 +292,47 @@ export default function TopicDetail() {
     },
     onError: (error) => {
       showError(t('common.failed'))
-      console.error('Failed to confirm topic:', error)
     },
   })
 
+  const handleCopyArticle = async (text: string) => {
+    if (!text) return
+    const ok = await copyToClipboard(text)
+    if (ok) {
+      showSuccess(t('content.copied'))
+    } else {
+      showError(t('common.failed'))
+    }
+  }
+
+  const handleJumpToPostKit = () => {
+    if (postKitRef.current) {
+      postKitRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }
+
+  const heroImageUrl = useMemo(() => {
+    if (images && images.length > 0 && images[0]?.url) {
+      return getProxyImageUrl(images[0].url)
+    }
+    if (topic?.previewImages && topic.previewImages.length > 0 && topic.previewImages[0]) {
+      return getProxyImageUrl(topic.previewImages[0])
+    }
+    return ''
+  }, [images, topic])
+
   if (topicLoading) {
     return (
-      <div className="p-6">
-        <LoadingSpinner />
+      <div className="flex justify-center items-center min-h-[400px]">
+        <LoadingSpinner size="lg" text={t('topics.loading')} />
       </div>
     )
   }
 
-  if (topicError) {
+  if (topicError || !topic) {
     return (
       <div className="p-6">
-        <ErrorDisplay error={topicError} onRetry={() => refetchTopic()} />
-      </div>
-    )
-  }
-
-  if (!topic) {
-    return (
-      <div className="p-6">
-        <div className="text-center py-12">
+        <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg shadow">
           <p className="text-gray-500 dark:text-gray-400 mb-4">{t('topics.notFound')}</p>
           <p className="text-sm text-gray-400 dark:text-gray-500 mb-4">{t('topics.topicId')}: {id}</p>
           {topicError && (
@@ -367,12 +353,20 @@ export default function TopicDetail() {
   }
 
   return (
-    <div className="p-4 sm:p-6 min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* 標題和操作按鈕 */}
-      <div className="flex flex-col gap-4 mb-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+    <div className="p-4 sm:p-6 lg:p-8 min-h-screen bg-[#FAF9F7] dark:bg-gray-900 max-w-7xl mx-auto space-y-6">
+      {/* 1. 頂部區域：標題、多語切換、轉貼文章快捷鍵、喜歡/不喜歡 */}
+      <header className="flex flex-col gap-4 pb-4 border-b border-gray-200 dark:border-gray-800">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex-1 min-w-0">
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white break-words">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-medium font-sans uppercase tracking-wider">
+                {topic.category}
+              </span>
+              <span className="px-2.5 py-0.5 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 rounded-full text-xs font-sans">
+                {topic.status}
+              </span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-bold font-display text-gray-900 dark:text-white break-words tracking-tight leading-tight">
               {displayCopy?.localePending ? (
                 <span className="text-gray-500 dark:text-gray-400">{t('topics.translating')}</span>
               ) : (
@@ -380,60 +374,47 @@ export default function TopicDetail() {
               )}
             </h1>
             {displayCopy && !displayCopy.localePending && getOriginalTitleLine(topic, displayCopy.title) && (
-              <p className="text-sm text-gray-500 dark:text-gray-400 italic mt-2 break-words">
+              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-sans italic mt-1.5 break-words">
                 {t('topics.originalTitlePrefix')}{' '}
                 {getOriginalTitleLine(topic, displayCopy.title)}
               </p>
             )}
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-              {t('topics.collectionVsUiLanguage', {
-                collection: t(`language.${getCollectionLanguage(topic)}`),
-                ui: t(`language.${language}`),
-              })}
-            </p>
-            {displayCopy?.description && !displayCopy.localePending && (
-              <p className="text-sm text-gray-600 dark:text-gray-300 mt-3 break-words">
-                {displayCopy.description}
-              </p>
-            )}
           </div>
-          <div className="flex flex-wrap gap-2 w-full sm:w-auto shrink-0">
-          <button
-            onClick={() => requireAuth(() => setShowEditor(true))}
-            data-testid="btn-topic-detail-edit"
-            className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary min-h-[44px]"
-          >
-            {t('common.edit')}
-          </button>
-          {topic.status !== 'confirmed' && (
+
+          {/* 右側操作按鈕群：轉貼文章 + 點讚/倒讚 */}
+          <div className="flex flex-wrap items-center gap-3 shrink-0">
             <button
-              onClick={() => requireAuth(() => confirmMutation.mutate())}
-              disabled={confirmMutation.isPending}
-              data-testid="btn-topic-detail-confirm"
-              className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
+              type="button"
+              onClick={handleJumpToPostKit}
+              data-testid="btn-topic-detail-jump-post"
+              className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-primary hover:bg-primary-dark rounded-xl shadow-sm transition-all duration-200 touch-manipulation min-h-[44px]"
             >
-              {confirmMutation.isPending ? t('common.loading') : t('common.confirm')}
+              <ArrowDownCircle className="w-4 h-4" />
+              <span>{t('topics.jumpToPost')}</span>
             </button>
-          )}
-          <button
-            onClick={() => requireAuth(() => setShowDeleteConfirm(true))}
-            data-testid="btn-topic-detail-delete"
-            className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 min-h-[44px]"
-          >
-            {t('common.delete')}
-          </button>
+
+            {/* 喜歡 / 不喜歡互動按鈕 */}
+            <div className="bg-white dark:bg-gray-800 p-1 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+              <InteractionButtons
+                topicId={id!}
+                articleId={content?.id}
+                scriptId={content?.id}
+                userId={user?.id}
+              />
+            </div>
           </div>
         </div>
 
+        {/* 語系切換輔助條 */}
         {(needsTranslateToCurrentLanguage(topic, language) || displayCopy?.fromCache) && (
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 pt-1">
             {needsTranslateToCurrentLanguage(topic, language) && !showCollectionTitle && (
               <>
                 <TopicTranslateDisplayButton
                   topic={topic}
                   translationType="standard_translation"
                   testId="btn-topic-detail-translate-display"
-                  className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-md hover:bg-purple-700 disabled:opacity-50 min-h-[44px]"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700 disabled:opacity-50 min-h-[38px] touch-manipulation"
                   onTranslated={(next) => {
                     setDisplayOverride(next)
                     setShowCollectionTitle(false)
@@ -443,7 +424,7 @@ export default function TopicDetail() {
                   topic={topic}
                   translationType="kol_style"
                   testId="btn-topic-detail-kol-style"
-                  className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-amber-900 dark:text-amber-100 bg-amber-100 dark:bg-amber-900/30 border border-amber-300 dark:border-amber-700 rounded-md hover:bg-amber-200 dark:hover:bg-amber-900/50 disabled:opacity-50 min-h-[44px]"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium text-amber-900 dark:text-amber-100 bg-amber-100 dark:bg-amber-900/30 border border-amber-300 dark:border-amber-700 rounded-lg hover:bg-amber-200 dark:hover:bg-amber-900/50 disabled:opacity-50 min-h-[38px] touch-manipulation"
                   onTranslated={(next) => {
                     setDisplayOverride(next)
                     setShowCollectionTitle(false)
@@ -456,7 +437,7 @@ export default function TopicDetail() {
                 type="button"
                 onClick={() => setShowCollectionTitle((v) => !v)}
                 data-testid="btn-topic-detail-show-collected"
-                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 min-h-[44px]"
+                className="px-3.5 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 min-h-[38px] touch-manipulation"
               >
                 {showCollectionTitle
                   ? t('topics.showTranslatedTitle')
@@ -464,166 +445,131 @@ export default function TopicDetail() {
               </button>
             )}
             {displayCopy?.fromCache && !showCollectionTitle && (
-              <span className="text-xs text-green-700 dark:text-green-400 px-2 py-1 bg-green-50 dark:bg-green-900/20 rounded">
+              <span className="text-xs text-green-700 dark:text-green-400 px-2 py-1 bg-green-50 dark:bg-green-900/20 rounded font-sans">
                 {t('topics.translatedCached')}
               </span>
             )}
           </div>
         )}
-      </div>
+      </header>
 
-      {/* 編輯模態框 */}
-      {showEditor && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <TopicEditor
-              topic={topic}
-              onClose={() => setShowEditor(false)}
-              onSuccess={() => {
-                // 編輯成功後的處理
-              }}
-            />
-          </div>
+      {/* 2. 上半部：主視覺大圖 ＋ 源文章翻譯內容摘要 */}
+      <section className="space-y-4">
+        {/* 主視覺大圖 (轉版/封面) */}
+        <div className="w-full bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+          {heroImageUrl ? (
+            <div className="relative w-full aspect-[16/9] max-h-[380px] bg-gray-100 dark:bg-gray-950 overflow-hidden flex items-center justify-center">
+              <img
+                src={heroImageUrl}
+                alt={displayCopy?.title || topic.title}
+                className="w-full h-full object-cover"
+                loading="eager"
+              />
+              <div className="absolute top-3 left-3 px-3 py-1 bg-black/60 backdrop-blur-sm text-white text-xs font-medium rounded-full flex items-center gap-1.5">
+                <ImageIcon className="w-3.5 h-3.5" />
+                <span>{t('topics.heroImage')}</span>
+              </div>
+            </div>
+          ) : (
+            <div className="w-full py-12 flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-800/60 text-gray-400">
+              <ImageIcon className="w-12 h-12 mb-2 stroke-1" />
+              <p className="text-sm font-sans">{t('images.noImages')}</p>
+            </div>
+          )}
         </div>
-      )}
 
-      {/* 刪除確認模態框 */}
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full mx-4">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              {t('common.confirmDelete')}
+        {/* 源文章翻譯內容摘要 */}
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-5 sm:p-6 space-y-3">
+          <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-700/60 pb-3">
+            <h3 className="font-display text-base sm:text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+              <span className="text-primary">📖</span>
+              <span>{t('topics.sourceSummaryTitle')}</span>
             </h3>
-            <p className="text-gray-600 mb-6">
-              {t('topics.deleteConfirmMessage')}
-            </p>
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setShowDeleteConfirm(false)}
-                data-testid="btn-delete-cancel"
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-              >
-                {t('common.cancel')}
-              </button>
-              <button
-                onClick={() => {
-                  deleteMutation.mutate()
-                  setShowDeleteConfirm(false)
-                }}
-                disabled={deleteMutation.isPending}
-                data-testid="btn-delete-confirm"
-                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {deleteMutation.isPending ? t('common.loading') : t('common.confirmDelete')}
-              </button>
-            </div>
+            {topic.source && (
+              <span className="text-xs text-gray-500 dark:text-gray-400 font-sans">
+                {t('topics.source')}: {topic.source}
+              </span>
+            )}
           </div>
-        </div>
-      )}
 
-      {/* 登入提示模態框 */}
-      {showLoginPrompt && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full mx-4">
-            <div className="text-center">
-              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-primary/10 mb-4">
-                <svg className="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                {t('auth.loginRequired')}
-              </h3>
-              <p className="text-gray-600 mb-6">
-                {t('auth.loginRequiredMessage')}
-              </p>
-              <div className="flex gap-3 justify-center">
-                <button
-                  onClick={() => setShowLoginPrompt(false)}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-                >
-                  {t('common.cancel')}
-                </button>
-                <button
-                  onClick={() => navigate('/login')}
-                  className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
-                >
-                  {t('auth.login.title')}
-                </button>
-                <button
-                  onClick={() => navigate('/register')}
-                  className="px-4 py-2 text-sm font-medium text-primary bg-primary/10 rounded-md hover:bg-primary/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
-                >
-                  {t('auth.register.title')}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 圖片搜尋模態框 */}
-      {showImageSearch && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <ImageSearch
-            topicId={id!}
-            topic={topic || null}
-            content={content || null}
-            onImageSelect={() => {
-              setShowImageSearch(false)
-            }}
-            onClose={() => setShowImageSearch(false)}
-          />
-        </div>
-      )}
-
-             {/* 三欄式佈局 */}
-             <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
-               {/* 左欄：圖片區塊 */}
-               <div className="lg:col-span-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 sm:p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="font-semibold text-gray-700 dark:text-gray-200">
-                {t('images.title')}（{images.length} {t('common.count')}）
-              </h3>
-              <button
-                onClick={() => requireAuth(() => setShowImageSearch(true))}
-                data-testid="btn-topic-detail-add-image"
-                className="px-3 py-2 text-sm font-medium text-primary bg-primary/10 rounded-md hover:bg-primary/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary min-h-[44px]"
-              >
-                {t('images.upload')}
-              </button>
-            </div>
-            {imagesLoading ? (
-              <LoadingSpinner size="sm" text={t('images.loading')} />
-            ) : imagesError ? (
-              <ErrorDisplay error={imagesError} />
-            ) : images.length === 0 ? (
-              <div className="space-y-3">
-                <EmptyState
-                  message={t('images.noImages')}
-                  size="sm"
-                />
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => requireAuth(() => matchPhotosMutation.mutate(8))}
-                    disabled={matchPhotosMutation.isPending || !content || !content?.article}
-                    data-testid="btn-topic-detail-match-photos"
-                    className="flex-1 px-3 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
-                    title={!content || !content?.article ? t('images.generateContentFirst') : t('images.matchPhotosTitle')}
-                  >
-                    {matchPhotosMutation.isPending ? t('common.matching') : t('images.smartMatchPhotos')}
-                  </button>
-                  <button
-                    onClick={() => requireAuth(() => setShowImageSearch(true))}
-                    data-testid="btn-topic-detail-search-images"
-                    className="flex-1 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 min-h-[44px]"
-                  >
-                    {t('images.search')}
-                  </button>
-                </div>
-              </div>
+          <div className="text-gray-700 dark:text-gray-300 text-sm sm:text-base leading-relaxed font-sans">
+            {displayCopy?.description ? (
+              <p className="whitespace-pre-line">{displayCopy.description}</p>
+            ) : topic.summaryFlash ? (
+              <p className="whitespace-pre-line">{topic.summaryFlash}</p>
             ) : (
+              <p className="text-gray-400 dark:text-gray-500 italic">{t('topics.noContent')}</p>
+            )}
+          </div>
+
+          {/* 原始出處連結 */}
+          {topic.sources && topic.sources.length > 0 && topic.sources[0]?.url && (
+            <div className="pt-2">
+              <a
+                href={topic.sources[0].url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-xs sm:text-sm text-primary hover:text-primary-dark font-sans underline"
+                data-testid="link-topic-detail-original-article"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+                <span>{t('topics.viewOriginalArticle')}</span>
+              </a>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* 3. 中段雙欄佈局：左欄【圖片 (X張)】 vs 右欄【生成設定與短文成果】 */}
+      <section className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* 左欄 (5 欄)：圖片庫與管理 */}
+        <div className="col-span-12 lg:col-span-5 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-5 sm:p-6 space-y-4">
+          <div className="flex justify-between items-center pb-3 border-b border-gray-100 dark:border-gray-700/60">
+            <h3 className="font-display text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+              <span>🖼️</span>
+              <span>{t('images.title')}（{images.length} {t('common.count')}）</span>
+            </h3>
+            <button
+              onClick={() => requireAuth(() => setShowImageSearch(true))}
+              data-testid="btn-topic-detail-add-image"
+              className="px-3 py-1.5 text-xs font-medium text-primary bg-primary/10 rounded-lg hover:bg-primary/20 transition-colors touch-manipulation min-h-[38px]"
+            >
+              {t('images.upload')}
+            </button>
+          </div>
+
+          {imagesLoading ? (
+            <div className="py-8 flex justify-center">
+              <LoadingSpinner size="sm" text={t('images.loading')} />
+            </div>
+          ) : imagesError ? (
+            <ErrorDisplay error={imagesError} />
+          ) : images.length === 0 ? (
+            <div className="space-y-4 py-4">
+              <EmptyState message={t('images.noImages')} size="sm" />
+              <div className="flex flex-col sm:flex-row gap-2">
+                <button
+                  onClick={() => requireAuth(() => matchPhotosMutation.mutate(8))}
+                  disabled={matchPhotosMutation.isPending || !content || !content?.article}
+                  data-testid="btn-topic-detail-match-photos"
+                  className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2.5 text-xs font-medium text-white bg-primary rounded-xl hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] touch-manipulation shadow-sm"
+                  title={!content || !content?.article ? t('images.generateContentFirst') : t('images.matchPhotosTitle')}
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>{matchPhotosMutation.isPending ? t('common.matching') : t('images.smartMatchPhotos')}</span>
+                </button>
+                <button
+                  onClick={() => requireAuth(() => setShowImageSearch(true))}
+                  data-testid="btn-topic-detail-search-images"
+                  className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2.5 text-xs font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 min-h-[44px] touch-manipulation"
+                >
+                  <Search className="w-3.5 h-3.5" />
+                  <span>{t('images.search')}</span>
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
               <ImageGallery
                 images={images}
                 topicId={id!}
@@ -631,176 +577,103 @@ export default function TopicDetail() {
                   queryClient.invalidateQueries({ queryKey: ['images', id] })
                 }}
               />
-            )}
-          </div>
-        </div>
-
-        {/* 中欄：內容區塊 */}
-        <div className="col-span-12 lg:col-span-5">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 sm:p-6 space-y-6">
-            {contentLoading ? (
-              <LoadingSpinner size="sm" text={t('common.loadingContent')} />
-            ) : contentError && (contentError as any)?.status !== 404 ? (
-              <ErrorDisplay error={contentError} />
-            ) : content ? (
-              <>
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="font-semibold text-gray-700 dark:text-gray-200">{t('content.title')}</h3>
-                </div>
-
-                {contentTranslating && (
-                  <p className="text-sm text-amber-700 dark:text-amber-300 mb-3">
-                    {t('topics.translating')}
-                  </p>
-                )}
-
-                {/* 重新生成面板 */}
-                <ContentGenerationPanel
-                  onGenerate={(settings) => requireAuth(() => regenerateContentMutation.mutate(settings))}
-                  isGenerating={regenerateContentMutation.isPending}
-                  hasExistingContent={true}
-                />
-                <div>
-                  <h3 className="font-semibold text-gray-700 dark:text-gray-200 mb-2">{t('content.article')}</h3>
-                  <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 max-h-96 overflow-y-auto">
-                    {contentTranslating ? (
-                      <LoadingSpinner size="sm" text={t('topics.translating')} />
-                    ) : (
-                      <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line text-sm leading-relaxed">
-                        {content.article || t('common.noContent')}
-                      </p>
-                    )}
-                  </div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                    {t('content.wordCount')}: {content.wordCount} {t('common.words')}
-                  </p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-700 dark:text-gray-200 mb-2">{t('content.script')}</h3>
-                  <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 max-h-64 overflow-y-auto">
-                    {contentTranslating ? (
-                      <LoadingSpinner size="sm" text={t('topics.translating')} />
-                    ) : (
-                      <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line text-sm leading-relaxed">
-                        {content.script || t('common.noContent')}
-                      </p>
-                    )}
-                  </div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                    {t('content.duration')}: {t('common.about')} {content.estimatedDuration} {t('common.seconds')}
-                  </p>
-                </div>
-              </>
-            ) : (
-              <div className="space-y-4">
-                <EmptyState message={t('common.noContent')} size="sm" />
-                {/* 內容生成設定面板 */}
-                <ContentGenerationPanel
-                  onGenerate={(settings) => requireAuth(() => generateContentMutation.mutate(settings))}
-                  isGenerating={generateContentMutation.isPending}
-                  hasExistingContent={false}
-                />
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* 右欄：資訊區塊 */}
-        <div className="col-span-12 lg:col-span-3">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 sm:p-6 space-y-4">
-            {/* 互動按鈕 */}
-            <div>
-              <h3 className="font-semibold text-gray-700 dark:text-gray-200 mb-3">{t('common.interaction')}</h3>
-              <InteractionButtons
-                topicId={id!}
-                articleId={content?.id}
-                scriptId={content?.id}
-                userId={user?.id}
-                onEdit={() => setShowEditor(true)}
-                onReplace={() => setShowImageSearch(true)}
-              />
-            </div>
-
-            <div>
-              <h3 className="font-semibold text-gray-700 dark:text-gray-200 mb-2">{t('topics.category')}</h3>
-              <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">
-                {topic.category}
-              </span>
-            </div>
-            <div>
-              <h3 className="font-semibold text-gray-700 dark:text-gray-200 mb-2">{t('topics.status')}</h3>
-              <span className="px-3 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 rounded-full text-sm">
-                {topic.status}
-              </span>
-            </div>
-            <div>
-              <h3 className="font-semibold text-gray-700 dark:text-gray-200 mb-2">{t('topics.source')}</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{topic.source}</p>
-              {/* 原始文章連結 */}
-              {topic.sources && topic.sources.length > 0 && topic.sources[0]?.url && (
-                <a
-                  href={topic.sources[0].url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 text-sm text-primary hover:text-primary-dark underline"
-                  data-testid="link-topic-detail-original-article"
+              <div className="flex gap-2 pt-2 border-t border-gray-100 dark:border-gray-700/60">
+                <button
+                  onClick={() => requireAuth(() => matchPhotosMutation.mutate(8))}
+                  disabled={matchPhotosMutation.isPending}
+                  data-testid="btn-topic-detail-match-photos"
+                  className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-primary bg-primary/10 hover:bg-primary/20 rounded-lg min-h-[40px] touch-manipulation"
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                  </svg>
-                  {t('topics.viewOriginalArticle')}
-                </a>
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>{t('images.smartMatchPhotos')}</span>
+                </button>
+                <button
+                  onClick={() => requireAuth(() => setShowImageSearch(true))}
+                  data-testid="btn-topic-detail-search-images"
+                  className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 rounded-lg min-h-[40px] touch-manipulation"
+                >
+                  <Search className="w-3.5 h-3.5" />
+                  <span>{t('images.search')}</span>
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* 右欄 (7 欄)：生成設定與短文成果展示 */}
+        <div className="col-span-12 lg:col-span-7 space-y-4">
+          {/* 生成控制面板（已鎖定短文，隱藏腳本） */}
+          <ContentGenerationPanel
+            onGenerate={(settings) =>
+              requireAuth(() =>
+                content
+                  ? regenerateContentMutation.mutate(settings)
+                  : generateContentMutation.mutate(settings)
+              )
+            }
+            isGenerating={generateContentMutation.isPending || regenerateContentMutation.isPending}
+            hasExistingContent={Boolean(content?.article)}
+          />
+
+          {/* 生成的短文內容展示卡片 */}
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-5 sm:p-6 space-y-4">
+            <div className="flex justify-between items-center pb-3 border-b border-gray-100 dark:border-gray-700/60">
+              <h3 className="font-display text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                <span>📝</span>
+                <span>{t('content.generatedArticle')}</span>
+              </h3>
+              {content?.article && (
+                <button
+                  type="button"
+                  onClick={() => handleCopyArticle(content.article!)}
+                  data-testid="btn-copy-generated-article"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg min-h-[38px] touch-manipulation transition-colors"
+                >
+                  <Copy className="w-3.5 h-3.5" />
+                  <span>{t('content.copy')}</span>
+                </button>
               )}
             </div>
-            <div>
-              <h3 className="font-semibold text-gray-700 dark:text-gray-200 mb-2">{t('topics.generatedAt')}</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                {new Date(topic.generatedAt).toLocaleString()}
-              </p>
-            </div>
-            {/* 語言資訊區塊 */}
-            {(topic.displayLanguage || topic.originalTitle) && (
-              <div>
-                <h3 className="font-semibold text-gray-700 dark:text-gray-200 mb-2">{t('topics.languageInfo')}</h3>
-                <div className="space-y-2 text-sm">
-                  {topic.displayLanguage && (
-                    <div className="flex items-center gap-2">
-                      <span className="text-gray-500 dark:text-gray-400">{t('topics.displayLanguage')}:</span>
-                      <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded text-xs font-medium">
-                        {t(`language.${topic.displayLanguage}`)}
-                      </span>
-                    </div>
-                  )}
-                  {topic.originalTitle && topic.originalTitle !== topic.title && (
-                    <div>
-                      <span className="text-gray-500 dark:text-gray-400">{t('topics.originalTitle')}:</span>
-                      <p className="text-gray-600 dark:text-gray-300 mt-1 text-xs italic break-words">
-                        {topic.originalTitle}
-                      </p>
-                    </div>
-                  )}
+
+            {contentLoading ? (
+              <div className="py-12 flex justify-center">
+                <LoadingSpinner size="sm" text={t('common.loadingContent')} />
+              </div>
+            ) : contentTranslating ? (
+              <div className="py-8 text-center space-y-2">
+                <LoadingSpinner size="sm" text={t('topics.translating')} />
+                <p className="text-xs text-amber-600 dark:text-amber-400 font-sans">
+                  {t('topics.translating')}
+                </p>
+              </div>
+            ) : content?.article ? (
+              <div className="space-y-3">
+                <div className="bg-gray-50/70 dark:bg-gray-750 rounded-xl p-4 sm:p-5 border border-gray-100 dark:border-gray-700/60 max-h-96 overflow-y-auto">
+                  <p className="text-gray-800 dark:text-gray-200 whitespace-pre-line text-sm sm:text-base leading-relaxed font-sans">
+                    {content.article}
+                  </p>
+                </div>
+                <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 font-sans px-1">
+                  <span>
+                    {t('content.wordCount')}: {content.wordCount} {t('common.words')}
+                  </span>
+                  {content.modelUsed && <span>AI: {content.modelUsed}</span>}
                 </div>
               </div>
-            )}
-            {content && (
-              <div>
-                <h3 className="font-semibold text-gray-700 dark:text-gray-200 mb-2">{t('content.model')}</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">{content.modelUsed}</p>
+            ) : (
+              <div className="py-6 text-center space-y-2">
+                <EmptyState message={t('common.noContent')} size="sm" />
+                <p className="text-xs text-gray-400 dark:text-gray-500 font-sans">
+                  {t('content.styleSelectionDesc')}
+                </p>
               </div>
             )}
-            <div>
-              <h3 className="font-semibold text-gray-700 dark:text-gray-200 mb-2">{t('common.statistics')}</h3>
-              <div className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
-                <p>{t('images.count')}: {topic.imageCount} {t('common.count')}</p>
-                <p>{t('content.wordCount')}: {topic.wordCount} {t('common.words')}</p>
-                {content && <p>{t('content.estimatedDuration')}: {content.estimatedDuration} {t('common.seconds')}</p>}
-              </div>
-            </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      <div className="mt-6">
+      {/* 4. 底部區域：平台切換出文 (Post Kit) */}
+      <section ref={postKitRef} className="pt-4">
         <PostKitPanel
           displayTitle={
             displayCopy?.localePending ? '' : displayCopy?.title || topic.title
@@ -812,8 +685,50 @@ export default function TopicDetail() {
           topicId={topic.id}
           contentTranslating={contentTranslating}
         />
-      </div>
+      </section>
+
+      {/* 登入提示模態框 */}
+      {showLoginPrompt && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 max-w-md w-full text-center space-y-4">
+            <h3 className="text-lg font-semibold font-display text-gray-900 dark:text-white">
+              {t('auth.loginRequired')}
+            </h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400 font-sans">
+              {t('auth.loginRequiredMessage')}
+            </p>
+            <div className="flex gap-3 justify-center pt-2">
+              <button
+                onClick={() => setShowLoginPrompt(false)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-xl hover:bg-gray-200 min-h-[44px] touch-manipulation"
+              >
+                {t('common.cancel')}
+              </button>
+              <button
+                onClick={() => navigate('/login')}
+                className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-xl hover:bg-primary-dark min-h-[44px] touch-manipulation"
+              >
+                {t('auth.login.title')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 圖片搜尋模態框 */}
+      {showImageSearch && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <ImageSearch
+            topicId={id!}
+            topic={topic || null}
+            content={content || null}
+            onImageSelect={() => {
+              setShowImageSearch(false)
+            }}
+            onClose={() => setShowImageSearch(false)}
+          />
+        </div>
+      )}
     </div>
   )
 }
-
