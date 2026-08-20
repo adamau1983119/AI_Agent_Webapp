@@ -34,6 +34,7 @@
 |----|------|------|
 | **OPS-CARD-FACT-ANCHOR** | ✅ | 公共主題卡 `generate_content=false`；按需生成 JIT；Soul/Article Prompt 事實錨定防跨領域污染 |
 | **CX-ARTICLE-TRANSLATION** | ✅ | `resolve_source_article_translation` 完整新聞報道翻譯；支援三語快取與查看原文/譯文即時切換 |
+| **FIX-SOURCE-ARTICLE-EXTRACTION** | ✅ | 升級 ArticleExtractor 支援 RSS `content:encoded` 解析、正則降級與 On-Demand 即時正文補抓，解決「NO 源文 SHOW」 |
 | **CX-TOPIC-LAYOUT** | ✅ | TopicDetail 1:1 草圖排版；150/300/500 黃金字數；純化互動（移除編輯按鈕、保留👍👎） |
 | **FIX-I18N-LANGUAGE-SCRIPT** | ✅ | 修復日語純漢字誤判為日文之漏洞；`titles_i18n` 快取嚴格驗收目標語系腳本 |
 | **GATE-PHYSICAL-ENFORCEMENT** | ✅ | Git Pre-Commit 實體綁定 5 道門禁（結構＋i18n＋管線＋2 組單元測試）；全部 100% PASS |

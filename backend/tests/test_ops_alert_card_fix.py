@@ -304,5 +304,30 @@ class TestSourceArticleTranslation(unittest.IsolatedAsyncioTestCase):
         res = await resolve_source_article_translation(topic, "en")
         self.assertEqual(res, "Original fashion news report body.")
 
+    async def test_resolve_source_article_translation_chinese_same_lang(self):
+        from app.services.translation.source_article_translator import resolve_source_article_translation
+        topic = {
+            "id": "test_topic_3",
+            "sources": [{"original_content": "這是來自 Popbee 的中文新聞報道全文，介紹珠寶與時尚潮流趨勢。", "language": "zh-TW"}]
+        }
+        res = await resolve_source_article_translation(topic, "zh-TW", save_cache=False)
+        self.assertIn("Popbee 的中文新聞報道全文", res)
+        self.assertIn("zh-TW", topic.get("source_content_i18n", {}))
+
+    def test_article_extractor_from_html_content(self):
+        from app.utils.article_extractor import ArticleExtractor
+        extractor = ArticleExtractor()
+        html = """
+        <article class="post-content">
+            <p>Tiffany & Co. 最新珠寶系列正式發表，設計靈感源自大自然。</p>
+            <p>本次作品包含精美的胸針與項鍊，展現卓越工藝與優雅風格。</p>
+            <img src="https://example.com/photo1.jpg" alt="photo" />
+        </article>
+        """
+        info = extractor.extract_from_html_content(html)
+        self.assertTrue(info["success"])
+        self.assertIn("Tiffany & Co.", info["original_content"])
+        self.assertIn("https://example.com/photo1.jpg", info["images"])
+
 if __name__ == "__main__":
     unittest.main()
