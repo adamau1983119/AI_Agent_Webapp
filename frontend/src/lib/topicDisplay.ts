@@ -4,6 +4,7 @@ import {
   collectionTitleMatchesUi,
   getCollectionLanguage,
   normalizeUiLanguage,
+  titleMatchesDisplayLanguage,
   topicTitleScriptMismatch,
   usableCachedTitle,
   type UiLanguage,
@@ -39,12 +40,12 @@ export function hasCompleteDisplayPack(
 ): boolean {
   const ui = normalizeUiLanguage(uiLanguage)
   const needDesc = sourceNeedsDescription(topic)
-  if (override && usableCachedTitle(override.title)) {
+  if (override && usableCachedTitle(override.title, ui)) {
     if (!needDesc) return true
     return Boolean(usableCachedTitle(override.description))
   }
   const { titles, descriptions } = getTopicI18nMaps(topic)
-  if (!usableCachedTitle(titles[ui])) return false
+  if (!usableCachedTitle(titles[ui], ui)) return false
   if (needDesc && !usableCachedTitle(descriptions[ui])) return false
   return true
 }
@@ -53,6 +54,7 @@ export {
   collectionTitleMatchesUi,
   getCollectionLanguage,
   normalizeUiLanguage,
+  titleMatchesDisplayLanguage,
   topicTitleScriptMismatch,
 }
 
@@ -61,7 +63,9 @@ export function isServerLocaleResolved(topic: Topic, uiLanguage: string): boolea
   const loc = topic.contentLocale || topic.content_locale
   const resolved = topic.localeResolved ?? topic.locale_resolved
   if (!resolved || !loc) return false
-  return normalizeUiLanguage(loc) === ui
+  if (normalizeUiLanguage(loc) !== ui) return false
+  if (topic.title && !titleMatchesDisplayLanguage(topic.title, ui)) return false
+  return true
 }
 
 /** 是否顯示「譯為目前語言」／觸發自動補齊 */
@@ -98,7 +102,7 @@ export function resolveTopicDisplayCopy(
     }
   }
 
-  if (override && usableCachedTitle(override.title)) {
+  if (override && usableCachedTitle(override.title, ui)) {
     const descOk = !needDesc || Boolean(usableCachedTitle(override.description))
     if (descOk) {
       return {

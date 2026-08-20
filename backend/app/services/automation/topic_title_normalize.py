@@ -27,7 +27,7 @@ async def normalize_topic_title_for_display_lang(
     display_lang = normalize_topic_language(topic.get("display_language"))
     titles_i18n: Dict[str, str] = dict(topic.get("titles_i18n") or {})
     desc_i18n: Dict[str, str] = dict(topic.get("description_i18n") or {})
-    cached = usable_cached_title(titles_i18n.get(display_lang))
+    cached = usable_cached_title(titles_i18n.get(display_lang), display_lang)
 
     if cached and not title_script_mismatch(cached, display_lang):
         if (topic.get("title") or "").strip() != cached:
@@ -56,7 +56,7 @@ async def normalize_topic_title_for_display_lang(
     title_t, desc_t, provider = await translate_title_desc_pack(
         title_src[:500], desc_src, display_lang
     )
-    if provider == "fallback" or usable_cached_title(title_t) is None:
+    if provider == "fallback" or usable_cached_title(title_t, display_lang) is None:
         return title_src, False
 
     titles_i18n[display_lang] = title_t[:200]

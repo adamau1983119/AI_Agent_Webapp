@@ -36,11 +36,17 @@ function titleMatchesScript(text: string, profile: ScriptProfile): boolean {
   const trimmed = text.trim()
   if (!trimmed) return true
   if (profile === 'han') return hasCjk(trimmed)
-  if (profile === 'latin') return hasLatin(trimmed) && !(hasCjk(trimmed) && !hasLatin(trimmed))
+  if (profile === 'latin') {
+    if (hasKana(trimmed)) return false
+    if (hasCjk(trimmed)) return mostlyAsciiLatin(trimmed)
+    return hasLatin(trimmed)
+  }
   if (profile === 'japanese') {
     if (hasKana(trimmed)) return true
-    if (hasCjk(trimmed) && !mostlyAsciiLatin(trimmed)) return true
-    return false
+    // 無假名且含中文漢字，絕非有效日語標題
+    if (hasCjk(trimmed)) return false
+    // 僅短英文/數字品牌詞（如 NASA）允許無假名，長英文句子必須翻譯為日文
+    return trimmed.length <= 15 && !(trimmed.includes(' ') && trimmed.split(/\s+/).length > 2)
   }
   return true
 }
@@ -68,9 +74,10 @@ export function isFallbackTitle(text?: string | null): boolean {
   return t.startsWith('[Fallback-') || t.startsWith('[Fallback]')
 }
 
-export function usableCachedTitle(text?: string | null): string | null {
+export function usableCachedTitle(text?: string | null, targetLang?: string): string | null {
   const t = (text || '').trim()
   if (!t || isFallbackTitle(t)) return null
+  if (targetLang && !titleMatchesDisplayLanguage(t, targetLang)) return null
   return t
 }
 

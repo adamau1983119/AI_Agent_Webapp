@@ -116,13 +116,19 @@ def title_matches_display_language(title: str, display_lang: Optional[str]) -> b
     if profile == "han":
         return _has_cjk(text)
     if profile == "latin":
-        return _has_latin(text) and not (_has_cjk(text) and not _has_latin(text))
+        if _has_kana(text):
+            return False
+        if _has_cjk(text):
+            return _mostly_ascii_latin(text)
+        return _has_latin(text)
     if profile == "japanese":
         if _has_kana(text):
             return True
-        if _has_cjk(text) and not _mostly_ascii_latin(text):
-            return True
-        return False
+        # 無假名且含中文漢字，絕非有效日語標題
+        if _has_cjk(text):
+            return False
+        # 僅短英文/數字品牌詞（如 NASA）允許無假名，長英文句子必須翻譯為日文
+        return len(text) <= 15 and not (" " in text and len(text.split()) > 2)
     return True
 
 
@@ -136,8 +142,12 @@ def is_fallback_title(text: Optional[str]) -> bool:
     return t.startswith("[Fallback-") or t.startswith("[Fallback]")
 
 
-def usable_cached_title(text: Optional[str]) -> Optional[str]:
+def usable_cached_title(
+    text: Optional[str], target_lang: Optional[str] = None
+) -> Optional[str]:
     t = (text or "").strip()
     if not t or is_fallback_title(t):
+        return None
+    if target_lang and not title_matches_display_language(t, target_lang):
         return None
     return t

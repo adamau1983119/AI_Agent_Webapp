@@ -28,8 +28,10 @@ from app.utils.topic_languages import (
 logger = logging.getLogger(__name__)
 
 
-def _pack_ready(title, desc, need_desc: bool) -> bool:
-    if usable_cached_title(title) is None:
+def _pack_ready(
+    title, desc, need_desc: bool, lang: Optional[str] = None
+) -> bool:
+    if usable_cached_title(title, lang) is None:
         return False
     if need_desc and usable_cached_title(desc) is None:
         return False
@@ -104,17 +106,20 @@ async def preload_topic_titles(topic_ids: List[str]) -> Dict[str, Any]:
         for lang in preload_languages_for(display_lang):
             if translated >= cap:
                 break
-            if _pack_ready(titles_i18n.get(lang), desc_i18n.get(lang), need_desc):
+            if _pack_ready(titles_i18n.get(lang), desc_i18n.get(lang), need_desc, lang):
                 continue
             cached = await trans_repo.get_translation(topic_id, lang, TranslationType.STANDARD)
-            c_t = usable_cached_title((cached or {}).get("cached_title") if cached else None)
+            c_t = usable_cached_title(
+                (cached or {}).get("cached_title") if cached else None, lang
+            )
             c_d = usable_cached_title((cached or {}).get("cached_content") if cached else None)
-            if cached and _pack_ready(c_t, c_d, need_desc):
+            if cached and _pack_ready(c_t, c_d, need_desc, lang):
                 await _write_pack(repo, trans_repo, topic, lang, c_t, c_d or "")
                 continue
+            title_input = (topic.get("original_title") or title_src)[:500]
             pending.setdefault(lang, []).append((topic, {
                 "id": topic_id,
-                "title": title_src[:500],
+                "title": title_input,
                 "description": desc_src[:800],
             }))
 
