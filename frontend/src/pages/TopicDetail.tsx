@@ -27,7 +27,7 @@ import {
 } from '@/lib/topicDisplay'
 import { titleScriptMismatch } from '@/lib/topicLanguages'
 import { copyToClipboard } from '@/utils/copyToClipboard'
-import { Copy, Sparkles, Image as ImageIcon, Search, ExternalLink, ArrowDownCircle, Trash2, CheckCircle2 } from 'lucide-react'
+import { Copy, Sparkles, Image as ImageIcon, Search, ExternalLink, ArrowDownCircle } from 'lucide-react'
 
 function getProxyImageUrl(imageUrl: string): string {
   if (!imageUrl) return ''
@@ -43,8 +43,7 @@ export default function TopicDetail() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { t, language } = useTranslation()
-  const { isAuthenticated, user } = useAuthStore()
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const { isAuthenticated } = useAuthStore()
   const [showImageSearch, setShowImageSearch] = useState(false)
   const [showLoginPrompt, setShowLoginPrompt] = useState(false)
   const [viewStartTime, setViewStartTime] = useState<number | null>(null)
@@ -65,7 +64,6 @@ export default function TopicDetail() {
     data: topic,
     isLoading: topicLoading,
     error: topicError,
-    refetch: refetchTopic,
   } = useQuery({
     queryKey: ['topic', id, language],
     queryFn: () => topicsAPI.getTopic(id!, language),
@@ -75,7 +73,6 @@ export default function TopicDetail() {
   const {
     data: content,
     isLoading: contentLoading,
-    error: contentError,
   } = useQuery({
     queryKey: ['content', id, language],
     queryFn: () => contentsAPI.getContent(id!, language),
@@ -304,30 +301,6 @@ export default function TopicDetail() {
     },
   })
 
-  const deleteMutation = useMutation({
-    mutationFn: () => topicsAPI.deleteTopic(id!),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['topics'] })
-      showSuccess(t('common.success'))
-      navigate('/topics')
-    },
-    onError: (error) => {
-      showError(t('common.failed'))
-    },
-  })
-
-  const confirmMutation = useMutation({
-    mutationFn: () => topicsAPI.updateTopicStatus(id!, 'confirmed'),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['topic', id] })
-      queryClient.invalidateQueries({ queryKey: ['topics'] })
-      showSuccess(t('common.success'))
-    },
-    onError: (error) => {
-      showError(t('common.failed'))
-    },
-  })
-
   const handleCopyArticle = async (text: string) => {
     if (!text) return
     const ok = await copyToClipboard(text)
@@ -357,7 +330,7 @@ export default function TopicDetail() {
   if (topicLoading) {
     return (
       <div className="flex justify-center items-center min-h-[400px]">
-        <LoadingSpinner size="lg" text={t('topics.loading')} />
+        <LoadingSpinner size="lg" text={t('common.loading')} />
       </div>
     )
   }

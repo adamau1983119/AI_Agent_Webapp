@@ -348,6 +348,18 @@ class TopicCollector:
                     
                     # 提取原文圖片和內容（使用舊版 extractor 作為補充）
                     article_info = await extractor.extract_article_info(link)
+                    if (not article_info.get("original_content") or len(article_info.get("original_content", "")) < 80) and content_text:
+                        rss_art_info = extractor.extract_from_html_content(content_text, link)
+                        if rss_art_info.get("original_content"):
+                            article_info["original_content"] = rss_art_info["original_content"]
+                            if not article_info.get("language"):
+                                article_info["language"] = rss_art_info["language"]
+                            if not article_info.get("style"):
+                                article_info["style"] = rss_art_info["style"]
+                            if rss_art_info.get("images"):
+                                for img_u in rss_art_info["images"]:
+                                    if img_u not in article_info.get("images", []):
+                                        article_info.setdefault("images", []).append(img_u)
                     
                     # 構建來源資訊
                     source_info = {
@@ -585,7 +597,25 @@ class TopicCollector:
                         if title:
                             keywords = self._extract_keywords(title, category)
                             translated_title, description = await self._translate_title(title, category, "zh-TW")
+                            content_text = ""
+                            if entry.get("content"):
+                                content_text = entry["content"][0].get("value", "") if isinstance(entry.get("content"), list) else ""
+                            elif entry.get("summary"):
+                                content_text = entry.get("summary", "")
+
                             article_info = await extractor.extract_article_info(link)
+                            if (not article_info.get("original_content") or len(article_info.get("original_content", "")) < 80) and content_text:
+                                rss_art_info = extractor.extract_from_html_content(content_text, link)
+                                if rss_art_info.get("original_content"):
+                                    article_info["original_content"] = rss_art_info["original_content"]
+                                    if not article_info.get("language"):
+                                        article_info["language"] = rss_art_info["language"]
+                                    if not article_info.get("style"):
+                                        article_info["style"] = rss_art_info["style"]
+                                    if rss_art_info.get("images"):
+                                        for img_u in rss_art_info["images"]:
+                                            if img_u not in article_info.get("images", []):
+                                                article_info.setdefault("images", []).append(img_u)
                             
                             source_info = {
                                 "type": "rss",
