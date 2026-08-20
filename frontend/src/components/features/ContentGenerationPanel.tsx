@@ -36,8 +36,11 @@ const FORMAT_OPTIONS: { value: OutputFormat; icon: string }[] = [
   { value: 'both', icon: '📦' },
 ]
 
-const ARTICLE_LENGTHS = [300, 500, 800, 1200]
-const SCRIPT_DURATIONS = [15, 30, 60, 90]
+const ARTICLE_LENGTH_OPTIONS = [
+  { value: 150, key: 'content.wordCount150' },
+  { value: 300, key: 'content.wordCount300', isDefault: true },
+  { value: 500, key: 'content.wordCount500' },
+] as const
 
 /** 選項卡共用：防止 flex 子項撐破邊框、多語長文案溢出 */
 const CARD_BASE =
@@ -119,9 +122,8 @@ export default function ContentGenerationPanel({
 }: ContentGenerationPanelProps) {
   const { t } = useTranslation()
   const [style, setStyle] = useState<ContentStyle>('professional')
-  const [outputFormat, setOutputFormat] = useState<OutputFormat>('both')
-  const [articleLength, setArticleLength] = useState(500)
-  const [scriptDuration, setScriptDuration] = useState(30)
+  const [outputFormat] = useState<OutputFormat>('article')
+  const [articleLength, setArticleLength] = useState(300)
   const [isExpanded, setIsExpanded] = useState(!hasExistingContent)
 
   const handleGenerate = () => {
@@ -129,7 +131,7 @@ export default function ContentGenerationPanel({
       style,
       outputFormat,
       articleLength,
-      scriptDuration,
+      scriptDuration: 30,
     })
   }
 
@@ -202,87 +204,29 @@ export default function ContentGenerationPanel({
 
           <div className="min-w-0">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              {t('content.outputFormat')}
+              {t('content.articleLength')}
             </label>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mb-3 line-clamp-2 break-words">
-              {t('content.outputFormatDesc')}
-            </p>
-            <div className="grid grid-cols-3 gap-2 sm:gap-3">
-              {FORMAT_OPTIONS.map((option) => {
-                const formatLabel = t(`content.format.${option.value}` as any)
-                const formatDesc = t(`content.format.${option.value}.desc` as any)
-                return (
-                  <SelectionOptionCard
-                    key={option.value}
-                    selected={outputFormat === option.value}
-                    onClick={() => setOutputFormat(option.value)}
-                    testId={`btn-content-format-${option.value}`}
-                    title={`${formatLabel} — ${formatDesc}`}
-                    icon={option.icon}
-                    label={formatLabel}
-                    description={formatDesc}
-                    tone="indigo"
-                  />
-                )
-              })}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              {ARTICLE_LENGTH_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setArticleLength(opt.value)}
+                  title={t(opt.key)}
+                  data-testid={`btn-content-article-length-${opt.value}`}
+                  className={`min-w-0 overflow-hidden px-3 py-2.5 rounded-lg border transition-all min-h-[44px] touch-manipulation ${
+                    articleLength === opt.value
+                      ? 'border-purple-500 dark:border-purple-400 bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 font-medium ring-1 ring-purple-300 dark:ring-purple-700'
+                      : 'border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:border-purple-300'
+                  }`}
+                >
+                  <span className={PILL_LABEL}>
+                    {t(opt.key)}
+                  </span>
+                </button>
+              ))}
             </div>
           </div>
-
-          {(outputFormat === 'article' || outputFormat === 'both') && (
-            <div className="min-w-0">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                {t('content.articleLength')}
-              </label>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                {ARTICLE_LENGTHS.map((len) => (
-                  <button
-                    key={len}
-                    type="button"
-                    onClick={() => setArticleLength(len)}
-                    title={t('content.articleLengthWords', { count: String(len) })}
-                    data-testid={`btn-content-article-length-${len}`}
-                    className={`min-w-0 overflow-hidden px-2 py-2 rounded-lg border transition-all min-h-[44px] ${
-                      articleLength === len
-                        ? 'border-purple-500 dark:border-purple-400 bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 font-medium'
-                        : 'border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:border-purple-300'
-                    }`}
-                  >
-                    <span className={PILL_LABEL}>
-                      {t('content.articleLengthWords', { count: String(len) })}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {(outputFormat === 'script' || outputFormat === 'both') && (
-            <div className="min-w-0">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                {t('content.scriptDuration')}
-              </label>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                {SCRIPT_DURATIONS.map((dur) => (
-                  <button
-                    key={dur}
-                    type="button"
-                    onClick={() => setScriptDuration(dur)}
-                    title={t('content.scriptDurationSeconds', { count: String(dur) })}
-                    data-testid={`btn-content-script-duration-${dur}`}
-                    className={`min-w-0 overflow-hidden px-2 py-2 rounded-lg border transition-all min-h-[44px] ${
-                      scriptDuration === dur
-                        ? 'border-purple-500 dark:border-purple-400 bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 font-medium'
-                        : 'border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:border-purple-300'
-                    }`}
-                  >
-                    <span className={PILL_LABEL}>
-                      {t('content.scriptDurationSeconds', { count: String(dur) })}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
 
           <div className="bg-white/70 dark:bg-gray-700/50 rounded-lg p-3 sm:p-4 border border-gray-200/50 dark:border-gray-600/50 min-w-0 overflow-hidden">
             <div className="flex flex-wrap gap-x-2 gap-y-1 text-xs sm:text-sm text-gray-600 dark:text-gray-400 min-w-0">
@@ -292,31 +236,11 @@ export default function ContentGenerationPanel({
               </span>
               <span className="text-gray-300 dark:text-gray-600 shrink-0" aria-hidden>|</span>
               <span className="inline-flex min-w-0 max-w-full items-center gap-1 overflow-hidden">
-                <span className="shrink-0" aria-hidden>📋</span>
-                <span className="line-clamp-1 break-words">{t(`content.format.${outputFormat}` as any)}</span>
+                <span className="shrink-0" aria-hidden>📏</span>
+                <span className="line-clamp-1 break-words">
+                  {t('content.articleLengthWords', { count: String(articleLength) })}
+                </span>
               </span>
-              {(outputFormat === 'article' || outputFormat === 'both') && (
-                <>
-                  <span className="text-gray-300 dark:text-gray-600 shrink-0" aria-hidden>|</span>
-                  <span className="inline-flex min-w-0 max-w-full items-center gap-1 overflow-hidden">
-                    <span className="shrink-0" aria-hidden>📏</span>
-                    <span className="line-clamp-1 break-words">
-                      {t('content.articleLengthWords', { count: String(articleLength) })}
-                    </span>
-                  </span>
-                </>
-              )}
-              {(outputFormat === 'script' || outputFormat === 'both') && (
-                <>
-                  <span className="text-gray-300 dark:text-gray-600 shrink-0" aria-hidden>|</span>
-                  <span className="inline-flex min-w-0 max-w-full items-center gap-1 overflow-hidden">
-                    <span className="shrink-0" aria-hidden>⏱️</span>
-                    <span className="line-clamp-1 break-words">
-                      {t('content.scriptDurationSeconds', { count: String(scriptDuration) })}
-                    </span>
-                  </span>
-                </>
-              )}
             </div>
           </div>
 
@@ -347,7 +271,7 @@ export default function ContentGenerationPanel({
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
                 <span className="line-clamp-2 break-words text-center">
-                  {hasExistingContent ? t('common.regenerate') : t('content.startGenerate')}
+                  {hasExistingContent ? t('content.regenerateArticle') : t('content.generateArticle')}
                 </span>
               </>
             )}
