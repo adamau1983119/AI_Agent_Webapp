@@ -12,6 +12,15 @@ try:
 except Exception:
     from datetime import timezone, timedelta
     _HKT = timezone(timedelta(hours=8))
+
+from app.services.observability.alert_mailer import send_alert_email
+from app.services.observability.channels import AlertChannel
+from app.services.observability.digest_ledger import latest_digest_summary, record_digest_attempt, was_digest_sent
+from app.services.observability.digest_topics import topics_hkt_summary
+from app.services.observability.ops_agent import fetch_health, resolve_health_url
+from app.services.observability.traffic_light import TrafficLight, evaluate_health, light_zh, verdict_zh
+
+logger = logging.getLogger("observability.daily_digest")
 _last_digest_day = ""
 
 
