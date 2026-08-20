@@ -372,7 +372,7 @@ class AutomationWorkflow:
                         # 更新主題文檔的 preview_images 字段
                         await self.topic_repo.update_topic(
                             topic_id,
-                            {"$set": {"preview_images": image_urls}}
+                            {"preview_images": image_urls}
                         )
                         logger.info(f"✅ 已更新主題 {topic_id} 的 preview_images 字段，共 {len(image_urls)} 張圖片")
                 except Exception as e:

@@ -203,6 +203,8 @@ class TopicRepository(BaseRepository):
         Returns:
             更新後的 Topic
         """
+        if any(k.startswith("$") for k in update_data.keys()):
+            return await self.update_by_id(topic_id, update_data)
         return await self.update_by_id(topic_id, {"$set": update_data})
     
     async def update_topic_status(
