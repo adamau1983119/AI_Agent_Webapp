@@ -367,10 +367,6 @@ class SchedulerService:
             # 為每個主題建立資料庫記錄並處理
             for topic_data in topics_data:
                 try:
-                    title = topic_data.get("title", "")
-                    if await self._skip_duplicate_title(title):
-                        continue
-
                     # 生成唯一 ID
                     topic_id = f"topic_{category.value}_{datetime.utcnow().strftime('%Y%m%d%H%M%S')}_{len(created_topics)}"
                     topic_data["id"] = topic_id
@@ -401,14 +397,13 @@ class SchedulerService:
                     created_topic = await self.topic_repo.create_topic(topic_data)
                     created_topics.append(created_topic)
                     
-                    # 階段 1：只生成預覽圖片，不生成內容
-                    if preview_images_count > 0:
-                        # 搜尋預覽圖片（階段 1：只搜尋 1 張）
+                    # 階段 1：依配置搜尋預覽圖片，不強制生成長文內容
+                    if preview_images_count > 0 or should_generate_content:
                         await self.workflow.process_topic(
                             topic_id=topic_id,
                             auto_generate_content=should_generate_content,  # 從配置檔讀取（階段 1：False）
-                            auto_search_images=True,
-                            image_count=preview_images_count  # 從配置檔讀取（階段 1：1 張）
+                            auto_search_images=preview_images_count > 0,
+                            image_count=preview_images_count if preview_images_count > 0 else 1
                         )
                     
                     logger.info(f"主題 {topic_id} 建立並處理完成（預覽圖片: {preview_images_count} 張）")
@@ -432,16 +427,6 @@ class SchedulerService:
 
         current = await self.topic_repo.count_hkt_today_by_category()
         return category_deficits(current).get(category.value, 0)
-
-    async def _skip_duplicate_title(self, title: str) -> bool:
-        """True＝應跳過（與近 48h 標題重複）。"""
-        dedup = getattr(self.topic_collector, "deduplicator", None)
-        if not dedup:
-            return False
-        is_dup, reason, _ = await dedup.is_duplicate(title)
-        if is_dup:
-            logger.info(f"跳過重複標題: {title[:50]}... ({reason})")
-        return is_dup
 
     async def _check_daily_limit(self, category: Category) -> bool:
         """
@@ -526,13 +511,13 @@ class SchedulerService:
             
             created_topics = []
             
+            category_name = category.value
+            preview_images_count = self.config.get_preview_images_count(category_name)
+            should_generate_content = self.config.should_generate_content(category_name)
+
             # 為每個主題建立資料庫記錄並處理
             for topic_data in topics_data:
                 try:
-                    title = topic_data.get("title", "")
-                    if await self._skip_duplicate_title(title):
-                        continue
-
                     # 生成唯一 ID
                     topic_id = f"topic_{category.value}_{datetime.utcnow().strftime('%Y%m%d%H%M%S')}_{len(created_topics)}"
                     topic_data["id"] = topic_id
@@ -550,20 +535,29 @@ class SchedulerService:
                         preview_images.extend(source_imgs[:3])  # 每個來源最多取 3 張
                     topic_data["preview_images"] = preview_images[:5] if preview_images else []  # 最多 5 張
                     
+                    topic_data["is_expanded"] = False
+                    topic_data["generation_config"] = {
+                        "category": category_name,
+                        "count": count,
+                        "preview_images_count": preview_images_count,
+                        "generate_content": should_generate_content,
+                    }
+
                     # 建立主題
                     created_topic = await self.topic_repo.create_topic(topic_data)
                     created_topics.append(created_topic)
                     
-                    # 處理主題（生成內容和圖片）
-                    await self.workflow.process_topic(
-                        topic_id=topic_id,
-                        auto_generate_content=True,
-                        auto_search_images=True,
-                        image_count=8,  # 改為 8 張照片（符合需求）
-                        language=display_language
-                    )
+                    # 處理主題（依配置決定是否搜尋圖片或生成長文內容）
+                    if preview_images_count > 0 or should_generate_content:
+                        await self.workflow.process_topic(
+                            topic_id=topic_id,
+                            auto_generate_content=should_generate_content,
+                            auto_search_images=preview_images_count > 0,
+                            image_count=preview_images_count if preview_images_count > 0 else 1,
+                            language=display_language
+                        )
                     
-                    logger.info(f"主題 {topic_id} 建立並處理完成")
+                    logger.info(f"主題 {topic_id} 建立並處理完成（預覽圖片: {preview_images_count} 張）")
                     
                 except Exception as e:
                     logger.error(f"建立主題失敗: {e}")

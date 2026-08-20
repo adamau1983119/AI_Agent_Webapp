@@ -24,7 +24,7 @@ if "pydantic_settings" not in sys.modules:
 
 for mod in [
     "yaml", "pytz", "bson", "pymongo", "pymongo.errors", "motor", "motor.motor_asyncio",
-    "bs4", "requests", "httpx", "aiohttp",
+    "bs4", "requests", "httpx", "aiohttp", "loguru",
     "apscheduler", "apscheduler.schedulers", "apscheduler.schedulers.asyncio",
     "apscheduler.triggers", "apscheduler.triggers.cron", "apscheduler.triggers.interval",
 ]:
@@ -147,6 +147,48 @@ class TestSchedulerMonitorAutoBackfill(unittest.IsolatedAsyncioTestCase):
             self.assertIn(Category.FOOD, called_categories)
             self.assertIn(Category.TREND, called_categories)
             self.assertNotIn(Category.FASHION, called_categories)
+
+
+class TestSchedulerTopicCreationWithoutDedupDrop(unittest.IsolatedAsyncioTestCase):
+    """驗證 SchedulerService 生成卡片時不會被二次去重自我碰撞拋棄"""
+
+    def setUp(self):
+        from app.services.automation.scheduler import SchedulerService
+        self.SchedulerService = SchedulerService
+
+    async def test_trigger_manual_generation_creates_all_collected_topics(self):
+        with patch.object(self.SchedulerService, "__init__", lambda s: None):
+            svc = self.SchedulerService()
+            svc.config = MagicMock()
+            svc.config.is_daily_limit_enabled.return_value = False
+            svc.config.get_preview_images_count.return_value = 1
+            svc.config.should_generate_content.return_value = False
+
+            svc.topic_collector = MagicMock()
+            svc.topic_collector.collect_topics = AsyncMock(return_value=[
+                {"title": "Fashion Trend 1", "sources": []},
+                {"title": "Fashion Trend 2", "sources": []},
+                {"title": "Fashion Trend 3", "sources": []},
+            ])
+
+            svc.topic_repo = MagicMock()
+            svc.topic_repo.create_topic = AsyncMock(side_effect=lambda d: d)
+            svc.workflow = MagicMock()
+            svc.workflow.process_topic = AsyncMock(return_value={"content_generated": False})
+
+            import app.services.automation.topic_triple_preload
+            with patch("app.utils.cost_controls.scheduled_topic_collection_enabled", return_value=True), \
+                 patch("app.services.automation.topic_triple_preload.preload_topic_titles", new_callable=AsyncMock):
+                results = await svc.trigger_manual_generation(
+                    category=Category.FASHION,
+                    count=3,
+                    display_language="zh-TW",
+                    respect_quota=False,
+                )
+
+                self.assertEqual(len(results), 3)
+                self.assertEqual(svc.topic_repo.create_topic.call_count, 3)
+                self.assertEqual(svc.workflow.process_topic.call_count, 3)
 
 
 if __name__ == "__main__":
