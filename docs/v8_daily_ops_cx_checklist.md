@@ -1,10 +1,10 @@
 # v8 正式域 — 日常運作與客戶體驗（CX／OPS）
 
-> **狀態（2026-08-11）**：產品**已正式上架**；監察 Agent＋每日日報（Resend）**已開通**。預設工作＝真實客戶體感＋日常運作煙霧。  
+> **狀態（2026-08-20）**：產品**已正式上架**；主題卡事實錨定、按需生成 (JIT) 與源文章完整新聞翻譯管線**已上線**；5 道實體 Git Pre-Commit 硬門禁全面啟用。  
 > **觸發**：`專案開始，正式域日常運作，客戶體驗優先 @AGENTS.md`  
 > **證據**：`docs/evidence/v8/YYYY-MM-DD/`（截圖或 Network／信箱一句才可勾）  
 > **改碼**：僅 **CX／OPS FAIL 阻塞客戶** 才開 `feature/v8-*`＋PR。  
-> **OBS／日報 SoT**：[`v8_observability_alerting.md`](./v8_observability_alerting.md) · 備份 [`2026-08-11_topic_dashboard_hkt_pr24_snapshot`](./backups/2026-08-11_topic_dashboard_hkt_pr24_snapshot/SNAPSHOT_README.md) · [`2026-08-11_ops_digest_resend_pass_snapshot`](./backups/2026-08-11_ops_digest_resend_pass_snapshot/SNAPSHOT_README.md)
+> **OBS／日報 SoT**：[`v8_observability_alerting.md`](./v8_observability_alerting.md) · 備份 [`2026-08-20_source-article-translation-and-guardrails_snapshot`](./backups/2026-08-20_source-article-translation-and-guardrails_snapshot/SNAPSHOT_README.md) · [`2026-08-12_railway_env_image_ops_snapshot`](./backups/2026-08-12_railway_env_image_ops_snapshot/SNAPSHOT_README.md)
 
 ---
 
@@ -25,6 +25,19 @@
 | **OPS** | **OPS-COST** | 成本未失控 | DeepSeek／DeepL 用量或告警一句 |
 | **OPS** | **OPS-ENV** | Railway 變數對齊 v6 本機 | `validate/images` google=true；OAuth 正式域 URL |
 | **FIX** | **FIX-*** | 上列 FAIL 且阻塞客戶 | 最小 PR；結案對回 CX／OPS |
+
+---
+
+## 2026-08-20 主題卡事實錨定＋源文章完整新聞翻譯＋5 道實體硬門禁
+
+| 項 | 狀態 | 一句 |
+|----|------|------|
+| **OPS-CARD-FACT-ANCHOR** | ✅ | 公共主題卡 `generate_content=false`；按需生成 JIT；Soul/Article Prompt 事實錨定防跨領域污染 |
+| **CX-ARTICLE-TRANSLATION** | ✅ | `resolve_source_article_translation` 完整新聞報道翻譯；支援三語快取與查看原文/譯文即時切換 |
+| **CX-TOPIC-LAYOUT** | ✅ | TopicDetail 1:1 草圖排版；150/300/500 黃金字數；純化互動（移除編輯按鈕、保留👍👎） |
+| **FIX-I18N-LANGUAGE-SCRIPT** | ✅ | 修復日語純漢字誤判為日文之漏洞；`titles_i18n` 快取嚴格驗收目標語系腳本 |
+| **GATE-PHYSICAL-ENFORCEMENT** | ✅ | Git Pre-Commit 實體綁定 5 道門禁（結構＋i18n＋管線＋2 組單元測試）；全部 100% PASS |
+| **備份** | ✅ | `backup/2026-08-20-source-article-translation-and-guardrails` · [snapshot](./backups/2026-08-20_source-article-translation-and-guardrails_snapshot/SNAPSHOT_README.md) |
 
 ---
 

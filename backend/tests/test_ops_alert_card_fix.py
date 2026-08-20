@@ -24,7 +24,7 @@ if "pydantic_settings" not in sys.modules:
 
 for mod in [
     "yaml", "pytz", "bson", "pymongo", "pymongo.errors", "motor", "motor.motor_asyncio",
-    "bs4", "requests", "httpx", "aiohttp", "loguru",
+    "bs4", "requests", "httpx", "aiohttp", "loguru", "redis", "redis.asyncio", "redis.asyncio.connection", "redis.exceptions",
     "apscheduler", "apscheduler.schedulers", "apscheduler.schedulers.asyncio",
     "apscheduler.triggers", "apscheduler.triggers.cron", "apscheduler.triggers.interval",
 ]:
@@ -207,6 +207,102 @@ class TestTopicRepoUpdateOperatorHandling(unittest.IsolatedAsyncioTestCase):
         await repo.update_topic("topic_1", {"$set": {"preview_images": ["http://img1.jpg"]}})
         repo.update_by_id.assert_called_with("topic_1", {"$set": {"preview_images": ["http://img1.jpg"]}})
 
+
+
+
+class TestTopicGenerationGuardrails(unittest.TestCase):
+    """驗證主題卡事實錨定、按需生成與風格解耦防污染 (Rule 19)"""
+
+    def setUp(self):
+        from app.models.alter_ego_dna import AlterEgoDnaJson
+        self.mock_dna = AlterEgoDnaJson(
+            lexicon=["串豬大腸", "網紅名店", "脆皮多汁", "必吃推薦"],
+            tone_descriptors=["熱情", "接地氣"],
+            voice_persona="美食探店博主",
+            language_primary="zh-TW",
+            exemplar_snippets=["這家串豬大腸太絕了！外脆內嫩"],
+            sentence_rhythm="short_punchy",
+            emoji_style="moderate",
+            hashtag_style="#美食探店,#吃貨日常",
+        )
+
+    def test_soul_prompt_contains_fact_anchoring_and_anti_pollution(self):
+        from app.services.alter_ego_service import _build_soul_prompt
+        topic = "美加達成新貿易協定"
+        summary = "美國與加拿大今日就關鍵關稅與供應鏈達成全新貿易共識，將降低邊境商品關稅。"
+        article = "詳細報導指出，本次雙邊協定著重於科技與能源領域合作。"
+
+        prompt = _build_soul_prompt(
+            dna=self.mock_dna,
+            topic_hint=topic,
+            output_lang="zh-TW",
+            context_summary=summary,
+            base_content=article,
+        )
+
+        self.assertIn("FACTUAL ARTICLE CONTENT", prompt)
+        self.assertIn("FACT ANCHORING", prompt)
+        self.assertIn("ANTI-POLLUTION", prompt)
+        self.assertIn("DO NOT force unrelated domain terms", prompt)
+        self.assertIn("never insert food metaphors into business/trade news", prompt)
+
+    def test_hashtags_from_dna_prioritizes_topic_hint(self):
+        from app.services.alter_ego_service import _hashtags_from_dna
+        topic = "美加貿易協定 關稅最新進展"
+        tags = _hashtags_from_dna(self.mock_dna, topic_hint=topic)
+        self.assertTrue(any("貿易" in t or "協定" in t or "關稅" in t or "美加" in t for t in tags))
+
+    def test_preview_request_accepts_context_fields(self):
+        from app.schemas.alter_ego import PreviewRequest
+        req = PreviewRequest(
+            platform="facebook",
+            topic_hint="科技趨勢",
+            context_summary="AI 晶片突破",
+            base_content="最新 2nm 晶片正式量產",
+        )
+        self.assertEqual(req.context_summary, "AI 晶片突破")
+        self.assertEqual(req.base_content, "最新 2nm 晶片正式量產")
+
+    def test_article_prompt_contains_anti_pollution_rule(self):
+        from app.prompts.article_prompt import build_article_prompt
+        prompt = build_article_prompt(
+            topic_title="全球供應鏈重組",
+            topic_category="trend",
+            keywords=["經濟", "關稅"],
+            target_length=300,
+            summary_flash="各國正在重新佈局製造業中心以因應新政策。",
+            target_language="zh-TW",
+            style_hint="熱情探店博主",
+        )
+        self.assertIn("風格與主題解耦防污染", prompt)
+        self.assertIn("嚴禁將與本主題領域無關之專有名詞或食物詞彙", prompt)
+
+
+class TestSourceArticleTranslation(unittest.IsolatedAsyncioTestCase):
+    """驗證源文章完整新聞報道多語言翻譯與快取服務"""
+
+    async def test_resolve_source_article_translation_cache_hit(self):
+        from app.services.translation.source_article_translator import resolve_source_article_translation
+        topic = {
+            "id": "test_topic_1",
+            "source_content_i18n": {
+                "zh-TW": "這是快取的完整新聞中文報道全文內容，詳細介紹最新時尚趨勢。"
+            },
+            "sources": [{"original_content": "This is full English article."}]
+        }
+        res = await resolve_source_article_translation(topic, "zh-TW")
+        self.assertIn("快取的完整新聞中文報道", res)
+
+    async def test_resolve_source_article_translation_fallback_raw(self):
+        from app.services.translation.source_article_translator import resolve_source_article_translation
+        topic = {
+            "id": "test_topic_2",
+            "summary_flash": "簡短事實摘要",
+            "sources": [{"original_content": "Original fashion news report body.", "language": "en"}]
+        }
+        # 当请求 en 且原文即为 en 时，直接返回原文
+        res = await resolve_source_article_translation(topic, "en")
+        self.assertEqual(res, "Original fashion news report body.")
 
 if __name__ == "__main__":
     unittest.main()

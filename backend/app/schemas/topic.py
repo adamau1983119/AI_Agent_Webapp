@@ -62,6 +62,12 @@ class TopicResponse(BaseModel):
     description_i18n: Optional[Dict[str, str]] = Field(
         None, description="多語言摘要快取（zh-TW/en/ja）"
     )
+    source_content_i18n: Optional[Dict[str, str]] = Field(
+        None, description="新聞完整內容多語言快取（zh-TW/en/ja）"
+    )
+    translated_source_content: Optional[str] = Field(
+        None, description="依請求語言翻譯後之新聞完整報導內容"
+    )
     title_script_mismatch: Optional[bool] = Field(
         None,
         description="標題文字腳本是否與 display_language 不一致（前端可省略自行檢測）",
@@ -124,6 +130,12 @@ class TopicDetailResponse(BaseModel):
     original_title: Optional[str] = Field(None, description="原始標題（來源語言）")
     titles_i18n: Optional[Dict[str, str]] = Field(None, description="多語言標題快取")
     description_i18n: Optional[Dict[str, str]] = Field(None, description="多語言摘要快取")
+    source_content_i18n: Optional[Dict[str, str]] = Field(
+        None, description="新聞完整內容多語言快取"
+    )
+    translated_source_content: Optional[str] = Field(
+        None, description="依請求語言翻譯後之新聞完整報導內容"
+    )
     title_script_mismatch: Optional[bool] = Field(
         None, description="標題腳本與 display_language 不一致"
     )

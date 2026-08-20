@@ -26,6 +26,16 @@ class PreviewRequest(BaseModel):
         default=None,
         description="UI 語言覆寫（優先於 DNA language_primary）",
     )
+    context_summary: Optional[str] = Field(
+        default="",
+        max_length=1500,
+        description="主題事實摘要 (summary_flash)，作為防偏題錨定",
+    )
+    base_content: Optional[str] = Field(
+        default="",
+        max_length=4000,
+        description="已生成之基礎短文，供平台改寫",
+    )
 
 
 class PreviewResponse(BaseModel):

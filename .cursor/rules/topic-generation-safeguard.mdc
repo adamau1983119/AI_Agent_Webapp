@@ -1,0 +1,27 @@
+# 主題卡事實錨定、按需生成與風格解耦防線鐵律 (Rule 19)
+
+本規則在編輯任何主題卡生成、排程採集、Prompt 模板、Alter Ego 仿文、Post Kit 出文等模組時自動生效。
+
+## 1. 產卡階段約束 (Generation Constraint)
+- backend/config/topic_generation.yaml 中每日產卡之 generate_content 必須為 false。
+- 公眾主題卡僅負責採集客觀多角度之靈感資訊（標題、出處、分類、圖片、300 字事實摘要 summary_flash），嚴禁背景自動生成全文長文浪費 Token。
+
+## 2. 嚴格按需生成原則 (Strict JIT Invariant)
+- 所有全文短文與社群出文（Post Kit 平台仿文）必須由用戶在前端主動點擊按鈕觸發。
+- 嚴禁前端任何組件（如 PostKitPanel.tsx）在 useEffect 中自動背景偷跑生成。
+
+## 3. 事實上下文錨定 (Fact Grounding Invariant)
+- 所有生成與仿文 Prompt 必須注入 summary_flash 或文章事實上下文作為真實錨定（Truth Anchor），嚴禁僅傳一句模糊標題讓 LLM 憑空捏造。
+
+## 4. 風格 DNA 語義解耦 (Disentangled Style Invariant)
+- Alter Ego DNA 僅作為語氣、修辭節奏與觀點視角。
+- 嚴禁將 DNA 詞庫中的特定領域專有名詞或食物詞彙（如「串豬大腸、網紅名店」）生搬硬套至非相關領域（如財經、政治、科技）。
+- Hashtags 必須優先自主題關鍵字動態提煉，禁止無腦寫死個人詞庫。
+
+## 5. 驗收門禁 (Mandatory Gatekeeper)
+修改後必須執行：
+`ash
+python scripts/audit_topic_generation_pipeline.py
+python -m unittest backend/tests/test_ops_alert_card_fix.py
+`
+只有兩項 100% ALL PASS 時方可交付。

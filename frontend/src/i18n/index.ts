@@ -317,6 +317,9 @@ const zhTW = {
   'topics.image': '主題圖片',
   'topics.jumpToPost': '轉貼文章',
   'topics.sourceSummaryTitle': '源文章翻譯內容',
+  'topics.sourceNewsContent': '源文章新聞報道內容',
+  'topics.viewOriginalContent': '查看英文原文',
+  'topics.viewTranslatedContent': '查看翻譯報道',
   'topics.heroImage': '主題照片',
   
   // 內容生成
@@ -774,6 +777,8 @@ const zhTW = {
   'postKit.visualPrompt': 'Visual Prompt',
   'postKit.visualPromptTemplate': '為「{title}」製作 {platform} 社群配圖：{category} 風格、高對比、適合手機直式 4:5，無浮水印文字。',
   'postKit.adoptCopy': '一鍵採用並複製',
+  'postKit.generatePlatformCopy': '生成此平台專屬文案',
+  'postKit.generateArticleFirst': '請先在上方點擊「生成短文」，再進行平台發布。',
   'publish.assistantTitle': '發布助手',
   'publish.assistantBody': 'MVP 主路為「主題詳情 → 發文套件」一鍵複製，不在站內代發。',
   'publish.goToTopics': '前往主題列表',
@@ -1551,6 +1556,9 @@ const en: typeof zhTW = {
   'topics.image': 'Topic Image',
   'topics.jumpToPost': 'Jump to Post',
   'topics.sourceSummaryTitle': 'Source Article Summary',
+  'topics.sourceNewsContent': 'Source News Article Content',
+  'topics.viewOriginalContent': 'View Original English',
+  'topics.viewTranslatedContent': 'View Translated Article',
   'topics.heroImage': 'Featured Photo',
   
   // Content Generation
@@ -2005,6 +2013,8 @@ const en: typeof zhTW = {
   'postKit.visualPrompt': 'Visual Prompt',
   'postKit.visualPromptTemplate': 'Social image for "{title}" on {platform}: {category} style, high contrast, 4:5 vertical, no watermark text.',
   'postKit.adoptCopy': 'Adopt & copy',
+  'postKit.generatePlatformCopy': 'Generate for this platform',
+  'postKit.generateArticleFirst': 'Please generate an article above before publishing to platforms.',
   'publish.assistantTitle': 'Publish assistant',
   'publish.assistantBody': 'MVP flow: open a topic detail → use Post Kit copy. We do not publish on your behalf.',
   'publish.goToTopics': 'Go to topics',
@@ -2781,6 +2791,9 @@ const ja: typeof zhTW = {
   'topics.image': 'トピック画像',
   'topics.jumpToPost': '投稿にジャンプ',
   'topics.sourceSummaryTitle': '元記事の翻訳概要',
+  'topics.sourceNewsContent': '元記事の報道内容',
+  'topics.viewOriginalContent': '英語の原文を見る',
+  'topics.viewTranslatedContent': '翻訳報道を見る',
   'topics.heroImage': 'メイン写真',
   
   // コンテンツ生成
@@ -3237,6 +3250,8 @@ const ja: typeof zhTW = {
   'postKit.visualPrompt': 'Visual Prompt',
   'postKit.visualPromptTemplate': '「{title}」の {platform} 用画像：{category} スタイル、高コントラスト、4:5 縦、透かし文字なし。',
   'postKit.adoptCopy': '採用してコピー',
+  'postKit.generatePlatformCopy': 'このプラットフォーム専用文案を生成',
+  'postKit.generateArticleFirst': '先に上部で「短文を生成」を行ってください。',
   'publish.assistantTitle': '投稿アシスタント',
   'publish.assistantBody': 'MVP はトピック詳細の投稿キットからコピー。サイト内代行投稿はしません。',
   'publish.goToTopics': 'トピック一覧へ',

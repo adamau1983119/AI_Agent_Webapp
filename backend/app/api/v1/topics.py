@@ -245,6 +245,14 @@ async def get_topic_detail(
         if ui_lang:
             from app.services.content_locale.topic_locale_resolver import resolve_topic_locale
             topic = await resolve_topic_locale(topic, ui_lang, translate_on_miss=True)
+            
+            try:
+                from app.services.translation.source_article_translator import resolve_source_article_translation
+                translated_source = await resolve_source_article_translation(topic, ui_lang)
+                if translated_source:
+                    topic["translated_source_content"] = translated_source
+            except Exception as tr_err:
+                logger.warning("Failed resolving source article translation for topic %s: %s", topic_id, tr_err)
         
         # 取得內容
         content = await content_repo.get_content_by_topic_id(topic_id)
