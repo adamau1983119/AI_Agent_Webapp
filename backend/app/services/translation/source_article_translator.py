@@ -48,7 +48,7 @@ async def resolve_source_article_translation(
     # 1. 提取快取
     cached_map = dict(topic.get("source_content_i18n") or {})
     cached_text = (cached_map.get(lang) or "").strip()
-    if cached_text and len(cached_text) > 20 and title_matches_display_language(cached_text[:500], lang):
+    if cached_text and len(cached_text) > 10 and title_matches_display_language(cached_text[:500], lang):
         topic["translated_source_content"] = cached_text
         return cached_text
 
@@ -68,7 +68,7 @@ async def resolve_source_article_translation(
             from app.utils.article_extractor import ArticleExtractor
             extractor = ArticleExtractor()
             ext_info = await extractor.extract_article_info(source_url)
-            if ext_info.get("success") and ext_info.get("original_content"):
+            if ext_info.get("original_content"):
                 raw_content = ext_info["original_content"].strip()
                 if isinstance(sources[0], dict):
                     sources[0]["original_content"] = raw_content

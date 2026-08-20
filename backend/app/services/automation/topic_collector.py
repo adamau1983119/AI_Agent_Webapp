@@ -377,17 +377,17 @@ class TopicCollector:
                     
                     # 合併圖片來源
                     all_images = [img["url"] for img in preview_images]
-                    if article_info.get("success"):
-                        article_images = article_info.get("images", [])
-                        for img_url in article_images:
+                    if article_info.get("images"):
+                        for img_url in article_info["images"]:
                             if img_url not in all_images:
                                 all_images.append(img_url)
+                    if article_info.get("original_content"):
                         source_info["original_content"] = article_info.get("original_content")
+                    if article_info.get("language"):
                         source_info["language"] = article_info.get("language")
-                        
+                    if article_info.get("style"):
                         style_info = article_info.get("style")
-                        if style_info:
-                            source_info["style"] = style_info if isinstance(style_info, dict) else style_info
+                        source_info["style"] = style_info if isinstance(style_info, dict) else style_info
                     
                     source_info["images"] = all_images
                     
