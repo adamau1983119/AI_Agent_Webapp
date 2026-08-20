@@ -191,5 +191,22 @@ class TestSchedulerTopicCreationWithoutDedupDrop(unittest.IsolatedAsyncioTestCas
                 self.assertEqual(svc.workflow.process_topic.call_count, 3)
 
 
+class TestTopicRepoUpdateOperatorHandling(unittest.IsolatedAsyncioTestCase):
+    """驗證 TopicRepository.update_topic 防禦性處理 $set 運算符"""
+
+    async def test_update_topic_avoids_nested_dollar_set(self):
+        from app.services.repositories.topic_repository import TopicRepository
+        repo = TopicRepository()
+        repo.update_by_id = AsyncMock(return_value={"id": "topic_1"})
+
+        # Case 1: 傳入裸字典
+        await repo.update_topic("topic_1", {"preview_images": ["http://img1.jpg"]})
+        repo.update_by_id.assert_called_with("topic_1", {"$set": {"preview_images": ["http://img1.jpg"]}})
+
+        # Case 2: 傳入含 $set 字典（防禦二次包裝）
+        await repo.update_topic("topic_1", {"$set": {"preview_images": ["http://img1.jpg"]}})
+        repo.update_by_id.assert_called_with("topic_1", {"$set": {"preview_images": ["http://img1.jpg"]}})
+
+
 if __name__ == "__main__":
     unittest.main()
