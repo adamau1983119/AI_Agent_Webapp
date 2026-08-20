@@ -43,7 +43,7 @@ export default function TopicDetail() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { t, language } = useTranslation()
-  const { isAuthenticated } = useAuthStore()
+  const { isAuthenticated, user } = useAuthStore()
   const [showImageSearch, setShowImageSearch] = useState(false)
   const [showLoginPrompt, setShowLoginPrompt] = useState(false)
   const [viewStartTime, setViewStartTime] = useState<number | null>(null)
