@@ -40,13 +40,21 @@ export const alterEgoApi = {
       timeout: 120000,
     }),
 
-  preview: (platform: AlterEgoPlatform, topicHint: string = '', language?: string) =>
+  preview: (
+    platform: AlterEgoPlatform,
+    topicHint: string = '',
+    language?: string,
+    contextSummary?: string,
+    baseContent?: string
+  ) =>
     fetchAPI<PreviewResponse>('/alter-ego/preview', {
       method: 'POST',
       body: JSON.stringify({
         platform,
         topic_hint: topicHint,
         ...(language ? { language: normalizeUiLanguage(language) } : {}),
+        ...(contextSummary ? { context_summary: contextSummary } : {}),
+        ...(baseContent ? { base_content: baseContent } : {}),
       }),
       timeout: 120000,
     }),

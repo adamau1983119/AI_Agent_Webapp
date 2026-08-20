@@ -366,7 +366,11 @@ data-testid="{類型}-{位置}-{功能}"
 | Test ID | 元素 | 功能 |
 |---------|------|------|
 | `btn-topic-detail-back` | 按鈕 | 返回主題列表 |
-| `btn-topic-detail-edit` | 按鈕 | 編輯主題 |
+| `btn-topic-detail-jump-post` | 按鈕 | 快捷滾動至轉貼文章/發文套件 |
+| `btn-topic-detail-view-translated` | 按鈕 | 源文章新聞報道：切換查看翻譯內容 |
+| `btn-topic-detail-view-original` | 按鈕 | 源文章新聞報道：切換查看英文原文 |
+| `link-topic-detail-original-article` | 連結 | 查看原始媒體出處外部文章 |
+| `btn-topic-detail-edit` | 按鈕 | 編輯主題（v8 詳情頁已隱藏，保留架構） |
 | `btn-topic-detail-confirm` | 按鈕 | 確認主題 |
 | `btn-topic-detail-delete` | 按鈕 | 刪除主題 |
 | `btn-topic-detail-generate` | 按鈕 | 生成內容 |
@@ -386,6 +390,7 @@ data-testid="{類型}-{位置}-{功能}"
 | testid | 類型 | 說明 |
 |--------|------|------|
 | `section-postkit` | 區塊 | 發文套件主區 |
+| `btn-postkit-generate-platform-copy` | 按鈕 | 按需手動觸發生成該平台專屬文案 (JIT) |
 | `input-postkit-title-1`～`3` | 單選 | 標題候選 |
 | `btn-postkit-copy-title-1`～`3` | 按鈕 | 複製標題候選 |
 | `btn-postkit-copy-body` | 按鈕 | 複製內文 |

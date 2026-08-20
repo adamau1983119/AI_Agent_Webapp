@@ -43,6 +43,9 @@ def apply_locale_overlay(topic: Dict[str, Any], ui_lang: str) -> Dict[str, Any]:
     need = _need_desc(out)
     titles = dict(out.get("titles_i18n") or {})
     descs = dict(out.get("description_i18n") or {})
+    src_i18n = dict(out.get("source_content_i18n") or {})
+    if src_i18n.get(lang):
+        out["translated_source_content"] = src_i18n[lang]
     t, d = titles.get(lang), descs.get(lang)
     if _pack_ready(t, d, need, lang):
         out["title"] = t[:200]

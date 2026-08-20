@@ -50,6 +50,7 @@ export default function TopicDetail() {
   const [viewStartTime, setViewStartTime] = useState<number | null>(null)
   const [displayOverride, setDisplayOverride] = useState<TopicDisplayOverride | null>(null)
   const [showCollectionTitle, setShowCollectionTitle] = useState(false)
+  const [sourceViewMode, setSourceViewMode] = useState<'translated' | 'original'>('translated')
   const postKitRef = useRef<HTMLDivElement>(null)
 
   const requireAuth = (action: () => void) => {
@@ -133,6 +134,38 @@ export default function TopicDetail() {
     }
     return resolveTopicDisplayCopy(topic, language, displayOverride)
   }, [topic, language, displayOverride, showCollectionTitle])
+
+  const originalContentText = useMemo(() => {
+    if (!topic) return ''
+    const raw = topic.sources?.[0]?.original_content || topic.sources?.[0]?.originalContent || ''
+    return raw.trim()
+  }, [topic])
+
+  const translatedContentText = useMemo(() => {
+    if (!topic) return ''
+    const translated =
+      topic.translatedSourceContent ||
+      topic.translated_source_content ||
+      topic.sourceContentI18n?.[language] ||
+      topic.source_content_i18n?.[language] ||
+      displayCopy?.description ||
+      topic.summaryFlash ||
+      topic.summary_flash ||
+      topic.description ||
+      ''
+    return translated.trim()
+  }, [topic, language, displayCopy])
+
+  const hasOriginalContent = Boolean(
+    originalContentText &&
+      translatedContentText &&
+      originalContentText !== translatedContentText
+  )
+
+  const sourceDisplayContent =
+    sourceViewMode === 'original' && hasOriginalContent
+      ? originalContentText
+      : (translatedContentText || originalContentText)
 
   useEffect(() => {
     setDisplayOverride(null)
@@ -478,25 +511,54 @@ export default function TopicDetail() {
           )}
         </div>
 
-        {/* 源文章翻譯內容摘要 */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-5 sm:p-6 space-y-3">
-          <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-700/60 pb-3">
-            <h3 className="font-display text-base sm:text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-              <span className="text-primary">📖</span>
-              <span>{t('topics.sourceSummaryTitle')}</span>
-            </h3>
+        {/* 源文章新聞報道與翻譯內容 */}
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-5 sm:p-6 space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 dark:border-gray-700/60 pb-3">
+            <div className="flex items-center gap-3">
+              <h3 className="font-display text-base sm:text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                <span className="text-primary">📖</span>
+                <span>{t('topics.sourceNewsContent')}</span>
+              </h3>
+              {/* 原文 / 譯文切換按鈕組 */}
+              {hasOriginalContent && (
+                <div className="inline-flex rounded-lg p-0.5 bg-gray-100 dark:bg-gray-700/60 text-xs">
+                  <button
+                    type="button"
+                    onClick={() => setSourceViewMode('translated')}
+                    className={`px-2.5 py-1 rounded-md font-medium transition-all ${
+                      sourceViewMode === 'translated'
+                        ? 'bg-white dark:bg-gray-800 text-primary shadow-xs font-semibold'
+                        : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                    }`}
+                    data-testid="btn-topic-detail-view-translated"
+                  >
+                    {t('topics.viewTranslatedContent')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSourceViewMode('original')}
+                    className={`px-2.5 py-1 rounded-md font-medium transition-all ${
+                      sourceViewMode === 'original'
+                        ? 'bg-white dark:bg-gray-800 text-primary shadow-xs font-semibold'
+                        : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                    }`}
+                    data-testid="btn-topic-detail-view-original"
+                  >
+                    {t('topics.viewOriginalContent')}
+                  </button>
+                </div>
+              )}
+            </div>
             {topic.source && (
-              <span className="text-xs text-gray-500 dark:text-gray-400 font-sans">
-                {t('topics.source')}: {topic.source}
+              <span className="text-xs px-2.5 py-1 rounded-full bg-gray-50 dark:bg-gray-700/50 text-gray-500 dark:text-gray-400 font-sans border border-gray-100 dark:border-gray-700">
+                {t('topics.source')}: <strong className="text-gray-700 dark:text-gray-300">{topic.source}</strong>
               </span>
             )}
           </div>
 
-          <div className="text-gray-700 dark:text-gray-300 text-sm sm:text-base leading-relaxed font-sans">
-            {displayCopy?.description ? (
-              <p className="whitespace-pre-line">{displayCopy.description}</p>
-            ) : topic.summaryFlash ? (
-              <p className="whitespace-pre-line">{topic.summaryFlash}</p>
+          <div className="text-gray-700 dark:text-gray-300 text-sm sm:text-base leading-relaxed font-sans max-h-[460px] overflow-y-auto pr-2">
+            {sourceDisplayContent ? (
+              <p className="whitespace-pre-line leading-relaxed">{sourceDisplayContent}</p>
             ) : (
               <p className="text-gray-400 dark:text-gray-500 italic">{t('topics.noContent')}</p>
             )}
@@ -504,7 +566,7 @@ export default function TopicDetail() {
 
           {/* 原始出處連結 */}
           {topic.sources && topic.sources.length > 0 && topic.sources[0]?.url && (
-            <div className="pt-2">
+            <div className="pt-2 border-t border-gray-50 dark:border-gray-700/40 flex items-center justify-between">
               <a
                 href={topic.sources[0].url}
                 target="_blank"
@@ -684,6 +746,7 @@ export default function TopicDetail() {
           previewImages={topic.previewImages || []}
           topicId={topic.id}
           contentTranslating={contentTranslating}
+          summaryFlash={translatedContentText || originalContentText}
         />
       </section>
 

@@ -203,16 +203,32 @@ Return ONLY a JSON object with these keys (no extra keys):
     )
 
 
-def _build_soul_prompt(dna: AlterEgoDnaJson, topic_hint: str, output_lang: str) -> str:
+def _build_soul_prompt(
+    dna: AlterEgoDnaJson,
+    topic_hint: str,
+    output_lang: str,
+    context_summary: str = "",
+    base_content: str = "",
+) -> str:
     topic = topic_hint or "分享一則生活近況"
     label = _output_lang_label(output_lang)
+    context_block = ""
+    if base_content and base_content.strip():
+        context_block = f"\nFACTUAL ARTICLE CONTENT (Truth Anchor):\n{base_content.strip()[:1000]}\n"
+    elif context_summary and context_summary.strip():
+        context_block = f"\nFACTUAL SUMMARY (Truth Anchor):\n{context_summary.strip()[:600]}\n"
+
     return (
         "You are the author's digital voice (Soul layer). Write a SHORT platform-neutral post draft.\n"
-        "Match the DNA voice exactly. No hashtags. No platform-specific formatting.\n"
+        "Match the author's DNA persona (tone, cadence, perspective) while strictly adhering to the topic facts.\n"
         f"Topic: {topic}\n"
-        f"DNA:\n{_dna_block(dna)}\n"
-        f"IMPORTANT: Write the entire post ONLY in {label}. Do not mix languages.\n"
-        "Return only the post body text."
+        f"{context_block}"
+        f"DNA Profile:\n{_dna_block(dna)}\n"
+        "CRITICAL GUARDRAILS:\n"
+        "1. FACT ANCHORING: Base your statements on the topic and factual context provided. Do not hallucinate unrelated events.\n"
+        "2. ANTI-POLLUTION: Adopt the tone and sentence rhythm from DNA, but DO NOT force unrelated domain terms, food items, or jargon from the DNA lexicon into a non-related topic (e.g., never insert food metaphors into business/trade news).\n"
+        f"3. LANGUAGE: Write the entire post ONLY in {label}. Do not mix languages.\n"
+        "4. FORMAT: No hashtags in Soul layer. Return only the post body text."
     )
 
 
@@ -222,34 +238,51 @@ def _build_shell_prompt(
     platform: str,
     constraints: str,
     output_lang: str,
+    topic_hint: str = "",
 ) -> str:
     return (
         f"You are the Shell layer for {platform}. Format the Soul draft for this platform.\n"
         f"Platform rules:\n{constraints}\n"
+        f"Topic: {topic_hint or 'General'}\n"
         f"DNA voice (preserve tone): {_dna_block(dna)}\n"
-        f"Hashtag style hint: {dna.hashtag_style or 'use relevant tags from lexicon'}\n"
+        f"Hashtag style hint: Generate 3-5 relevant hashtags based on the actual topic content.\n"
         f"Soul draft:\n{soul_text}\n"
         f"IMPORTANT: Return ONLY the final copy-ready post in {_output_lang_label(output_lang)}. "
-        "Do not mix languages. Include hashtags per platform rules."
+        "Do not mix languages. Include hashtags per platform rules. Ensure hashtags are relevant to the topic."
     )
 
 
-def _hashtags_from_dna(dna: AlterEgoDnaJson) -> List[str]:
-    tags = list(dna.lexicon[:6])
+def _hashtags_from_dna(dna: AlterEgoDnaJson, topic_hint: str = "") -> List[str]:
+    tags: List[str] = []
+    if topic_hint:
+        clean_hint = re.sub(r"[^\w\s\u4e00-\u9fff\u3040-\u30ff]", " ", topic_hint)
+        words = [w.strip() for w in clean_hint.split() if len(w.strip()) >= 2]
+        tags.extend(words[:3])
+
     if dna.hashtag_style:
         for part in re.split(r"[,，\s#]+", dna.hashtag_style):
             part = part.strip().lstrip("#")
-            if part and part not in tags:
+            if part and part not in tags and len(part) >= 2:
                 tags.append(part)
-    return tags[:6]
+
+    if not tags:
+        tags = [w for w in dna.lexicon if w][:3]
+
+    return tags[:5]
 
 
-def _finalize_preview_text(shell_llm_text: str, soul_text: str, platform: str, dna: AlterEgoDnaJson) -> str:
+def _finalize_preview_text(
+    shell_llm_text: str,
+    soul_text: str,
+    platform: str,
+    dna: AlterEgoDnaJson,
+    topic_hint: str = "",
+) -> str:
     """Shell LLM 輸出 + YAML 約束後處理（確保平台硬限制）。"""
     cleaned = _strip_markdown_fence(shell_llm_text)
     if not cleaned:
         cleaned = soul_text
-    tags = _hashtags_from_dna(dna)
+    tags = _hashtags_from_dna(dna, topic_hint=topic_hint)
     formatted = build_shell_output(cleaned, platform, tags)
     if platform == "facebook":
         return formatted.get("copy_text") or cleaned
@@ -365,7 +398,15 @@ class AlterEgoService:
         last_soul_err: Optional[Exception] = None
         for attempt in range(_MAX_PREVIEW_RETRIES + 1):
             try:
-                soul_raw = await client.generate(_build_soul_prompt(dna, topic, output_lang))
+                soul_raw = await client.generate(
+                    _build_soul_prompt(
+                        dna=dna,
+                        topic_hint=topic,
+                        output_lang=output_lang,
+                        context_summary=request.context_summary or "",
+                        base_content=request.base_content or "",
+                    )
+                )
                 soul_text = _strip_markdown_fence(soul_raw)
                 if len(soul_text) < 10:
                     raise ValueError("soul_too_short")
@@ -390,10 +431,17 @@ class AlterEgoService:
         for attempt in range(_MAX_PREVIEW_RETRIES + 1):
             try:
                 shell_raw = await client.generate(
-                    _build_shell_prompt(dna, soul_text, request.platform, constraints, output_lang)
+                    _build_shell_prompt(
+                        dna,
+                        soul_text,
+                        request.platform,
+                        constraints,
+                        output_lang,
+                        topic_hint=topic,
+                    )
                 )
                 preview_text = _finalize_preview_text(
-                    shell_raw, soul_text, request.platform, dna
+                    shell_raw, soul_text, request.platform, dna, topic_hint=topic
                 )
                 if len(preview_text) < 10:
                     raise ValueError("shell_too_short")
@@ -411,7 +459,7 @@ class AlterEgoService:
                     attempt + 1,
                 )
         else:
-            preview_text = _finalize_preview_text("", soul_text, request.platform, dna)
+            preview_text = _finalize_preview_text("", soul_text, request.platform, dna, topic_hint=topic)
             if not title_matches_display_language(preview_text, output_lang):
                 raise ValueError(f"preview_lang_mismatch:{output_lang}")
             logger.warning(

@@ -414,7 +414,7 @@ class TopicCollector:
                         "category": category.value,
                         "source": source_name,
                         "source_name": source_name,
-                        "description": description,
+                        "description": summary_flash or description,
                         "summary_flash": summary_flash,
                         "sources": [source_info],
                         "role": role_name,
@@ -621,7 +621,7 @@ class TopicCollector:
                                 "category": category.value,
                                 "source": source_name,
                                 "source_name": source_name,
-                                "description": description,
+                                "description": summary_flash or description,
                                 "summary_flash": summary_flash,
                                 "sources": [source_info],
                                 "display_language": "zh-TW",
@@ -834,9 +834,8 @@ class TopicCollector:
 
         from app.utils.cost_controls import ai_topic_translation_enabled
         if not ai_topic_translation_enabled():
-            desc = source_title[:30] if len(source_title) > 30 else None
             logger.debug("AI 標題翻譯已關閉，使用 RSS 原文: %s", source_title[:40])
-            return source_title, desc
+            return source_title, None
         
         try:
             from app.services.ai.ai_service_factory import AIServiceFactory

@@ -3,6 +3,9 @@ export interface SourceInfo {
   url?: string
   name?: string
   type?: string
+  original_content?: string
+  originalContent?: string
+  language?: string
 }
 
 // 主題類型
@@ -26,6 +29,12 @@ export interface Topic {
   preview_images?: string[]  // 預覽圖片 URL 列表（後端格式）
   isExpanded?: boolean      // 是否已展開
   description?: string      // 主題內容摘要（約30字）
+  summaryFlash?: string
+  summary_flash?: string
+  sourceContentI18n?: Record<string, string>
+  source_content_i18n?: Record<string, string>
+  translatedSourceContent?: string
+  translated_source_content?: string
   // Phase 7: 多語言支援
   displayLanguage?: string  // 標題顯示語言（zh-TW/en/ja）
   display_language?: string // 後端格式
