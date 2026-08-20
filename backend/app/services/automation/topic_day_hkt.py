@@ -10,11 +10,12 @@ from typing import Dict, Tuple
 
 try:
     from zoneinfo import ZoneInfo
-except ImportError:  # pragma: no cover
-    from backports.zoneinfo import ZoneInfo  # type: ignore
-
-HKT = ZoneInfo("Asia/Hong_Kong")
-UTC = ZoneInfo("UTC")
+    HKT = ZoneInfo("Asia/Hong_Kong")
+    UTC = ZoneInfo("UTC")
+except Exception:  # pragma: no cover
+    from datetime import timezone
+    HKT = timezone(timedelta(hours=8))
+    UTC = timezone.utc
 _CATEGORIES = ("fashion", "food", "trend")
 
 

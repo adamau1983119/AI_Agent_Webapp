@@ -31,9 +31,11 @@ def main() -> int:
 
     os.chdir(BACKEND)
     sys.path.insert(0, str(BACKEND))
-    from dotenv import load_dotenv
-
-    load_dotenv(BACKEND / ".env")
+    try:
+        from dotenv import load_dotenv
+        load_dotenv(BACKEND / ".env")
+    except ImportError:
+        pass
     os.environ["OBS_ALERT_ONLY_ON_RED"] = "true"
     os.environ.pop("OBS_ALERTING_ENABLED", None)
     os.environ.pop("OBS_ALERT_EMAIL_SEND", None)
