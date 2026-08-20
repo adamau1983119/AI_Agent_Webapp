@@ -25,6 +25,12 @@ export function convertTopic(apiTopic: any): Topic {
     previewImages: apiTopic.preview_images || [],
     isExpanded: apiTopic.is_expanded || false,
     description: apiTopic.description || undefined,
+    summaryFlash: apiTopic.summary_flash || apiTopic.summaryFlash,
+    summary_flash: apiTopic.summary_flash || apiTopic.summaryFlash,
+    sourceContentI18n: apiTopic.source_content_i18n || apiTopic.sourceContentI18n,
+    source_content_i18n: apiTopic.source_content_i18n || apiTopic.sourceContentI18n,
+    translatedSourceContent: apiTopic.translated_source_content || apiTopic.translatedSourceContent,
+    translated_source_content: apiTopic.translated_source_content || apiTopic.translatedSourceContent,
     // Phase 7: 多語言支援
     displayLanguage: apiTopic.display_language || apiTopic.displayLanguage || undefined,
     originalTitle: apiTopic.original_title || apiTopic.originalTitle || undefined,
