@@ -351,6 +351,91 @@ class TestSourceArticleTranslation(unittest.IsolatedAsyncioTestCase):
         self.assertNotIn("Whatsapp", body)
         self.assertNotIn("Facebook", body)
 
+    def test_article_extractor_strips_elle_chrome(self):
+        from app.utils.article_extractor import ArticleExtractor
+        extractor = ArticleExtractor()
+        html = """
+        <article>
+            <p>Tiffany & Co. 最新珠寶系列正式發表。</p>
+            <p>（圖片來源：</p>
+            <p>@cameliafarhoodi</p>
+            <p>）</p>
+            <p>跳至分類：</p>
+            <p>Facebook</p>
+            <p>X</p>
+            <p>Whatsapp</p>
+            <p>Pinterest</p>
+            <p>分享本文</p>
+            <p>加入討論</p>
+            <p>關注我們</p>
+            <p>在 Google 上將我們加入偏好來源</p>
+            <p>Advertisement</p>
+            <p>本次作品包含精美的胸針與項鍊。</p>
+            <p>選購時裝</p>
+            <p>選購美妝</p>
+        </article>
+        """
+        info = extractor.extract_from_html_content(html)
+        body = info["original_content"] or ""
+        self.assertIn("Tiffany & Co.", body)
+        self.assertIn("胸針與項鍊", body)
+        for noise in (
+            "圖片來源", "@cameliafarhoodi", "跳至分類", "選購時裝", "選購美妝",
+            "Facebook", "Whatsapp", "Pinterest", "分享本文", "加入討論",
+            "關注我們", "偏好來源", "Advertisement",
+        ):
+            self.assertNotIn(noise, body)
+        self.assertNotRegex(body, r"(?m)^X$")
+
+    def test_article_extractor_cuts_shopping_appendix(self):
+        from app.utils.article_extractor import ArticleExtractor
+        extractor = ArticleExtractor()
+        html = """
+        <article>
+            <p>The trench coat is back this season, cut slightly oversized.</p>
+            <p>Who What Wear 最新影片</p>
+            <p>選購時裝</p>
+            <p>Los Angeles Apparel</p>
+            <p>Baby Rib 3/4 袖船型領上衣</p>
+            <p>J.Crew</p>
+            <p>選購美妝</p>
+            <p>Celisse</p>
+            <p>Quickcoat 指甲油</p>
+            <p>探索更多：</p>
+            <p>Audry Hiaoui</p>
+            <p>副購物編輯</p>
+        </article>
+        """
+        info = extractor.extract_from_html_content(html)
+        body = info["original_content"] or ""
+        self.assertIn("trench coat", body)
+        for noise in (
+            "最新影片", "選購時裝", "Los Angeles Apparel", "Baby Rib",
+            "J.Crew", "選購美妝", "Celisse", "Quickcoat", "探索更多",
+            "Audry Hiaoui", "副購物編輯",
+        ):
+            self.assertNotIn(noise, body)
+
+    def test_article_extractor_cuts_recirc_appendix(self):
+        from app.utils.article_extractor import ArticleExtractor
+        extractor = ArticleExtractor()
+        html = """
+        <article>
+            <p>The restaurant opened a second location in Taipei this spring.</p>
+            <p>Related Stories</p>
+            <p>Another viral burger ranking you should skip</p>
+            <p>Newsletter</p>
+            <p>More pasta tips from the archive</p>
+        </article>
+        """
+        info = extractor.extract_from_html_content(html)
+        body = info["original_content"] or ""
+        self.assertIn("Taipei", body)
+        self.assertNotIn("Related Stories", body)
+        self.assertNotIn("burger ranking", body)
+        self.assertNotIn("Newsletter", body)
+        self.assertNotIn("pasta tips", body)
+
     async def test_on_demand_false_skips_scrape(self):
         from unittest.mock import patch
         from app.services.translation.source_article_translator import (
