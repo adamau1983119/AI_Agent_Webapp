@@ -106,15 +106,15 @@ async def resolve_topic_locale(
 
 
 async def resolve_topics_list_locale(
-    topics: List[Dict[str, Any]], ui_lang: str
+    topics: List[Dict[str, Any]], ui_lang: str, *, translate_on_miss: bool = False
 ) -> List[Dict[str, Any]]:
-    """列表：快取 overlay + 最多 2×5 張 Miss 批次 Flash（避免 N 次 POST）。"""
+    """列表：預設只 overlay 快取。translate_on_miss 才批次 Flash（產卡 finalize 寫齊）。"""
     lang = normalize_topic_language(ui_lang)
     repo, trans_repo = TopicRepository(), TopicTranslationRepository()
     by_id = {str(t.get("id")): t for t in topics if t.get("id")}
     resolved = {tid: apply_locale_overlay(t, lang) for tid, t in by_id.items()}
     misses = [t for tid, t in by_id.items() if not resolved[tid].get("locale_resolved")]
-    if misses:
+    if translate_on_miss and misses:
         from app.utils.cost_controls import deepseek_configured
 
         if deepseek_configured():

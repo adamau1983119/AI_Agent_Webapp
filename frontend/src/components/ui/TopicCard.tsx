@@ -6,6 +6,11 @@ import { topicsAPI } from '@/api/topics'
 import { useTranslation } from '@/i18n'
 import { formatDistanceToNow } from 'date-fns'
 import { zhTW, enUS, ja } from 'date-fns/locale'
+import {
+  isTopicOnHktDay,
+  topicHktDateString,
+  yesterdayHktDateString,
+} from '@/lib/topicDayHkt'
 import TopicTranslateDisplayButton, {
   type TopicDisplayOverride,
 } from '@/components/ui/TopicTranslateDisplayButton'
@@ -191,6 +196,15 @@ export default function TopicCard({
 
   const generatedTime = topic.generatedAt || topic.generated_at || topic.createdAt || topic.created_at
   const timeAgo = formatTimeAgo(generatedTime)
+  const rec = topic as unknown as Record<string, unknown>
+  const topicDay = topicHktDateString(rec)
+  const dateLabel = isTopicOnHktDay(rec)
+    ? t('topics.badgeNew')
+    : topicDay === yesterdayHktDateString()
+      ? t('topics.yesterday')
+      : topicDay
+        ? `${topicDay.slice(5, 7)}/${topicDay.slice(8, 10)}`
+        : timeAgo
   const previewImages = topic.previewImages || topic.preview_images || []
   const previewImage = Array.isArray(previewImages) && previewImages.length > 0 ? previewImages[0] : null
 
@@ -249,7 +263,9 @@ export default function TopicCard({
               {t('topics.originalTitlePrefix')} {originalLine}
             </p>
           )}
-          {timeAgo && <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{timeAgo}</p>}
+          {dateLabel && (
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{dateLabel}</p>
+          )}
         </div>
       </div>
 

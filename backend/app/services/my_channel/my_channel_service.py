@@ -165,7 +165,7 @@ class MyChannelService:
         if not source_url:
             raise ValueError("topic_missing_url")
 
-        resolved = await resolve_topic_locale(topic, lang, translate_on_miss=True)
+        resolved = await resolve_topic_locale(topic, lang, translate_on_miss=False)
         digest = _digest_text(resolved)
         balance = await credit_ledger_service.decr_credits(
             user_id,

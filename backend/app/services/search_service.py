@@ -86,12 +86,20 @@ def filter_results_by_role(
             filtered_result["category"] = result.get("category")
         
         elif role == UserRole.USER:
-            # 普通用戶：標題、摘要、來源 URL、預覽圖片
+            # 普通用戶：標題、摘要、來源、預覽圖、三語快取與時間（供列表／搜尋）
             filtered_result["id"] = result.get("id")
             filtered_result["title"] = result.get("title")
             filtered_result["summary"] = result.get("summary") or result.get("description")
+            filtered_result["description"] = result.get("description")
             filtered_result["category"] = result.get("category")
-            
+            filtered_result["status"] = result.get("status")
+            filtered_result["generated_at"] = result.get("generated_at")
+            filtered_result["created_at"] = result.get("created_at")
+            filtered_result["titles_i18n"] = result.get("titles_i18n")
+            filtered_result["description_i18n"] = result.get("description_i18n")
+            filtered_result["preview_images"] = result.get("preview_images")
+            filtered_result["source"] = result.get("source")
+
             # 提取來源 URL
             if "source" in result:
                 if isinstance(result["source"], dict):
@@ -219,17 +227,25 @@ class SearchService:
                 # 只搜尋已發布的主題（排除已刪除的）
                 filter_query["status"] = {"$ne": "deleted"}
                 
-                # 中文全文搜尋：搜尋標題、摘要、內容
+                # 三語搜尋：title／original_title／titles_i18n + 摘要
                 escaped_query = re.escape(query)
                 search_pattern = {
                     "$or": [
                         {"title": {"$regex": escaped_query, "$options": "i"}},
+                        {"original_title": {"$regex": escaped_query, "$options": "i"}},
                         {"summary": {"$regex": escaped_query, "$options": "i"}},
                         {"description": {"$regex": escaped_query, "$options": "i"}},
                         {"content": {"$regex": escaped_query, "$options": "i"}},
+                        {"titles_i18n.ja": {"$regex": escaped_query, "$options": "i"}},
+                        {"titles_i18n.en": {"$regex": escaped_query, "$options": "i"}},
+                        {"titles_i18n.zh-TW": {"$regex": escaped_query, "$options": "i"}},
                     ]
                 }
                 filter_query.update(search_pattern)
+                from app.utils.topic_pipeline import list_topics_generation_filter
+                gen_f = list_topics_generation_filter(include_legacy=False)
+                if gen_f:
+                    filter_query = {"$and": [filter_query, gen_f]}
                 
                 # 計算跳過數量
                 skip = (page - 1) * limit

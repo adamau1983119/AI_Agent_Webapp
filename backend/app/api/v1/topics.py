@@ -244,11 +244,13 @@ async def get_topic_detail(
         ui_lang = normalize_language(lang) if lang else None
         if ui_lang:
             from app.services.content_locale.topic_locale_resolver import resolve_topic_locale
-            topic = await resolve_topic_locale(topic, ui_lang, translate_on_miss=True)
+            topic = await resolve_topic_locale(topic, ui_lang, translate_on_miss=False)
             
             try:
                 from app.services.translation.source_article_translator import resolve_source_article_translation
-                translated_source = await resolve_source_article_translation(topic, ui_lang)
+                translated_source = await resolve_source_article_translation(
+                    topic, ui_lang, on_demand=False
+                )
                 if translated_source:
                     topic["translated_source_content"] = translated_source
             except Exception as tr_err:

@@ -414,9 +414,9 @@ class SchedulerService:
             
             logger.info(f"{category_name} 分類完成，共建立 {len(created_topics)} 個主題")
             if created_topics:
-                from app.services.automation.topic_triple_preload import preload_topic_titles
+                from app.services.automation.topic_card_finalize import finalize_produced_cards
                 ids = [t["id"] for t in created_topics if t.get("id")]
-                await preload_topic_titles(ids)
+                await finalize_produced_cards(ids)
             
         except Exception as e:
             logger.error(f"為 {category_name} 分類生成主題失敗: {e}")
@@ -565,9 +565,9 @@ class SchedulerService:
             
             logger.info(f"手動生成完成，共建立 {len(created_topics)} 個主題")
             if created_topics:
-                from app.services.automation.topic_triple_preload import preload_topic_titles
+                from app.services.automation.topic_card_finalize import finalize_produced_cards
                 ids = [t["id"] for t in created_topics if t.get("id")]
-                await preload_topic_titles(ids)
+                await finalize_produced_cards(ids)
             return created_topics
             
         except Exception as e:

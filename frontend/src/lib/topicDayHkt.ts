@@ -16,6 +16,18 @@ export function todayHktDateString(now: Date = new Date()): string {
   return formatHktDate(now)
 }
 
+/** 以 HKT 曆日加減（YYYY-MM-DD），避免本機時區把「明天」當今天。 */
+export function addHktCalendarDays(hktDay: string, delta: number): string {
+  const [y, m, d] = hktDay.split('-').map(Number)
+  const utc = new Date(Date.UTC(y, (m || 1) - 1, d || 1))
+  utc.setUTCDate(utc.getUTCDate() + delta)
+  return utc.toISOString().slice(0, 10)
+}
+
+export function yesterdayHktDateString(now: Date = new Date()): string {
+  return addHktCalendarDays(todayHktDateString(now), -1)
+}
+
 /** 後端 UTC naive ISO → 視為 UTC 再換算 HKT 日 */
 export function parseTopicGeneratedAt(value: unknown): Date | null {
   if (value == null || value === '') return null

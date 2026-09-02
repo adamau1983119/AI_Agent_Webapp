@@ -35,12 +35,14 @@ async def resolve_source_article_translation(
     target_language: str,
     *,
     save_cache: bool = True,
+    on_demand: bool = True,
 ) -> str:
     """
     取得或翻譯主題之完整新聞報道內容。
     快取優先：若已在 source_content_i18n 則直接回傳；
-    若無且未爬取正文則 On-Demand 補抓；
-    若語言同源則直接快取，異源則調用 DeepSeek Flash 完整翻譯。
+    on_demand=True（產卡 finalize）：缺文可補抓、異源可 Flash。
+    on_demand=False（讀路徑 GET）：只 overlay 快取／同源原文，不爬、不 LLM。
+    寫入前必須 title_matches_display_language。
     """
     lang = normalize_topic_language(target_language)
     topic_id = str(topic.get("id") or "")
@@ -62,8 +64,8 @@ async def resolve_source_article_translation(
         source_url = str(sources[0].get("url") or "")
         source_lang = str(sources[0].get("language") or "")
 
-    # 若歷史資料未抓取到全文，執行 On-Demand 即時補抓
-    if (not raw_content or len(raw_content) < 80) and source_url:
+    # 產卡 finalize 才補抓；讀路徑禁止現場爬文
+    if on_demand and (not raw_content or len(raw_content) < 80) and source_url:
         try:
             from app.utils.article_extractor import ArticleExtractor
             extractor = ArticleExtractor()
@@ -118,6 +120,12 @@ async def resolve_source_article_translation(
                 logger.warning("Failed to save source_content_i18n to db: %s", db_err)
         return raw_content
 
+    if not on_demand:
+        flash = (topic.get("summary_flash") or topic.get("description") or "").strip()
+        fallback = flash if title_matches_display_language(flash[:500], lang) else ""
+        topic["translated_source_content"] = fallback
+        return fallback
+
     # 4. 調用 DeepSeek Flash 進行新聞全文翻譯
     label = _LANG_LABELS.get(lang, lang)
     prompt = (
@@ -126,7 +134,8 @@ async def resolve_source_article_translation(
         f"1. You MUST translate the full text into {label}. Keep all original paragraph structures intact.\n"
         "2. Faithfully preserve all factual details, names, quotes, dates, metrics, and context.\n"
         "3. Do not summarize, truncate, or omit content. Do not add markdown code fences or conversational greetings.\n"
-        "4. Return only the translated article body.\n\n"
+        "4. Return only the translated article body.\n"
+        "5. Omit navigation, breadcrumbs, social share labels (Facebook, X, WhatsApp, Instagram) and 'Jump to categories'.\n\n"
         f"SOURCE ARTICLE:\n{raw_content[:_MAX_SOURCE_INPUT_CHARS]}"
     )
 

@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { topicsAPI } from '@/api/client'
 import TopicCard from '@/components/ui/TopicCard'
@@ -123,6 +124,13 @@ export default function Dashboard() {
               <div className="w-12 h-px bg-gray-300 mx-auto mb-4" />
               <p className="text-gray-500 font-light text-sm mb-2">{t('dashboard.systemUpdatesEvery6h')}</p>
               <p className="text-[10px] tracking-[0.1em] uppercase text-gray-400">{t('dashboard.categoryList')}</p>
+              <Link
+                to="/topics"
+                data-testid="link-dashboard-topics"
+                className="inline-block mt-6 text-sm text-primary hover:text-primary-dark font-medium"
+              >
+                {t('dashboard.browseTopics')}
+              </Link>
             </div>
           ) : (
             <>
@@ -155,6 +163,15 @@ export default function Dashboard() {
                     )}
                   </div>
                 ))}
+              </div>
+              <div className="mt-10 text-center">
+                <Link
+                  to="/topics"
+                  data-testid="link-dashboard-topics"
+                  className="text-sm text-primary hover:text-primary-dark font-medium"
+                >
+                  {t('dashboard.browseTopics')}
+                </Link>
               </div>
             </>
           )}

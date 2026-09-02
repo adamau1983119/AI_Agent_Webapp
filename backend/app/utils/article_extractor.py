@@ -182,9 +182,10 @@ class ArticleExtractor:
             container_copy = BeautifulSoup(str(container), 'html.parser')
             for tag in container_copy.find_all(['script', 'style', 'nav', 'header', 'footer', 'aside', 'iframe', 'form', 'noscript', 'svg', 'button']):
                 tag.decompose()
+            from app.utils.article_boilerplate import clean_extracted_text, strip_boilerplate_nodes
+            strip_boilerplate_nodes(container_copy)
             text = container_copy.get_text(separator='\n', strip=True)
-            lines = [l.strip() for l in text.splitlines() if l.strip()]
-            cleaned = '\n\n'.join(lines)
+            cleaned = clean_extracted_text(text)
             if len(cleaned) >= 30:
                 return cleaned[:5000]
         return ""
@@ -200,7 +201,8 @@ class ArticleExtractor:
         cleaned = html_lib.unescape(cleaned)
         lines = [l.strip() for l in cleaned.splitlines() if l.strip()]
         result = '\n\n'.join(lines)
-        return result[:5000]
+        from app.utils.article_boilerplate import clean_extracted_text
+        return clean_extracted_text(result)[:5000]
 
     def _detect_language(self, content: str) -> str:
         if not content:
