@@ -106,7 +106,7 @@ data-testid="{類型}-{位置}-{功能}"
 | Test ID | 元素 | 功能 | 目標路由 |
 |---------|------|------|----------|
 | `dashboard-topic-cards-only` | 頁面容器 | Dashboard 根節點（僅主題卡） | `/dashboard` |
-| `link-dashboard-topics` | 連結 | ~~瀏覽主題~~ **已移除（改側欄）** | — |
+| `link-dashboard-topics` | 連結 | 瀏覽主題（Dashboard 底部／空狀態導 `/topics`） | `/topics` |
 | `link-dashboard-channels` | 連結 | ~~我的頻道~~ **已移除（改側欄）** | — |
 | `link-dashboard-inspiration` | 連結 | ~~靈感策劃~~ **已移除（改側欄）** | — |
 | `link-dashboard-style` | 連結 | ~~風格檔案~~ **已移除（改側欄）** | — |

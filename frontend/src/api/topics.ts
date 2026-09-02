@@ -197,7 +197,7 @@ export const topicsAPI = {
 
   getTopic: async (id: string, lang?: string): Promise<Topic | null> => {
     const qs = lang ? `?lang=${encodeURIComponent(lang)}` : ''
-    const topic = await fetchAPI<any>(`/topics/${id}${qs}`)
+    const topic = await fetchAPI<any>(`/topics/${id}${qs}`, { timeout: 30000 })
     if (!topic) {
       console.warn(`Topic not found: ${id}`)
       return null

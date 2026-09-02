@@ -176,9 +176,9 @@ class TestSchedulerTopicCreationWithoutDedupDrop(unittest.IsolatedAsyncioTestCas
             svc.workflow = MagicMock()
             svc.workflow.process_topic = AsyncMock(return_value={"content_generated": False})
 
-            import app.services.automation.topic_triple_preload
+            import app.services.automation.topic_card_finalize
             with patch("app.utils.cost_controls.scheduled_topic_collection_enabled", return_value=True), \
-                 patch("app.services.automation.topic_triple_preload.preload_topic_titles", new_callable=AsyncMock):
+                 patch("app.services.automation.topic_card_finalize.finalize_produced_cards", new_callable=AsyncMock):
                 results = await svc.trigger_manual_generation(
                     category=Category.FASHION,
                     count=3,
@@ -328,6 +328,48 @@ class TestSourceArticleTranslation(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(info["success"])
         self.assertIn("Tiffany & Co.", info["original_content"])
         self.assertIn("https://example.com/photo1.jpg", info["images"])
+
+    def test_article_extractor_strips_share_chrome(self):
+        from app.utils.article_extractor import ArticleExtractor
+        extractor = ArticleExtractor()
+        html = """
+        <article>
+            <nav class="breadcrumb">Home / Fashion</nav>
+            <p>Tiffany & Co. 最新珠寶系列正式發表。</p>
+            <div class="share-bar">Facebook</div>
+            <p>Whatsapp</p>
+            <p>X</p>
+            <p>跳至分類</p>
+            <p>本次作品包含精美的胸針與項鍊。</p>
+        </article>
+        """
+        info = extractor.extract_from_html_content(html)
+        self.assertTrue(info["success"])
+        body = info["original_content"] or ""
+        self.assertIn("Tiffany & Co.", body)
+        self.assertNotIn("跳至分類", body)
+        self.assertNotIn("Whatsapp", body)
+        self.assertNotIn("Facebook", body)
+
+    async def test_on_demand_false_skips_scrape(self):
+        from unittest.mock import patch
+        from app.services.translation.source_article_translator import (
+            resolve_source_article_translation,
+        )
+        topic = {
+            "id": "test_ondemand_off",
+            "summary_flash": "A short English summary about fashion week.",
+            "sources": [
+                {"original_content": "", "url": "https://example.com/a", "language": "en"}
+            ],
+        }
+        with patch("app.utils.article_extractor.ArticleExtractor") as ext:
+            res = await resolve_source_article_translation(
+                topic, "zh-TW", save_cache=False, on_demand=False
+            )
+            ext.assert_not_called()
+        self.assertEqual(res, "")
+
 
 if __name__ == "__main__":
     unittest.main()

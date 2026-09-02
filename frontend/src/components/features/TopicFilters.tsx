@@ -6,6 +6,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import type { TopicFilters as TopicFiltersType } from '@/api/topics'
 import { useTranslation } from '@/i18n'
+import { todayHktDateString } from '@/lib/topicDayHkt'
 
 interface TopicFiltersProps {
   onFilterChange: (filters: TopicFiltersType) => void
@@ -144,8 +145,11 @@ export default function TopicFilters({
           <input
             type="date"
             value={date}
+            max={todayHktDateString()}
             onChange={(e) => {
-              setDate(e.target.value)
+              const today = todayHktDateString()
+              const next = e.target.value
+              setDate(next && next > today ? today : next)
               handleFilterChange()
             }}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
