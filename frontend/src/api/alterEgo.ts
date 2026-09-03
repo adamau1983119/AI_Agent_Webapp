@@ -6,6 +6,14 @@ import { normalizeUiLanguage } from '@/lib/topicLanguages';
 
 export type DnaStatus = 'pending' | 'active' | 'skipped' | 'legacy_only';
 export type AlterEgoPlatform = 'facebook' | 'threads' | 'x';
+export type ComposePlatform = 'facebook' | 'instagram' | 'threads';
+export type ComposeStyle =
+  | 'professional'
+  | 'casual'
+  | 'humorous'
+  | 'storytelling'
+  | 'educational';
+export type ComposePart = 'all' | 'title' | 'body' | 'hashtags';
 
 export interface DnaStatusResponse {
   dna_status: DnaStatus;
@@ -24,6 +32,15 @@ export interface PreviewResponse {
   preview_text: string;
   soul_text: string;
   shell_constraints: string;
+}
+
+export interface ComposeResponse {
+  titles: string[];
+  body: string;
+  hashtag_sets: string[][];
+  credits_charged: number;
+  balance_after: number;
+  max_chars: number;
 }
 
 export const alterEgoApi = {
@@ -73,5 +90,30 @@ export const alterEgoApi = {
         topic_id: payload.topic_id,
         preview_text: payload.preview_text,
       }),
+    }),
+
+  compose: (payload: {
+    platform: ComposePlatform;
+    style: ComposeStyle;
+    max_chars: number;
+    part?: ComposePart;
+    language: string;
+    topic_id?: string;
+    topic_title?: string;
+    context_summary?: string;
+  }) =>
+    fetchAPI<ComposeResponse>('/alter-ego/compose', {
+      method: 'POST',
+      body: JSON.stringify({
+        platform: payload.platform,
+        style: payload.style,
+        max_chars: payload.max_chars,
+        part: payload.part || 'all',
+        language: normalizeUiLanguage(payload.language),
+        topic_id: payload.topic_id,
+        topic_title: payload.topic_title || '',
+        context_summary: payload.context_summary || '',
+      }),
+      timeout: 120000,
     }),
 };

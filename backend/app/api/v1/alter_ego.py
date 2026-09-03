@@ -21,6 +21,7 @@ from app.schemas.alter_ego import (
     RollbackRequest,
     SkipResponse,
 )
+from app.api.v1.compose_routes import router as compose_router
 from app.services.alter_ego_reextract import InsufficientCreditsError
 from app.services.alter_ego_service import alter_ego_service
 from app.services.repositories.alter_ego_repository import AlterEgoDnaRepository
@@ -148,3 +149,6 @@ async def post_feedback(
         comment=body.comment,
     )
     return FeedbackResponse()
+
+
+router.include_router(compose_router)

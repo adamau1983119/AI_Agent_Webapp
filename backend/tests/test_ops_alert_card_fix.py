@@ -456,5 +456,65 @@ class TestSourceArticleTranslation(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(res, "")
 
 
+class TestComposePack(unittest.TestCase):
+    """Public composer caps / JSON parse / Rule 19 prompt (no translation pipeline)."""
+
+    def test_threads_cap_150_and_length_gate(self):
+        from app.services.compose_caps import clamp_max_chars, length_enabled, platform_cap
+        self.assertEqual(platform_cap("threads"), 150)
+        self.assertEqual(clamp_max_chars("threads", 150), 150)
+        self.assertEqual(clamp_max_chars("instagram", 150), 150)
+        self.assertTrue(length_enabled("threads", 50))
+        self.assertTrue(length_enabled("facebook", 150))
+
+    def test_parse_json_without_cjk_headers(self):
+        from app.services.compose_parse import extract_json_object, normalize_pack
+        raw = 'Here is the pack:\n{"titles":["A","B","C"],"body":"Hello","hashtag_sets":[["#x"],["#y"],["#z"]]}'
+        pack = normalize_pack(extract_json_object(raw), 100)
+        self.assertEqual(pack["titles"], ["A", "B", "C"])
+        self.assertEqual(pack["body"], "Hello")
+        self.assertEqual(len(pack["hashtag_sets"]), 3)
+
+    def test_compose_prompt_anchors_facts_not_lexicon(self):
+        from app.models.alter_ego_dna import AlterEgoDnaJson
+        from app.services.compose_prompt import build_compose_prompt, dna_tone_overlay
+        dna = AlterEgoDnaJson(
+            lexicon=["串豬大腸", "網紅名店"],
+            tone_descriptors=["熱情"],
+            voice_persona="美食探店博主",
+            language_primary="zh-TW",
+            exemplar_snippets=["這家串豬大腸太絕了"],
+        )
+        overlay = dna_tone_overlay(dna)
+        self.assertNotIn("串豬大腸", overlay)
+        prompt = build_compose_prompt(
+            platform="facebook",
+            style="professional",
+            max_chars=100,
+            part="all",
+            language="en",
+            topic_title="US-Canada trade deal",
+            context_summary="Tariffs on border goods will fall.",
+            dna_overlay=overlay,
+        )
+        self.assertIn("FACT ANCHORING", prompt)
+        self.assertIn("ANTI-POLLUTION", prompt)
+        self.assertIn("Tariffs on border goods will fall.", prompt)
+        self.assertIn("professional", prompt)
+        self.assertNotIn("串豬大腸", prompt)
+
+    def test_preview_platform_contract_unchanged(self):
+        from app.schemas.alter_ego import ComposeRequest, PreviewRequest
+        prev = PreviewRequest(platform="x", topic_hint="hi")
+        self.assertEqual(prev.platform, "x")
+        req = ComposeRequest(
+            platform="instagram",
+            style="casual",
+            max_chars=50,
+            language="ja",
+        )
+        self.assertEqual(req.platform, "instagram")
+
+
 if __name__ == "__main__":
     unittest.main()

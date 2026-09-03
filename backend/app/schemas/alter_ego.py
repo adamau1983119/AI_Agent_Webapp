@@ -19,6 +19,30 @@ class ExtractResponse(BaseModel):
     dna_status: Literal["active"] = "active"
 
 
+class ComposeRequest(BaseModel):
+    """New public composer. Does not change PreviewRequest.platform."""
+
+    platform: Literal["facebook", "instagram", "threads"]
+    style: Literal[
+        "professional", "casual", "humorous", "storytelling", "educational"
+    ]
+    max_chars: int = Field(..., ge=50, le=5000)
+    part: Literal["all", "title", "body", "hashtags"] = "all"
+    language: PrimaryLanguage = "zh-TW"
+    topic_id: Optional[str] = Field(default=None, max_length=64)
+    topic_title: str = Field(default="", max_length=300)
+    context_summary: str = Field(default="", max_length=1500)
+
+
+class ComposeResponse(BaseModel):
+    titles: List[str]
+    body: str
+    hashtag_sets: List[List[str]]
+    credits_charged: int = 1
+    balance_after: int = 0
+    max_chars: int = 150
+
+
 class PreviewRequest(BaseModel):
     platform: Literal["facebook", "threads", "x"]
     topic_hint: str = Field(default="", max_length=200)
