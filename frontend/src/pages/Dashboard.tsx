@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useEffect } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { topicsAPI } from '@/api/client'
 import TopicCard from '@/components/ui/TopicCard'
@@ -19,14 +19,19 @@ type DashCategory = 'fashion' | 'food' | 'trend'
 
 /** 方案 C：收集語言固定 zh-TW（介面語系不影響產卡） */
 
+function parseDashTab(raw: string | null): DashTab {
+  if (raw === 'fashion' || raw === 'food' || raw === 'trend') return raw
+  return 'all'
+}
+
 /**
- * Dashboard：全部＝三類今日各 5；分類 Tab「更多」在本頁展開歷史，不跳 /topics。
+ * Dashboard：全部＝三類今日各 5；分類 Tab 直接今日＋歷史，不跳 /topics。
  */
 export default function Dashboard() {
   usePageTitle()
   const { t, language } = useTranslation()
-  const [tab, setTab] = useState<DashTab>('all')
-  const [showArchive, setShowArchive] = useState(false)
+  const [searchParams, setSearchParams] = useSearchParams()
+  const tab = parseDashTab(searchParams.get('tab'))
 
   const {
     data: topicsResponse,
@@ -61,8 +66,10 @@ export default function Dashboard() {
   }
 
   const selectTab = (next: DashTab) => {
-    setTab(next)
-    setShowArchive(false)
+    const nextParams = new URLSearchParams(searchParams)
+    if (next === 'all') nextParams.delete('tab')
+    else nextParams.set('tab', next)
+    setSearchParams(nextParams, { replace: true })
   }
 
   const moreLabel = (category: DashCategory) =>
@@ -105,8 +112,6 @@ export default function Dashboard() {
     },
   ]
 
-  const categoryTopics =
-    tab === 'all' ? [] : displayTopics.filter((topic) => topic.category === tab)
   const archiveCategory: DashCategory | null = tab === 'all' ? null : tab
 
   const moreBtnClass =
@@ -121,6 +126,9 @@ export default function Dashboard() {
       ))}
     </div>
   )
+
+  const showAllLoading = tab === 'all' && topicsLoading && !topicsError
+  const showAllEmpty = tab === 'all' && !topicsLoading && displayTopics.length === 0
 
   return (
     <div className="min-h-screen bg-[#FAF9F7] p-6 sm:p-8 font-sans" data-testid="dashboard-topic-cards-only">
@@ -153,10 +161,9 @@ export default function Dashboard() {
         <h3 className="text-[11px] tracking-[0.15em] uppercase text-gray-500">
           {t('dashboard.headlines')}
         </h3>
-        {!topicsLoading && displayTopics.length > 0 && !showArchive ? (
+        {tab === 'all' && !topicsLoading && displayTopics.length > 0 ? (
           <p className="text-sm text-gray-500 font-light mt-2">
-            {t('dashboard.todayTopics')} — {tab === 'all' ? displayTopics.length : categoryTopics.length}{' '}
-            {t('dashboard.items')}
+            {t('dashboard.todayTopics')} — {displayTopics.length} {t('dashboard.items')}
           </p>
         ) : null}
       </div>
@@ -184,18 +191,18 @@ export default function Dashboard() {
         })}
       </div>
 
-      {topicsLoading && !topicsError ? (
+      {showAllLoading ? (
         <div className="text-center py-16">
           <div className="inline-block animate-spin rounded-full h-6 w-6 border-b border-black" />
           <p className="mt-4 text-[11px] tracking-[0.1em] uppercase text-gray-500">{t('dashboard.loading')}</p>
         </div>
-      ) : displayTopics.length === 0 && !showArchive ? (
+      ) : showAllEmpty ? (
         <div className="text-center py-20 bg-white border border-gray-100">
           <h4 className="text-sm tracking-[0.15em] uppercase text-black mb-4">
             {t('dashboard.todayTopicsPreparing')}
           </h4>
           <div className="w-12 h-px bg-gray-300 mx-auto mb-4" />
-          <p className="text-gray-500 font-light text-sm mb-2">{t('dashboard.systemUpdatesEvery6h')}</p>
+          <p className="text-sm text-gray-500 font-light mb-2">{t('dashboard.systemUpdatesEvery6h')}</p>
           <p className="text-[10px] tracking-[0.1em] uppercase text-gray-400">{t('dashboard.categoryList')}</p>
           <Link
             to="/topics"
@@ -235,37 +242,14 @@ export default function Dashboard() {
             </section>
           ))}
         </div>
-      ) : showArchive && archiveCategory ? (
+      ) : archiveCategory ? (
         <InfiniteTopicsList
           filters={{ category: archiveCategory }}
           showTimeGroups
           pageSize={20}
           emptyMessage={t('topics.noTopics')}
         />
-      ) : (
-        <>
-          {categoryTopics.length > 0 ? (
-            renderTopicGrid(categoryTopics)
-          ) : (
-            <div className="text-center py-8 text-[10px] tracking-[0.1em] uppercase text-gray-400 bg-white border border-gray-100">
-              {t('dashboard.collecting').replace(
-                '{category}',
-                tabs.find((item) => item.id === tab)?.label || ''
-              )}
-            </div>
-          )}
-          <div className="mt-10 text-center">
-            <button
-              type="button"
-              data-testid="btn-dashboard-more-archive"
-              onClick={() => setShowArchive(true)}
-              className={moreBtnClass}
-            >
-              {moreLabel(archiveCategory || 'fashion')}
-            </button>
-          </div>
-        </>
-      )}
+      ) : null}
     </div>
   )
 }

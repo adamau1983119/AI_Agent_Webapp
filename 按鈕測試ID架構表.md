@@ -107,13 +107,13 @@ data-testid="{類型}-{位置}-{功能}"
 |---------|------|------|----------|
 | `dashboard-topic-cards-only` | 頁面容器 | Dashboard 根節點（僅主題卡） | `/dashboard` |
 | `btn-dashboard-tab-all` | 按鈕 | 頭條 Tab：全部 | 篩選今日全部 |
-| `btn-dashboard-tab-fashion` | 按鈕 | 頭條 Tab：時尚 | 篩選今日時尚 |
-| `btn-dashboard-tab-food` | 按鈕 | 頭條 Tab：美食 | 篩選今日美食 |
-| `btn-dashboard-tab-trend` | 按鈕 | 頭條 Tab：趨勢 | 篩選今日趨勢 |
+| `btn-dashboard-tab-fashion` | 按鈕 | 頭條 Tab：時尚 | `/dashboard?tab=fashion` 直接歷史 |
+| `btn-dashboard-tab-food` | 按鈕 | 頭條 Tab：美食 | `/dashboard?tab=food` 直接歷史 |
+| `btn-dashboard-tab-trend` | 按鈕 | 頭條 Tab：趨勢 | `/dashboard?tab=trend` 直接歷史 |
 | `btn-dashboard-more-fashion` | 按鈕 | 全部區：更多時尚 → 時尚 Tab | 不跳 `/topics` |
 | `btn-dashboard-more-food` | 按鈕 | 全部區：更多美食 → 美食 Tab | 不跳 `/topics` |
 | `btn-dashboard-more-trend` | 按鈕 | 全部區：更多趨勢 → 趨勢 Tab | 不跳 `/topics` |
-| `btn-dashboard-more-archive` | 按鈕 | 分類 Tab：展開本頁歷史卡 | 不跳 `/topics` |
+| `btn-dashboard-more-archive` | 按鈕 | **隱藏**（分類 Tab 進頁即歷史；列保留不刪） | — |
 | `link-dashboard-topics` | 連結 | 空狀態瀏覽主題（Header 搜尋同頁；側欄不放入口） | `/topics` |
 | `link-dashboard-channels` | 連結 | ~~我的頻道~~ **已移除（改側欄）** | — |
 | `link-dashboard-inspiration` | 連結 | ~~靈感策劃~~ **已移除（改側欄）** | — |
@@ -373,7 +373,7 @@ data-testid="{類型}-{位置}-{功能}"
 
 | Test ID | 元素 | 功能 |
 |---------|------|------|
-| `btn-topic-detail-back` | 按鈕 | 返回主題列表 |
+| `btn-topic-detail-back` | 按鈕 | 返回頭條（保留分類 Tab；無歷史則 `/dashboard`） |
 | `btn-topic-detail-jump-post` | 按鈕 | 快捷滾動至轉貼文章/發文套件 |
 | `btn-topic-detail-view-translated` | 按鈕 | 源文章新聞報道：切換查看翻譯內容 |
 | `btn-topic-detail-view-original` | 按鈕 | 源文章新聞報道：切換查看英文原文 |
