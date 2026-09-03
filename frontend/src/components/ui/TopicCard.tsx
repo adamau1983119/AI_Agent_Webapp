@@ -27,6 +27,7 @@ import {
   isTranslateRateLimited,
   markTranslateRateLimited,
 } from '@/lib/translateDisplayQueue'
+import { isTopicRead, subscribeTopicRead } from '@/lib/topicReadState'
 
 function getProxyImageUrl(imageUrl: string): string {
   if (!imageUrl) return ''
@@ -73,6 +74,12 @@ export default function TopicCard({
   const [override, setOverride] = useState<TopicDisplayOverride | null>(null)
   const [standardLoading, setStandardLoading] = useState(false)
   const [fadeReady, setFadeReady] = useState(true)
+  const [hasOpened, setHasOpened] = useState(() => isTopicRead(topic.id))
+
+  useEffect(() => {
+    setHasOpened(isTopicRead(topic.id))
+    return subscribeTopicRead(() => setHasOpened(isTopicRead(topic.id)))
+  }, [topic.id])
 
   const needsTranslate = needsTranslateToCurrentLanguage(topic, language)
   const serverResolved = isServerLocaleResolved(topic, language)
@@ -256,7 +263,12 @@ export default function TopicCard({
               <TopicTextSkeleton />
             ) : (
               <div className={textFadeClass}>
-                <h3 className="font-bold text-sm md:text-base lg:text-lg line-clamp-2 leading-tight text-gray-900 dark:text-white">
+                <h3
+                  data-topic-read={hasOpened ? 'true' : 'false'}
+                  className={`font-bold text-sm md:text-base lg:text-lg line-clamp-2 leading-tight ${
+                    hasOpened ? 'text-gray-400 dark:text-gray-500' : 'text-gray-900 dark:text-white'
+                  }`}
+                >
                   {display.title}
                 </h3>
               </div>
@@ -282,7 +294,9 @@ export default function TopicCard({
             {standardLoading || showTextPending ? (
               <TopicTextSkeleton />
             ) : (
-              <p className={`text-xs md:text-sm text-gray-600 dark:text-gray-300 line-clamp-2 leading-snug ${textFadeClass}`}>
+              <p className={`text-xs md:text-sm line-clamp-2 leading-snug ${textFadeClass} ${
+                hasOpened ? 'text-gray-400 dark:text-gray-500' : 'text-gray-600 dark:text-gray-300'
+              }`}>
                 {display.description ? (
                   display.description
                 ) : (
