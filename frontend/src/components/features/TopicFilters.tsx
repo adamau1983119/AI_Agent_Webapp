@@ -11,14 +11,16 @@ import { todayHktDateString } from '@/lib/topicDayHkt'
 interface TopicFiltersProps {
   onFilterChange: (filters: TopicFiltersType) => void
   className?: string
+  initialCategory?: string
 }
 
 export default function TopicFilters({
   onFilterChange,
   className = '',
+  initialCategory = '',
 }: TopicFiltersProps) {
   const { t } = useTranslation()
-  const [category, setCategory] = useState<string>('')
+  const [category, setCategory] = useState<string>(initialCategory)
   const [status, setStatus] = useState<string>('')
   const [date, setDate] = useState<string>('')
   const [searchQuery, setSearchQuery] = useState<string>('')

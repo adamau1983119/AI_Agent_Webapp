@@ -17,17 +17,26 @@ import { showError } from '@/utils/toast'
 // Phase 1: 顯示模式
 type ViewMode = 'infinite' | 'pagination'
 
+function parseTopicCategory(
+  raw: string | null
+): 'fashion' | 'food' | 'trend' | undefined {
+  if (raw === 'fashion' || raw === 'food' || raw === 'trend') return raw
+  return undefined
+}
+
 export default function Topics() {
   usePageTitle()
   const { t, language } = useTranslation()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
+  const categoryFromUrl = parseTopicCategory(searchParams.get('category'))
   // Phase 1: 預設使用無限滾動模式
   const [viewMode, setViewMode] = useState<ViewMode>('infinite')
   const [filters, setFilters] = useState<TopicFiltersType>({
     page: 1,
     limit: 12,
     search: searchParams.get('search') || undefined,
+    category: categoryFromUrl,
     lang: language,
   })
 
@@ -38,7 +47,8 @@ export default function Topics() {
   // 當 URL 參數變化時，更新 filters
   useEffect(() => {
     const searchQuery = searchParams.get('search')
-    if (searchQuery !== filters.search) {
+    const categoryQuery = parseTopicCategory(searchParams.get('category'))
+    if (searchQuery !== filters.search || filters.category !== categoryQuery) {
       // 驗證 URL 參數中的搜尋關鍵字
       if (searchQuery) {
         const trimmedQuery = searchQuery.trim()
@@ -50,6 +60,7 @@ export default function Topics() {
           setFilters((prev) => ({
             ...prev,
             search: undefined,
+            category: categoryQuery,
             page: 1,
           }))
           return
@@ -62,6 +73,7 @@ export default function Topics() {
           setFilters((prev) => ({
             ...prev,
             search: trimmedQuery.substring(0, 100),
+            category: categoryQuery,
             page: 1,
           }))
           return
@@ -71,6 +83,7 @@ export default function Topics() {
       setFilters((prev) => ({
         ...prev,
         search: searchQuery || undefined,
+        category: categoryQuery,
         page: 1, // 重置到第一頁
       }))
     }
@@ -192,7 +205,7 @@ export default function Topics() {
                 data-testid={`topic-card-${topic.id}`}
                 className="cursor-pointer"
               >
-                <TopicCard topic={topic} />
+                <TopicCard topic={topic} hideCacheBadge />
               </div>
             ))}
           </div>
@@ -283,7 +296,11 @@ export default function Topics() {
       <div className="grid grid-cols-12 gap-4 sm:gap-6">
         {/* 左側：篩選器 */}
         <div className="col-span-12 lg:col-span-3">
-          <TopicFilters onFilterChange={handleFilterChange} />
+          <TopicFilters
+            key={categoryFromUrl || 'all'}
+            initialCategory={categoryFromUrl || ''}
+            onFilterChange={handleFilterChange}
+          />
         </div>
 
         {/* 右側：主題列表 */}

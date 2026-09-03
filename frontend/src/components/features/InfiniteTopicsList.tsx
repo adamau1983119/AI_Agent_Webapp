@@ -113,7 +113,7 @@ export default function InfiniteTopicsList({
           onClick={() => handleTopicClick(topic.id)}
           className="cursor-pointer transition-transform duration-200 hover:scale-[1.02]"
         >
-          <TopicCard topic={topic} />
+          <TopicCard topic={topic} hideCacheBadge />
         </div>
       ))}
     </div>
