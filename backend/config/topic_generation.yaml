@@ -219,3 +219,14 @@ diversity_thresholds:
   trend:
     min_score: 0.75
     min_sources: 3
+
+# ============================================
+# 選文閘門（預設 off＝完全沿用舊路徑；不改 generate_content）
+# shadow＝仍走舊路徑，僅記錄 enforce 會擋下的標題
+# enforce＝標題層篩選；不足 C 張則 fail-open 用舊路徑補滿
+# ============================================
+selection:
+  mode: off
+  cold_ratio: 0.20
+  candidate_factor: 8
+  max_per_source: 1

@@ -13,7 +13,7 @@ v3.2 更新（2026-01-30）：
 """
 import logging
 import httpx
-from typing import List, Dict, Any, Optional, Tuple
+from typing import List, Dict, Any, Optional, Set, Tuple
 from datetime import datetime
 from collections import Counter
 
@@ -213,16 +213,24 @@ class TopicCollector:
         self,
         category: Category,
         count: int,
-        display_language: str = "zh-TW"
+        display_language: str = "zh-TW",
+        _select_mode: Optional[str] = None,
     ) -> List[Dict[str, Any]]:
         """
         使用角色分配策略收集主題
         
         每個角色分配固定數量的主題，確保來源多樣性
+        selection.mode=off 時行為與舊路徑相同；enforce 不足則 fail-open。
         """
+        from app.services.automation.topic_card_select_config import (
+            cold_slot_count,
+            selection_mode,
+        )
+
         topics = []
         roles = get_roles_for_category(category)
         role_distribution = get_role_distribution(category)
+        mode = _select_mode if _select_mode is not None else selection_mode()
         
         if not roles:
             logger.warning(f"分類 {category.value} 沒有配置角色，使用舊版收集方式")
@@ -231,9 +239,13 @@ class TopicCollector:
         # 導入文章提取器
         from app.utils.article_extractor import ArticleExtractor
         extractor = ArticleExtractor()
+        used_sources: Optional[Set[str]] = set() if mode == "enforce" else None
+        role_items = list(role_distribution.items())
+        n_cold = cold_slot_count(count) if mode == "enforce" else 0
+        cold_from = max(0, len(role_items) - n_cold)
         
         async with httpx.AsyncClient(timeout=15.0) as client:
-            for role_name, role_count in role_distribution.items():
+            for i, (role_name, role_count) in enumerate(role_items):
                 feeds = roles.get(role_name, [])
                 if not feeds:
                     logger.warning(f"角色 {role_name} 沒有配置 Feed")
@@ -247,11 +259,24 @@ class TopicCollector:
                     feeds=feeds,
                     count=role_count,
                     role_name=role_name,
-                    display_language=display_language
+                    display_language=display_language,
+                    used_sources=used_sources,
+                    enforce=(mode == "enforce"),
+                    prefer_secondary=(mode == "enforce" and i >= cold_from and n_cold > 0),
                 )
                 topics.extend(role_topics)
+                if mode == "shadow":
+                    from app.services.automation.topic_card_select import log_shadow_batch
+                    log_shadow_batch(role_topics, category)
                 
                 logger.info(f"角色 '{role_name}' 收集完成: {len(role_topics)} 個主題")
+
+        if mode == "enforce" and len(topics) < count:
+            from app.services.automation.topic_card_select import merge_legacy_fill
+            legacy = await self._collect_by_roles(
+                category, count, display_language, _select_mode="off"
+            )
+            topics = merge_legacy_fill(topics, legacy, count)
         
         return topics
     
@@ -263,7 +288,10 @@ class TopicCollector:
         feeds: List[Tuple[str, str, float]],
         count: int,
         role_name: str,
-        display_language: str = "zh-TW"
+        display_language: str = "zh-TW",
+        used_sources: Optional[Set[str]] = None,
+        enforce: bool = False,
+        prefer_secondary: bool = False,
     ) -> List[Dict[str, Any]]:
         """
         從單一角色的 Feed 列表收集主題（含健康監控 + Phase 6 整合）
@@ -286,7 +314,8 @@ class TopicCollector:
         # Phase 6: 初始化 HashtagExtractor
         hashtag_extractor = HashtagExtractor(category=category.value)
         
-        for source_name, feed_url, source_weight in feeds:
+        feed_iter = list(reversed(feeds)) if prefer_secondary else feeds
+        for source_name, feed_url, source_weight in feed_iter:
             if len(topics) >= count:
                 break
             
@@ -307,7 +336,16 @@ class TopicCollector:
                 feed_title = feed.feed.get("title", source_name)
                 
                 # 處理每個條目
-                for entry in feed.entries[:count * 2]:  # 取更多以便過濾
+                scan_n = count * 2
+                if enforce:
+                    try:
+                        from app.services.automation.topic_card_select_config import (
+                            candidate_factor,
+                        )
+                        scan_n = count * candidate_factor()
+                    except Exception:
+                        scan_n = count * 2
+                for entry in feed.entries[:scan_n]:  # 取更多以便過濾
                     if len(topics) >= count:
                         break
                     
@@ -316,6 +354,32 @@ class TopicCollector:
                     
                     if not title or not link:
                         continue
+
+                    if enforce:
+                        try:
+                            from app.services.automation.topic_card_gates import (
+                                should_skip_entry,
+                            )
+                            from app.services.automation.topic_card_select_config import (
+                                max_per_source,
+                            )
+                            reason = should_skip_entry(
+                                title,
+                                link,
+                                category,
+                                source_name,
+                                used_sources,
+                                max_per_source(),
+                            )
+                            if reason:
+                                logger.info(
+                                    f"TOPIC_CARD_SELECT skip {reason}: {title[:80]}"
+                                )
+                                continue
+                        except Exception as e:
+                            logger.warning(
+                                f"TOPIC_CARD_SELECT gate error, keep entry: {e}"
+                            )
                     
                     # 過濾優惠券/折扣文章
                     if category == Category.TREND and self._is_deal_or_coupon_article(title, link):
@@ -468,6 +532,8 @@ class TopicCollector:
                             logger.warning(f"雙寫失敗，繼續使用舊格式: {e}")
                     
                     topics.append(topic)
+                    if enforce and used_sources is not None and source_name:
+                        used_sources.add(source_name)
                     logger.info(f"✅ 收集主題: {translated_title[:30]}... (score: {score_result['score']:.2f}, lang: {display_language}, hashtags: {len(hashtags)})")
                 
                 # 健康監控：記錄成功
