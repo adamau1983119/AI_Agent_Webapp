@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { topicsAPI, contentsAPI, imagesAPI, interactionsAPI, API_BASE_URL } from '@/api/client'
 import { showSuccess, showError } from '@/utils/toast'
@@ -27,7 +27,7 @@ import {
 } from '@/lib/topicDisplay'
 import { titleScriptMismatch } from '@/lib/topicLanguages'
 import { copyToClipboard } from '@/utils/copyToClipboard'
-import { Copy, Sparkles, Image as ImageIcon, Search, ExternalLink, ArrowDownCircle } from 'lucide-react'
+import { Copy, Sparkles, Image as ImageIcon, Search, ExternalLink, ArrowDownCircle, ArrowLeft } from 'lucide-react'
 import { markTopicRead } from '@/lib/topicReadState'
 
 function getProxyImageUrl(imageUrl: string): string {
@@ -42,6 +42,7 @@ function getProxyImageUrl(imageUrl: string): string {
 export default function TopicDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const location = useLocation()
   const queryClient = useQueryClient()
   const { t, language } = useTranslation()
   const { isAuthenticated, user } = useAuthStore()
@@ -59,6 +60,14 @@ export default function TopicDetail() {
       return
     }
     action()
+  }
+
+  const goBackToHeadlines = () => {
+    if (location.key !== 'default') {
+      navigate(-1)
+      return
+    }
+    navigate('/dashboard')
   }
 
   const {
@@ -352,7 +361,8 @@ export default function TopicDetail() {
             </p>
           )}
           <button
-            onClick={() => navigate('/topics')}
+            type="button"
+            onClick={goBackToHeadlines}
             data-testid="btn-topic-detail-back"
             className="mt-4 px-4 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary min-h-[44px]"
           >
@@ -367,6 +377,15 @@ export default function TopicDetail() {
     <div className="p-4 sm:p-6 lg:p-8 min-h-screen bg-[#FAF9F7] dark:bg-gray-900 max-w-7xl mx-auto space-y-6">
       {/* 1. 頂部區域：標題、多語切換、轉貼文章快捷鍵、喜歡/不喜歡 */}
       <header className="flex flex-col gap-4 pb-4 border-b border-gray-200 dark:border-gray-800">
+        <button
+          type="button"
+          onClick={goBackToHeadlines}
+          data-testid="btn-topic-detail-back"
+          className="inline-flex items-center gap-1.5 self-start text-sm text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white min-h-[44px]"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          {t('common.back')}
+        </button>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-2">
