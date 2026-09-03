@@ -69,7 +69,7 @@ data-testid="{類型}-{位置}-{功能}"
 |---------|------|------|----------|
 | `link-sidebar-logo` | Logo | 返回首頁 | `/dashboard` |
 | `link-sidebar-dashboard` | 選單項 | 控制面板 | `/dashboard` |
-| `link-sidebar-topics` | 選單項 | 主題列表 | `/topics` |
+| `link-sidebar-topics` | 選單項 | 主題列表 — **側欄隱藏**；路由／testid 保留（Header 搜尋仍進 `/topics`） | `/topics` |
 | `link-sidebar-discover` | 選單項 | 探索（公共主題牆）— **側欄隱藏**；路由／testid 保留 | `/discover` |
 | `link-sidebar-my-channel` | 選單項 | 我的頻道 | `/my-channel` |
 | `link-sidebar-channels` | 選單項 | 頻道管理 | `/channels` |
@@ -110,7 +110,11 @@ data-testid="{類型}-{位置}-{功能}"
 | `btn-dashboard-tab-fashion` | 按鈕 | 頭條 Tab：時尚 | 篩選今日時尚 |
 | `btn-dashboard-tab-food` | 按鈕 | 頭條 Tab：美食 | 篩選今日美食 |
 | `btn-dashboard-tab-trend` | 按鈕 | 頭條 Tab：趨勢 | 篩選今日趨勢 |
-| `link-dashboard-topics` | 連結 | 更多／瀏覽主題（空狀態或底部；可帶 `?category=`） | `/topics` |
+| `btn-dashboard-more-fashion` | 按鈕 | 全部區：更多時尚 → 時尚 Tab | 不跳 `/topics` |
+| `btn-dashboard-more-food` | 按鈕 | 全部區：更多美食 → 美食 Tab | 不跳 `/topics` |
+| `btn-dashboard-more-trend` | 按鈕 | 全部區：更多趨勢 → 趨勢 Tab | 不跳 `/topics` |
+| `btn-dashboard-more-archive` | 按鈕 | 分類 Tab：展開本頁歷史卡 | 不跳 `/topics` |
+| `link-dashboard-topics` | 連結 | 空狀態瀏覽主題（Header 搜尋同頁；側欄不放入口） | `/topics` |
 | `link-dashboard-channels` | 連結 | ~~我的頻道~~ **已移除（改側欄）** | — |
 | `link-dashboard-inspiration` | 連結 | ~~靈感策劃~~ **已移除（改側欄）** | — |
 | `link-dashboard-style` | 連結 | ~~風格檔案~~ **已移除（改側欄）** | — |

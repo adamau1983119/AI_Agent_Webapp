@@ -28,6 +28,7 @@ import {
 import { titleScriptMismatch } from '@/lib/topicLanguages'
 import { copyToClipboard } from '@/utils/copyToClipboard'
 import { Copy, Sparkles, Image as ImageIcon, Search, ExternalLink, ArrowDownCircle } from 'lucide-react'
+import { markTopicRead } from '@/lib/topicReadState'
 
 function getProxyImageUrl(imageUrl: string): string {
   if (!imageUrl) return ''
@@ -174,6 +175,10 @@ export default function TopicDetail() {
       ? t('topics.translating')
       : displayCopy?.title || (topic ? topic.title : t('nav.topics'))
   )
+
+  useEffect(() => {
+    if (id) markTopicRead(id)
+  }, [id])
 
   useEffect(() => {
     if (topic) {

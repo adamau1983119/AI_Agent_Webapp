@@ -14,7 +14,7 @@ const menuItemsConfig: Array<{
   v7Nav: V7NavVisibility
 }> = [
   { path: '/dashboard', labelKey: 'nav.dashboard', icon: 'home', testId: 'link-sidebar-dashboard', v7Nav: 'show' },
-  { path: '/topics', labelKey: 'nav.topics', icon: 'document', testId: 'link-sidebar-topics', v7Nav: 'show' },
+  { path: '/topics', labelKey: 'nav.topics', icon: 'document', testId: 'link-sidebar-topics', v7Nav: 'hide' },
   { path: '/discover', labelKey: 'nav.discover', icon: 'compass', testId: 'link-sidebar-discover', v7Nav: 'hide' },
   { path: '/my-channel', labelKey: 'nav.channels', icon: 'channel', testId: 'link-sidebar-my-channel', v7Nav: 'show' },
   { path: '/channels', labelKey: 'nav.channelList', icon: 'channel', testId: 'link-sidebar-channels', v7Nav: 'show' },
