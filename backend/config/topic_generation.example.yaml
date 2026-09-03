@@ -57,3 +57,10 @@ daily_limit:
   # 檢查方式：使用日期+分類作為唯一鍵
   unique_key: "date_category"
 
+# 選文閘門（預設 off＝舊路徑；勿改 generate_content）
+selection:
+  mode: off
+  cold_ratio: 0.20
+  candidate_factor: 8
+  max_per_source: 1
+
