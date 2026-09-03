@@ -70,14 +70,14 @@ data-testid="{類型}-{位置}-{功能}"
 | `link-sidebar-logo` | Logo | 返回首頁 | `/dashboard` |
 | `link-sidebar-dashboard` | 選單項 | 控制面板 | `/dashboard` |
 | `link-sidebar-topics` | 選單項 | 主題列表 | `/topics` |
-| `link-sidebar-discover` | 選單項 | 探索（公共主題牆） | `/discover` |
+| `link-sidebar-discover` | 選單項 | 探索（公共主題牆）— **側欄隱藏**；路由／testid 保留 | `/discover` |
 | `link-sidebar-my-channel` | 選單項 | 我的頻道 | `/my-channel` |
 | `link-sidebar-channels` | 選單項 | 頻道管理 | `/channels` |
 | `link-sidebar-inspiration` | 選單項 | 靈感策劃 | `/inspiration` |
 | `link-sidebar-style` | 選單項 | 風格檔案 | `/style-profile` |
-| `link-sidebar-publish` | 選單項 | 一鍵發布 | `/publish` |
-| `link-sidebar-social` | 選單項 | 社群連結 | `/social-connect` |
-| `link-sidebar-preferences` | 選單項 | 偏好設定 | `/preferences` |
+| `link-sidebar-publish` | 選單項 | 一鍵發布（側欄標 **即將推出**） | `/publish` |
+| `link-sidebar-social` | 選單項 | 社群連結（側欄標 **即將推出**） | `/social-connect` |
+| `link-sidebar-preferences` | 選單項 | 偏好設定 — **側欄隱藏**；路由／testid 保留 | `/preferences` |
 | `link-sidebar-schedule` | 選單項 | 排程管理 | `/schedule` |
 | `btn-sidebar-logout` | 按鈕 | 登出 | `/login` |
 
@@ -106,7 +106,11 @@ data-testid="{類型}-{位置}-{功能}"
 | Test ID | 元素 | 功能 | 目標路由 |
 |---------|------|------|----------|
 | `dashboard-topic-cards-only` | 頁面容器 | Dashboard 根節點（僅主題卡） | `/dashboard` |
-| `link-dashboard-topics` | 連結 | 瀏覽主題（Dashboard 底部／空狀態導 `/topics`） | `/topics` |
+| `btn-dashboard-tab-all` | 按鈕 | 頭條 Tab：全部 | 篩選今日全部 |
+| `btn-dashboard-tab-fashion` | 按鈕 | 頭條 Tab：時尚 | 篩選今日時尚 |
+| `btn-dashboard-tab-food` | 按鈕 | 頭條 Tab：美食 | 篩選今日美食 |
+| `btn-dashboard-tab-trend` | 按鈕 | 頭條 Tab：趨勢 | 篩選今日趨勢 |
+| `link-dashboard-topics` | 連結 | 更多／瀏覽主題（空狀態或底部；可帶 `?category=`） | `/topics` |
 | `link-dashboard-channels` | 連結 | ~~我的頻道~~ **已移除（改側欄）** | — |
 | `link-dashboard-inspiration` | 連結 | ~~靈感策劃~~ **已移除（改側欄）** | — |
 | `link-dashboard-style` | 連結 | ~~風格檔案~~ **已移除（改側欄）** | — |

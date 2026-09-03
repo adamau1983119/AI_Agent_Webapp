@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { topicsAPI } from '@/api/client'
@@ -13,14 +13,17 @@ import {
   filterTopicsForHktDay,
 } from '@/lib/topicDayHkt'
 
+type DashTab = 'all' | 'fashion' | 'food' | 'trend'
+
 /** 方案 C：收集語言固定 zh-TW（介面語系不影響產卡） */
 
 /**
- * Dashboard：只顯示今日主題卡；排程每日 04:00 HKT 自動產卡。
+ * Dashboard：今日頭條牆（HKT）＋分類 Tab；「更多」進主題庫無限滾。
  */
 export default function Dashboard() {
   usePageTitle()
   const { t, language } = useTranslation()
+  const [tab, setTab] = useState<DashTab>('all')
 
   const {
     data: topicsResponse,
@@ -41,8 +44,9 @@ export default function Dashboard() {
   const topics = topicsError ? [] : topicsResponse?.data || []
   const todayTopicsCount = countTopicsForHktDay(topics)
   const displayTopics = dedupeTopicsByTitle(filterTopicsForHktDay(topics))
+  const tabTopics =
+    tab === 'all' ? displayTopics : displayTopics.filter((topic) => topic.category === tab)
 
-  // 未滿日配額：每 2 分鐘輕量刷新（等候排程產卡）
   useEffect(() => {
     if (topicsError || todayTopicsCount >= EXPECTED_DAILY_TOPICS) return
     const id = window.setInterval(() => {
@@ -55,16 +59,22 @@ export default function Dashboard() {
     refetchTopics()
   }
 
-  const categories = [
-    { key: 'fashion', label: t('dashboard.fashionTrends') },
-    { key: 'food', label: t('dashboard.foodDining') },
-    { key: 'trend', label: t('dashboard.socialTrends') },
+  const tabs: Array<{ id: DashTab; label: string; testId: string }> = [
+    { id: 'all', label: t('dashboard.tabAll'), testId: 'btn-dashboard-tab-all' },
+    { id: 'fashion', label: t('dashboard.fashionTrends'), testId: 'btn-dashboard-tab-fashion' },
+    { id: 'food', label: t('dashboard.foodDining'), testId: 'btn-dashboard-tab-food' },
+    { id: 'trend', label: t('dashboard.socialTrends'), testId: 'btn-dashboard-tab-trend' },
   ]
 
-  const topicsByCategory = categories.map((cat) => ({
-    ...cat,
-    topics: displayTopics.filter((topic) => topic.category === cat.key),
-  }))
+  const moreHref = tab === 'all' ? '/topics' : `/topics?category=${tab}`
+  const moreLabel =
+    tab === 'fashion'
+      ? t('dashboard.moreFashion')
+      : tab === 'food'
+        ? t('dashboard.moreFood')
+        : tab === 'trend'
+          ? t('dashboard.moreTrend')
+          : t('dashboard.moreAll')
 
   return (
     <div className="min-h-screen bg-[#FAF9F7] p-6 sm:p-8 font-sans" data-testid="dashboard-topic-cards-only">
@@ -93,10 +103,40 @@ export default function Dashboard() {
         </div>
       ) : null}
 
-      <div className="mb-6">
-        <h3 className="text-[11px] tracking-[0.15em] uppercase text-gray-500">
-          {t('dashboard.topicCards')}
-        </h3>
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+        <div>
+          <h3 className="text-[11px] tracking-[0.15em] uppercase text-gray-500">
+            {t('dashboard.headlines')}
+          </h3>
+          {!topicsLoading && displayTopics.length > 0 ? (
+            <p className="text-sm text-gray-500 font-light mt-2">
+              {t('dashboard.todayTopics')} — {tabTopics.length} {t('dashboard.items')}
+            </p>
+          ) : null}
+        </div>
+      </div>
+
+      <div className="flex gap-1 overflow-x-auto border-b border-gray-200 mb-8" role="tablist">
+        {tabs.map((item) => {
+          const selected = tab === item.id
+          return (
+            <button
+              key={item.id}
+              type="button"
+              role="tab"
+              aria-selected={selected}
+              data-testid={item.testId}
+              onClick={() => setTab(item.id)}
+              className={`shrink-0 min-h-[44px] px-4 py-3 text-[11px] tracking-[0.15em] uppercase transition-colors ${
+                selected
+                  ? 'text-black border-b-2 border-black'
+                  : 'text-gray-400 hover:text-gray-700'
+              }`}
+            >
+              {item.label}
+            </button>
+          )
+        })}
       </div>
 
       {topicsLoading && !topicsError ? (
@@ -134,43 +174,29 @@ export default function Dashboard() {
             </div>
           ) : (
             <>
-              <p className="text-sm text-gray-500 font-light mb-6">
-                {t('dashboard.todayTopics')} — {displayTopics.length} {t('dashboard.items')}
-              </p>
-              <div className="space-y-8">
-                {topicsByCategory.map((category) => (
-                  <div key={category.key}>
-                    <div className="flex items-center justify-between mb-4">
-                      <h4 className="text-[11px] tracking-[0.15em] uppercase text-black">
-                        {category.label}
-                      </h4>
-                      <span className="text-[10px] text-gray-400 font-light">
-                        {category.topics.length} {t('dashboard.topics')}
-                      </span>
+              {tabTopics.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {tabTopics.map((topic) => (
+                    <div key={topic.id} className="h-full">
+                      <TopicCard topic={topic} enableAutoTranslate={false} hideCacheBadge />
                     </div>
-                    {category.topics.length > 0 ? (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {category.topics.map((topic) => (
-                          <div key={topic.id} className="h-full">
-                            <TopicCard topic={topic} enableAutoTranslate={false} />
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-center py-8 text-[10px] tracking-[0.1em] uppercase text-gray-400 bg-white border border-gray-100">
-                        {t('dashboard.collecting').replace('{category}', category.label)}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-[10px] tracking-[0.1em] uppercase text-gray-400 bg-white border border-gray-100">
+                  {t('dashboard.collecting').replace(
+                    '{category}',
+                    tabs.find((item) => item.id === tab)?.label || ''
+                  )}
+                </div>
+              )}
               <div className="mt-10 text-center">
                 <Link
-                  to="/topics"
+                  to={moreHref}
                   data-testid="link-dashboard-topics"
-                  className="text-sm text-primary hover:text-primary-dark font-medium"
+                  className="inline-block min-h-[44px] px-6 py-3 text-[11px] tracking-[0.15em] uppercase text-black border border-gray-200 hover:border-black transition-all duration-300"
                 >
-                  {t('dashboard.browseTopics')}
+                  {moreLabel}
                 </Link>
               </div>
             </>

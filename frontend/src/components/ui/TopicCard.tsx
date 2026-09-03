@@ -53,6 +53,8 @@ interface TopicCardProps {
   kolStyleTestId?: string
   /** Dashboard 列表關閉自動翻譯，避免一次 N 張卡打爆 API／Console */
   enableAutoTranslate?: boolean
+  /** 列表預設可藏「已譯（快取）」；不改 fromCache 計算與翻譯管線 */
+  hideCacheBadge?: boolean
 }
 
 const gradientClasses = {
@@ -65,6 +67,7 @@ export default function TopicCard({
   topic,
   kolStyleTestId,
   enableAutoTranslate = false,
+  hideCacheBadge = false,
 }: TopicCardProps) {
   const { t, language } = useTranslation()
   const [override, setOverride] = useState<TopicDisplayOverride | null>(null)
@@ -215,7 +218,11 @@ export default function TopicCard({
   }
 
   const showKolButton = needsTranslate && !standardLoading && !localePending
-  const showTranslateFooter = needsTranslate || display.fromCache || override?.translationType === 'kol_style'
+  const showCacheLabel =
+    !hideCacheBadge &&
+    (display.fromCache || override?.cached) &&
+    override?.translationType !== 'kol_style'
+  const showTranslateFooter = showKolButton || showCacheLabel
   const showTextPending = localePending && !standardLoading
 
   const textFadeClass = `transition-opacity duration-500 ease-out ${
@@ -293,7 +300,7 @@ export default function TopicCard({
 
       {showTranslateFooter && (
         <div className="flex items-center justify-end gap-2 mt-2 pt-2 border-t border-gray-100 dark:border-gray-700">
-          {(display.fromCache || override?.cached) && override?.translationType !== 'kol_style' && (
+          {showCacheLabel && (
             <span className="text-[10px] text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-2 py-0.5 rounded">
               {t('topics.translatedCached')}
             </span>
