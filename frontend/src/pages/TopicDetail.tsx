@@ -11,6 +11,7 @@ import ImageSearch from '@/components/features/ImageSearch'
 import InteractionButtons from '@/components/features/InteractionButtons'
 import ContentGenerationPanel from '@/components/features/ContentGenerationPanel'
 import PostKitPanel from '@/components/features/PostKitPanel'
+import PostComposerPanel from '@/components/features/PostComposerPanel'
 import type { GenerationSettings } from '@/components/features/ContentGenerationPanel'
 import { usePageTitle } from '@/hooks/usePageTitle'
 import { useAuthStore } from '@/stores/authStore'
@@ -659,9 +660,20 @@ export default function TopicDetail() {
           )}
         </div>
 
-        {/* 右欄 (7 欄)：生成設定與短文成果展示 */}
-        <div className="col-span-12 lg:col-span-7 space-y-4">
-          {/* 生成控制面板（已鎖定短文，隱藏腳本） */}
+        {/* 右欄 (7 欄)：社群發文組裝器（舊生成面板／短文卡改為不掛載） */}
+        <div ref={postKitRef} className="col-span-12 lg:col-span-7 space-y-4">
+          <PostComposerPanel
+            topicId={topic.id}
+            topicTitle={
+              displayCopy?.localePending ? topic.title : displayCopy?.title || topic.title
+            }
+            contextSummary={
+              topic.summaryFlash || topic.summary_flash || topic.description || ''
+            }
+            language={language}
+            requireAuth={requireAuth}
+          />
+          {false && (
           <ContentGenerationPanel
             onGenerate={(settings) =>
               requireAuth(() =>
@@ -673,8 +685,9 @@ export default function TopicDetail() {
             isGenerating={generateContentMutation.isPending || regenerateContentMutation.isPending}
             hasExistingContent={Boolean(content?.article)}
           />
+          )}
 
-          {/* 生成的短文內容展示卡片 */}
+          {false && (
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-5 sm:p-6 space-y-4">
             <div className="flex justify-between items-center pb-3 border-b border-gray-100 dark:border-gray-700/60">
               <h3 className="font-display text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
@@ -728,11 +741,13 @@ export default function TopicDetail() {
               </div>
             )}
           </div>
+          )}
         </div>
       </section>
 
-      {/* 4. 底部區域：平台切換出文 (Post Kit) */}
-      <section ref={postKitRef} className="pt-4">
+      {/* 舊 Post Kit 保留檔案與字串，主路改為組裝器（不掛載） */}
+      <section className="hidden" aria-hidden="true">
+        {false && (
         <PostKitPanel
           displayTitle={
             displayCopy?.localePending ? '' : displayCopy?.title || topic.title
@@ -745,6 +760,7 @@ export default function TopicDetail() {
           contentTranslating={contentTranslating}
           summaryFlash={translatedContentText || originalContentText}
         />
+        )}
       </section>
 
       {/* 登入提示模態框 */}

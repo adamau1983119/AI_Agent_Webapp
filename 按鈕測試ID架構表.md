@@ -408,6 +408,27 @@ data-testid="{類型}-{位置}-{功能}"
 | `btn-postkit-copy-all` | 按鈕 | 複製全部文字 |
 | `btn-publish-goto-topics` | 按鈕 | `/publish` L0 導向主題列表 |
 
+> **2026-09-03**：上列 Post Kit testid **保留**（檔案／門禁）；詳情主路改掛 `PostComposerPanel`（舊面板 `{false &&}` 不掛載）。
+
+### 4.10b 社群發文組裝器 (`PostComposerPanel.tsx` · 嵌入 `TopicDetail.tsx`)
+
+| testid | 類型 | 說明 |
+|--------|------|------|
+| `section-composer` | 區塊 | 組裝器主區 |
+| `btn-composer-platform-facebook` | 按鈕 | 平台 Facebook |
+| `btn-composer-platform-instagram` | 按鈕 | 平台 Instagram |
+| `btn-composer-platform-threads` | 按鈕 | 平台 Threads（產品上限 150 字） |
+| `btn-composer-style-professional` 等 | 按鈕 | 五風格（須進 Prompt） |
+| `btn-composer-length-50`／`100`／`150` | 按鈕 | 整篇字數；超過平台 cap 則 disabled |
+| `btn-composer-generate-pack` | 按鈕 | 生成發文套件（−1 點，JIT） |
+| `btn-composer-regen-title` | 按鈕 | 重產 3 標題（−1） |
+| `btn-composer-regen-body` | 按鈕 | 重產內文（−1） |
+| `btn-composer-regen-hashtags` | 按鈕 | 重產 3 組 Hashtag（−1） |
+| `btn-composer-title-1`～`3` | 按鈕 | 選標題填入整體文章 |
+| `btn-composer-hashtag-set-1`～`3` | 按鈕 | 選 Hashtag 組填入 |
+| `btn-composer-copy-all` | 按鈕 | 複製整體文章 |
+| `section-composer-whole` | 區塊 | 整體文章預覽 |
+
 ### 4.10 內容生成面板 (`ContentGenerationPanel.tsx`)
 
 | Test ID | 元素 | 功能 |
