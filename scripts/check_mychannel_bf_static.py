@@ -10,6 +10,7 @@ BACKEND = ROOT / "backend"
 FRONTEND = ROOT / "frontend/src"
 
 CREDIT = BACKEND / "app/services/credit_ledger_service.py"
+GRANTS = BACKEND / "app/services/credits/credit_grants.py"
 CACHE = BACKEND / "app/services/my_channel/my_channel_cache.py"
 SERVICE = BACKEND / "app/services/my_channel/my_channel_service.py"
 API = BACKEND / "app/api/v1/my_channel.py"
@@ -22,6 +23,7 @@ SCHEMA = BACKEND / "app/schemas/my_channel.py"
 def main() -> int:
     fails = 0
     credit = CREDIT.read_text(encoding="utf-8")
+    grants = GRANTS.read_text(encoding="utf-8") if GRANTS.exists() else ""
     cache = CACHE.read_text(encoding="utf-8")
     svc = SERVICE.read_text(encoding="utf-8")
     api = API.read_text(encoding="utf-8")
@@ -32,7 +34,11 @@ def main() -> int:
 
     checks: list[tuple[str, bool, str]] = [
         ("PD-MC1-01 credit_ledger_service", CREDIT.exists() and "decr_credits" in credit, ""),
-        ("PD-MC1-02 initial 5 credits", "INITIAL_CREDITS = 5" in credit, ""),
+        (
+            "PD-MC1-02 welcome/daily grants",
+            "WELCOME_PER_LOGIN = 10" in grants and "DAILY_LOGIN_CREDITS = 5" in grants,
+            "",
+        ),
         ("PD-MC1-03 admin AddPoints", "/credits" in api and "add_credits" in credit, ""),
         ("PD-MC1-04 402 insufficient", "HTTP_402_PAYMENT_REQUIRED" in api, ""),
         ("PD-MC2-01 my_channel cache key", "my_channel:feed:" in cache, ""),

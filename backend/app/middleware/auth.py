@@ -55,6 +55,7 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
             "/docs",
             "/openapi.json",
             "/redoc",
+            "/api/v1/billing/webhook",
         ]
         self.api_key = settings.API_KEY if hasattr(settings, 'API_KEY') else None
     
