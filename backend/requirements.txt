@@ -41,6 +41,9 @@ pytz>=2024.1
 # Redis Cache
 redis>=5.0.0
 
+# Stripe Checkout (one-time packs; empty keys → 503)
+stripe>=10.0.0
+
 # Elasticsearch (optional)
 elasticsearch>=8.11.0
 

@@ -2,10 +2,11 @@ import { format } from 'date-fns'
 import { zhTW, enUS, ja } from 'date-fns/locale'
 import { useState, FormEvent, useRef, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useUIStore } from '@/stores/uiStore'
 import { useAuthStore } from '@/stores/authStore'
 import { useTranslation, languageOptions, Language } from '@/i18n'
+import { billingApi } from '@/api/billing'
 
 export default function Header() {
   const { t, language, setLanguage } = useTranslation()
@@ -27,6 +28,11 @@ export default function Header() {
   const { toggleSidebar } = useUIStore()
   const { user, isAuthenticated, logout } = useAuthStore()
   const navigate = useNavigate()
+  const { data: credits } = useQuery({
+    queryKey: ['creditsBalance'],
+    queryFn: billingApi.getBalance,
+    enabled: isAuthenticated,
+  })
   const [searchQuery, setSearchQuery] = useState('')
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [showLangMenu, setShowLangMenu] = useState(false)
@@ -143,6 +149,16 @@ export default function Header() {
               </button>
             )}
           </form>
+
+          {isAuthenticated && (
+            <Link
+              to="/settings?tab=billing"
+              data-testid="link-header-credits"
+              className="hidden sm:inline-flex items-center min-h-[44px] px-2 text-sm font-medium text-gray-700 hover:text-gray-900"
+            >
+              {t('credits.header', { n: String(credits?.balance ?? 0) })}
+            </Link>
+          )}
 
           {/* 通知按鈕 */}
           <button data-testid="btn-header-notification" className="relative p-2 text-gray-600 hover:text-gray-800">

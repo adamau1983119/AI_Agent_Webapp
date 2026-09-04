@@ -164,7 +164,12 @@ async def login(login_data: UserLogin, request: Request):
     
     # 建立 Access Token
     access_token = await auth_service.create_access_token_for_user(user)
-    
+    try:
+        from app.services.credit_ledger_service import credit_ledger_service
+        await credit_ledger_service.ensure_login_grants(user["id"])
+    except Exception as grant_err:
+        logger.warning("login credit grant skipped: %s", grant_err)
+
     # 計算過期時間（秒）
     expires_in = settings.JWT_EXPIRE_MINUTES * 60
     
@@ -499,6 +504,12 @@ async def google_callback(
         
         # 4. 建立 JWT Token
         jwt_token = await auth_service.create_access_token_for_user(user)
+        try:
+            from app.services.credit_ledger_service import credit_ledger_service
+            await credit_ledger_service.ensure_login_grants(user["id"])
+        except Exception as grant_err:
+            logger.warning("oauth credit grant skipped: %s", grant_err)
+
         
         # 5. 重定向到前端並帶上 Token（須 URL 編碼，避免 JWT 在 query 中損壞）
         from urllib.parse import urlencode

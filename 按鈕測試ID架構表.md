@@ -95,6 +95,7 @@ data-testid="{類型}-{位置}-{功能}"
 | `btn-header-user` | 按鈕 | 用戶選單 | 開啟用戶選單 |
 | `menu-header-user` | 選單 | 用戶下拉 | - |
 | `link-header-settings` | 連結 | 設定 | `/settings` |
+| `link-header-credits` | 連結 | 點數餘額 | `/settings?tab=billing` |
 | `btn-header-logout` | 按鈕 | 登出 | `/login` |
 | `link-header-login` | 連結 | 登入 | `/login` |
 | `link-header-register` | 連結 | 註冊 | `/register` |
@@ -536,6 +537,19 @@ test('login flow', async ({ page }) => {
 ---
 
 ## 維護指南
+
+---
+
+### 設定頁 · 點數購買（v8）
+
+| Test ID | 元素 | 功能 | 目標路由 |
+|---------|------|------|----------|
+| `btn-settings-tab-billing` | 按鈕 | 設定：點數分頁 | `/settings?tab=billing` |
+| `panel-settings-billing` | 區塊 | 點數餘額與購買 | `/settings?tab=billing` |
+| `text-settings-credits-balance` | 文字 | 目前點數 | — |
+| `btn-settings-buy-usd3` | 按鈕 | US$3／180 點 Checkout | Stripe |
+| `btn-settings-buy-usd5` | 按鈕 | US$5／350 點 Checkout | Stripe |
+| `btn-settings-buy-usd10` | 按鈕 | US$10／800 點 Checkout | Stripe |
 
 ### 新增按鈕時
 

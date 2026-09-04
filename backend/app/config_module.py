@@ -130,6 +130,8 @@ class Settings(BaseSettings):
     # 後端 URL（用於 OAuth 回調）
     BACKEND_URL: str = "http://localhost:8000"
     FRONTEND_URL: str = "http://localhost:3000"
+    STRIPE_SECRET_KEY: str = ""
+    STRIPE_WEBHOOK_SECRET: str = ""
     
     # Meta (Instagram + Facebook + Threads)
     META_APP_ID: str = ""
