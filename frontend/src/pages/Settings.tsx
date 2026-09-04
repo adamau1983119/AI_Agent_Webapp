@@ -3,19 +3,21 @@
  * Phase 2: 會員系統
  */
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useTranslation, languageOptions, Language } from '../i18n';
 import { useAuthStore } from '../stores/authStore';
 import { authApi } from '../api/auth';
 import { alterEgoApi } from '../api/alterEgo';
+import CreditsBillingPanel from '../components/features/CreditsBillingPanel';
 import toast from 'react-hot-toast';
 
 export default function Settings() {
   const { t, language, setLanguage } = useTranslation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user, isAuthenticated, logout } = useAuthStore();
   
-  const [activeTab, setActiveTab] = useState<'profile' | 'account' | 'preferences'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'account' | 'preferences' | 'billing'>('profile');
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
   const [dnaStatus, setDnaStatus] = useState<string | null>(null);
@@ -26,6 +28,13 @@ export default function Settings() {
       .then((s) => setDnaStatus(s.dna_status))
       .catch(() => setDnaStatus(null));
   }, []);
+
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab === 'profile' || tab === 'account' || tab === 'preferences' || tab === 'billing') {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
   
   // 表單狀態
   const [profileData, setProfileData] = useState({
@@ -83,6 +92,7 @@ export default function Settings() {
   const tabs = [
     { id: 'profile', label: t('settings.profile'), icon: '👤' },
     { id: 'account', label: t('settings.account'), icon: '🔐' },
+    { id: 'billing', label: t('settings.billing'), icon: '💳' },
     { id: 'preferences', label: t('settings.preferences'), icon: '⚙️' },
   ];
   
@@ -104,6 +114,7 @@ export default function Settings() {
               {tabs.map(tab => (
                 <button
                   key={tab.id}
+                  data-testid={tab.id === 'billing' ? 'btn-settings-tab-billing' : undefined}
                   onClick={() => setActiveTab(tab.id as any)}
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-all duration-200 ${
                     activeTab === tab.id
@@ -231,6 +242,8 @@ export default function Settings() {
                 </div>
               )}
               
+              {activeTab === 'billing' && <CreditsBillingPanel />}
+
               {/* 帳號設定 */}
               {activeTab === 'account' && (
                 <div className="space-y-6">

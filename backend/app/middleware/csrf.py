@@ -38,6 +38,7 @@ class CSRFMiddleware(BaseHTTPMiddleware):
         "/api/v1/auth/google/callback",
         # Webhook 端點（如果有）
         "/api/v1/webhooks/",
+        "/api/v1/billing/webhook",
     ]
     
     def __init__(self, app, allowed_origins: Optional[List[str]] = None):
