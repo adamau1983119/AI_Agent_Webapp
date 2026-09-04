@@ -12,6 +12,7 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import ErrorDisplay from '@/components/ui/ErrorDisplay'
 import EmptyState from '@/components/ui/EmptyState'
 import { useTranslation } from '@/i18n'
+import { FEATURED_PHOTO_CAP } from '@/lib/featuredPhotos'
 
 /**
  * 生成圖片代理 URL
@@ -62,6 +63,7 @@ interface ImageSearchProps {
   topicId: string
   topic?: Topic | null
   content?: Content | null
+  existingCount?: number
   onImageSelect: (image: { url: string; source: string; photographer?: string; license: string }) => void
   onClose: () => void
 }
@@ -329,9 +331,11 @@ function extractKeywords(
     })
   }
   
-  // 從文章內容提取關鍵字（補充標題中未提取到的關鍵字）
-  if (content?.article) {
-    const article = content.article
+  // 從摘要或文章提取關鍵字（不強制長文）
+  const articleBody =
+    content?.article || topic?.summaryFlash || topic?.summary_flash || ''
+  if (articleBody) {
+    const article = articleBody
     
     // 1. 提取英文專有名詞（如果標題中沒有）
     const articleEnglishNames = article.match(/\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*\b/g)
@@ -453,6 +457,7 @@ export default function ImageSearch({
   topicId,
   topic,
   content,
+  existingCount = 0,
   onImageSelect,
   onClose,
 }: ImageSearchProps) {
@@ -539,6 +544,10 @@ export default function ImageSearch({
   }
 
   const handleSelectImage = (image: any) => {
+    if (existingCount >= FEATURED_PHOTO_CAP) {
+      showError(t('images.featuredFull'))
+      return
+    }
     createMutation.mutate({
       url: image.url,
       source: image.source,

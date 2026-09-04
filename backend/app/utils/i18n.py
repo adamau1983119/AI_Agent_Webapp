@@ -275,9 +275,14 @@ class I18nErrorMessages:
             "ja": "画像の並び替えに失敗しました"
         },
         "image.content_empty": {
-            "zh-TW": "文章內容為空，無法進行智能匹配。請先生成完整的文章內容或確保主題有原文內容。",
-            "en": "Article content is empty, unable to perform smart matching. Please generate complete article content first or ensure the topic has original content.",
-            "ja": "記事の内容が空です。スマートマッチングを実行できません。まず完全な記事内容を生成するか、トピックに元の内容があることを確認してください。"
+            "zh-TW": "沒有摘要、原文或標題，無法配圖。",
+            "en": "No summary, source text, or title available to match photos.",
+            "ja": "要約・原文・タイトルがなく、写真をマッチできません。"
+        },
+        "image.featured_full": {
+            "zh-TW": "精選照片已滿 4 張。",
+            "en": "Featured photos are full (4).",
+            "ja": "おすすめ写真は4枚までです。"
         },
         
         # 功能標誌相關

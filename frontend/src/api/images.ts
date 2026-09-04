@@ -240,7 +240,7 @@ export const imagesAPI = {
    */
   matchPhotos: async (
     topicId: string,
-    minCount: number = 8
+    minCount: number = 4
   ): Promise<Image[]> => {
     try {
       // 構建 URL，確保正確使用 ? 而不是 @
