@@ -10,6 +10,7 @@ import type { Image } from '@/types'
 import type { ImageReorderItem } from '@/api/images'
 import ImagePreview from './ImagePreview'
 import { useTranslation } from '@/i18n'
+import { FEATURED_PHOTO_CAP } from '@/lib/featuredPhotos'
 
 /**
  * 生成圖片代理 URL
@@ -381,9 +382,9 @@ export default function ImageGallery({
           >
             {validateMutation.isPending ? t('common.loading') : `✓ ${t('images.validateMatch')}`}
           </button>
-          {images.length < 8 && (
+          {images.length < FEATURED_PHOTO_CAP && (
             <button
-              onClick={() => matchMutation.mutate(8)}
+              onClick={() => matchMutation.mutate(FEATURED_PHOTO_CAP)}
               disabled={isMatching}
               className="px-3 py-1 text-sm font-medium text-primary bg-primary/10 rounded-md hover:bg-primary/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -418,7 +419,7 @@ export default function ImageGallery({
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        {sortedImages.map((image, index) => (
+        {sortedImages.slice(0, FEATURED_PHOTO_CAP).map((image, index) => (
           <ImageGalleryItem
             key={image.id}
             image={image}

@@ -385,7 +385,7 @@ data-testid="{類型}-{位置}-{功能}"
 | `btn-topic-detail-generate` | 按鈕 | 生成內容 |
 | `btn-topic-detail-regenerate` | 按鈕 | 重新生成內容 |
 | `btn-topic-detail-add-image` | 按鈕 | 新增圖片 |
-| `btn-topic-detail-match-photos` | 按鈕 | 智能匹配照片 |
+| `btn-topic-detail-match-photos` | 按鈕 | 智能匹配精選照片（最多 4 張・2×2；不需長文） |
 | `btn-topic-detail-search-images` | 按鈕 | 搜尋圖片 |
 | `btn-topic-card-translate` | 按鈕 | 主題卡：譯為目前語言（v7 Phase 4 改為語系切換自動 standard；保留 testid 供手動重試元件） |
 | `btn-topic-card-kol-style` | 按鈕 | 主題卡：網紅風格（kol_style Flash 按需） |

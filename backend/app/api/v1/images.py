@@ -104,17 +104,19 @@ async def _update_topic_preview_images(topic_id: str):
     """
     更新主題的 preview_images 字段
     
-    從資料庫中獲取該主題的所有圖片，取前 8 張的 URL 更新到主題的 preview_images 字段
+    從資料庫中獲取該主題的所有圖片，取前 FEATURED_CAP 張 URL 更新 preview_images
     如果沒有圖片，則將 preview_images 設為空數組
     """
     try:
+        from app.services.images.match_facts import FEATURED_CAP
+
         # 獲取該主題的所有圖片
         images = await image_repo.get_images_by_topic_id(topic_id)
         
         if images:
-            # 按 order 排序，取前 8 張圖片的 URL
+            # 按 order 排序，取前 FEATURED_CAP 張圖片的 URL
             sorted_images = sorted(images, key=lambda x: x.get("order", 0))
-            image_urls = [img.get("url") for img in sorted_images[:8] if img.get("url")]
+            image_urls = [img.get("url") for img in sorted_images[:FEATURED_CAP] if img.get("url")]
             
             # 更新主題的 preview_images 字段（即使為空數組也要更新）
             await topic_repo.update_topic(
@@ -427,6 +429,7 @@ async def get_topic_images(topic_id: str = Path(..., description="主題 ID")):
 
 @router.post("/{topic_id}", response_model=ImageResponse)
 async def create_image(
+    request: Request,
     topic_id: str = Path(..., description="主題 ID"),
     image_data: ImageCreate = ...
 ):
@@ -439,7 +442,18 @@ async def create_image(
         if not topic:
             raise HTTPException(
                 status_code=404,
-                detail=get_error_message("image.topic_not_found", get_user_language(user=current_user, request=request))
+                detail=get_error_message("image.topic_not_found", get_user_language(request=request))
+            )
+
+        from app.services.images.match_facts import featured_slots
+
+        existing = await image_repo.get_images_by_topic_id(topic_id)
+        if featured_slots(len(existing)) <= 0:
+            raise HTTPException(
+                status_code=400,
+                detail=get_error_message(
+                    "image.featured_full", get_user_language(request=request)
+                ),
             )
         
         # 準備圖片資料
@@ -583,18 +597,18 @@ async def reorder_images(
 
 @router.post("/{topic_id}/match", response_model=ImageListResponse)
 async def match_photos_for_topic(
+    request: Request,
     topic_id: str = Path(..., description="主題 ID"),
-    min_count: int = Query(default=8, ge=1, le=20, description="最少照片數量")
+    min_count: int = Query(default=4, ge=1, le=4, description="精選張數上限內再搜"),
 ):
     """
-    根據文章內容匹配照片（分層閾值檢查）
+    根據摘要／原文／標題匹配照片（分層閾值；合計最多 FEATURED_CAP）
     """
     try:
         from app.services.images.enhanced_photo_matcher import EnhancedPhotoMatcher
-        from app.services.repositories.content_repository import ContentRepository
+        from app.services.images.match_facts import featured_slots, match_fact_text
         
         photo_matcher = EnhancedPhotoMatcher()
-        content_repo = ContentRepository()
         
         # 取得主題資訊
         from app.services.repositories.topic_repository import TopicRepository
@@ -603,7 +617,7 @@ async def match_photos_for_topic(
         if not topic:
             raise HTTPException(
                 status_code=404,
-                detail=get_error_message("image.topic_not_found", get_user_language(user=current_user, request=request))
+                detail=get_error_message("image.topic_not_found", get_user_language(request=request))
             )
         
         # 1. 先保存原文圖片（如果有的話）
@@ -616,9 +630,16 @@ async def match_photos_for_topic(
         
         existing_images = await image_repo.get_images_by_topic_id(topic_id)
         max_order = max([img.get("order", 0) for img in existing_images]) if existing_images else -1
+        slots = featured_slots(len(existing_images))
+        if slots <= 0:
+            return ImageListResponse(
+                data=[_convert_to_response(dict(img)) for img in existing_images]
+            )
         
-        # 保存原文圖片
-        for idx, img_url in enumerate(source_images[:5]):  # 最多5張
+        # 保存原文圖片（不超過剩餘精選格）
+        for idx, img_url in enumerate(source_images):
+            if featured_slots(len(existing_images) + len(saved_images)) <= 0:
+                break
             try:
                 # 檢查是否已存在
                 existing = [img for img in existing_images if img.get("url") == img_url]
@@ -646,19 +667,7 @@ async def match_photos_for_topic(
                 logger.warning(f"保存原文圖片失敗 {img_url}: {e}")
                 continue
         
-        # 2. 取得文章內容（優先使用原文內容）
-        content = await content_repo.get_content_by_topic_id(topic_id)
-        article_text = ""
-        
-        # 2.1 優先從原文內容提取
-        for source in topic.get("sources", []):
-            if source.get("original_content"):
-                article_text = source["original_content"][:2000]  # 使用原文內容
-                break
-        
-        # 2.2 如果沒有原文內容，使用生成的中文內容
-        if not article_text and content:
-            article_text = content.get("article", "")
+        article_text = match_fact_text(topic)
         
         if not article_text or not article_text.strip():
             language = get_user_language(request=request)
@@ -666,16 +675,21 @@ async def match_photos_for_topic(
                 status_code=400,
                 detail=get_error_message("image.content_empty", language)
             )
+
+        remaining = featured_slots(len(existing_images) + len(saved_images))
+        if remaining <= 0:
+            await _update_topic_preview_images(topic_id)
+            return ImageListResponse(data=[_convert_to_response(s) if isinstance(s, dict) else s for s in saved_images])
         
-        # 3. 匹配照片（基於原文內容或生成的中文內容）
+        need = min(min_count, remaining)
         match_result = await photo_matcher.match_photos_with_layers(
             article_text=article_text,
             topic_id=topic_id,
-            min_count=min_count
+            min_count=need
         )
         
         # 4. 保存匹配的照片到資料庫（image_type=matched）
-        matched_photos = match_result.get("matched_photos", [])
+        matched_photos = match_result.get("matched_photos", [])[:need]
         
         for idx, photo in enumerate(matched_photos):
             try:
