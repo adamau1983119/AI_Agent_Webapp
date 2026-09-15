@@ -51,12 +51,14 @@ class TestCreditGrants(unittest.TestCase):
             wallet = apply_grant(wallet, plan, NOW, f"lot-{day}")
             total += 10
         self.assertEqual(wallet["welcome_count"], 3)
-        self.assertEqual(total_balance(wallet), 30)
+        self.assertEqual(total_balance(wallet, NOW), 30)
 
     def test_same_day_idempotent(self):
         wallet = empty_wallet("u1")
         plan = plan_login_grant(wallet, "2026-09-04", NOW)
         wallet = apply_grant(wallet, plan, NOW, "lot-a")
+        self.assertEqual(wallet["last_grant_amount"], 10)
+        self.assertEqual(wallet["last_grant_kind"], "welcome")
         self.assertIsNone(plan_login_grant(wallet, "2026-09-04", NOW))
 
     def test_legacy_topup_then_two_tens(self):
@@ -72,7 +74,7 @@ class TestCreditGrants(unittest.TestCase):
         plan3 = plan_login_grant(wallet, "2026-09-06", NOW)
         self.assertEqual(plan3["amount"], 10)
         wallet = apply_grant(wallet, plan3, NOW, "lot-3")
-        self.assertEqual(total_balance(wallet), 30)
+        self.assertEqual(total_balance(wallet, NOW), 30)
 
     def test_daily_plus_five_after_welcome(self):
         wallet = empty_wallet("u1")
@@ -112,8 +114,8 @@ class TestCreditWallet(unittest.TestCase):
         later = make_lot(3, "daily", NOW + timedelta(days=1), "later")
         wallet["lots"] = [later, early]
         wallet["purchased"] = 4
-        out = fifo_debit(wallet, 6)
-        self.assertEqual(total_balance(out), 3)
+        out = fifo_debit(wallet, 6, NOW)
+        self.assertEqual(total_balance(out, NOW), 3)
         self.assertEqual(out["purchased"], 3)
         self.assertEqual(sum(int(x["remaining"]) for x in out["lots"]), 0)
 
@@ -127,6 +129,55 @@ class TestCreditPacks(unittest.TestCase):
         self.assertEqual(get_pack("usd10")["credits"], 800)
         with self.assertRaises(KeyError):
             get_pack("usd1")
+
+
+class TestPaidPackFromSession(unittest.TestCase):
+    def _session(self, **over):
+        base = {
+            "id": "cs_test_abc",
+            "payment_status": "paid",
+            "currency": "usd",
+            "amount_total": 300,
+            "livemode": False,
+            "client_reference_id": "user_1",
+            "metadata": {"user_id": "user_1", "pack_id": "usd3", "credits": "180"},
+        }
+        base.update(over)
+        return base
+
+    def test_matches_usd3(self):
+        from app.services.credits.credit_fulfill import paid_pack_from_session
+
+        out = paid_pack_from_session(self._session())
+        self.assertEqual(out["credits"], 180)
+        self.assertEqual(out["amount_cents"], 300)
+
+    def test_rejects_wrong_amount(self):
+        from app.services.credits.credit_fulfill import paid_pack_from_session
+
+        self.assertIsNone(paid_pack_from_session(self._session(amount_total=1)))
+
+    def test_rejects_unpaid(self):
+        from app.services.credits.credit_fulfill import paid_pack_from_session
+
+        self.assertIsNone(paid_pack_from_session(self._session(payment_status="unpaid")))
+
+    def test_rejects_wrong_currency(self):
+        from app.services.credits.credit_fulfill import paid_pack_from_session
+
+        self.assertIsNone(paid_pack_from_session(self._session(currency="hkd")))
+
+    def test_credits_from_pack_not_metadata(self):
+        from app.services.credits.credit_fulfill import paid_pack_from_session
+
+        session = self._session()
+        session["metadata"] = {
+            "user_id": "user_1",
+            "pack_id": "usd3",
+            "credits": "9999",
+        }
+        out = paid_pack_from_session(session)
+        self.assertEqual(out["credits"], 180)
 
 
 if __name__ == "__main__":

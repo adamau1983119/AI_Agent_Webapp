@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 import { billingApi, type CreditPack } from '@/api/billing';
 import { APIError } from '@/api/errors';
 import { useTranslation } from '@/i18n';
+import CreditPackShelf from '@/components/credits/CreditPackShelf';
 
 const FALLBACK_PACKS: CreditPack[] = [
   { id: 'usd3', credits: 180, amount_cents: 300, currency: 'usd' },
@@ -27,8 +28,23 @@ export default function CreditsBillingPanel() {
   });
 
   useEffect(() => {
-    const flag = new URLSearchParams(window.location.search).get('billing');
-    if (flag === 'success') toast.success(t('credits.success'));
+    const params = new URLSearchParams(window.location.search);
+    const flag = params.get('billing');
+    const sessionId = params.get('session_id');
+    if (flag === 'success') {
+      toast.success(t('credits.success'));
+      if (sessionId) {
+        void billingApi
+          .confirmCheckout(sessionId)
+          .then(() => {
+            void balanceQuery.refetch();
+          })
+          .catch(() => {
+            /* webhook may still land; balance refetch below */
+          });
+      }
+      void balanceQuery.refetch();
+    }
     if (flag === 'cancel') toast.error(t('credits.cancel'));
   }, [t]);
 
@@ -62,34 +78,25 @@ export default function CreditsBillingPanel() {
       <p className="text-sm text-gray-400">{t('credits.subtitle')}</p>
       <p className="text-sm text-gray-400">{t('credits.hintWelcome')}</p>
       <p className="text-sm text-gray-400">{t('credits.hintDaily')}</p>
-      <div className="p-6 bg-slate-700/30 rounded-lg space-y-2">
+      <div className="p-6 rounded-lg border border-black/10 bg-[#F7F5F2] space-y-2">
         <p className="font-medium" data-testid="text-settings-credits-balance">
           {t('credits.balanceLine', { n: String(snap?.balance ?? 0) })}
         </p>
-        <p className="text-sm text-gray-400">
+        <p className="text-sm text-gray-500">
           {t('credits.freeLine', { n: String(snap?.free ?? 0) })}
         </p>
-        <p className="text-sm text-gray-400">
+        <p className="text-sm text-gray-500">
           {t('credits.purchasedLine', { n: String(snap?.purchased ?? 0) })}
         </p>
       </div>
-      <div className="grid gap-3 sm:grid-cols-3">
-        {packs.map((pack) => (
-          <button
-            key={pack.id}
-            type="button"
-            data-testid={`btn-settings-buy-${pack.id}`}
-            disabled={buying !== null}
-            onClick={() => void buy(pack.id)}
-            className="px-4 py-3 min-h-[44px] bg-purple-500 hover:bg-purple-600 disabled:opacity-50 text-white rounded-lg"
-          >
-            {pack.id === 'usd5'
-              ? t('credits.packUsd5')
-              : pack.id === 'usd10'
-                ? t('credits.packUsd10')
-                : t('credits.packUsd3')}
-          </button>
-        ))}
+      <div className="rounded-2xl bg-[#0d0d0d] text-white p-5 sm:p-6">
+        <CreditPackShelf
+          packs={packs}
+          mode="buy"
+          testPrefix="settings"
+          buying={buying}
+          onBuy={(packId) => void buy(packId)}
+        />
       </div>
     </div>
   );

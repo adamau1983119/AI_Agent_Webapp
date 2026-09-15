@@ -167,6 +167,20 @@ data-testid="{類型}-{位置}-{功能}"
 | `link-landing-terms` | 連結 | 使用條款 |
 | `link-landing-privacy` | 連結 | 隱私政策 |
 | `card-landing-feature-*` | 卡片 | 功能卡（trends／aiWrite 等） |
+| `link-landing-credits` | 連結 | 捲到點數黑帶 | `#credits` |
+| `section-landing-credits` | 區塊 | 訪客點數包三卡 | `/welcome#credits` |
+| `btn-landing-fx-usd` | 按鈕 | 顯示 USD | 僅換算 |
+| `btn-landing-fx-twd` | 按鈕 | 顯示 TWD | 僅換算 |
+| `btn-landing-fx-cny` | 按鈕 | 顯示 CNY | 僅換算 |
+| `btn-landing-fx-hkd` | 按鈕 | 顯示 HKD | 僅換算 |
+| `btn-landing-fx-jpy` | 按鈕 | 顯示 JPY | 僅換算 |
+| `card-landing-pack-usd3` | 卡片 | US$3／180 點（訪客） | `/login` |
+| `card-landing-pack-usd5` | 卡片 | US$5／350 點（訪客） | `/login` |
+| `card-landing-pack-usd10` | 卡片 | US$10／800 點（訪客） | `/login` |
+| `btn-landing-pack-usd3` | 連結 | 訪客選 US$3 | `/login` |
+| `btn-landing-pack-usd5` | 連結 | 訪客選 US$5 | `/login` |
+| `btn-landing-pack-usd10` | 連結 | 訪客選 US$10 | `/login` |
+| `link-landing-credits-login` | 連結 | 登入後購買 | `/login` |
 
 ### 2.1 語言選擇頁
 
@@ -550,6 +564,17 @@ test('login flow', async ({ page }) => {
 | `btn-settings-buy-usd3` | 按鈕 | US$3／180 點 Checkout | Stripe |
 | `btn-settings-buy-usd5` | 按鈕 | US$5／350 點 Checkout | Stripe |
 | `btn-settings-buy-usd10` | 按鈕 | US$10／800 點 Checkout | Stripe |
+| `btn-settings-fx-usd` | 按鈕 | 設定貨架顯示 USD | 僅換算 |
+| `btn-settings-fx-twd` | 按鈕 | 設定貨架顯示 TWD | 僅換算 |
+| `btn-settings-fx-cny` | 按鈕 | 設定貨架顯示 CNY | 僅換算 |
+| `btn-settings-fx-hkd` | 按鈕 | 設定貨架顯示 HKD | 僅換算 |
+| `btn-settings-fx-jpy` | 按鈕 | 設定貨架顯示 JPY | 僅換算 |
+| `card-settings-pack-usd3` | 卡片 | 設定 US$3 卡 | Stripe |
+| `card-settings-pack-usd5` | 卡片 | 設定 US$5 卡 | Stripe |
+| `card-settings-pack-usd10` | 卡片 | 設定 US$10 卡 | Stripe |
+| `text-composer-need-credits` | 文字 | 組裝 402 旁說明 | — |
+| `btn-composer-buy-credits` | 連結 | 組裝 402 旁購買 | `/settings?tab=billing` |
+| `btn-my-channel-buy-credits-*` | 連結 | 解鎖 402 旁購買 | `/settings?tab=billing` |
 
 ### 新增按鈕時
 

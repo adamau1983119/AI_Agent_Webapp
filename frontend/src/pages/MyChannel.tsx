@@ -42,6 +42,7 @@ export default function MyChannel() {
   const [templates, setTemplates] = useState<ChannelTemplate[]>([]);
   const [unlockingId, setUnlockingId] = useState<string | null>(null);
   const [unlocked, setUnlocked] = useState<UnlockedMap>({});
+  const [needCreditsId, setNeedCreditsId] = useState<string | null>(null);
 
   const loadFeed = useCallback(async () => {
     setLoading(true);
@@ -81,9 +82,11 @@ export default function MyChannel() {
       const res = await myChannelApi.unlock(topicId, unlockKey(topicId, language), language);
       setUnlocked((prev) => ({ ...prev, [topicId]: res }));
       setBalance(res.balance);
+      setNeedCreditsId(null);
       toast.success(t('myChannel.unlockSuccess'));
     } catch (err: unknown) {
       if (err instanceof APIError && err.status === 402) {
+        setNeedCreditsId(topicId);
         toast.error(t('myChannel.insufficientCredits'));
       } else {
         const msg = err instanceof Error ? err.message : t('common.error');
@@ -201,15 +204,29 @@ export default function MyChannel() {
                         </a>
                       </div>
                     ) : (
-                      <button
-                        type="button"
-                        data-testid={`btn-my-channel-unlock-${card.id}`}
-                        disabled={unlockingId === card.id}
-                        onClick={() => handleUnlock(card.id)}
-                        className="mt-3 px-4 py-2 text-sm font-medium bg-primary text-white rounded-md min-h-[44px] disabled:opacity-50"
-                      >
-                        {unlockingId === card.id ? t('common.processing') : t('myChannel.unlockCta')}
-                      </button>
+                      <div className="mt-3 space-y-2">
+                        <button
+                          type="button"
+                          data-testid={`btn-my-channel-unlock-${card.id}`}
+                          disabled={unlockingId === card.id}
+                          onClick={() => handleUnlock(card.id)}
+                          className="px-4 py-2 text-sm font-medium bg-primary text-white rounded-md min-h-[44px] disabled:opacity-50"
+                        >
+                          {unlockingId === card.id ? t('common.processing') : t('myChannel.unlockCta')}
+                        </button>
+                        {needCreditsId === card.id && (
+                          <p className="text-sm text-gray-600 flex flex-wrap items-center gap-3">
+                            <span>{t('myChannel.insufficientCredits')}</span>
+                            <Link
+                              to="/settings?tab=billing"
+                              data-testid={`btn-my-channel-buy-credits-${card.id}`}
+                              className="inline-flex items-center min-h-[44px] px-4 rounded-full border border-[#1a1a1a] text-[11px] tracking-[0.16em] uppercase"
+                            >
+                              {t('credits.buy')}
+                            </Link>
+                          </p>
+                        )}
+                      </div>
                     )}
                   </div>
                 </div>

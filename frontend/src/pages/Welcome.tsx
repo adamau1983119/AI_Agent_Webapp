@@ -19,6 +19,14 @@ import { useTranslation, languageOptions, Language } from '@/i18n';
 import { useAuthStore } from '@/stores/authStore';
 import { resolvePostLoginPath } from '@/lib/alterEgoRouting';
 import WelcomeInkBackground from '@/components/welcome/WelcomeInkBackground';
+import CreditPackShelf from '@/components/credits/CreditPackShelf';
+import type { CreditPack } from '@/api/billing';
+
+const LANDING_PACKS: CreditPack[] = [
+  { id: 'usd3', credits: 180, amount_cents: 300, currency: 'usd' },
+  { id: 'usd5', credits: 350, amount_cents: 500, currency: 'usd' },
+  { id: 'usd10', credits: 800, amount_cents: 1000, currency: 'usd' },
+];
 
 const FEATURE_KEYS = ['trends', 'aiWrite', 'channel', 'inspiration', 'style', 'postKit'] as const;
 const FEATURE_ICONS = [TrendingUp, Sparkles, MessageCircle, Lightbulb, Star, Copy];
@@ -78,6 +86,13 @@ export default function Welcome() {
                 </span>
               ))}
             </div>
+            <a
+              href="#credits"
+              data-testid="link-landing-credits"
+              className="hidden sm:inline-flex items-center min-h-[44px] px-2 text-[11px] tracking-[0.16em] uppercase text-[#1a1a1a]/70 hover:text-[#1a1a1a]"
+            >
+              {t('credits.anchor')}
+            </a>
             <Link
               to="/login"
               data-testid="btn-landing-login"
@@ -156,6 +171,27 @@ export default function Welcome() {
                 </article>
               );
             })}
+          </div>
+        </section>
+
+        <section
+          id="credits"
+          data-testid="section-landing-credits"
+          className="relative z-[1] w-full bg-[#0d0d0d] text-white py-12 sm:py-16 mb-4"
+        >
+          <div className="max-w-[1120px] mx-auto px-4 sm:px-6">
+            <CreditPackShelf packs={LANDING_PACKS} mode="guest" testPrefix="landing" />
+            <p className="mt-6 text-[11px] tracking-[0.08em] text-white/55">
+              {t('credits.hintWelcome')} {t('credits.hintDaily')} {t('credits.publicFree')}
+            </p>
+            <p className="mt-2 text-[11px] text-white/45">{t('credits.guestHint')}</p>
+            <Link
+              to="/login"
+              data-testid="link-landing-credits-login"
+              className="mt-6 inline-flex items-center justify-center min-h-[46px] px-7 rounded-full text-[11px] tracking-[0.18em] uppercase border border-white hover:bg-white hover:text-[#0d0d0d] transition-colors"
+            >
+              {t('credits.loginToBuy')}
+            </Link>
           </div>
         </section>
 

@@ -13,6 +13,7 @@ from app.services.cache_service import cache_service
 logger = logging.getLogger(__name__)
 _IDEMPOTENCY_PREFIX = "my_channel:idempotency:"
 _IDEMPOTENCY_TTL = 86400 * 7
+_INDEX_READY = False
 
 
 def idempotency_cache_key(user_id: str, key: str) -> str:
@@ -21,7 +22,24 @@ def idempotency_cache_key(user_id: str, key: str) -> str:
 
 async def ledger_collection():
     db = await get_database()
-    return db["credit_ledger"]
+    col = db["credit_ledger"]
+    await _ensure_indexes(col)
+    return col
+
+
+async def _ensure_indexes(col) -> None:
+    global _INDEX_READY
+    if _INDEX_READY:
+        return
+    try:
+        await col.create_index(
+            [("user_id", 1), ("idempotency_key", 1)],
+            unique=True,
+            name="user_id_idempotency_key",
+        )
+    except Exception as exc:
+        logger.warning("credit_ledger index: %s", exc)
+    _INDEX_READY = True
 
 
 async def get_idempotency(user_id: str, key: str) -> Optional[Dict[str, Any]]:
@@ -80,7 +98,16 @@ async def insert_txn(
         "meta": meta or {},
     }
     col = await ledger_collection()
-    await col.insert_one(entry)
+    try:
+        await col.insert_one(entry)
+    except Exception as exc:
+        name = type(exc).__name__
+        if "DuplicateKey" not in name and "duplicate" not in str(exc).lower():
+            raise
+        existing = await get_idempotency(user_id, idempotency_key)
+        if existing is not None:
+            return int(existing["balance_after"])
+        raise
     await store_idempotency(
         user_id, idempotency_key, {"balance_after": balance_after, "transaction_id": txn_id}
     )

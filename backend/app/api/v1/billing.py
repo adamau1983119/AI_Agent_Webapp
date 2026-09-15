@@ -12,6 +12,7 @@ from app.services.credits.credit_packs import get_pack, list_packs
 from app.services.credits.credit_stripe import (
     create_checkout_session,
     parse_checkout_completed,
+    retrieve_paid_session,
     stripe_ready,
 )
 
@@ -21,6 +22,10 @@ router = APIRouter(prefix="/billing", tags=["billing"])
 
 class CheckoutBody(BaseModel):
     pack_id: str = Field(..., min_length=2, max_length=16)
+
+
+class ConfirmBody(BaseModel):
+    session_id: str = Field(..., min_length=8, max_length=128)
 
 
 @router.get("/packs")
@@ -54,7 +59,11 @@ async def start_checkout(
             detail="unknown_pack",
         ) from exc
     try:
-        url = create_checkout_session(current_user["id"], body.pack_id)
+        url = create_checkout_session(
+            current_user["id"],
+            body.pack_id,
+            str(current_user.get("email") or ""),
+        )
     except Exception as exc:
         logger.warning("stripe checkout failed: %s", exc)
         raise HTTPException(
@@ -78,11 +87,25 @@ async def stripe_webhook(request: Request):
         ) from exc
     if not parsed:
         return {"ok": True, "ignored": True}
-    await credit_ledger_service.add_purchased(
-        parsed["user_id"],
-        parsed["credits"],
-        idempotency_key=f"stripe:{parsed['session_id']}",
-        action="purchase",
-        meta={"pack_id": parsed["pack_id"], "session_id": parsed["session_id"]},
-    )
+    await credit_ledger_service.fulfill_stripe_pack(parsed)
     return {"ok": True}
+
+
+@router.post("/confirm")
+async def confirm_checkout(
+    body: ConfirmBody,
+    current_user: dict = Depends(get_current_user),
+):
+    if not stripe_ready():
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="stripe_not_configured",
+        )
+    parsed = retrieve_paid_session(body.session_id)
+    if not parsed or parsed["user_id"] != current_user["id"]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="stripe_session_unpaid",
+        )
+    await credit_ledger_service.fulfill_stripe_pack(parsed)
+    return await credit_ledger_service.get_wallet_snapshot(current_user["id"])

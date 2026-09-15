@@ -7,7 +7,14 @@ from typing import Any, Dict, Optional
 from app.services.automation.topic_day_hkt import today_hkt_str
 from app.services.credits.credit_grants import apply_grant, plan_login_grant
 from app.services.credits.credit_ledger_io import get_idempotency, insert_txn, store_idempotency
-from app.services.credits.credit_store import empty_wallet, load_or_migrate, load_wallet, save_wallet
+from app.services.credits.credit_store import (
+    empty_wallet,
+    ensure_wallet_doc,
+    load_or_migrate,
+    load_wallet,
+    save_wallet,
+    try_grant_purchase,
+)
 from app.services.credits.credit_wallet import (
     expire_lots,
     fifo_debit,
@@ -27,7 +34,7 @@ class CreditLedgerService:
     async def get_balance(self, user_id: str) -> int:
         return total_balance(await load_or_migrate(user_id))
 
-    async def get_wallet_snapshot(self, user_id: str) -> Dict[str, int]:
+    async def get_wallet_snapshot(self, user_id: str) -> Dict[str, Any]:
         wallet = await load_wallet(user_id) or empty_wallet(user_id)
         lots = expire_lots(wallet.get("lots") or [])
         return {
@@ -35,6 +42,9 @@ class CreditLedgerService:
             "free": free_remaining(lots),
             "purchased": int(wallet.get("purchased") or 0),
             "welcome_count": int(wallet.get("welcome_count") or 0),
+            "last_grant_hkt": str(wallet.get("last_grant_hkt") or ""),
+            "last_grant_kind": str(wallet.get("last_grant_kind") or ""),
+            "last_grant_amount": int(wallet.get("last_grant_amount") or 0),
         }
 
     async def ensure_initial_balance(self, user_id: str) -> int:
@@ -87,10 +97,13 @@ class CreditLedgerService:
         cached = await get_idempotency(user_id, idempotency_key)
         if cached is not None:
             return int(cached["balance_after"])
+        await ensure_wallet_doc(user_id)
+        applied = await try_grant_purchase(user_id, amount, idempotency_key)
         wallet = await load_or_migrate(user_id)
-        wallet["lots"] = expire_lots(wallet.get("lots") or [])
-        wallet["purchased"] = int(wallet.get("purchased") or 0) + amount
-        await save_wallet(wallet)
+        if not applied:
+            existing = await get_idempotency(user_id, idempotency_key)
+            if existing is not None:
+                return int(existing["balance_after"])
         return await insert_txn(
             user_id,
             amount,
@@ -136,6 +149,21 @@ class CreditLedgerService:
             {"balance_after": new_balance, "action": action, "topic_id": topic_id},
         )
         return new_balance
+
+    async def fulfill_stripe_pack(self, parsed: Dict[str, Any]) -> int:
+        return await self.add_purchased(
+            str(parsed["user_id"]),
+            int(parsed["credits"]),
+            idempotency_key=f"stripe:{parsed['session_id']}",
+            action="purchase",
+            meta={
+                "pack_id": parsed.get("pack_id"),
+                "session_id": parsed.get("session_id"),
+                "amount_cents": parsed.get("amount_cents"),
+                "currency": parsed.get("currency"),
+                "livemode": parsed.get("livemode"),
+            },
+        )
 
 
 credit_ledger_service = CreditLedgerService()
