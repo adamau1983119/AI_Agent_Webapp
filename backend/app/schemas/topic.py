@@ -106,6 +106,22 @@ class TopicTranslateDisplayResponse(BaseModel):
     description_i18n: Optional[Dict[str, str]] = None
 
 
+class TopicTranslateSourceRequest(BaseModel):
+    """按需翻譯源文章報道（不改變 GET overlay）"""
+    target_language: Optional[str] = Field(
+        None, description="目標語言（zh-TW/en/ja）；省略則用介面語言"
+    )
+
+
+class TopicTranslateSourceResponse(BaseModel):
+    """源文章報道翻譯回應"""
+    topic_id: str
+    target_language: str
+    translated_source_content: str = ""
+    source_content_i18n: Optional[Dict[str, str]] = None
+    cached: bool = False
+
+
 class TopicDetailResponse(BaseModel):
     """Topic 詳情回應模型"""
     id: str = Field(..., description="主題唯一識別碼")

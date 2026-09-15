@@ -55,6 +55,14 @@ export interface TopicTranslateDisplayResult {
   description_i18n?: Record<string, string>
 }
 
+export interface TopicTranslateSourceResult {
+  topic_id: string
+  target_language: string
+  translated_source_content: string
+  source_content_i18n?: Record<string, string>
+  cached: boolean
+}
+
 /**
  * 主題篩選參數
  */
@@ -193,6 +201,25 @@ export const topicsAPI = {
       method: 'POST',
       body: JSON.stringify(body),
     })
+  },
+
+  /**
+   * 按需翻譯源文章報道（GET 詳情仍只 overlay 快取）
+   */
+  translateSourceArticle: async (
+    topicId: string,
+    targetLanguage?: string
+  ): Promise<TopicTranslateSourceResult> => {
+    const body: Record<string, string> = {}
+    if (targetLanguage) body.target_language = targetLanguage
+    return fetchAPI<TopicTranslateSourceResult>(
+      `/topics/${topicId}/translate-source-article`,
+      {
+        method: 'POST',
+        body: JSON.stringify(body),
+        timeout: 120000,
+      }
+    )
   },
 
   getTopic: async (id: string, lang?: string): Promise<Topic | null> => {

@@ -6,6 +6,8 @@ import { useMemo, useState } from 'react'
 import { API_BASE_URL } from '@/api/client'
 import type { Image } from '@/types'
 import { useTranslation } from '@/i18n'
+import { showSuccess, showError } from '@/utils/toast'
+import { downloadImageAsJpeg } from '@/lib/downloadJpeg'
 
 /**
  * 生成圖片代理 URL
@@ -31,6 +33,20 @@ export default function ImagePreview({
   const proxyUrl = useMemo(() => getProxyImageUrl(image.url), [image.url])
   const [imageError, setImageError] = useState(false)
   const [imageLoading, setImageLoading] = useState(true)
+  const [downloading, setDownloading] = useState(false)
+
+  const handleDownloadJpeg = async () => {
+    if (downloading || imageError) return
+    setDownloading(true)
+    try {
+      await downloadImageAsJpeg(proxyUrl, `featured-${(image.order ?? 0) + 1}.jpg`)
+      showSuccess(t('images.downloadJpegDone'))
+    } catch {
+      showError(t('images.downloadJpegFailed'))
+    } finally {
+      setDownloading(false)
+    }
+  }
 
   return (
     <div
@@ -114,6 +130,16 @@ export default function ImagePreview({
             <div className="mt-4 pt-4 border-t border-gray-200">
               <span className="text-gray-500 text-sm">{t('images.imageUrl')}</span>
               <p className="text-xs text-gray-600 break-all mt-1">{image.url}</p>
+              <button
+                type="button"
+                onClick={() => void handleDownloadJpeg()}
+                disabled={downloading || imageError}
+                data-testid="btn-images-preview-download-jpeg"
+                className="mt-3 px-3 py-1.5 text-xs font-medium text-primary bg-primary/10 rounded-lg hover:bg-primary/20 transition-colors min-h-[38px] disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {downloading ? t('common.loading') : t('images.downloadJpeg')}
+              </button>
+              <p className="text-xs text-gray-400 mt-2">{t('images.downloadJpegHint')}</p>
             </div>
           </div>
         </div>

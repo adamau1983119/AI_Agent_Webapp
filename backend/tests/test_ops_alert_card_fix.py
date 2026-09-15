@@ -416,6 +416,37 @@ class TestSourceArticleTranslation(unittest.IsolatedAsyncioTestCase):
         ):
             self.assertNotIn(noise, body)
 
+    def test_article_extractor_cuts_shop_product_heading(self):
+        from app.utils.article_extractor import ArticleExtractor
+        extractor = ArticleExtractor()
+        html = """
+        <article>
+            <p>Loafers are back on the runway this season.</p>
+            <p>分享</p>
+            <p>追蹤我們</p>
+            <p>選購懶人鞋</p>
+            <p>Brand X suede loafer</p>
+            <p>US$198</p>
+        </article>
+        """
+        info = extractor.extract_from_html_content(html)
+        body = info["original_content"] or ""
+        self.assertIn("Loafers are back", body)
+        for noise in ("分享", "追蹤我們", "選購懶人鞋", "Brand X", "US$198"):
+            self.assertNotIn(noise, body)
+
+    def test_display_clean_does_not_require_persist(self):
+        from app.utils.article_boilerplate import apply_display_clean_to_topic
+        topic = {
+            "sources": [{"original_content": "News body.\n選購懶人鞋\nSKU-1"}],
+            "translated_source_content": "報道正文\n選購時裝\n商品",
+        }
+        apply_display_clean_to_topic(topic)
+        self.assertIn("News body", topic["sources"][0]["original_content"])
+        self.assertNotIn("SKU-1", topic["sources"][0]["original_content"])
+        self.assertIn("報道正文", topic["translated_source_content"])
+        self.assertNotIn("商品", topic["translated_source_content"])
+
     def test_article_extractor_cuts_recirc_appendix(self):
         from app.utils.article_extractor import ArticleExtractor
         extractor = ArticleExtractor()

@@ -12,6 +12,8 @@ from app.schemas.topic import (
     TopicListResponse,
     TopicTranslateDisplayRequest,
     TopicTranslateDisplayResponse,
+    TopicTranslateSourceRequest,
+    TopicTranslateSourceResponse,
 )
 from app.services.topic_display_translation_service import (
     topic_display_translation_service,
@@ -255,6 +257,9 @@ async def get_topic_detail(
                     topic["translated_source_content"] = translated_source
             except Exception as tr_err:
                 logger.warning("Failed resolving source article translation for topic %s: %s", topic_id, tr_err)
+
+        from app.utils.article_boilerplate import apply_display_clean_to_topic
+        apply_display_clean_to_topic(topic)
         
         # 取得內容
         content = await content_repo.get_content_by_topic_id(topic_id)
@@ -449,6 +454,50 @@ async def translate_topic_display(
         raise HTTPException(status_code=400, detail=err or "translate_failed")
 
     return TopicTranslateDisplayResponse(**result)
+
+
+@router.post("/{topic_id}/translate-source-article", response_model=TopicTranslateSourceResponse)
+async def translate_topic_source_article(
+    request: Request,
+    topic_id: str = Path(..., description="主題 ID"),
+    body: TopicTranslateSourceRequest = TopicTranslateSourceRequest(),
+    current_user: Optional[dict] = Depends(get_current_user_optional),
+):
+    """按需補抓／翻譯源文章報道。GET 詳情仍只 overlay 快取。"""
+    language = get_user_language(user=current_user, request=request)
+    target = normalize_language(body.target_language or language)
+    topic = await topic_repo.get_topic_by_id(topic_id)
+    if not topic:
+        raise HTTPException(
+            status_code=404,
+            detail=get_error_message("topic.not_found", language),
+        )
+    cached_map = dict(topic.get("source_content_i18n") or {})
+    had_cache = bool((cached_map.get(target) or "").strip())
+    try:
+        from app.services.translation.source_article_translator import (
+            resolve_source_article_translation,
+        )
+        from app.utils.article_boilerplate import apply_display_clean_to_topic
+
+        text = await resolve_source_article_translation(
+            topic, target, save_cache=True, on_demand=True
+        )
+        apply_display_clean_to_topic(topic)
+        text = (topic.get("translated_source_content") or text or "").strip()
+    except Exception as exc:
+        logger.warning("translate-source-article failed for %s: %s", topic_id, exc)
+        raise HTTPException(
+            status_code=503,
+            detail=get_error_message("topic.detail_response_failed", language),
+        )
+    return TopicTranslateSourceResponse(
+        topic_id=topic_id,
+        target_language=target,
+        translated_source_content=text,
+        source_content_i18n=topic.get("source_content_i18n") or cached_map,
+        cached=had_cache,
+    )
 
 
 @router.put("/{topic_id}", response_model=TopicResponse)
