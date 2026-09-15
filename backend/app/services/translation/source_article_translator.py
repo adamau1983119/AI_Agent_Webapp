@@ -60,7 +60,10 @@ async def resolve_source_article_translation(
     source_url = ""
     source_lang = ""
     if sources and isinstance(sources, list) and isinstance(sources[0], dict):
-        raw_content = (sources[0].get("original_content") or "").strip()
+        from app.utils.article_boilerplate import clean_extracted_text
+        raw_content = clean_extracted_text(
+            (sources[0].get("original_content") or "").strip()
+        )
         source_url = str(sources[0].get("url") or "")
         source_lang = str(sources[0].get("language") or "")
 
@@ -71,7 +74,8 @@ async def resolve_source_article_translation(
             extractor = ArticleExtractor()
             ext_info = await extractor.extract_article_info(source_url)
             if ext_info.get("original_content"):
-                raw_content = ext_info["original_content"].strip()
+                from app.utils.article_boilerplate import clean_extracted_text
+                raw_content = clean_extracted_text(ext_info["original_content"].strip())
                 if isinstance(sources[0], dict):
                     sources[0]["original_content"] = raw_content
                     if ext_info.get("language") and not source_lang:

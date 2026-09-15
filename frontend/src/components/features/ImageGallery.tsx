@@ -11,6 +11,7 @@ import type { ImageReorderItem } from '@/api/images'
 import ImagePreview from './ImagePreview'
 import { useTranslation } from '@/i18n'
 import { FEATURED_PHOTO_CAP } from '@/lib/featuredPhotos'
+import { downloadImageAsJpeg } from '@/lib/downloadJpeg'
 
 /**
  * 生成圖片代理 URL
@@ -82,7 +83,21 @@ function ImageGalleryItem({
   const [imageError, setImageError] = useState(false)
   const [imageLoading, setImageLoading] = useState(true)
   const [showActions, setShowActions] = useState(false)  // 手機版：點擊顯示操作按鈕
+  const [downloading, setDownloading] = useState(false)
   const proxyUrl = useMemo(() => getProxyImageUrl(image.url), [image.url])
+
+  const handleDownloadJpeg = async () => {
+    if (downloading) return
+    setDownloading(true)
+    try {
+      await downloadImageAsJpeg(proxyUrl, `featured-${index + 1}.jpg`)
+      showSuccess(t('images.downloadJpegDone'))
+    } catch {
+      showError(t('images.downloadJpegFailed'))
+    } finally {
+      setDownloading(false)
+    }
+  }
 
   return (
     <div
@@ -172,7 +187,7 @@ function ImageGalleryItem({
       {/* 懸停時顯示的操作按鈕（非排序模式） */}
       {!isReordering && (
         <div 
-          className={`absolute inset-0 transition-all duration-200 flex items-center justify-center gap-2 pointer-events-none ${
+          className={`absolute inset-0 transition-all duration-200 flex flex-wrap items-center justify-center gap-2 pointer-events-none p-2 ${
             // 手機版：根據 showActions 狀態顯示/隱藏（md 以下）
             // 桌面版：使用 hover 顯示（md 以上）
             showActions
@@ -191,6 +206,20 @@ function ImageGalleryItem({
             className="px-3 py-1 bg-white/90 text-gray-800 rounded text-xs font-medium hover:bg-white transition-colors pointer-events-auto min-h-[44px] min-w-[44px] flex items-center justify-center"
           >
             {t('common.preview')}
+          </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation()
+              void handleDownloadJpeg()
+            }}
+            onMouseDown={(e) => e.stopPropagation()}
+            onTouchStart={(e) => e.stopPropagation()}
+            disabled={downloading || imageError}
+            data-testid="btn-images-download-jpeg"
+            className="px-3 py-1 bg-white/90 text-gray-800 rounded text-xs font-medium hover:bg-white transition-colors pointer-events-auto min-h-[44px] min-w-[44px] flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {downloading ? t('common.loading') : t('images.downloadJpeg')}
           </button>
           <button
             onClick={(e) => {

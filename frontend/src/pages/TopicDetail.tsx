@@ -150,31 +150,41 @@ export default function TopicDetail() {
     return raw.trim()
   }, [topic])
 
-  const translatedContentText = useMemo(() => {
+  const cachedSourceTranslation = useMemo(() => {
     if (!topic) return ''
     const translated =
       topic.translatedSourceContent ||
       topic.translated_source_content ||
       topic.sourceContentI18n?.[language] ||
       topic.source_content_i18n?.[language] ||
+      ''
+    return translated.trim()
+  }, [topic, language])
+
+  const factSummaryText = useMemo(() => {
+    if (!topic) return ''
+    const summary =
       displayCopy?.description ||
       topic.summaryFlash ||
       topic.summary_flash ||
       topic.description ||
       ''
-    return translated.trim()
-  }, [topic, language, displayCopy])
+    return summary.trim()
+  }, [topic, displayCopy])
 
   const hasOriginalContent = Boolean(
     originalContentText &&
-      translatedContentText &&
-      originalContentText !== translatedContentText
+      cachedSourceTranslation &&
+      originalContentText !== cachedSourceTranslation
   )
 
+  const isShowingFactSummary =
+    sourceViewMode !== 'original' && !cachedSourceTranslation && Boolean(factSummaryText)
+
   const sourceDisplayContent =
-    sourceViewMode === 'original' && hasOriginalContent
+    sourceViewMode === 'original' && originalContentText
       ? originalContentText
-      : (translatedContentText || originalContentText)
+      : (cachedSourceTranslation || originalContentText || factSummaryText)
 
   useEffect(() => {
     setDisplayOverride(null)
@@ -283,6 +293,18 @@ export default function TopicDetail() {
         errorMessage = error.details.detail
       }
       showError(errorMessage)
+    },
+  })
+
+  const translateSourceMutation = useMutation({
+    mutationFn: () => topicsAPI.translateSourceArticle(id!, language),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['topic', id] })
+      setSourceViewMode('translated')
+      showSuccess(t('common.success'))
+    },
+    onError: () => {
+      showError(t('topics.translateArticleFailed'))
     },
   })
 
@@ -494,7 +516,7 @@ export default function TopicDetail() {
               <img
                 src={heroImageUrl}
                 alt={displayCopy?.title || topic.title}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover object-top"
                 loading="eager"
               />
               <div className="absolute top-3 left-3 px-3 py-1 bg-black/60 backdrop-blur-sm text-white text-xs font-medium rounded-full flex items-center gap-1.5">
@@ -513,7 +535,7 @@ export default function TopicDetail() {
         {/* 源文章新聞報道與翻譯內容 */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-5 sm:p-6 space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 dark:border-gray-700/60 pb-3">
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               <h3 className="font-display text-base sm:text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                 <span className="text-primary">📖</span>
                 <span>{t('topics.sourceNewsContent')}</span>
@@ -546,6 +568,24 @@ export default function TopicDetail() {
                     {t('topics.viewOriginalContent')}
                   </button>
                 </div>
+              )}
+              {isShowingFactSummary && (
+                <span className="text-xs text-gray-600 dark:text-gray-300 px-2 py-1 bg-gray-50 dark:bg-gray-700/50 rounded font-sans border border-gray-100 dark:border-gray-700">
+                  {t('topics.factSummary')}
+                </span>
+              )}
+              {!cachedSourceTranslation && (
+                <button
+                  type="button"
+                  onClick={() => requireAuth(() => translateSourceMutation.mutate())}
+                  disabled={translateSourceMutation.isPending}
+                  data-testid="btn-topic-detail-translate-article"
+                  className="px-3 py-1.5 text-xs font-medium text-primary bg-primary/10 rounded-lg hover:bg-primary/20 transition-colors touch-manipulation min-h-[38px] disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {translateSourceMutation.isPending
+                    ? t('topics.translatingArticle')
+                    : t('topics.translateArticle')}
+                </button>
               )}
             </div>
             {topic.source && (
@@ -588,7 +628,7 @@ export default function TopicDetail() {
           <div className="flex justify-between items-center pb-3 border-b border-gray-100 dark:border-gray-700/60">
             <h3 className="font-display text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
               <span>🖼️</span>
-              <span>{t('images.featured')}（{images.length}/{FEATURED_PHOTO_CAP} {t('common.count')}）</span>
+              <span>{t('images.featured')}（{Math.min(images.length, FEATURED_PHOTO_CAP)}/{FEATURED_PHOTO_CAP} {t('common.count')}）</span>
             </h3>
             <button
               onClick={() => requireAuth(() => setShowImageSearch(true))}
@@ -764,7 +804,7 @@ export default function TopicDetail() {
           previewImages={topic.previewImages || []}
           topicId={topic.id}
           contentTranslating={contentTranslating}
-          summaryFlash={translatedContentText || originalContentText}
+          summaryFlash={factSummaryText || originalContentText}
         />
         )}
       </section>
