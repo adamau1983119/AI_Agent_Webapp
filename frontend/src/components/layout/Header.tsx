@@ -7,6 +7,7 @@ import { useUIStore } from '@/stores/uiStore'
 import { useAuthStore } from '@/stores/authStore'
 import { useTranslation, languageOptions, Language } from '@/i18n'
 import { billingApi } from '@/api/billing'
+import CreditGrantToast from '@/components/credits/CreditGrantToast'
 
 export default function Header() {
   const { t, language, setLanguage } = useTranslation()
@@ -151,13 +152,16 @@ export default function Header() {
           </form>
 
           {isAuthenticated && (
-            <Link
-              to="/settings?tab=billing"
-              data-testid="link-header-credits"
-              className="hidden sm:inline-flex items-center min-h-[44px] px-2 text-sm font-medium text-gray-700 hover:text-gray-900"
-            >
-              {t('credits.header', { n: String(credits?.balance ?? 0) })}
-            </Link>
+            <>
+              <CreditGrantToast credits={credits} />
+              <Link
+                to="/settings?tab=billing"
+                data-testid="link-header-credits"
+                className="inline-flex items-center min-h-[36px] px-3 rounded-full bg-[#0d0d0d] text-white text-[11px] tracking-[0.14em] uppercase hover:bg-black"
+              >
+                {t('credits.header', { n: String(credits?.balance ?? 0) })}
+              </Link>
+            </>
           )}
 
           {/* 通知按鈕 */}

@@ -33,6 +33,29 @@ async def save_wallet(wallet: Dict[str, Any]) -> None:
     )
 
 
+async def ensure_wallet_doc(user_id: str) -> None:
+    col = await wallets_col()
+    seed = empty_wallet(user_id)
+    await col.update_one(
+        {"user_id": user_id},
+        {"$setOnInsert": seed},
+        upsert=True,
+    )
+
+
+async def try_grant_purchase(user_id: str, amount: int, key: str) -> bool:
+    """Atomically add purchased credits once per idempotency key. True if this call applied."""
+    col = await wallets_col()
+    result = await col.update_one(
+        {"user_id": user_id, "fulfilled_keys": {"$ne": key}},
+        {
+            "$inc": {"purchased": amount},
+            "$addToSet": {"fulfilled_keys": key},
+        },
+    )
+    return int(result.modified_count or 0) > 0
+
+
 async def load_or_migrate(user_id: str) -> Dict[str, Any]:
     existing = await load_wallet(user_id)
     if existing:

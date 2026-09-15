@@ -2,6 +2,7 @@
  * Public topic post composer (JIT). Does not auto-call LLM in useEffect.
  */
 import { useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { AtSign, Copy, Facebook, Instagram, RefreshCw, Sparkles } from 'lucide-react'
 import { alterEgoApi, type ComposePart, type ComposePlatform, type ComposeStyle } from '@/api/alterEgo'
 import { APIError } from '@/api/errors'
@@ -61,6 +62,7 @@ export default function PostComposerPanel({
   const [titleIdx, setTitleIdx] = useState(0)
   const [tagIdx, setTagIdx] = useState(0)
   const [busyPart, setBusyPart] = useState<ComposePart | null>(null)
+  const [needCredits, setNeedCredits] = useState(false)
 
   const cap = CAPS[platform]
   const limit = Math.min(maxChars, cap)
@@ -102,13 +104,19 @@ export default function PostComposerPanel({
         }
       }
       showSuccess(t('common.success'))
+      setNeedCredits(false)
     } catch (error: unknown) {
       const status = error instanceof APIError ? error.status : 0
       if (status === 401) {
         showError(t('auth.loginRequired'))
         return
       }
-      showError(status === 402 ? t('composer.insufficientCredits') : t('common.failed'))
+      if (status === 402) {
+        setNeedCredits(true)
+        showError(t('composer.insufficientCredits'))
+        return
+      }
+      showError(t('common.failed'))
     } finally {
       setBusyPart(null)
     }
@@ -200,6 +208,18 @@ export default function PostComposerPanel({
           <Sparkles className="w-4 h-4" />
           {generating && busyPart === 'all' ? t('common.generating') : t('composer.generatePack')}
         </button>
+        {needCredits && (
+          <p className="text-sm text-gray-600 flex flex-wrap items-center gap-3" data-testid="text-composer-need-credits">
+            <span>{t('composer.insufficientCredits')}</span>
+            <Link
+              to="/settings?tab=billing"
+              data-testid="btn-composer-buy-credits"
+              className="inline-flex items-center min-h-[44px] px-4 rounded-full border border-[#1a1a1a] text-[11px] tracking-[0.16em] uppercase"
+            >
+              {t('credits.buy')}
+            </Link>
+          </p>
+        )}
       </section>
 
       <section className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-5 sm:p-6 space-y-4">

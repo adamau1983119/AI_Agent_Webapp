@@ -29,6 +29,7 @@ def empty_wallet(user_id: str) -> Dict[str, Any]:
         "welcome_count": 0,
         "last_grant_hkt": None,
         "legacy_initial": False,
+        "fulfilled_keys": [],
     }
 
 
@@ -50,8 +51,8 @@ def free_remaining(lots: List[dict]) -> int:
     return sum(int(item.get("remaining") or 0) for item in lots)
 
 
-def total_balance(wallet: dict) -> int:
-    lots = expire_lots(wallet.get("lots") or [])
+def total_balance(wallet: dict, now: Optional[datetime] = None) -> int:
+    lots = expire_lots(wallet.get("lots") or [], now)
     return free_remaining(lots) + int(wallet.get("purchased") or 0)
 
 
@@ -65,10 +66,14 @@ def make_lot(amount: int, kind: str, now: datetime, lot_id: str) -> dict:
     }
 
 
-def fifo_debit(wallet: Dict[str, Any], amount: int) -> Dict[str, Any]:
+def fifo_debit(
+    wallet: Dict[str, Any],
+    amount: int,
+    now: Optional[datetime] = None,
+) -> Dict[str, Any]:
     if amount <= 0:
         raise ValueError("amount_must_be_positive")
-    now = utcnow()
+    now = now or utcnow()
     lots = expire_lots(list(wallet.get("lots") or []), now)
     lots.sort(key=lambda lot: as_dt(lot.get("expires_at")) or datetime.max)
     need = amount

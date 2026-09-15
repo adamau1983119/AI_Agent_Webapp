@@ -15,6 +15,9 @@ export interface CreditBalance {
   free: number;
   purchased: number;
   welcome_count: number;
+  last_grant_hkt?: string;
+  last_grant_kind?: string;
+  last_grant_amount?: number;
 }
 
 export const billingApi = {
@@ -26,6 +29,13 @@ export const billingApi = {
     fetchAPI<{ checkout_url: string }>('/billing/checkout', {
       method: 'POST',
       body: JSON.stringify({ pack_id: packId }),
+      skipErrorHandler: true,
+    }),
+
+  confirmCheckout: (sessionId: string) =>
+    fetchAPIEnvelope<CreditBalance>('/billing/confirm', {
+      method: 'POST',
+      body: JSON.stringify({ session_id: sessionId }),
       skipErrorHandler: true,
     }),
 };

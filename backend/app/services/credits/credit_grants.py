@@ -55,6 +55,8 @@ def apply_grant(wallet: dict, plan: dict, now: datetime, lot_id: str) -> dict:
         lots = list(out["lots"])
         lots.append(make_lot(amount, str(plan["kind"]), now, lot_id))
         out["lots"] = lots
+    out["last_grant_kind"] = str(plan["kind"])
+    out["last_grant_amount"] = amount
     if plan.get("kind") == "legacy_topup":
         out["legacy_initial"] = False
     return out
