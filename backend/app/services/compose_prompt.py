@@ -59,6 +59,8 @@ def build_compose_prompt(
     intent = (revision_intent or "").strip()[:400]
     body_src = (base_body or "").strip()[:4000]
     tone = tone_card(style)
+    rev_block = f"REVISION_INTENT: {intent}\n" if intent else ""
+    base_block = f"BASE_BODY:\n{body_src}\n" if body_src else ""
 
     if part == "body":
         task = (
@@ -98,8 +100,8 @@ def build_compose_prompt(
         f"FACTUAL SUMMARY (Truth Anchor):\n{fact}\n"
         f"{dna_overlay}\n"
         f"{keep}"
-        f"{('REVISION_INTENT: ' + intent + chr(10)) if intent else ''}"
-        f"{('BASE_BODY:\\n' + body_src + chr(10)) if body_src else ''}"
+        f"{rev_block}"
+        f"{base_block}"
         "CRITICAL GUARDRAILS:\n"
         "1. FACT ANCHORING: Use only the topic and factual summary. Do not invent events.\n"
         "2. ANTI-POLLUTION: Style and optional voice overlay are tone-only. "
