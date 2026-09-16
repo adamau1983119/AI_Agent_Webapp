@@ -180,6 +180,9 @@ data-testid="{類型}-{位置}-{功能}"
 | `btn-landing-pack-usd3` | 連結 | 訪客選 US$3 | `/login` |
 | `btn-landing-pack-usd5` | 連結 | 訪客選 US$5 | `/login` |
 | `btn-landing-pack-usd10` | 連結 | 訪客選 US$10 | `/login` |
+| `list-landing-pack-rights-usd3` | 列表 | US$3 權益勾叉 | — |
+| `list-landing-pack-rights-usd5` | 列表 | US$5 權益勾叉 | — |
+| `list-landing-pack-rights-usd10` | 列表 | US$10 權益勾叉 | — |
 | `link-landing-credits-login` | 連結 | 登入後購買 | `/login` |
 
 ### 2.1 語言選擇頁
@@ -575,6 +578,9 @@ test('login flow', async ({ page }) => {
 | `card-settings-pack-usd3` | 卡片 | 設定 US$3 卡 | Stripe |
 | `card-settings-pack-usd5` | 卡片 | 設定 US$5 卡 | Stripe |
 | `card-settings-pack-usd10` | 卡片 | 設定 US$10 卡 | Stripe |
+| `list-settings-pack-rights-usd3` | 列表 | 設定 US$3 權益勾叉 | — |
+| `list-settings-pack-rights-usd5` | 列表 | 設定 US$5 權益勾叉 | — |
+| `list-settings-pack-rights-usd10` | 列表 | 設定 US$10 權益勾叉 | — |
 | `text-composer-need-credits` | 文字 | 組裝 402 旁說明 | — |
 | `btn-composer-buy-credits` | 連結 | 組裝 402 旁購買 | `/settings?tab=billing` |
 | `btn-my-channel-buy-credits-*` | 連結 | 解鎖 402 旁購買 | `/settings?tab=billing` |
