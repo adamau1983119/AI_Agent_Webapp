@@ -149,11 +149,7 @@ export default function CreditPackShelf({
                 {t(meta.taglineKey)}
               </p>
               <p
-                className={
-                  testPrefix === 'landing'
-                    ? 'mt-3 font-price text-4xl font-medium tracking-tight tabular-nums text-center'
-                    : 'mt-3 font-display text-3xl text-center'
-                }
+                className="mt-3 font-price text-4xl font-medium tracking-tight tabular-nums text-center"
               >
                 {headline}
               </p>
