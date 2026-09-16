@@ -44,6 +44,13 @@ def _cutover_utc_naive() -> Optional[datetime]:
         return None
 
 
+def list_topics_hidden_filter(*, include_hidden: bool = False) -> Dict[str, Any]:
+    """問題卡只隱藏不刪庫：預設列表／今日計數排除 hidden=true。"""
+    if include_hidden:
+        return {}
+    return {"hidden": {"$ne": True}}
+
+
 def list_topics_generation_filter(*, include_legacy: bool = False) -> Dict[str, Any]:
     """預設只顯示 v8 世代卡；include_legacy 則不過濾。"""
     if include_legacy:
@@ -56,4 +63,14 @@ def list_topics_generation_filter(*, include_legacy: bool = False) -> Dict[str, 
     if len(clauses) == 1:
         return clauses[0]
     # 同時要求世代＋切換時刻（勿用 $or，否則 cutover 後未 stamp 舊卡會再擋滿額）
+    return {"$and": clauses}
+
+
+def merge_topic_list_filters(*parts: Dict[str, Any]) -> Dict[str, Any]:
+    """合併世代／隱藏等子句為單一 Mongo filter。"""
+    clauses = [p for p in parts if p]
+    if not clauses:
+        return {}
+    if len(clauses) == 1:
+        return clauses[0]
     return {"$and": clauses}
