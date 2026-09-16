@@ -28,6 +28,7 @@ import Inspiration from '@/pages/Inspiration'
 import Discover from '@/pages/Discover'
 // Phase 4: AI 個人化頁面
 import StyleProfile from '@/pages/StyleProfile'
+import ComposeSamplePage from '@/pages/ComposeSamplePage'
 // Phase 5: 分發與整合頁面
 import SocialConnect from '@/pages/SocialConnect'
 import Publish from '@/pages/Publish'
@@ -88,6 +89,7 @@ function App() {
                 <Route path="/my-channel" element={<MyChannel />} />
                 <Route path="/topics" element={<Topics />} />
                 <Route path="/topics/:id" element={<TopicDetail />} />
+                <Route path="/compose-sample" element={<ComposeSamplePage />} />
                 <Route path="/discover" element={<Discover />} />
                 <Route path="/preferences" element={<Preferences />} />
                 <Route path="/schedule" element={<Schedule />} />

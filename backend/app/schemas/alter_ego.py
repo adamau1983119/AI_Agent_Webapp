@@ -27,11 +27,14 @@ class ComposeRequest(BaseModel):
         "professional", "casual", "humorous", "storytelling", "educational"
     ]
     max_chars: int = Field(..., ge=50, le=5000)
-    part: Literal["all", "title", "body", "hashtags"] = "all"
+    part: Literal["all", "title", "body", "hashtags", "meta"] = "all"
     language: PrimaryLanguage = "zh-TW"
     topic_id: Optional[str] = Field(default=None, max_length=64)
     topic_title: str = Field(default="", max_length=300)
     context_summary: str = Field(default="", max_length=1500)
+    preserve_snippets: List[str] = Field(default_factory=list, max_length=8)
+    revision_intent: str = Field(default="", max_length=400)
+    base_body: str = Field(default="", max_length=4000)
 
 
 class ComposeResponse(BaseModel):
@@ -41,6 +44,7 @@ class ComposeResponse(BaseModel):
     credits_charged: int = 1
     balance_after: int = 0
     max_chars: int = 150
+    short_body: bool = False
 
 
 class PreviewRequest(BaseModel):

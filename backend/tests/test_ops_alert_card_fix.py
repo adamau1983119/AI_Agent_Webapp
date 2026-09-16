@@ -495,8 +495,10 @@ class TestComposePack(unittest.TestCase):
         self.assertEqual(platform_cap("threads"), 150)
         self.assertEqual(clamp_max_chars("threads", 150), 150)
         self.assertEqual(clamp_max_chars("instagram", 150), 150)
-        self.assertTrue(length_enabled("threads", 50))
+        self.assertTrue(length_enabled("threads", 100))
+        self.assertFalse(length_enabled("threads", 500))
         self.assertTrue(length_enabled("facebook", 150))
+        self.assertTrue(length_enabled("facebook", 500))
 
     def test_parse_json_without_cjk_headers(self):
         from app.services.compose_parse import extract_json_object, normalize_pack
