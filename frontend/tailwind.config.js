@@ -10,6 +10,8 @@ export default {
         // Lane Crawford Style Fonts
         'display': ['"Cormorant Garamond"', 'Georgia', 'serif'],
         'sans': ['"Montserrat"', 'system-ui', 'sans-serif'],
+        // Welcome credit price only (ChatGPT-like pricing numerals)
+        'price': ['"Inter"', 'system-ui', 'sans-serif'],
       },
       screens: {
         'xs': '375px',   // 小手機

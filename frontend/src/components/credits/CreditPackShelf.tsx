@@ -100,7 +100,15 @@ export default function CreditPackShelf({
                   {t('credits.recommended')}
                 </p>
               )}
-              <p className="font-display text-3xl">{headline}</p>
+              <p
+                className={
+                  testPrefix === 'landing'
+                    ? 'font-price text-4xl font-medium tracking-tight tabular-nums'
+                    : 'font-display text-3xl'
+                }
+              >
+                {headline}
+              </p>
               <p className="mt-2 text-sm tracking-[0.08em]">
                 {t('credits.packCredits', { n: String(pack.credits) })}
               </p>
