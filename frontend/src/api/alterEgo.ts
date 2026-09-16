@@ -13,7 +13,7 @@ export type ComposeStyle =
   | 'humorous'
   | 'storytelling'
   | 'educational';
-export type ComposePart = 'all' | 'title' | 'body' | 'hashtags';
+export type ComposePart = 'all' | 'title' | 'body' | 'hashtags' | 'meta';
 
 export interface DnaStatusResponse {
   dna_status: DnaStatus;
@@ -41,6 +41,7 @@ export interface ComposeResponse {
   credits_charged: number;
   balance_after: number;
   max_chars: number;
+  short_body?: boolean;
 }
 
 export const alterEgoApi = {
@@ -101,6 +102,9 @@ export const alterEgoApi = {
     topic_id?: string;
     topic_title?: string;
     context_summary?: string;
+    preserve_snippets?: string[];
+    revision_intent?: string;
+    base_body?: string;
   }) =>
     fetchAPI<ComposeResponse>('/alter-ego/compose', {
       method: 'POST',
@@ -113,6 +117,9 @@ export const alterEgoApi = {
         topic_id: payload.topic_id,
         topic_title: payload.topic_title || '',
         context_summary: payload.context_summary || '',
+        preserve_snippets: payload.preserve_snippets || [],
+        revision_intent: payload.revision_intent || '',
+        base_body: payload.base_body || '',
       }),
       timeout: 120000,
     }),

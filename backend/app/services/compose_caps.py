@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from typing import Dict, Tuple
 
-LENGTH_CHOICES: Tuple[int, ...] = (50, 100, 150)
+LENGTH_CHOICES: Tuple[int, ...] = (100, 150, 500)
 
 # Threads product cap is 150 (not Meta 500). IG caption / FB post are platform limits.
 PRODUCT_CAPS: Dict[str, int] = {
@@ -12,10 +12,11 @@ PRODUCT_CAPS: Dict[str, int] = {
     "facebook": 5000,
 }
 
+# Plan E: force usable sets (max 5). Threads min 1.
 HASHTAG_HINTS: Dict[str, Tuple[int, int]] = {
-    "threads": (0, 1),
-    "instagram": (5, 10),
-    "facebook": (4, 6),
+    "threads": (1, 5),
+    "instagram": (3, 5),
+    "facebook": (3, 5),
 }
 
 

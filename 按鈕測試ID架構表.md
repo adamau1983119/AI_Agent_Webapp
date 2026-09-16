@@ -431,24 +431,42 @@ data-testid="{類型}-{位置}-{功能}"
 
 > **2026-09-03**：上列 Post Kit testid **保留**（檔案／門禁）；詳情主路改掛 `PostComposerPanel`（舊面板 `{false &&}` 不掛載）。
 
-### 4.10b 社群發文組裝器 (`PostComposerPanel.tsx` · 嵌入 `TopicDetail.tsx`)
+### 4.10b 社群發文組裝器 (`PostComposerPanel.tsx` · 嵌入 `TopicDetail.tsx`；示範頁 `/compose-sample`)
 
 | testid | 類型 | 說明 |
 |--------|------|------|
 | `section-composer` | 區塊 | 組裝器主區 |
+| `text-composer-demo-badge` | 文字 | 示範模式徽章（僅 `mode=demo`） |
 | `btn-composer-platform-facebook` | 按鈕 | 平台 Facebook |
 | `btn-composer-platform-instagram` | 按鈕 | 平台 Instagram |
 | `btn-composer-platform-threads` | 按鈕 | 平台 Threads（產品上限 150 字） |
-| `btn-composer-style-professional` 等 | 按鈕 | 五風格（須進 Prompt） |
-| `btn-composer-length-50`／`100`／`150` | 按鈕 | 整篇字數；超過平台 cap 則 disabled |
-| `btn-composer-generate-pack` | 按鈕 | 生成發文套件（−1 點，JIT） |
+| `btn-composer-style-professional` 等 | 按鈕 | 五風格（須進 Prompt tone card） |
+| `btn-composer-length-100`／`150`／`500` | 按鈕 | 目標字數；Threads 無 500；超過平台 cap 則 disabled（`length-50` 鍵保留、UI 不掛） |
+| `text-composer-session-credits` | 文字 | 本主題組裝已用點數 |
+| `btn-composer-generate-pack` | 按鈕 | 生成發文套件（live −1；demo 不扣點） |
+| `btn-composer-demo-reset` | 按鈕 | 重設示範狀態 |
+| `section-composer-keep` | 區塊 | Keep tray（highlight／自寫） |
+| `input-composer-keep` | 輸入 | 自寫保留句 |
+| `btn-composer-keep-add` | 按鈕 | 加入保留格 |
+| `btn-composer-keep-chip-{i}` | 按鈕 | 移除第 i 條保留句 |
+| `section-composer-drafts` | 區塊 | 最多 3 份草稿匣 |
+| `btn-composer-draft-1`～`3` | 按鈕 | 載入草稿 |
+| `btn-composer-intent-intentPunchier` 等 | 按鈕 | 修訂意圖 chip |
+| `input-composer-intent-custom` | 輸入 | 自訂修訂方向 |
+| `input-composer-body` | 輸入 | 正文（可手改） |
+| `btn-composer-body-ok` | 按鈕 | 正文 OK → 顯示標題／Hashtag |
 | `btn-composer-regen-title` | 按鈕 | 重產 3 標題（−1） |
-| `btn-composer-regen-body` | 按鈕 | 重產內文（−1） |
+| `btn-composer-regen-body` | 按鈕 | 重產內文（−1；帶 keep／intent） |
 | `btn-composer-regen-hashtags` | 按鈕 | 重產 3 組 Hashtag（−1） |
 | `btn-composer-title-1`～`3` | 按鈕 | 選標題填入整體文章 |
 | `btn-composer-hashtag-set-1`～`3` | 按鈕 | 選 Hashtag 組填入 |
 | `btn-composer-copy-all` | 按鈕 | 複製整體文章 |
 | `section-composer-whole` | 區塊 | 整體文章預覽 |
+| `page-compose-sample` | 頁面 | `/compose-sample` 示範／練習頁 |
+| `heading-compose-sample` | 標題 | 練習頁主標 |
+| `compose-coach-strip` | 區塊 | 三步驟教練條 |
+| `btn-compose-sample-to-topic` | 連結 | 導向真實主題（Dashboard） |
+| `link-sidebar-compose-sample` | 側欄 | 組裝練習入口 |
 
 ### 4.10 內容生成面板 (`ContentGenerationPanel.tsx`)
 

@@ -19,6 +19,7 @@ const menuItemsConfig: Array<{
   { path: '/my-channel', labelKey: 'nav.channels', icon: 'channel', testId: 'link-sidebar-my-channel', v7Nav: 'show' },
   { path: '/channels', labelKey: 'nav.channelList', icon: 'channel', testId: 'link-sidebar-channels', v7Nav: 'show' },
   { path: '/inspiration', labelKey: 'nav.inspiration', icon: 'lightbulb', testId: 'link-sidebar-inspiration', v7Nav: 'show' },
+  { path: '/compose-sample', labelKey: 'nav.composeSample', icon: 'sparkles', testId: 'link-sidebar-compose-sample', v7Nav: 'show' },
   { path: '/style-profile', labelKey: 'nav.styleProfile', icon: 'sparkles', testId: 'link-sidebar-style', v7Nav: 'hide' },
   { path: '/publish', labelKey: 'nav.publish', icon: 'rocket', testId: 'link-sidebar-publish', v7Nav: 'soon' },
   { path: '/social-connect', labelKey: 'nav.socialConnect', icon: 'link', testId: 'link-sidebar-social', v7Nav: 'soon' },
