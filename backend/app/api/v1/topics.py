@@ -236,7 +236,7 @@ async def get_topic_detail(
     """
     try:
         topic = await topic_repo.get_topic_by_id(topic_id)
-        if not topic:
+        if not topic or topic.get("hidden") is True:
             language = get_user_language(request=request)
             raise HTTPException(
                 status_code=404,

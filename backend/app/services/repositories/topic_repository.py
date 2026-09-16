@@ -49,6 +49,30 @@ class TopicRepository(BaseRepository):
             Topic 資料
         """
         return await self.find_by_id(topic_id)
+
+    async def set_topics_hidden(
+        self,
+        topic_ids: List[str],
+        *,
+        hidden: bool = True,
+        reason: str = "",
+    ) -> int:
+        """標記／取消隱藏（不刪庫）。回傳 matched 更新數。"""
+        ids = [t for t in topic_ids if t and str(t).strip()]
+        if not ids:
+            return 0
+        collection = await self._get_collection()
+        payload: Dict[str, Any] = {
+            "hidden": bool(hidden),
+            "hidden_at": datetime.utcnow() if hidden else None,
+        }
+        if reason.strip():
+            payload["hidden_reason"] = reason.strip()[:200]
+        result = await collection.update_many(
+            {"id": {"$in": ids}},
+            {"$set": payload},
+        )
+        return int(result.modified_count)
     
     async def list_topics(
         self,
@@ -61,6 +85,7 @@ class TopicRepository(BaseRepository):
         sort: str = "generated_at",
         order: str = "desc",
         include_legacy: bool = False,
+        include_hidden: bool = False,
     ) -> tuple[List[Dict[str, Any]], int]:
         """
         列出 Topics
@@ -75,17 +100,24 @@ class TopicRepository(BaseRepository):
             sort: 排序欄位
             order: 排序順序（asc/desc）
             include_legacy: True 時含 cutover 前舊卡
+            include_hidden: True 時含 hidden 問題卡（預設排除）
             
         Returns:
             (Topics 列表, 總數量)
         """
         # 建立查詢條件（$and 避免 generation $or 與 search $or 互蓋）
-        from app.utils.topic_pipeline import list_topics_generation_filter
+        from app.utils.topic_pipeline import (
+            list_topics_generation_filter,
+            list_topics_hidden_filter,
+        )
 
         clauses: List[Dict[str, Any]] = []
         gen_f = list_topics_generation_filter(include_legacy=include_legacy)
         if gen_f:
             clauses.append(gen_f)
+        hid_f = list_topics_hidden_filter(include_hidden=include_hidden)
+        if hid_f:
+            clauses.append(hid_f)
         if category:
             clauses.append({
                 "category": category.value if hasattr(category, "value") else category
