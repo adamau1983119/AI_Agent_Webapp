@@ -61,10 +61,13 @@ class TestComposeAdvanced(unittest.TestCase):
             dna_overlay="",
             preserve_snippets=["我只信摸得到的工藝"],
             revision_intent="把你的句子放開頭",
+            base_body="舊正文保留測",
         )
         self.assertIn("Tone card", p)
         self.assertIn("USER_KEEP_SNIPPETS", p)
         self.assertIn("我只信摸得到的工藝", p)
+        self.assertIn("REVISION_INTENT:", p)
+        self.assertIn("BASE_BODY:", p)
         self.assertIn(tone_card("humorous")[:20], p)
 
 
