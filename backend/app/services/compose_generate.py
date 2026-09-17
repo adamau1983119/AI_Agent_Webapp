@@ -8,8 +8,17 @@ from app.schemas.alter_ego import ComposeRequest
 from app.services.ai.llm_factory import get_llm_client
 from app.services.compose_parse import extract_json_object, normalize_pack
 from app.services.compose_prompt import build_compose_prompt
+from app.services.ops_trainer_inject import (
+    fewshot_block,
+    map_max_chars_to_length,
+    map_style_to_profile,
+    structure_block,
+)
+from app.services import ops_trainer_store as trainer_store
 
 logger = logging.getLogger(__name__)
+
+_DEFAULT_DOMAIN = "trend"
 
 
 def norm_pack(
@@ -27,6 +36,33 @@ def norm_pack(
     )
 
 
+async def _trainer_overlays(lang: str, request: ComposeRequest, max_chars: int) -> tuple:
+    profile = map_style_to_profile(request.style)
+    length = map_max_chars_to_length(max_chars)
+    try:
+        cov = await trainer_store.coverage_for_language(lang)
+        mode = cov.get("mode") or "A"
+        shots = await trainer_store.fetch_fewshot(
+            language=lang,
+            domain=_DEFAULT_DOMAIN,
+            length_bucket=length,
+            write_profile=profile,
+        )
+        pos, neg = shots.get("positive") or [], shots.get("negative") or []
+        struct = (pos[0].get("structure") if pos else None) or {}
+        s_block = structure_block(struct, mode)
+        if mode == "B" and pos:
+            f_block = fewshot_block(pos, neg)
+        elif pos:
+            f_block = fewshot_block(pos[:1], neg[:1])
+        else:
+            f_block = ""
+        return s_block, f_block
+    except Exception as exc:
+        logger.warning("trainer overlay skip: %s", exc)
+        return "", ""
+
+
 async def generate_compose_part(
     *,
     user_id: str,
@@ -39,6 +75,7 @@ async def generate_compose_part(
     base_body: str = "",
 ) -> Dict[str, Any]:
     snippets = [s for s in (request.preserve_snippets or []) if str(s).strip()][:8]
+    structure_overlay, fewshot_overlay = await _trainer_overlays(lang, request, max_chars)
     prompt = build_compose_prompt(
         platform=request.platform,
         style=request.style,
@@ -51,6 +88,8 @@ async def generate_compose_part(
         preserve_snippets=snippets,
         revision_intent=request.revision_intent or "",
         base_body=base_body or request.base_body or "",
+        structure_overlay=structure_overlay,
+        fewshot_overlay=fewshot_overlay,
     )
     client = get_llm_client("alter_ego")
     last_err: Optional[Exception] = None

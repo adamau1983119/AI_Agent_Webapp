@@ -113,6 +113,45 @@ class DeepSeekService(AIServiceBase):
         """通用生成（預設 Flash）。"""
         return await self._call_api(prompt, model=model)
 
+    async def generate_multimodal(
+        self,
+        prompt: str,
+        image_data_url: Optional[str] = None,
+        model: Optional[str] = None,
+        max_tokens: Optional[int] = None,
+    ) -> str:
+        """Ops Vision: text + optional image_url/data URL. Falls back to text-only."""
+        if not image_data_url:
+            return await self._call_api(prompt, model=model, max_tokens=max_tokens)
+        use_model = model or self.model
+        tokens = self._resolve_max_tokens(use_model, max_tokens or 2000)
+        if not self.api_key:
+            raise ValueError("DeepSeek API Key 未設定")
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json",
+        }
+        content: list = [
+            {"type": "text", "text": prompt},
+            {"type": "image_url", "image_url": {"url": image_data_url, "detail": "auto"}},
+        ]
+        payload = {
+            "model": use_model,
+            "messages": [{"role": "user", "content": content}],
+            "temperature": 0.3,
+            "max_tokens": tokens,
+            "thinking": {"type": "disabled"},
+        }
+        logger.info("DeepSeek multimodal model=%s", use_model)
+        async with httpx.AsyncClient(timeout=120.0) as client:
+            response = await client.post(self.base_url, headers=headers, json=payload)
+            response.raise_for_status()
+            result = response.json()
+            text, finish = self._extract_message_content(result)
+            if text:
+                return text
+            raise ValueError(f"DeepSeek multimodal empty (finish={finish})")
+
     async def generate_article(
         self,
         topic_title: str,

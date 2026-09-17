@@ -603,6 +603,23 @@ test('login flow', async ({ page }) => {
 | `btn-composer-buy-credits` | 連結 | 組裝 402 旁購買 | `/settings?tab=billing` |
 | `btn-my-channel-buy-credits-*` | 連結 | 解鎖 402 旁購買 | `/settings?tab=billing` |
 
+### Ops Style Trainer（2026-09-17）
+
+| data-testid | 類型 | 說明 | 路由／備註 |
+|-------------|------|------|------------|
+| `page-ops-style-trainer` | 頁面 | 風格訓練窗 | `/ops/style-trainer` |
+| `link-sidebar-ops-style-trainer` | 連結 | Sidebar（admin／tester） | `/ops/style-trainer` |
+| `ops-trainer-dropzone` | 區域 | 拖放／貼圖 | — |
+| `input-ops-trainer-text` | 輸入 | 貼正文 | — |
+| `input-ops-trainer-url` | 輸入 | 貼 URL | — |
+| `btn-ops-trainer-analyze` | 按鈕 | 開始解析 | POST `/ops/trainer/analyze` |
+| `btn-ops-trainer-reanalyze` | 按鈕 | 重新解析 | — |
+| `btn-ops-trainer-confirm` | 按鈕 | 確認存 Mongo | POST `/ops/trainer/confirm` |
+| `chk-ops-trainer-negative` | 勾選 | 反面教材 | — |
+| `input-ops-trainer-slot-*` | 輸入 | 五槽 | prefix/fact/quote/context/ending |
+| `ops-trainer-coverage` | 文字 | n/18 覆蓋 | — |
+| `ops-trainer-skeleton` | 狀態 | 解析中 | — |
+
 ### 新增按鈕時
 
 1. 確定類型前綴（btn-/link-/input-等）
