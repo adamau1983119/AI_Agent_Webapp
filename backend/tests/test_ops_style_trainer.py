@@ -18,8 +18,8 @@ class OpsTrainerInjectTests(unittest.TestCase):
         self.assertEqual(map_style_to_profile("professional"), "news_recap")
 
     def test_length_map(self):
-        self.assertEqual(map_max_chars_to_length(150), "short")
-        self.assertEqual(map_max_chars_to_length(500), "long")
+        self.assertEqual(map_max_chars_to_length(500), "short")
+        self.assertEqual(map_max_chars_to_length(1500), "long")
 
     def test_structure_and_fewshot_in_prompt(self):
         s = structure_block(
@@ -33,7 +33,7 @@ class OpsTrainerInjectTests(unittest.TestCase):
         prompt = build_compose_prompt(
             platform="instagram",
             style="professional",
-            max_chars=150,
+            max_chars=500,
             part="body",
             language="zh-TW",
             topic_title="t",

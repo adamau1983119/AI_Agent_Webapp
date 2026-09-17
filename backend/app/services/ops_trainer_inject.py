@@ -11,7 +11,7 @@ def map_style_to_profile(style: str) -> str:
 
 
 def map_max_chars_to_length(max_chars: int) -> str:
-    return "short" if int(max_chars) <= 200 else "long"
+    return "short" if int(max_chars) <= 500 else "long"
 
 
 def structure_block(slots: Optional[Dict[str, Any]], mode: str) -> str:

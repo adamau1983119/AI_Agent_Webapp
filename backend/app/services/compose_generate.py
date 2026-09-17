@@ -19,6 +19,12 @@ from app.services import ops_trainer_store as trainer_store
 logger = logging.getLogger(__name__)
 
 _DEFAULT_DOMAIN = "trend"
+_VALID_DOMAINS = frozenset({"fashion", "food", "trend"})
+
+
+def _resolve_domain(request: ComposeRequest) -> str:
+    raw = (getattr(request, "domain", None) or "").strip().lower()
+    return raw if raw in _VALID_DOMAINS else _DEFAULT_DOMAIN
 
 
 def norm_pack(
@@ -39,12 +45,13 @@ def norm_pack(
 async def _trainer_overlays(lang: str, request: ComposeRequest, max_chars: int) -> tuple:
     profile = map_style_to_profile(request.style)
     length = map_max_chars_to_length(max_chars)
+    domain = _resolve_domain(request)
     try:
         cov = await trainer_store.coverage_for_language(lang)
         mode = cov.get("mode") or "A"
         shots = await trainer_store.fetch_fewshot(
             language=lang,
-            domain=_DEFAULT_DOMAIN,
+            domain=domain,
             length_bucket=length,
             write_profile=profile,
         )

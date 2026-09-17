@@ -718,6 +718,7 @@ export default function TopicDetail() {
             }
             language={language}
             requireAuth={requireAuth}
+            domain={topic.category}
           />
           {false && (
           <ContentGenerationPanel

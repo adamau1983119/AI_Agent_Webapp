@@ -1,9 +1,10 @@
 /**
- * Public topic post composer (JIT). Does not auto-call LLM in useEffect.
+ * Public topic post composer (JIT). IG/FB only; short 500 / long 1500.
+ * Keep tray / Threads / Post Kit UI hidden (MVP). Does not auto-call LLM.
  */
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { AtSign, Copy, Facebook, Instagram, Lock, RefreshCw, Sparkles } from 'lucide-react'
+import { Copy, Facebook, Instagram, RefreshCw, Sparkles } from 'lucide-react'
 import { alterEgoApi, type ComposePart, type ComposePlatform, type ComposeStyle } from '@/api/alterEgo'
 import { APIError } from '@/api/errors'
 import { getComposeDemoPack } from '@/data/composeDemoPack'
@@ -15,7 +16,6 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner'
 const PLATFORMS: { id: ComposePlatform; Icon: typeof Facebook }[] = [
   { id: 'facebook', Icon: Facebook },
   { id: 'instagram', Icon: Instagram },
-  { id: 'threads', Icon: AtSign },
 ]
 const STYLES: ComposeStyle[] = [
   'professional',
@@ -24,29 +24,25 @@ const STYLES: ComposeStyle[] = [
   'storytelling',
   'educational',
 ]
-const LENGTHS = [100, 150, 500] as const
+const LENGTHS = [500, 1500] as const
 const LENGTH_KEYS = {
-  100: 'composer.length100',
-  150: 'composer.length150',
   500: 'composer.length500',
+  1500: 'composer.length1500',
 } as const
-const CAPS: Record<ComposePlatform, number> = {
+const CAPS: Record<'facebook' | 'instagram', number> = {
   facebook: 5000,
   instagram: 2200,
-  threads: 150,
 }
-const INTENTS = [
-  'composer.intentPunchier',
-  'composer.intentShorter',
-  'composer.intentLeadKeep',
-  'composer.intentMorePoint',
-  'composer.intentLikeMe',
-] as const
 
 type Draft = { titles: string[]; body: string; hashtag_sets: string[][] }
+type TrainerDomain = 'fashion' | 'food' | 'trend'
 
 function assemble(title: string, body: string, tags: string[]): string {
   return [title, body, tags.join(' ')].filter((p) => p.trim()).join('\n\n')
+}
+
+function creditCost(maxChars: number): number {
+  return maxChars > 500 ? 2 : 1
 }
 
 export default function PostComposerPanel({
@@ -56,6 +52,7 @@ export default function PostComposerPanel({
   language,
   requireAuth,
   mode = 'live',
+  domain,
 }: {
   topicId: string
   topicTitle: string
@@ -63,12 +60,13 @@ export default function PostComposerPanel({
   language: string
   requireAuth: (action: () => void) => void
   mode?: 'live' | 'demo'
+  domain?: string
 }) {
   const { t } = useTranslation()
   const isDemo = mode === 'demo'
   const [platform, setPlatform] = useState<ComposePlatform>(isDemo ? 'instagram' : 'facebook')
   const [style, setStyle] = useState<ComposeStyle>(isDemo ? 'humorous' : 'casual')
-  const [maxChars, setMaxChars] = useState<number>(isDemo ? 100 : 150)
+  const [maxChars, setMaxChars] = useState<number>(500)
   const [titles, setTitles] = useState<string[]>(['', '', ''])
   const [body, setBody] = useState('')
   const [hashtagSets, setHashtagSets] = useState<string[][]>([[], [], []])
@@ -76,31 +74,22 @@ export default function PostComposerPanel({
   const [tagIdx, setTagIdx] = useState(0)
   const [busyPart, setBusyPart] = useState<ComposePart | null>(null)
   const [needCredits, setNeedCredits] = useState(false)
-  const [drafts, setDrafts] = useState<Draft[]>([])
-  const [keep, setKeep] = useState<string[]>([])
-  const [keepInput, setKeepInput] = useState('')
-  const [intentKey, setIntentKey] = useState<string>('')
-  const [intentCustom, setIntentCustom] = useState('')
-  const [genCount, setGenCount] = useState(0)
   const [bodyOk, setBodyOk] = useState(false)
-  const [confirmRegen, setConfirmRegen] = useState(false)
 
-  const cap = CAPS[platform]
+  const cap = CAPS[platform === 'instagram' ? 'instagram' : 'facebook']
   const limit = Math.min(maxChars, cap)
+  const cost = creditCost(limit)
   const whole = assemble(titles[titleIdx] || '', body, hashtagSets[tagIdx] || [])
   const used = Array.from(whole).length
   const generating = busyPart !== null
-  const softCap = genCount >= 5
   const fact = useMemo(
     () => (contextSummary || topicTitle || '').slice(0, 1500),
     [contextSummary, topicTitle]
   )
+  const trainerDomain: TrainerDomain | undefined =
+    domain === 'fashion' || domain === 'food' || domain === 'trend' ? domain : undefined
 
-  const pushDraft = (d: Draft) => {
-    setDrafts((prev) => [...prev, d].slice(-3))
-  }
-
-  const applyPack = (pack: Draft, countBump = true) => {
+  const applyPack = (pack: Draft) => {
     if (pack.titles.some((x) => x.trim())) {
       setTitles(pack.titles)
       setTitleIdx(0)
@@ -110,21 +99,13 @@ export default function PostComposerPanel({
       setHashtagSets(pack.hashtag_sets)
       setTagIdx(0)
     }
-    pushDraft(pack)
-    if (countBump) setGenCount((n) => n + 1)
   }
 
   const loadDemo = () => {
-    const pack = getComposeDemoPack(language, limit >= 150 ? 150 : 100)
-    applyPack(pack, false)
-    setKeep([pack.keepHint])
+    const pack = getComposeDemoPack(language, limit >= 1500 ? 1500 : 500)
+    applyPack(pack)
     setBodyOk(false)
     showSuccess(t('composer.demoLoaded'))
-  }
-
-  const revisionIntent = () => {
-    const chip = intentKey ? t(intentKey) : ''
-    return [chip, intentCustom.trim()].filter(Boolean).join(' · ').slice(0, 400)
   }
 
   const runCompose = async (part: ComposePart) => {
@@ -132,16 +113,10 @@ export default function PostComposerPanel({
       loadDemo()
       return
     }
-    if (softCap && part !== 'title' && part !== 'hashtags' && part !== 'meta' && !confirmRegen) {
-      setConfirmRegen(true)
-      showError(t('composer.creditSoftCap'))
-      return
-    }
     setBusyPart(part)
-    setConfirmRegen(false)
     try {
       const res = await alterEgoApi.compose({
-        platform,
+        platform: platform === 'instagram' ? 'instagram' : 'facebook',
         style,
         max_chars: limit,
         part,
@@ -149,8 +124,9 @@ export default function PostComposerPanel({
         topic_id: topicId,
         topic_title: topicTitle,
         context_summary: fact,
-        preserve_snippets: keep,
-        revision_intent: revisionIntent(),
+        domain: trainerDomain,
+        preserve_snippets: [],
+        revision_intent: '',
         base_body: part === 'body' || part === 'all' ? '' : body,
       })
       applyPack({
@@ -178,17 +154,6 @@ export default function PostComposerPanel({
     }
   }
 
-  const addKeepFromSelection = () => {
-    const sel = typeof window !== 'undefined' ? window.getSelection()?.toString().trim() : ''
-    const text = (sel || keepInput).trim()
-    if (!text) {
-      showError(t('composer.keepEmpty'))
-      return
-    }
-    setKeep((prev) => [...prev, text].slice(0, 8))
-    setKeepInput('')
-  }
-
   const copyAll = async () => {
     if (!whole.trim()) {
       showError(t('composer.emptyPack'))
@@ -197,11 +162,6 @@ export default function PostComposerPanel({
     const ok = await copyToClipboard(whole)
     if (ok) showSuccess(t('postKit.copied'))
     else showError(t('postKit.copyFailed'))
-  }
-
-  const onPlatform = (id: ComposePlatform) => {
-    setPlatform(id)
-    if (id === 'threads' && maxChars > 150) setMaxChars(150)
   }
 
   return (
@@ -217,13 +177,13 @@ export default function PostComposerPanel({
         </h3>
         <p className="text-xs text-gray-500">{t('composer.coachHint')}</p>
         <p className="text-xs font-medium text-gray-500">{t('composer.platform')}</p>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 gap-2">
           {PLATFORMS.map(({ id, Icon }) => (
             <button
               key={id}
               type="button"
               data-testid={`btn-composer-platform-${id}`}
-              onClick={() => onPlatform(id)}
+              onClick={() => setPlatform(id)}
               className={`inline-flex items-center justify-center gap-1.5 min-h-[44px] rounded-xl border-2 text-xs font-medium touch-manipulation ${
                 platform === id
                   ? 'border-primary bg-primary/10 text-primary'
@@ -254,7 +214,7 @@ export default function PostComposerPanel({
           ))}
         </div>
         <p className="text-xs font-medium text-gray-500">{t('composer.length')}</p>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 gap-2">
           {LENGTHS.map((n) => {
             const over = n > cap
             return (
@@ -276,11 +236,6 @@ export default function PostComposerPanel({
             )
           })}
         </div>
-        {!isDemo && (
-          <p className="text-xs text-gray-500" data-testid="text-composer-session-credits">
-            {t('composer.sessionCredits', { n: String(genCount) })}
-          </p>
-        )}
         <button
           type="button"
           data-testid="btn-composer-generate-pack"
@@ -293,9 +248,7 @@ export default function PostComposerPanel({
             ? t('common.generating')
             : isDemo
               ? t('composer.generateDemo')
-              : softCap
-                ? t('composer.generateAnyway')
-                : t('composer.generatePack')}
+              : t('composer.generatePackCost', { n: String(cost) })}
         </button>
         {isDemo && (
           <button
@@ -305,8 +258,6 @@ export default function PostComposerPanel({
               setTitles(['', '', ''])
               setBody('')
               setHashtagSets([[], [], []])
-              setKeep([])
-              setDrafts([])
               setBodyOk(false)
             }}
             className="w-full min-h-[44px] rounded-xl border border-gray-300 text-sm"
@@ -328,87 +279,6 @@ export default function PostComposerPanel({
         )}
       </section>
 
-      {(body || drafts.length > 0) && (
-        <section className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 p-5 space-y-3" data-testid="section-composer-keep">
-          <p className="text-xs font-medium text-gray-500">{t('composer.keepTitle')}</p>
-          <p className="text-xs text-gray-500">{t('composer.keepHint')}</p>
-          <div className="flex flex-wrap gap-2">
-            {keep.map((s, i) => (
-              <button
-                key={`${i}-${s.slice(0, 12)}`}
-                type="button"
-                data-testid={`btn-composer-keep-chip-${i}`}
-                onClick={() => setKeep((prev) => prev.filter((_, j) => j !== i))}
-                className="inline-flex items-center gap-1 text-xs border rounded-lg px-2 py-1"
-              >
-                <Lock className="w-3 h-3" />
-                {s.slice(0, 40)}
-                {s.length > 40 ? '…' : ''}
-              </button>
-            ))}
-          </div>
-          <textarea
-            data-testid="input-composer-keep"
-            value={keepInput}
-            onChange={(e) => setKeepInput(e.target.value)}
-            rows={2}
-            className="w-full text-sm rounded-xl border border-gray-200 p-3"
-            placeholder={t('composer.keepPlaceholder')}
-          />
-          <button
-            type="button"
-            data-testid="btn-composer-keep-add"
-            onClick={addKeepFromSelection}
-            className="min-h-[40px] px-3 rounded-lg border text-xs"
-          >
-            {t('composer.keepAdd')}
-          </button>
-          {drafts.length > 0 && (
-            <div className="flex flex-wrap gap-2" data-testid="section-composer-drafts">
-              {drafts.map((_, i) => (
-                <button
-                  key={`d-${i}`}
-                  type="button"
-                  data-testid={`btn-composer-draft-${i + 1}`}
-                  onClick={() => {
-                    const d = drafts[i]
-                    setTitles(d.titles)
-                    setBody(d.body)
-                    setHashtagSets(d.hashtag_sets)
-                  }}
-                  className="text-xs min-h-[36px] px-3 rounded-lg border"
-                >
-                  {t('composer.draftN', { n: String(i + 1) })}
-                </button>
-              ))}
-            </div>
-          )}
-          <p className="text-xs font-medium text-gray-500">{t('composer.intentTitle')}</p>
-          <div className="flex flex-wrap gap-2">
-            {INTENTS.map((key) => (
-              <button
-                key={key}
-                type="button"
-                data-testid={`btn-composer-intent-${key.split('.').pop()}`}
-                onClick={() => setIntentKey(key === intentKey ? '' : key)}
-                className={`text-xs min-h-[36px] px-3 rounded-lg border ${
-                  intentKey === key ? 'border-primary text-primary' : 'border-gray-200'
-                }`}
-              >
-                {t(key)}
-              </button>
-            ))}
-          </div>
-          <input
-            data-testid="input-composer-intent-custom"
-            value={intentCustom}
-            onChange={(e) => setIntentCustom(e.target.value)}
-            className="w-full text-sm rounded-xl border border-gray-200 px-3 py-2"
-            placeholder={t('composer.intentCustom')}
-          />
-        </section>
-      )}
-
       <section className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 p-5 sm:p-6 space-y-4">
         <div className="flex items-center justify-between gap-2">
           <h3 className="font-display text-lg font-semibold">{t('composer.packTitle')}</h3>
@@ -419,7 +289,7 @@ export default function PostComposerPanel({
           <button
             type="button"
             data-testid="btn-composer-regen-body"
-            disabled={generating || (softCap && !confirmRegen)}
+            disabled={generating}
             onClick={() => requireAuth(() => void runCompose('body'))}
             className="inline-flex items-center gap-1 text-xs text-primary min-h-[40px] touch-manipulation disabled:opacity-40"
           >
