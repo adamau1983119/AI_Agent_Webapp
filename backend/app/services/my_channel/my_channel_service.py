@@ -56,7 +56,16 @@ def _intro_text(topic: Dict[str, Any]) -> str:
 
 
 def _digest_text(topic: Dict[str, Any]) -> str:
-    raw = (topic.get("summary_flash") or topic.get("description") or topic.get("title") or "").strip()
+    try:
+        from app.services.automation.topic_post_scan import fact_text_from_topic
+        raw = fact_text_from_topic(topic)
+    except Exception:
+        raw = (
+            topic.get("summary_flash")
+            or topic.get("description")
+            or topic.get("title")
+            or ""
+        ).strip()
     if len(raw) <= _DIGEST_MAX:
         return raw
     return raw[:_DIGEST_MAX]

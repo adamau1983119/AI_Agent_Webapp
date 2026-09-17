@@ -185,6 +185,8 @@ class TopicCollector:
                 if self.enable_dedup and self.deduplicator:
                     stats = self.deduplicator.get_stats()
                     logger.info(f"📊 去重統計: {stats['duplicate_rate']} 重複率")
+                from app.services.automation.topic_visible_floor import apply_visible_floor
+                apply_visible_floor(topics)
                 return topics[:count]
             
             # 如果不足且允許使用備用方案，使用備用關鍵字生成主題
@@ -207,6 +209,8 @@ class TopicCollector:
             if use_fallback and ai_topic_fallback_enabled():
                 topics = await self._generate_from_keywords(category, count)
         
+        from app.services.automation.topic_visible_floor import apply_visible_floor
+        apply_visible_floor(topics)
         return topics[:count]
     
     async def _collect_by_roles(
@@ -278,6 +282,8 @@ class TopicCollector:
             )
             topics = merge_legacy_fill(topics, legacy, count)
         
+        from app.services.automation.topic_visible_floor import apply_visible_floor
+        apply_visible_floor(topics)
         return topics
     
     async def _collect_from_role(
@@ -472,9 +478,18 @@ class TopicCollector:
                     score_result = self.scoring_service.compute_score(article_data, category)
                     
                     from app.services.summarization.summary_flash_service import generate_summary_flash
+                    from app.services.automation.topic_post_scan import (
+                        apply_scan_to_source,
+                        stamp_scan_on_topic,
+                    )
 
+                    scan = apply_scan_to_source(
+                        source_info,
+                        fallback_text=content_text or description or title,
+                    )
                     flash_input = (
-                        source_info.get("original_content")
+                        scan.get("content_clean")
+                        or source_info.get("original_content")
                         or content_text
                         or description
                         or title
@@ -503,6 +518,7 @@ class TopicCollector:
                         "display_language": display_language,
                         "original_title": title,
                     }
+                    stamp_scan_on_topic(topic, scan)
                     from app.utils.topic_pipeline import stamp_pipeline_fields
                     stamp_pipeline_fields(topic)
                     
@@ -571,6 +587,8 @@ class TopicCollector:
                     pass
                 continue
         
+        from app.services.automation.topic_visible_floor import apply_visible_floor
+        apply_visible_floor(topics)
         return topics
     
     def _build_article_from_topic(
@@ -705,9 +723,20 @@ class TopicCollector:
                             from app.services.summarization.summary_flash_service import (
                                 generate_summary_flash,
                             )
+                            from app.services.automation.topic_post_scan import (
+                                apply_scan_to_source,
+                                stamp_scan_on_topic,
+                            )
 
+                            scan = apply_scan_to_source(
+                                source_info,
+                                fallback_text=content_text or description or title,
+                            )
                             flash_input = (
-                                source_info.get("original_content") or description or title
+                                scan.get("content_clean")
+                                or source_info.get("original_content")
+                                or description
+                                or title
                             )
                             summary_flash = await generate_summary_flash(
                                 title=title, raw_text=flash_input
@@ -723,12 +752,15 @@ class TopicCollector:
                                 "display_language": "zh-TW",
                                 "original_title": title,
                             }
+                            stamp_scan_on_topic(topic, scan)
                             topics.append(topic)
                             
                 except Exception as e:
                     logger.warning(f"無法從 RSS {feed_url} 收集主題: {e}")
                     continue
         
+        from app.services.automation.topic_visible_floor import apply_visible_floor
+        apply_visible_floor(topics)
         return topics
     
     def _is_deal_or_coupon_article(self, title: str, link: str) -> bool:

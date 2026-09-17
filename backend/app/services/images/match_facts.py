@@ -12,11 +12,18 @@ def featured_slots(existing_count: int, cap: int = FEATURED_CAP) -> int:
 
 
 def match_fact_text(topic: Mapping[str, Any]) -> str:
-    """Priority: summary_flash → sources[0].original_content → title."""
+    """Priority: content_clean → summary_flash → original → title."""
+    sources = topic.get("sources") or []
+    if isinstance(sources, list) and sources and isinstance(sources[0], dict):
+        clean = str(sources[0].get("content_clean") or "").strip()
+        if clean:
+            return clean[:_FACT_MAX]
+    top_clean = str(topic.get("content_clean") or "").strip()
+    if top_clean:
+        return top_clean[:_FACT_MAX]
     flash = str(topic.get("summary_flash") or "").strip()
     if flash:
         return flash[:_FACT_MAX]
-    sources = topic.get("sources") or []
     if isinstance(sources, list) and sources and isinstance(sources[0], dict):
         orig = str(sources[0].get("original_content") or "").strip()
         if orig:

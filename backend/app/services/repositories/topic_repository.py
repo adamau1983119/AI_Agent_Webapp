@@ -152,9 +152,9 @@ class TopicRepository(BaseRepository):
         else:
             filter = {"$and": clauses}
         
-        # 建立排序條件
+        # 建立排序條件（低 sort_penalty 優先，再依呼叫端 sort）
         sort_order = -1 if order == "desc" else 1
-        sort_list = [(sort, sort_order)]
+        sort_list = [("sort_penalty", 1), (sort, sort_order)]
         
         # 計算跳過數量
         skip = (page - 1) * limit
