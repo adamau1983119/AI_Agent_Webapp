@@ -478,7 +478,7 @@ async def health_check():
 
 
 # 註冊 API 路由
-from app.api.v1 import topics, contents, images, user, health, schedules, interactions, recommendations, discover, validate, test_db, feeds, articles, auth, feature_flags, channels, inspiration, ratings, style_profile, generate, social, public_topics, alter_ego, my_channel, billing
+from app.api.v1 import topics, contents, images, user, health, schedules, interactions, recommendations, discover, validate, test_db, feeds, articles, auth, feature_flags, channels, inspiration, ratings, style_profile, generate, social, public_topics, alter_ego, my_channel, billing, ops_trainer
 
 app.include_router(health.router, prefix="/api/v1")
 app.include_router(test_db.router, prefix="/api/v1")  # 測試端點，用於驗證資料庫連接
@@ -506,6 +506,7 @@ app.include_router(alter_ego.router, prefix="/api/v1")  # v7 Alter Ego SKU
 app.include_router(my_channel.router, prefix="/api/v1")  # v7.1 MyChannel SKU
 app.include_router(my_channel.admin_router, prefix="/api/v1")
 app.include_router(billing.router, prefix="/api/v1")
+app.include_router(ops_trainer.router, prefix="/api/v1")  # Ops Style Trainer (allowlist)
 
 
 if __name__ == "__main__":

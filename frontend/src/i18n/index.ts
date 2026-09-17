@@ -65,6 +65,7 @@ const zhTW = {
   'nav.logout': '登出',
   'nav.profile': '個人資料',
   'nav.composeSample': '組裝練習',
+  'nav.styleTrainer': '風格訓練',
   
   // 品牌
   'brand.name': 'Alter-ego',
@@ -1368,6 +1369,31 @@ const zhTW = {
   'language.zh-TW': '繁體中文',
   'language.en': 'English',
   'language.ja': '日本語',
+
+  'ops.trainer.badge': '內部營運',
+  'ops.trainer.title': '風格訓練窗',
+  'ops.trainer.coverage': '語系覆蓋',
+  'ops.trainer.modeNote': 'Mode A＝結構＋locale；滿 18 格後該語開 Mode B few-shot。禁止二次翻譯。',
+  'ops.trainer.pasteTitle': '貼上截圖／正文',
+  'ops.trainer.dropHint': '拖放截圖或 Ctrl+V 貼上',
+  'ops.trainer.orText': '或貼正文',
+  'ops.trainer.orUrl': '或貼 URL',
+  'ops.trainer.textPlaceholder': '貼上貼文正文…',
+  'ops.trainer.bodyPlaceholder': '範例正文（可編輯）',
+  'ops.trainer.analyze': '開始解析',
+  'ops.trainer.analyzing': '解析中…',
+  'ops.trainer.processing': 'Vision／文字解析中…',
+  'ops.trainer.analyzeOk': '已自動填入右側',
+  'ops.trainer.analyzeFail': '解析失敗，請改貼正文重試',
+  'ops.trainer.needInput': '請先貼圖、正文或 URL',
+  'ops.trainer.confirmTitle': '確認範例',
+  'ops.trainer.negative': '反面教材（Negative）',
+  'ops.trainer.reanalyze': '重新解析',
+  'ops.trainer.confirmMongo': '確認存入 Mongo',
+  'ops.trainer.confirmOk': '已存入訓練庫',
+  'ops.trainer.confirmFail': '存檔失敗',
+  'ops.trainer.forbidden': '無權使用訓練窗',
+  'ops.trainer.forbiddenHint': '僅限 allowlist 的 admin／tester',
 };
 
 // 英文翻譯
@@ -1429,6 +1455,7 @@ const en: typeof zhTW = {
   'nav.logout': 'Logout',
   'nav.profile': 'Profile',
   'nav.composeSample': 'Compose practice',
+  'nav.styleTrainer': 'Style trainer',
   
   // Brand
   'brand.name': 'Alter-ego',
@@ -2725,6 +2752,31 @@ const en: typeof zhTW = {
   'language.zh-TW': '繁體中文',
   'language.en': 'English',
   'language.ja': '日本語',
+
+  'ops.trainer.badge': 'Internal ops',
+  'ops.trainer.title': 'Style trainer',
+  'ops.trainer.coverage': 'Language coverage',
+  'ops.trainer.modeNote': 'Mode A = structure + locale; Mode B few-shot after 18/18. No double translation.',
+  'ops.trainer.pasteTitle': 'Paste screenshot / text',
+  'ops.trainer.dropHint': 'Drop screenshot or Ctrl+V',
+  'ops.trainer.orText': 'Or paste text',
+  'ops.trainer.orUrl': 'Or paste URL',
+  'ops.trainer.textPlaceholder': 'Paste post body…',
+  'ops.trainer.bodyPlaceholder': 'Exemplar body (editable)',
+  'ops.trainer.analyze': 'Analyze',
+  'ops.trainer.analyzing': 'Analyzing…',
+  'ops.trainer.processing': 'Vision / text processing…',
+  'ops.trainer.analyzeOk': 'Right panel filled',
+  'ops.trainer.analyzeFail': 'Analyze failed — paste text and retry',
+  'ops.trainer.needInput': 'Need image, text, or URL',
+  'ops.trainer.confirmTitle': 'Confirm exemplar',
+  'ops.trainer.negative': 'Negative example',
+  'ops.trainer.reanalyze': 'Re-analyze',
+  'ops.trainer.confirmMongo': 'Confirm save to Mongo',
+  'ops.trainer.confirmOk': 'Saved to training store',
+  'ops.trainer.confirmFail': 'Save failed',
+  'ops.trainer.forbidden': 'Trainer access denied',
+  'ops.trainer.forbiddenHint': 'Admin/tester allowlist only',
 };
 
 // 日文翻譯
@@ -2786,6 +2838,7 @@ const ja: typeof zhTW = {
   'nav.logout': 'ログアウト',
   'nav.profile': 'プロフィール',
   'nav.composeSample': '組文練習',
+  'nav.styleTrainer': 'スタイル訓練',
   
   // ブランド
   'brand.name': 'Alter-ego',
@@ -4084,6 +4137,31 @@ const ja: typeof zhTW = {
   'language.zh-TW': '繁體中文',
   'language.en': 'English',
   'language.ja': '日本語',
+
+  'ops.trainer.badge': '社内運用',
+  'ops.trainer.title': 'スタイル訓練',
+  'ops.trainer.coverage': '言語カバレッジ',
+  'ops.trainer.modeNote': 'Mode A＝構造＋locale；18/18でMode B。二重翻訳禁止。',
+  'ops.trainer.pasteTitle': 'スクショ／本文を貼付',
+  'ops.trainer.dropHint': 'ドロップまたは Ctrl+V',
+  'ops.trainer.orText': 'または本文',
+  'ops.trainer.orUrl': 'または URL',
+  'ops.trainer.textPlaceholder': '投稿本文を貼付…',
+  'ops.trainer.bodyPlaceholder': '範例本文（編集可）',
+  'ops.trainer.analyze': '解析する',
+  'ops.trainer.analyzing': '解析中…',
+  'ops.trainer.processing': 'Vision／テキスト処理中…',
+  'ops.trainer.analyzeOk': '右側に反映しました',
+  'ops.trainer.analyzeFail': '解析失敗。本文を貼って再試行',
+  'ops.trainer.needInput': '画像・本文・URLのいずれかが必要',
+  'ops.trainer.confirmTitle': '範例を確認',
+  'ops.trainer.negative': '反面教材（Negative）',
+  'ops.trainer.reanalyze': '再解析',
+  'ops.trainer.confirmMongo': 'Mongoに保存',
+  'ops.trainer.confirmOk': '訓練庫に保存しました',
+  'ops.trainer.confirmFail': '保存失敗',
+  'ops.trainer.forbidden': '訓練窓への権限なし',
+  'ops.trainer.forbiddenHint': 'allowlist の admin／tester のみ',
 };
 
 // 翻譯對照表

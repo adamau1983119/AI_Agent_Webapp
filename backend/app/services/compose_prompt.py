@@ -49,6 +49,8 @@ def build_compose_prompt(
     preserve_snippets: Optional[List[str]] = None,
     revision_intent: str = "",
     base_body: str = "",
+    structure_overlay: str = "",
+    fewshot_overlay: str = "",
 ) -> str:
     cap = clamp_max_chars(platform, max_chars)
     lo_band = max(1, int(cap * 0.85))
@@ -99,10 +101,13 @@ def build_compose_prompt(
         f"Topic title: {topic_title.strip()[:300]}\n"
         f"FACTUAL SUMMARY (Truth Anchor):\n{fact}\n"
         f"{dna_overlay}\n"
+        f"{structure_overlay}"
+        f"{fewshot_overlay}"
         f"{keep}"
         f"{rev_block}"
         f"{base_block}"
         "CRITICAL GUARDRAILS:\n"
+        "0. Never double-translate exemplars; write natively in LANGUAGE.\n"
         "1. FACT ANCHORING: Use only the topic and factual summary. Do not invent events.\n"
         "2. ANTI-POLLUTION: Style and optional voice overlay are tone-only. "
         "DO NOT force unrelated domain terms into a non-related topic.\n"

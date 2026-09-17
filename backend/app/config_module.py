@@ -78,6 +78,9 @@ class Settings(BaseSettings):
     # 向後相容；預設等同 FLASH
     DEEPSEEK_MODEL: str = "deepseek-v4-flash"
     DEEPSEEK_BASE_URL: str = "https://api.deepseek.com/v1/chat/completions"
+
+    # Ops Style Trainer：逗號分隔 email；空＝所有 admin/tester 可進
+    OPS_STYLE_TRAINER_EMAILS: str = ""
     
     # 選擇使用的 AI 服務（qwen, openai, gemini, ollama, ollama_cloud, deepseek）
     AI_SERVICE: str = "deepseek"  # 預設使用 DeepSeek API（推薦）

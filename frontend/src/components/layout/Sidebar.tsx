@@ -33,7 +33,8 @@ export default function Sidebar() {
   const location = useLocation()
   const { t } = useTranslation()
   const { setCurrentPage, sidebarOpen, setSidebarOpen } = useUIStore()
-  const { logout, isAuthenticated } = useAuthStore()
+  const { logout, isAuthenticated, user } = useAuthStore()
+  const showOpsTrainer = user?.role === 'admin' || user?.role === 'tester'
 
   const handleClick = (path: string) => {
     setCurrentPage(path === '/dashboard' ? 'dashboard' : path.slice(1))
@@ -100,6 +101,19 @@ export default function Sidebar() {
               </li>
             )
           })}
+          {showOpsTrainer && (
+            <li>
+              <Link
+                to="/ops/style-trainer"
+                data-testid="link-sidebar-ops-style-trainer"
+                onClick={() => handleClick('/ops/style-trainer')}
+                className={`sidebar-item ${location.pathname === '/ops/style-trainer' ? 'active' : ''}`}
+              >
+                <Icon name="settings" />
+                <span className="flex-1 min-w-0">{t('nav.styleTrainer')}</span>
+              </Link>
+            </li>
+          )}
         </ul>
       </nav>
 
