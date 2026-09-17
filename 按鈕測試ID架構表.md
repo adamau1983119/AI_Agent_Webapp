@@ -439,11 +439,12 @@ data-testid="{類型}-{位置}-{功能}"
 | `text-composer-demo-badge` | 文字 | 示範模式徽章（僅 `mode=demo`） |
 | `btn-composer-platform-facebook` | 按鈕 | 平台 Facebook |
 | `btn-composer-platform-instagram` | 按鈕 | 平台 Instagram |
-| `btn-composer-platform-threads` | 按鈕 | 平台 Threads（產品上限 150 字） |
+| `btn-composer-platform-threads` | 按鈕 | 平台 Threads（**MVP UI 隱藏**；testid 列保留） |
 | `btn-composer-style-professional` 等 | 按鈕 | 五風格（須進 Prompt tone card） |
-| `btn-composer-length-100`／`150`／`500` | 按鈕 | 目標字數；Threads 無 500；超過平台 cap 則 disabled（`length-50` 鍵保留、UI 不掛） |
-| `text-composer-session-credits` | 文字 | 本主題組裝已用點數 |
-| `btn-composer-generate-pack` | 按鈕 | 生成發文套件（live −1；demo 不扣點） |
+| `btn-composer-length-100`／`150` | 按鈕 | **MVP UI 隱藏**（鍵保留） |
+| `btn-composer-length-500`／`1500` | 按鈕 | 短 ≤500／長 ≤1500（IG／FB） |
+| `text-composer-session-credits` | 文字 | 本主題組裝已用點數（MVP 隱藏） |
+| `btn-composer-generate-pack` | 按鈕 | 生成發文套件（短 −1／長 −2；demo 不扣點） |
 | `btn-composer-demo-reset` | 按鈕 | 重設示範狀態 |
 | `section-composer-keep` | 區塊 | Keep tray（highlight／自寫） |
 | `input-composer-keep` | 輸入 | 自寫保留句 |

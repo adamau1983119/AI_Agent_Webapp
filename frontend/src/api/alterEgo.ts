@@ -6,7 +6,7 @@ import { normalizeUiLanguage } from '@/lib/topicLanguages';
 
 export type DnaStatus = 'pending' | 'active' | 'skipped' | 'legacy_only';
 export type AlterEgoPlatform = 'facebook' | 'threads' | 'x';
-export type ComposePlatform = 'facebook' | 'instagram' | 'threads';
+export type ComposePlatform = 'facebook' | 'instagram';
 export type ComposeStyle =
   | 'professional'
   | 'casual'
@@ -14,6 +14,7 @@ export type ComposeStyle =
   | 'storytelling'
   | 'educational';
 export type ComposePart = 'all' | 'title' | 'body' | 'hashtags' | 'meta';
+export type ComposeDomain = 'fashion' | 'food' | 'trend';
 
 export interface DnaStatusResponse {
   dna_status: DnaStatus;
@@ -102,6 +103,7 @@ export const alterEgoApi = {
     topic_id?: string;
     topic_title?: string;
     context_summary?: string;
+    domain?: ComposeDomain;
     preserve_snippets?: string[];
     revision_intent?: string;
     base_body?: string;
@@ -117,6 +119,7 @@ export const alterEgoApi = {
         topic_id: payload.topic_id,
         topic_title: payload.topic_title || '',
         context_summary: payload.context_summary || '',
+        domain: payload.domain,
         preserve_snippets: payload.preserve_snippets || [],
         revision_intent: payload.revision_intent || '',
         base_body: payload.base_body || '',

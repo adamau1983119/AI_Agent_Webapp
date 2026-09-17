@@ -493,12 +493,13 @@ class TestComposePack(unittest.TestCase):
     def test_threads_cap_150_and_length_gate(self):
         from app.services.compose_caps import clamp_max_chars, length_enabled, platform_cap
         self.assertEqual(platform_cap("threads"), 150)
-        self.assertEqual(clamp_max_chars("threads", 150), 150)
-        self.assertEqual(clamp_max_chars("instagram", 150), 150)
-        self.assertTrue(length_enabled("threads", 100))
+        # MVP 主路僅 500／1500；threads 不再啟用長度檔
         self.assertFalse(length_enabled("threads", 500))
-        self.assertTrue(length_enabled("facebook", 150))
+        self.assertFalse(length_enabled("threads", 1500))
+        self.assertEqual(clamp_max_chars("instagram", 500), 500)
+        self.assertEqual(clamp_max_chars("instagram", 1500), 1500)
         self.assertTrue(length_enabled("facebook", 500))
+        self.assertTrue(length_enabled("facebook", 1500))
 
     def test_parse_json_without_cjk_headers(self):
         from app.services.compose_parse import extract_json_object, normalize_pack
@@ -543,10 +544,11 @@ class TestComposePack(unittest.TestCase):
         req = ComposeRequest(
             platform="instagram",
             style="casual",
-            max_chars=50,
+            max_chars=500,
             language="ja",
         )
         self.assertEqual(req.platform, "instagram")
+        self.assertNotIn("threads", ComposeRequest.model_fields["platform"].annotation.__args__)
 
 
 if __name__ == "__main__":

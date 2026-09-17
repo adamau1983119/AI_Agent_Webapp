@@ -13,24 +13,31 @@ from app.services.compose_caps import (
     HASHTAG_HINTS,
     LENGTH_CHOICES,
     clamp_max_chars,
+    compose_credit_cost,
     length_enabled,
 )
 from app.services.compose_parse import enforce_hashtag_bounds, normalize_pack
 from app.services.compose_prompt import build_compose_prompt
 from app.services.compose_tone import tone_card
+from app.services.ops_trainer_inject import map_max_chars_to_length
 
 
 class TestComposeAdvanced(unittest.TestCase):
-    def test_length_choices_and_threads(self):
-        self.assertEqual(LENGTH_CHOICES, (100, 150, 500))
+    def test_length_choices_ig_fb(self):
+        self.assertEqual(LENGTH_CHOICES, (500, 1500))
         self.assertTrue(length_enabled("facebook", 500))
-        self.assertFalse(length_enabled("threads", 500))
-        self.assertEqual(clamp_max_chars("threads", 500), 150)
-        self.assertEqual(clamp_max_chars("instagram", 500), 500)
+        self.assertTrue(length_enabled("instagram", 1500))
+        self.assertFalse(length_enabled("threads", 1500))
+        self.assertEqual(clamp_max_chars("instagram", 1500), 1500)
+        self.assertEqual(clamp_max_chars("facebook", 999), 500)
+        self.assertEqual(compose_credit_cost(500), 1)
+        self.assertEqual(compose_credit_cost(1500), 2)
+        self.assertEqual(map_max_chars_to_length(500), "short")
+        self.assertEqual(map_max_chars_to_length(1500), "long")
 
     def test_hashtag_bounds(self):
-        self.assertEqual(HASHTAG_HINTS["threads"], (1, 5))
         self.assertEqual(HASHTAG_HINTS["instagram"], (3, 5))
+        self.assertEqual(HASHTAG_HINTS["facebook"], (3, 5))
         sets = enforce_hashtag_bounds(
             [["#a"]], "instagram", fact="luxury tote craft", title="Tote"
         )
@@ -41,7 +48,7 @@ class TestComposeAdvanced(unittest.TestCase):
     def test_normalize_pads_tags(self):
         pack = normalize_pack(
             {"titles": ["T1"], "body": "x" * 20, "hashtag_sets": [["#one"]]},
-            100,
+            500,
             platform="facebook",
             fact="canvas leather commute",
             topic_title="Tote bag",
@@ -53,7 +60,7 @@ class TestComposeAdvanced(unittest.TestCase):
         p = build_compose_prompt(
             platform="instagram",
             style="humorous",
-            max_chars=150,
+            max_chars=500,
             part="body",
             language="zh-TW",
             topic_title="Tote",

@@ -22,16 +22,20 @@ class ExtractResponse(BaseModel):
 class ComposeRequest(BaseModel):
     """New public composer. Does not change PreviewRequest.platform."""
 
-    platform: Literal["facebook", "instagram", "threads"]
+    platform: Literal["facebook", "instagram"]
     style: Literal[
         "professional", "casual", "humorous", "storytelling", "educational"
     ]
-    max_chars: int = Field(..., ge=50, le=5000)
+    max_chars: int = Field(..., ge=500, le=1500)
     part: Literal["all", "title", "body", "hashtags", "meta"] = "all"
     language: PrimaryLanguage = "zh-TW"
     topic_id: Optional[str] = Field(default=None, max_length=64)
     topic_title: str = Field(default="", max_length=300)
     context_summary: str = Field(default="", max_length=1500)
+    domain: Optional[Literal["fashion", "food", "trend"]] = Field(
+        default=None,
+        description="Topic category for style-trainer few-shot cell match",
+    )
     preserve_snippets: List[str] = Field(default_factory=list, max_length=8)
     revision_intent: str = Field(default="", max_length=400)
     base_body: str = Field(default="", max_length=4000)
@@ -43,7 +47,7 @@ class ComposeResponse(BaseModel):
     hashtag_sets: List[List[str]]
     credits_charged: int = 1
     balance_after: int = 0
-    max_chars: int = 150
+    max_chars: int = 500
     short_body: bool = False
 
 
