@@ -229,7 +229,7 @@ export default function StyleTrainerPage() {
             {analyzing ? t('ops.trainer.analyzing') : t('ops.trainer.analyze')}
           </button>
           {analyzing && (
-            <p className="text-xs text-gray-500 animate-pulse" data-testid="ops-trainer-skeleton">
+            <p className="text-xs text-gray-500 animate-pulse" data-testid="ops-trainer-left-busy">
               {t('ops.trainer.processing')}
             </p>
           )}
@@ -237,74 +237,103 @@ export default function StyleTrainerPage() {
 
         <section className="space-y-3 border border-gray-200 p-4 rounded-sm bg-white">
           <h2 className="font-sans text-sm tracking-wide text-gray-800">{t('ops.trainer.confirmTitle')}</h2>
-          <div className="flex flex-wrap gap-2 text-xs">
-            <select data-testid="select-ops-trainer-lang" value={language} onChange={(e) => setLanguage(e.target.value as TrainerLang)} className="border p-1">
-              <option value="zh-TW">zh-TW</option>
-              <option value="en">en</option>
-              <option value="ja">ja</option>
-            </select>
-            <select data-testid="select-ops-trainer-domain" value={domain} onChange={(e) => setDomain(e.target.value as TrainerDomain)} className="border p-1">
-              <option value="fashion">fashion</option>
-              <option value="food">food</option>
-              <option value="trend">trend</option>
-            </select>
-            <select data-testid="select-ops-trainer-length" value={lengthBucket} onChange={(e) => setLengthBucket(e.target.value as TrainerLength)} className="border p-1">
-              <option value="short">short</option>
-              <option value="long">long</option>
-            </select>
-            <select data-testid="select-ops-trainer-profile" value={writeProfile} onChange={(e) => setWriteProfile(e.target.value as WriteProfile)} className="border p-1">
-              <option value="news_recap">news_recap</option>
-              <option value="hook_gossip">hook_gossip</option>
-            </select>
-          </div>
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              data-testid="chk-ops-trainer-negative"
-              checked={refType === 'negative'}
-              onChange={(e) => setRefType(e.target.checked ? 'negative' : 'positive')}
-            />
-            {t('ops.trainer.negative')}
-          </label>
-          {(['prefix', 'fact', 'quote', 'context', 'ending'] as const).map((key) => (
-            <div key={key}>
-              <label className="text-xs text-gray-500">{key}</label>
-              <textarea
-                data-testid={`input-ops-trainer-slot-${key}`}
-                className="w-full border border-gray-200 p-2 text-sm min-h-[48px]"
-                value={structure[key]}
-                onChange={(e) => setSlot(key, e.target.value)}
-                disabled={analyzing}
-              />
+          {analyzing ? (
+            <div
+              className="space-y-3"
+              data-testid="ops-trainer-skeleton"
+              role="status"
+              aria-busy="true"
+              aria-label={t('ops.trainer.processing')}
+            >
+              <p className="text-xs text-gray-500 animate-pulse">{t('ops.trainer.processing')}</p>
+              <div className="flex flex-wrap gap-2">
+                <div className="h-7 w-16 rounded bg-gray-200 animate-pulse" />
+                <div className="h-7 w-20 rounded bg-gray-200 animate-pulse" />
+                <div className="h-7 w-14 rounded bg-gray-200 animate-pulse" />
+                <div className="h-7 w-24 rounded bg-gray-200 animate-pulse" />
+              </div>
+              {(['prefix', 'fact', 'quote', 'context', 'ending'] as const).map((key) => (
+                <div key={key} className="space-y-1">
+                  <div className="h-3 w-12 rounded bg-gray-100 animate-pulse" />
+                  <div className="h-12 w-full rounded bg-gray-200 animate-pulse" />
+                </div>
+              ))}
+              <div className="h-20 w-full rounded bg-gray-200 animate-pulse" />
+              <div className="flex gap-2">
+                <div className="h-11 flex-1 rounded bg-gray-200 animate-pulse" />
+                <div className="h-11 flex-1 rounded bg-gray-300 animate-pulse" />
+              </div>
             </div>
-          ))}
-          <textarea
-            data-testid="input-ops-trainer-body"
-            className="w-full border border-gray-200 p-2 text-sm min-h-[80px]"
-            value={bodyText}
-            onChange={(e) => setBodyText(e.target.value)}
-            placeholder={t('ops.trainer.bodyPlaceholder')}
-          />
-          <div className="flex gap-2">
-            <button
-              type="button"
-              data-testid="btn-ops-trainer-reanalyze"
-              className="min-h-[44px] flex-1 border border-gray-300 text-sm"
-              disabled={analyzing}
-              onClick={runAnalyze}
-            >
-              {t('ops.trainer.reanalyze')}
-            </button>
-            <button
-              type="button"
-              data-testid="btn-ops-trainer-confirm"
-              className="min-h-[44px] flex-1 bg-black text-white text-sm disabled:opacity-50"
-              disabled={saving || analyzing}
-              onClick={onConfirm}
-            >
-              {saving ? t('common.processing') : t('ops.trainer.confirmMongo')}
-            </button>
-          </div>
+          ) : (
+            <>
+              <div className="flex flex-wrap gap-2 text-xs">
+                <select data-testid="select-ops-trainer-lang" value={language} onChange={(e) => setLanguage(e.target.value as TrainerLang)} className="border p-1">
+                  <option value="zh-TW">zh-TW</option>
+                  <option value="en">en</option>
+                  <option value="ja">ja</option>
+                </select>
+                <select data-testid="select-ops-trainer-domain" value={domain} onChange={(e) => setDomain(e.target.value as TrainerDomain)} className="border p-1">
+                  <option value="fashion">fashion</option>
+                  <option value="food">food</option>
+                  <option value="trend">trend</option>
+                </select>
+                <select data-testid="select-ops-trainer-length" value={lengthBucket} onChange={(e) => setLengthBucket(e.target.value as TrainerLength)} className="border p-1">
+                  <option value="short">short</option>
+                  <option value="long">long</option>
+                </select>
+                <select data-testid="select-ops-trainer-profile" value={writeProfile} onChange={(e) => setWriteProfile(e.target.value as WriteProfile)} className="border p-1">
+                  <option value="news_recap">news_recap</option>
+                  <option value="hook_gossip">hook_gossip</option>
+                </select>
+              </div>
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  data-testid="chk-ops-trainer-negative"
+                  checked={refType === 'negative'}
+                  onChange={(e) => setRefType(e.target.checked ? 'negative' : 'positive')}
+                />
+                {t('ops.trainer.negative')}
+              </label>
+              {(['prefix', 'fact', 'quote', 'context', 'ending'] as const).map((key) => (
+                <div key={key}>
+                  <label className="text-xs text-gray-500">{key}</label>
+                  <textarea
+                    data-testid={`input-ops-trainer-slot-${key}`}
+                    className="w-full border border-gray-200 p-2 text-sm min-h-[48px]"
+                    value={structure[key]}
+                    onChange={(e) => setSlot(key, e.target.value)}
+                  />
+                </div>
+              ))}
+              <textarea
+                data-testid="input-ops-trainer-body"
+                className="w-full border border-gray-200 p-2 text-sm min-h-[80px]"
+                value={bodyText}
+                onChange={(e) => setBodyText(e.target.value)}
+                placeholder={t('ops.trainer.bodyPlaceholder')}
+              />
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  data-testid="btn-ops-trainer-reanalyze"
+                  className="min-h-[44px] flex-1 border border-gray-300 text-sm"
+                  onClick={runAnalyze}
+                >
+                  {t('ops.trainer.reanalyze')}
+                </button>
+                <button
+                  type="button"
+                  data-testid="btn-ops-trainer-confirm"
+                  className="min-h-[44px] flex-1 bg-black text-white text-sm disabled:opacity-50"
+                  disabled={saving}
+                  onClick={onConfirm}
+                >
+                  {saving ? t('common.processing') : t('ops.trainer.confirmMongo')}
+                </button>
+              </div>
+            </>
+          )}
         </section>
       </div>
     </div>
