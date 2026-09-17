@@ -619,7 +619,8 @@ test('login flow', async ({ page }) => {
 | `chk-ops-trainer-negative` | 勾選 | 反面教材 | — |
 | `input-ops-trainer-slot-*` | 輸入 | 五槽 | prefix/fact/quote/context/ending |
 | `ops-trainer-coverage` | 文字 | n/18 覆蓋 | — |
-| `ops-trainer-skeleton` | 狀態 | 解析中 | — |
+| `ops-trainer-skeleton` | 狀態 | 右欄解析中 Skeleton（灰條） | — |
+| `ops-trainer-left-busy` | 狀態 | 左欄解析中文字提示 | — |
 
 ### 新增按鈕時
 
