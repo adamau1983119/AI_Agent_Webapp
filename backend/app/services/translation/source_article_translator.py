@@ -54,16 +54,21 @@ async def resolve_source_article_translation(
         topic["translated_source_content"] = cached_text
         return cached_text
 
-    # 2. 提取原始文章內容
+    # 2. 提取原始文章內容（優先 content_clean）
     sources = topic.get("sources") or []
     raw_content = ""
     source_url = ""
     source_lang = ""
     if sources and isinstance(sources, list) and isinstance(sources[0], dict):
         from app.utils.article_boilerplate import clean_extracted_text
-        raw_content = clean_extracted_text(
-            (sources[0].get("original_content") or "").strip()
-        )
+        clean = (sources[0].get("content_clean") or "").strip()
+        if clean:
+            raw_content = clean
+        else:
+            top = (topic.get("content_clean") or "").strip()
+            raw_content = top or clean_extracted_text(
+                (sources[0].get("original_content") or "").strip()
+            )
         source_url = str(sources[0].get("url") or "")
         source_lang = str(sources[0].get("language") or "")
 
@@ -75,20 +80,32 @@ async def resolve_source_article_translation(
             ext_info = await extractor.extract_article_info(source_url)
             if ext_info.get("original_content"):
                 from app.utils.article_boilerplate import clean_extracted_text
+                from app.services.automation.topic_post_scan import apply_scan_to_source
                 raw_content = clean_extracted_text(ext_info["original_content"].strip())
                 if isinstance(sources[0], dict):
                     sources[0]["original_content"] = raw_content
+                    scan = apply_scan_to_source(sources[0])
+                    if scan.get("content_clean"):
+                        raw_content = scan["content_clean"]
                     if ext_info.get("language") and not source_lang:
                         sources[0]["language"] = ext_info["language"]
                         source_lang = ext_info["language"]
                     if ext_info.get("images") and not sources[0].get("images"):
                         sources[0]["images"] = ext_info["images"]
                     topic["sources"] = sources
+                    if scan.get("content_clean"):
+                        topic["content_clean"] = scan["content_clean"]
                     if save_cache and topic_id:
                         try:
                             from app.services.repositories.topic_repository import TopicRepository
                             repo = TopicRepository()
-                            await repo.update_topic(topic_id, {"sources": sources})
+                            await repo.update_topic(
+                                topic_id,
+                                {
+                                    "sources": sources,
+                                    "content_clean": topic.get("content_clean") or "",
+                                },
+                            )
                         except Exception as db_s_err:
                             logger.warning("Failed saving on-demand sources for topic %s: %s", topic_id, db_s_err)
         except Exception as on_demand_err:

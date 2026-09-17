@@ -337,6 +337,7 @@ class ChannelCollector:
         stamp = now.strftime("%Y%m%d%H%M%S")
         saved = 0
         display_lang = target_language or "zh-TW"
+        docs: List[Dict[str, Any]] = []
 
         for raw in topics:
             try:
@@ -351,12 +352,9 @@ class ChannelCollector:
                 topic_id = f"topic_{mapped_category}_{stamp}_{secrets.token_hex(4)}"
 
                 from app.services.summarization.summary_flash_service import generate_summary_flash
-
-                raw_for_flash = summary or original_title
-                summary_flash = await generate_summary_flash(
-                    title=original_title,
-                    raw_text=raw_for_flash,
-                    topic_id=topic_id,
+                from app.services.automation.topic_post_scan import (
+                    apply_scan_to_source,
+                    stamp_scan_on_topic,
                 )
 
                 source_entry: Dict[str, Any] = {
@@ -370,6 +368,21 @@ class ChannelCollector:
                 }
                 if image_url:
                     source_entry["images"] = [image_url]
+                if summary:
+                    source_entry["original_content"] = summary
+
+                scan = apply_scan_to_source(
+                    source_entry,
+                    fallback_text=summary or original_title,
+                )
+                raw_for_flash = (
+                    scan.get("content_clean") or summary or original_title
+                )
+                summary_flash = await generate_summary_flash(
+                    title=original_title,
+                    raw_text=raw_for_flash,
+                    topic_id=topic_id,
+                )
 
                 topic_doc: Dict[str, Any] = {
                     "id": topic_id,
@@ -391,6 +404,16 @@ class ChannelCollector:
                     "updated_at": now,
                     "created_at": now,
                 }
+                stamp_scan_on_topic(topic_doc, scan)
+                docs.append(topic_doc)
+            except Exception as e:
+                logger.warning(f"寫入主題失敗（略過）: {e}")
+
+        from app.services.automation.topic_visible_floor import apply_visible_floor
+
+        apply_visible_floor(docs)
+        for topic_doc in docs:
+            try:
                 await self.topic_repo.create_topic(topic_doc)
                 saved += 1
             except Exception as e:

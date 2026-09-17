@@ -7,12 +7,15 @@ from typing import Any
 _NOISE_LINE = re.compile(
     r"^(?:"
     r"facebook|whatsapp|instagram|pinterest|twitter|linkedin|threads|"
-    r"advertisement|sponsored|"
+    r"advertisement|sponsored|advertiser content|"
     r"跳至分類[:：]?.*|jump to categor(?:y|ies)[:：]?.*|"
     r"photo credit[:：]?.*|圖片來源[:：]?.*|"
     r"share this|分享此文|分享本文|分享到|"
     r"加入討論|關注我們|追蹤我們|follow us|"
-    r"複製連結|copy link|"
+    r"複製連結|copy link|comments?|save|"
+    r"取得我們的\s*app|get our\s*app|"
+    r"若你透過連結購買.*|vox media may earn|"
+    r"點擊訂閱即表示.*|by submitting your email|"
     r"在 google 上將我們加入偏好來源|"
     r"add us to your preferred sources on google"
     r")$",
@@ -22,9 +25,12 @@ _CUTOFF = re.compile(
     r"^(?:"
     r"選購.{0,48}|shop .{0,40}|shop the look|shop now|"
     r".{0,48}最新影片|latest videos|"
-    r"探索更多|相關閱讀|你可能也喜歡|"
+    r"探索更多|相關閱讀|你可能也喜歡|延伸閱讀|"
     r"explore more|read more|related stories|you may also like|"
-    r"訂閱電子報|newsletter|"
+    r"訂閱電子報|newsletter|訂閱我們的\s*newsletter|"
+    r"加入\s*popbee\s*會員|加入\s*popbee\s*circle|"
+    r"most popular|editor.?s?\s*pick|see more:|"
+    r"儲存這篇文章|save this story|save story|"
     r"副購物編輯|shopping editor"
     r")$",
     re.I,
@@ -85,14 +91,20 @@ def clean_extracted_text(text: str) -> str:
 
 
 def apply_display_clean_to_topic(topic: dict) -> None:
-    """Filter shopping/share chrome in-memory. Do not persist."""
+    """Filter shopping/share chrome in-memory. Prefer content_clean for display."""
     if not isinstance(topic, dict):
         return
     sources = topic.get("sources") or []
     if sources and isinstance(sources[0], dict):
-        raw = sources[0].get("original_content")
-        if isinstance(raw, str) and raw.strip():
-            sources[0]["original_content"] = clean_extracted_text(raw)
+        clean = sources[0].get("content_clean")
+        if isinstance(clean, str) and clean.strip():
+            sources[0]["original_content"] = clean.strip()
+        else:
+            raw = sources[0].get("original_content")
+            if isinstance(raw, str) and raw.strip():
+                cleaned = clean_extracted_text(raw)
+                sources[0]["original_content"] = cleaned
+                sources[0]["content_clean"] = cleaned
     ts = topic.get("translated_source_content")
     if isinstance(ts, str) and ts.strip():
         topic["translated_source_content"] = clean_extracted_text(ts)
