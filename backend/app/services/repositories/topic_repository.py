@@ -107,6 +107,7 @@ class TopicRepository(BaseRepository):
         """
         # 建立查詢條件（$and 避免 generation $or 與 search $or 互蓋）
         from app.utils.topic_pipeline import (
+            build_topic_list_sort,
             list_topics_generation_filter,
             list_topics_hidden_filter,
         )
@@ -152,9 +153,10 @@ class TopicRepository(BaseRepository):
         else:
             filter = {"$and": clauses}
         
-        # 建立排序條件（低 sort_penalty 優先，再依呼叫端 sort）
-        sort_order = -1 if order == "desc" else 1
-        sort_list = [("sort_penalty", 1), (sort, sort_order)]
+        # 新卡優先：先依呼叫端 sort（預設 generated_at desc），
+        # sort_penalty 僅作同批次 tie-break。若 penalty 當主鍵，
+        # 有 scan 的今日卡會沉到舊卡（無欄位）之後，Dashboard limit=30 變空牆。
+        sort_list = build_topic_list_sort(sort=sort, order=order)
         
         # 計算跳過數量
         skip = (page - 1) * limit

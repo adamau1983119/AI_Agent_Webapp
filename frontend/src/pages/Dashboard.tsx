@@ -12,6 +12,7 @@ import {
   countTopicsForHktDay,
   dedupeTopicsByTitle,
   filterTopicsForHktDay,
+  todayHktDateString,
 } from '@/lib/topicDayHkt'
 
 type DashTab = 'all' | 'fashion' | 'food' | 'trend'
@@ -33,14 +34,16 @@ export default function Dashboard() {
   const [searchParams, setSearchParams] = useSearchParams()
   const tab = parseDashTab(searchParams.get('tab'))
 
+  const todayHkt = todayHktDateString()
   const {
     data: topicsResponse,
     isLoading: topicsLoading,
     error: topicsError,
     refetch: refetchTopics,
   } = useQuery({
-    queryKey: ['topics', language],
-    queryFn: () => topicsAPI.getTopics({ limit: 30, lang: language }),
+    queryKey: ['topics', language, todayHkt],
+    queryFn: () =>
+      topicsAPI.getTopics({ limit: 30, lang: language, date: todayHkt }),
     retry: false,
     staleTime: 30000,
     gcTime: 5 * 60 * 1000,
