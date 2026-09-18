@@ -74,3 +74,11 @@ def merge_topic_list_filters(*parts: Dict[str, Any]) -> Dict[str, Any]:
     if len(clauses) == 1:
         return clauses[0]
     return {"$and": clauses}
+
+
+def build_topic_list_sort(
+    sort: str = "generated_at", order: str = "desc"
+) -> list:
+    """新卡優先；sort_penalty 只做同時間 tie-break（勿當主鍵）。"""
+    sort_order = -1 if order == "desc" else 1
+    return [(sort, sort_order), ("sort_penalty", 1)]
