@@ -94,6 +94,24 @@ class ArticleExtractor:
         if not content or len(content) < 30:
             content = self._extract_content_regex(html_content)
 
+        from app.utils.article_extract_quality import accept_extracted_body, text_quality
+
+        q = text_quality(content)
+        body_ok = accept_extracted_body(content)
+        if content and not body_ok:
+            try:
+                from app.utils.logger import log_cost_event
+
+                log_cost_event(
+                    "TOPIC_EXTRACT_HTTP_SHELL_REJECT",
+                    cjk=q.get("cjk"),
+                    mega=q.get("mega_hits"),
+                    reason=q.get("reason") or "shell",
+                    chars=q.get("chars"),
+                )
+            except Exception:
+                pass
+            content = ""
         language = self._detect_language(content)
         style = self._analyze_style(content)
         return {
@@ -101,7 +119,8 @@ class ArticleExtractor:
             "original_content": content if content else None,
             "language": language,
             "style": style,
-            "success": bool(content and len(content) >= 30),
+            "success": body_ok,
+            "quality": q,
         }
 
     def _extract_images_soup(self, soup: Any, base_url: str) -> List[str]:

@@ -6,6 +6,16 @@ import re
 from typing import Any, Dict
 
 from app.utils.article_boilerplate import clean_extracted_text
+from app.utils.article_extract_quality import text_quality
+
+
+def _log(tag: str, **fields: Any) -> None:
+    try:
+        from app.utils.logger import log_cost_event
+
+        log_cost_event(tag, **fields)
+    except Exception:
+        pass
 
 _MIN_CLEAN = 80
 _SLIDE = re.compile(r"(?m)^\s*\d+\s*/\s*\d+\s*$")
@@ -36,7 +46,7 @@ def _cut_slideshow(text: str) -> str:
 
 
 def scan_text(raw: str) -> Dict[str, Any]:
-    """Return content_clean, sort_penalty, hide_card, reason."""
+    """Return content_clean, sort_penalty, hide_card, reason. Prefer sink over hide."""
     src = (raw or "").strip()
     if not src:
         return {
@@ -51,19 +61,41 @@ def scan_text(raw: str) -> Dict[str, Any]:
         clean = clean_extracted_text(src) if len(clean) < 40 else clean
         if len(clean) < _MIN_CLEAN:
             clean = src[:5000]
+    q = text_quality(clean)
     penalty = 0
     reason = ""
     hide = False
-    if _SEVERE.search(src) and len(clean) < _MIN_CLEAN:
-        hide = True
+    if q.get("is_shell"):
+        # Wide-gate: sink chrome; do not hide the card.
+        penalty = 70
+        reason = f"chrome_shell:{q.get('reason') or 'shell'}"
+        clean = ""
+    elif _SEVERE.search(src) and len(clean) < _MIN_CLEAN:
+        # Empty + paywall: sink hard; hide only when truly empty after clean.
         penalty = 80
         reason = "severe_paywall_or_empty"
+        hide = len(clean) < 40
     elif _LIGHT.search(src) and len(clean) < len(src) * 0.55:
         penalty = 25
         reason = "noise_trimmed"
     elif len(clean) < 120:
         penalty = 15
         reason = "short_body"
+    _log(
+        "TOPIC_POST_SCAN",
+        penalty=penalty,
+        hide=hide,
+        reason=reason or "ok",
+        cjk=q.get("cjk"),
+        mega=q.get("mega_hits"),
+    )
+    if penalty >= 70:
+        _log(
+            "TOPIC_CARD_SINK",
+            penalty=penalty,
+            reason=reason,
+            chars=len(clean),
+        )
     return {
         "content_clean": clean[:5000],
         "sort_penalty": penalty,

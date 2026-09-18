@@ -32,11 +32,24 @@ class TestTopicPostScan(unittest.TestCase):
         self.assertNotIn("1/12", r["content_clean"])
         self.assertIn("餐廳", r["content_clean"])
 
-    def test_severe_paywall_may_hide(self):
+    def test_severe_paywall_high_penalty(self):
         raw = "subscribers only\nlogin to continue\npaywall"
         r = scan_text(raw)
-        self.assertTrue(r["hide_card"])
         self.assertGreaterEqual(r["sort_penalty"], 80)
+        # Prefer sink; hide only when nearly empty after clean
+        if len(r["content_clean"]) < 40:
+            self.assertTrue(r["hide_card"])
+
+    def test_chrome_shell_sinks_not_hide(self):
+        raw = (
+            "Fashion Beauty Wellness Lifestyle Celebrities Lookbook Streetsnaps\n"
+            "All Fashion Beauty Wellness Lifestyle Celebrities\n"
+            "加入 POPBEE 會員可以即時閱覽我們的獨家資訊內容，更可享有一系列精彩的尊享禮遇及折扣優惠！立即登記\n"
+        )
+        r = scan_text(raw)
+        self.assertGreaterEqual(r["sort_penalty"], 70)
+        self.assertFalse(r["hide_card"])
+        self.assertEqual(r["content_clean"], "")
 
     def test_short_clean_keeps_body_not_empty(self):
         raw = "短訊：" + ("真實內容保留。" * 20)
