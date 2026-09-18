@@ -411,6 +411,8 @@ data-testid="{類型}-{位置}-{功能}"
 | `btn-topic-detail-kol-style` | 按鈕 | 詳情：網紅風格（kol_style Flash 按需） |
 | `btn-topic-detail-show-collected` | 按鈕 | 詳情：顯示收集時標題 |
 | `btn-topic-detail-translate-article` | 按鈕 | 詳情：按需翻譯源文章報道（GET 仍 overlay） |
+| `topic-detail-fact-summary-badge` | 標籤 | 詳情：顯示事實摘要徽章 |
+| `topic-detail-source-extract-fallback` | 標籤 | 詳情：源文抽取失敗改顯示摘要提示 |
 | `btn-images-download-jpeg` | 按鈕 | 精選縮圖：下載 sRGB JPG |
 | `btn-images-preview-download-jpeg` | 按鈕 | 圖片預覽：下載 sRGB JPG |
 

@@ -146,6 +146,13 @@ export default function TopicDetail() {
 
   const originalContentText = useMemo(() => {
     if (!topic) return ''
+    const clean =
+      topic.sources?.[0]?.content_clean ||
+      topic.sources?.[0]?.contentClean ||
+      topic.content_clean ||
+      topic.contentClean ||
+      ''
+    if (typeof clean === 'string' && clean.trim()) return clean.trim()
     const raw = topic.sources?.[0]?.original_content || topic.sources?.[0]?.originalContent || ''
     return raw.trim()
   }, [topic])
@@ -172,17 +179,35 @@ export default function TopicDetail() {
     return summary.trim()
   }, [topic, displayCopy])
 
+  const bodyLooksLikeChrome = useMemo(() => {
+    const text = (cachedSourceTranslation || originalContentText || '').trim()
+    if (!text) return false
+    const mega = (text.match(/Fashion|Beauty|Wellness|Lifestyle|Celebrities|Lookbook|Streetsnaps/gi) || [])
+      .length
+    if (mega >= 4) return true
+    if (/^加入\s*POPBEE/i.test(text) || /^加入\s*會員/i.test(text)) return true
+    if (text.length < 80 && mega >= 2) return true
+    return false
+  }, [cachedSourceTranslation, originalContentText])
+
   const hasOriginalContent = Boolean(
     originalContentText &&
       cachedSourceTranslation &&
-      originalContentText !== cachedSourceTranslation
+      originalContentText !== cachedSourceTranslation &&
+      !bodyLooksLikeChrome
   )
 
-  const isShowingFactSummary =
-    sourceViewMode !== 'original' && !cachedSourceTranslation && Boolean(factSummaryText)
+  const useFlashFallback =
+    Boolean(factSummaryText) &&
+    (bodyLooksLikeChrome || (!originalContentText && !cachedSourceTranslation))
 
-  const sourceDisplayContent =
-    sourceViewMode === 'original' && originalContentText
+  const isShowingFactSummary =
+    (sourceViewMode !== 'original' && !cachedSourceTranslation && Boolean(factSummaryText)) ||
+    useFlashFallback
+
+  const sourceDisplayContent = useFlashFallback
+    ? factSummaryText
+    : sourceViewMode === 'original' && originalContentText
       ? originalContentText
       : (cachedSourceTranslation || originalContentText || factSummaryText)
 
@@ -570,8 +595,19 @@ export default function TopicDetail() {
                 </div>
               )}
               {isShowingFactSummary && (
-                <span className="text-xs text-gray-600 dark:text-gray-300 px-2 py-1 bg-gray-50 dark:bg-gray-700/50 rounded font-sans border border-gray-100 dark:border-gray-700">
+                <span
+                  className="text-xs text-gray-600 dark:text-gray-300 px-2 py-1 bg-gray-50 dark:bg-gray-700/50 rounded font-sans border border-gray-100 dark:border-gray-700"
+                  data-testid="topic-detail-fact-summary-badge"
+                >
                   {t('topics.factSummary')}
+                </span>
+              )}
+              {useFlashFallback && (
+                <span
+                  className="text-xs text-amber-800 dark:text-amber-200 px-2 py-1 bg-amber-50 dark:bg-amber-900/30 rounded font-sans border border-amber-100 dark:border-amber-800/50 max-w-xl"
+                  data-testid="topic-detail-source-extract-fallback"
+                >
+                  {t('topics.sourceExtractFallback')}
                 </span>
               )}
               {!cachedSourceTranslation && (
