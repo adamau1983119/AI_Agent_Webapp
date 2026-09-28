@@ -2,7 +2,7 @@
  * Public topic post composer (JIT). IG/FB only; short 500 / long 1500.
  * Keep tray / Threads / Post Kit UI hidden (MVP). Does not auto-call LLM.
  */
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Copy, Facebook, Instagram, RefreshCw, Sparkles } from 'lucide-react'
 import { alterEgoApi, type ComposePart, type ComposePlatform, type ComposeStyle } from '@/api/alterEgo'
@@ -53,6 +53,7 @@ export default function PostComposerPanel({
   requireAuth,
   mode = 'live',
   domain,
+  onTitlesChange,
 }: {
   topicId: string
   topicTitle: string
@@ -61,6 +62,7 @@ export default function PostComposerPanel({
   requireAuth: (action: () => void) => void
   mode?: 'live' | 'demo'
   domain?: string
+  onTitlesChange?: (titles: string[]) => void
 }) {
   const { t } = useTranslation()
   const isDemo = mode === 'demo'
@@ -75,6 +77,10 @@ export default function PostComposerPanel({
   const [busyPart, setBusyPart] = useState<ComposePart | null>(null)
   const [needCredits, setNeedCredits] = useState(false)
   const [bodyOk, setBodyOk] = useState(false)
+
+  useEffect(() => {
+    onTitlesChange?.(titles)
+  }, [titles, onTitlesChange])
 
   const cap = CAPS[platform === 'instagram' ? 'instagram' : 'facebook']
   const limit = Math.min(maxChars, cap)

@@ -254,6 +254,93 @@ async def proxy_image(
         return _proxy_fallback_image("server_error")
 
 
+@router.get("/download-jpeg")
+async def download_compressed_jpeg(
+    request: Request,
+    image_id: str = Query(..., description="圖片 ID"),
+):
+    """Fetch source URL, compress ≤200KB JPEG, return file (real backend path)."""
+    from app.services.images.jpeg_compress import fetch_and_compress
+
+    doc = await image_repo.get_image_by_id(image_id)
+    if not doc:
+        raise HTTPException(status_code=404, detail="image_not_found")
+    url = (doc.get("url") or "").strip()
+    if not url:
+        raise HTTPException(status_code=400, detail="missing_url")
+    try:
+        data = await fetch_and_compress(url, tag="DOWNLOAD_JPEG")
+    except ValueError as e:
+        logger.warning(f"download-jpeg bad input id={image_id}: {e}")
+        raise HTTPException(status_code=400, detail=str(e) or "bad_image") from e
+    except Exception as e:
+        logger.warning(f"download-jpeg compress failed id={image_id}: {e}")
+        raise HTTPException(status_code=502, detail="compress_failed") from e
+    return Response(
+        content=data,
+        media_type="image/jpeg",
+        headers={
+            "Content-Disposition": f'attachment; filename="featured-{image_id[-8:]}.jpg"',
+            "Cache-Control": "private, max-age=3600",
+        },
+    )
+
+
+@router.post("/title-image")
+async def render_title_image(
+    image_id: str = Body(..., embed=True),
+    heading: str = Body(..., embed=True),
+    style: str = Body(..., embed=True),
+):
+    """Overlay DeepSeek／Post Kit heading on featured photo → ≤200KB JPEG (0 credits)."""
+    from app.services.images.jpeg_compress import compress_jpeg_bytes
+    from app.services.images.title_image_overlay import render_title_jpeg
+    from app.utils.logger import log_cost_event
+
+    text = (heading or "").strip()
+    if not text:
+        raise HTTPException(status_code=400, detail="missing_heading")
+    if style not in ("a", "b", "c"):
+        raise HTTPException(status_code=400, detail="invalid_style")
+    doc = await image_repo.get_image_by_id(image_id)
+    if not doc:
+        raise HTTPException(status_code=404, detail="image_not_found")
+    url = (doc.get("url") or "").strip()
+    if not url:
+        raise HTTPException(status_code=400, detail="missing_url")
+    try:
+        async with httpx.AsyncClient(timeout=30.0, follow_redirects=True) as client:
+            res = await client.get(
+                url,
+                headers={"User-Agent": "Mozilla/5.0 (compatible; AlterEgo/1.0)"},
+            )
+            res.raise_for_status()
+            raw = res.content
+        jpeg = render_title_jpeg(raw, text, style)  # type: ignore[arg-type]
+        data, _, _ = compress_jpeg_bytes(jpeg)
+        log_cost_event(
+            "TITLE_IMAGE_RENDER",
+            success=True,
+            image_id=image_id,
+            style=style,
+            out_bytes=len(data),
+            heading=text[:60],
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.warning(f"title-image failed id={image_id}: {e}")
+        raise HTTPException(status_code=502, detail="title_image_failed") from e
+    return Response(
+        content=data,
+        media_type="image/jpeg",
+        headers={
+            "Content-Disposition": f'attachment; filename="title-{image_id[-8:]}.jpg"',
+            "Cache-Control": "private, max-age=60",
+        },
+    )
+
+
 @router.get("/search", response_model=ImageSearchResponse)
 async def search_images(
     keywords: str = Query(..., description="搜尋關鍵字"),
