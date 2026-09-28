@@ -1,12 +1,16 @@
 /**
- * Compose sample / practice page — canned demo, no compose API.
+ * Compose sample + clickable title-image edit demo (client composite, 0 LLM).
  */
 import { Link } from 'react-router-dom'
-import PostComposerPanel from '@/components/features/PostComposerPanel'
+import TitleImageEditDemo from '@/components/features/TitleImageEditDemo'
 import { useTranslation } from '@/i18n'
 
+const REAL_TOPIC_ID = 'www_tom_bateman_love_hypothesis_20260918'
+const WWW_URL =
+  'https://www.whowhatwear.com/fashion/celebrity/tom-bateman-the-love-hypothesis-interview-2026'
+
 export default function ComposeSamplePage() {
-  const { t, language } = useTranslation()
+  const { t } = useTranslation()
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8 space-y-6" data-testid="page-compose-sample">
@@ -22,14 +26,34 @@ export default function ComposeSamplePage() {
           <li>{t('composer.sampleStep3')}</li>
         </ol>
       </div>
-      <PostComposerPanel
-        mode="demo"
-        topicId="demo"
-        topicTitle={t('composer.sampleTopicTitle')}
-        contextSummary={t('composer.sampleTopicFact')}
-        language={language}
-        requireAuth={(fn) => fn()}
-      />
+
+      <section
+        className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 space-y-4"
+        data-testid="section-real-backend-path"
+      >
+        <h2 className="font-display text-lg font-semibold">{t('titleImage.realPathTitle')}</h2>
+        <p className="text-sm text-gray-600">{t('titleImage.realPathBody')}</p>
+        <a
+          href={WWW_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-sm text-primary underline break-all"
+          data-testid="link-title-image-sample-source"
+        >
+          {t('titleImage.sourceLink')}
+        </a>
+        <Link
+          to={`/topics/${REAL_TOPIC_ID}`}
+          data-testid="btn-compose-sample-open-real-topic"
+          className="w-full inline-flex items-center justify-center min-h-[44px] rounded-xl bg-primary text-white text-sm font-medium"
+        >
+          {t('titleImage.openRealTopic')}
+        </Link>
+        <p className="text-xs text-gray-500">{t('titleImage.realPathHint')}</p>
+      </section>
+
+      <TitleImageEditDemo />
+
       <Link
         to="/dashboard"
         data-testid="btn-compose-sample-to-topic"

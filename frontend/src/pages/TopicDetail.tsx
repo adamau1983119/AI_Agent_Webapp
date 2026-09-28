@@ -12,6 +12,7 @@ import InteractionButtons from '@/components/features/InteractionButtons'
 import ContentGenerationPanel from '@/components/features/ContentGenerationPanel'
 import PostKitPanel from '@/components/features/PostKitPanel'
 import PostComposerPanel from '@/components/features/PostComposerPanel'
+import TitleImageEditPanel from '@/components/features/TitleImageEditPanel'
 import { FEATURED_PHOTO_CAP } from '@/lib/featuredPhotos'
 import type { GenerationSettings } from '@/components/features/ContentGenerationPanel'
 import { usePageTitle } from '@/hooks/usePageTitle'
@@ -50,6 +51,7 @@ export default function TopicDetail() {
   const { isAuthenticated, user } = useAuthStore()
   const [showImageSearch, setShowImageSearch] = useState(false)
   const [showLoginPrompt, setShowLoginPrompt] = useState(false)
+  const [composeTitles, setComposeTitles] = useState<string[]>([])
   const [viewStartTime, setViewStartTime] = useState<number | null>(null)
   const [displayOverride, setDisplayOverride] = useState<TopicDisplayOverride | null>(null)
   const [showCollectionTitle, setShowCollectionTitle] = useState(false)
@@ -755,6 +757,27 @@ export default function TopicDetail() {
             language={language}
             requireAuth={requireAuth}
             domain={topic.category}
+            onTitlesChange={setComposeTitles}
+          />
+          <TitleImageEditPanel
+            photos={images.slice(0, FEATURED_PHOTO_CAP).map((img) => ({
+              id: img.id,
+              url: getProxyImageUrl(img.url),
+            }))}
+            headings={
+              composeTitles.filter((h) => h.trim()).length
+                ? composeTitles
+                : [
+                    (displayCopy?.localePending
+                      ? topic.title
+                      : displayCopy?.title || topic.title) || '',
+                  ]
+            }
+            testPrefix="live"
+            titleKey="titleImage.editPanelTitle"
+            hintKey="titleImage.editPanelHint"
+            filename="title-image.jpg"
+            emptyHintKey="titleImage.needComposeOrTitle"
           />
           {false && (
           <ContentGenerationPanel

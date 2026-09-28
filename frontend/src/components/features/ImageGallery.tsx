@@ -2,7 +2,7 @@
  * 圖片畫廊元件
  */
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { imagesAPI, API_BASE_URL } from '@/api/client'
 import { showSuccess, showError } from '@/utils/toast'
@@ -11,7 +11,7 @@ import type { ImageReorderItem } from '@/api/images'
 import ImagePreview from './ImagePreview'
 import { useTranslation } from '@/i18n'
 import { FEATURED_PHOTO_CAP } from '@/lib/featuredPhotos'
-import { downloadImageAsJpeg } from '@/lib/downloadJpeg'
+import { downloadImageAsJpeg, downloadImageElementAsJpeg } from '@/lib/downloadJpeg'
 
 /**
  * 生成圖片代理 URL
@@ -80,6 +80,7 @@ function ImageGalleryItem({
   isLast: boolean
 }) {
   const { t } = useTranslation()
+  const imgRef = useRef<HTMLImageElement>(null)
   const [imageError, setImageError] = useState(false)
   const [imageLoading, setImageLoading] = useState(true)
   const [showActions, setShowActions] = useState(false)  // 手機版：點擊顯示操作按鈕
@@ -90,6 +91,31 @@ function ImageGalleryItem({
     if (downloading) return
     setDownloading(true)
     try {
+      // 1) Real backend: fetch source → compress ≤200KB → download
+      const compressedUrl = `${API_BASE_URL}/images/download-jpeg?image_id=${encodeURIComponent(image.id)}`
+      const res = await fetch(compressedUrl)
+      if (res.ok) {
+        const blob = await res.blob()
+        if (blob.size > 0 && (blob.type.includes('jpeg') || blob.type.includes('jpg') || blob.size > 1000)) {
+          const href = URL.createObjectURL(blob)
+          const a = document.createElement('a')
+          a.href = href
+          a.download = `featured-${index + 1}.jpg`
+          document.body.appendChild(a)
+          a.click()
+          a.remove()
+          URL.revokeObjectURL(href)
+          showSuccess(t('images.downloadJpegDone'))
+          return
+        }
+      }
+      // 2) Fallback: already-loaded <img> (no second proxy fetch)
+      if (imgRef.current && imgRef.current.naturalWidth > 0) {
+        await downloadImageElementAsJpeg(imgRef.current, `featured-${index + 1}.jpg`)
+        showSuccess(t('images.downloadJpegDone'))
+        return
+      }
+      // 3) Last resort: re-fetch proxy
       await downloadImageAsJpeg(proxyUrl, `featured-${index + 1}.jpg`)
       showSuccess(t('images.downloadJpegDone'))
     } catch {
@@ -133,9 +159,11 @@ function ImageGalleryItem({
 
       {/* 圖片 */}
       <img
+        ref={imgRef}
         src={proxyUrl}
         alt={`${t('images.title')} ${image.order}`}
         className="w-full h-full object-cover pointer-events-none"
+        crossOrigin="anonymous"
         onLoad={() => {
           setImageLoading(false)
           setImageError(false)

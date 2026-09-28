@@ -470,6 +470,43 @@ data-testid="{類型}-{位置}-{功能}"
 | `compose-coach-strip` | 區塊 | 三步驟教練條 |
 | `btn-compose-sample-to-topic` | 連結 | 導向真實主題（Dashboard） |
 | `link-sidebar-compose-sample` | 側欄 | 組裝練習入口 |
+| `section-title-image-sample` | 區塊 | WWW 標題圖 Sample 根 |
+| `section-www-topic-card` | 區塊 | Who What Wear 示範主題卡 |
+| `link-title-image-sample-source` | 連結 | 原文 Who What Wear |
+| `grid-title-image-sample-photos` | 區塊 | 精選 2×2 |
+| `btn-title-image-pick-photo-{id}` | 按鈕 | 選定底圖 |
+| `section-title-image-sample-kit` | 區塊 | Post Kit heading 選區 |
+| `btn-title-image-heading-1`～`3` | 按鈕 | 選 heading |
+| `btn-postkit-open-title-image` | 按鈕 | 展開標題圖舞台 |
+| `section-title-image` | 區塊 | 標題圖三料齊舞台 |
+| `btn-title-image-style-a`／`b`／`c` | 按鈕 | 選風格 |
+| `img-title-image-preview` | 圖 | 疊字預覽 |
+| `text-title-image-missing` | 文案 | 缺料提示 |
+| `btn-title-image-render` | 按鈕 | 示範生成（不扣點） |
+| `btn-title-image-download` | 按鈕 | 下載 JPG |
+| `section-title-image-edit-demo` | 區塊 | 標題圖編輯 Demo（compose-sample） |
+| `btn-title-edit-demo-photo-{id}` | 按鈕 | Demo 選底圖 |
+| `btn-title-edit-demo-heading-{n}` | 按鈕 | Demo 選標題 |
+| `btn-title-edit-demo-writing-{h\|v}` | 按鈕 | 橫排／直書 |
+| `btn-title-edit-demo-face-{hei\|song\|kai}` | 按鈕 | 字款（黑／宋／楷） |
+| `btn-title-edit-demo-bg-{black\|white\|navy\|…}` | 按鈕 | 標題底色（10 色） |
+| `btn-title-edit-demo-v-{top\|middle\|bottom}` | 按鈕 | 垂直位置 |
+| `btn-title-edit-demo-h-{left\|center\|right}` | 按鈕 | 水平位置 |
+| `btn-title-edit-demo-font-{sm\|md\|lg}` | 按鈕 | 字級 |
+| `btn-title-edit-demo-confirm` | 按鈕 | 確認下載 JPG（最終生成） |
+| `btn-title-edit-demo-ok` | 按鈕 | （舊）OK 合成；已改為即時預覽 |
+| `img-title-edit-demo-preview` | 圖 | 即時預覽 |
+| `btn-title-edit-demo-download` | 按鈕 | （舊）下載；已併入 confirm |
+| `section-title-image-edit-live` | 區塊 | TopicDetail 標題圖編輯（對齊 Demo） |
+| `btn-title-edit-live-photo-{id}` | 按鈕 | 選精選底圖（經 proxy） |
+| `btn-title-edit-live-heading-{n}` | 按鈕 | 選 Compose／主題標題 |
+| `btn-title-edit-live-writing-{h\|v}` | 按鈕 | 橫排／直書 |
+| `btn-title-edit-live-face-{hei\|song\|kai}` | 按鈕 | 字款 |
+| `btn-title-edit-live-bg-{…}` | 按鈕 | 標題底色 |
+| `btn-title-edit-live-v-{…}`／`h-{…}`／`font-{…}` | 按鈕 | 位置／字級 |
+| `btn-title-edit-live-confirm` | 按鈕 | 確認下載標題圖 JPG |
+| `img-title-edit-live-preview` | 圖 | TopicDetail 即時預覽 |
+| `banner-compose-unsaved` | 橫幅 | 離開遺失警告 |
 
 ### 4.10 內容生成面板 (`ContentGenerationPanel.tsx`)
 

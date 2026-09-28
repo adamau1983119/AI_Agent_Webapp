@@ -2,12 +2,12 @@
  * 圖片預覽元件
  */
 
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { API_BASE_URL } from '@/api/client'
 import type { Image } from '@/types'
 import { useTranslation } from '@/i18n'
 import { showSuccess, showError } from '@/utils/toast'
-import { downloadImageAsJpeg } from '@/lib/downloadJpeg'
+import { downloadImageAsJpeg, downloadImageElementAsJpeg } from '@/lib/downloadJpeg'
 
 /**
  * 生成圖片代理 URL
@@ -34,11 +34,34 @@ export default function ImagePreview({
   const [imageError, setImageError] = useState(false)
   const [imageLoading, setImageLoading] = useState(true)
   const [downloading, setDownloading] = useState(false)
+  const imgRef = useRef<HTMLImageElement | null>(null)
 
   const handleDownloadJpeg = async () => {
     if (downloading || imageError) return
     setDownloading(true)
     try {
+      const compressedUrl = `${API_BASE_URL}/images/download-jpeg?image_id=${encodeURIComponent(image.id)}`
+      const res = await fetch(compressedUrl)
+      if (res.ok) {
+        const blob = await res.blob()
+        if (blob.size > 0 && (blob.type.includes('jpeg') || blob.type.includes('jpg') || blob.size > 1000)) {
+          const href = URL.createObjectURL(blob)
+          const a = document.createElement('a')
+          a.href = href
+          a.download = `featured-${(image.order ?? 0) + 1}.jpg`
+          document.body.appendChild(a)
+          a.click()
+          a.remove()
+          URL.revokeObjectURL(href)
+          showSuccess(t('images.downloadJpegDone'))
+          return
+        }
+      }
+      if (imgRef.current && imgRef.current.naturalWidth > 0) {
+        await downloadImageElementAsJpeg(imgRef.current, `featured-${(image.order ?? 0) + 1}.jpg`)
+        showSuccess(t('images.downloadJpegDone'))
+        return
+      }
       await downloadImageAsJpeg(proxyUrl, `featured-${(image.order ?? 0) + 1}.jpg`)
       showSuccess(t('images.downloadJpegDone'))
     } catch {
@@ -82,6 +105,7 @@ export default function ImagePreview({
           )}
           {!imageError && (
             <img
+              ref={imgRef}
               src={proxyUrl}
               alt={`Preview ${image.id}`}
               className="max-w-full max-h-[80vh] object-contain"
@@ -89,14 +113,9 @@ export default function ImagePreview({
                 setImageLoading(false)
                 setImageError(false)
               }}
-              onError={(e) => {
+              onError={() => {
                 setImageLoading(false)
                 setImageError(true)
-                console.warn('圖片預覽載入失敗:', {
-                  id: image.id,
-                  url: image.url,
-                  proxyUrl: proxyUrl
-                })
               }}
             />
           )}
