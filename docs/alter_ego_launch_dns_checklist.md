@@ -4,6 +4,7 @@
 > **網域**：**`ai-alterego.com`**（Spaceship 註冊；2026-06-02 購入，自動續約至 2027-06-02）  
 > **託管**：**方案 B**（2026-07-29 定案）— **Vercel** 前端 + **Railway** 後端  
 > **進度（2026-07-30 收工）**：API／health／Vercel／**Google Console O2～O3** ✅；正式域登入 E2E／Meta／密鑰輪換 ⏳  
+> **補記（2026-10-02）**：Spacemail 三箱＋**GSC** 網域 TXT ✅（見下 **D6**）；Resend MX／SPF／DKIM **未動**；sitemap／網站追蹤碼 ⏳  
 > **SoT 交叉**：[`專案完整架構表_v8.md`](../專案完整架構表_v8.md) **品牌與網域**、[`工作記錄.md`](../工作記錄.md) 頂部 · 備份 [`docs/backups/2026-07-30_v8_hosting_b_day2_snapshot/`](./backups/2026-07-30_v8_hosting_b_day2_snapshot/SNAPSHOT_README.md)
 
 ---
@@ -37,6 +38,7 @@
 | D3 | 若有 **`api` 子域**：一併新增 **A 或 CNAME** | ☑ | **CNAME** `api`→`a0nsx9p5.up.railway.app`；**TXT** `_railway-verify.api` |
 | D4 | `dig`／`nslookup` 確認解析 | ☑ | 8.8.8.8／1.1.1.1 已驗（2026-07-30） |
 | D5 | 等待 TTL 傳播（常見 5～30 分；最長 48h） | ☑ | Railway DNS 綠勾 + SSL |
+| D6 | **Google Search Console** 網域驗證 TXT（`@`） | ☑ | **2026-10-02**：`google-site-verification=…` 已加；GSC `ai-alterego.com` 驗證成功；**勿**改既有 MX／SPF／Resend DKIM |
 
 ### 2. HTTPS 與反向代理
 
@@ -192,6 +194,7 @@ VITE_API_URL=https://ai-alterego.com/api/v1
 | **CNAME** | `www` | `ddf259fcf353023f.vercel-dns.com` | 300 | **2026-07-29 實填**（以 Vercel Domains 為準） |
 | **CNAME** | `api` | `a0nsx9p5.up.railway.app` | 300 | **2026-07-30 實填** |
 | **TXT** | `_railway-verify.api` | `railway-verify=<token>` | 300 | Railway 驗證（值以平台為準；勿貼公開處） |
+| **TXT** | `@` | `google-site-verification=<token>` | 300 | **GSC** 網域驗證（**2026-10-02** 已加；完整值見 Spaceship，勿改 MX／SPF／Resend） |
 
 > **注意**：Vercel／Railway 畫面會給**精確** CNAME／A／TXT 值；上表為常見模板＋當日實填，**以平台當下指示覆蓋本表**。
 
