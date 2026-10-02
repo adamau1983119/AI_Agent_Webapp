@@ -1,0 +1,25 @@
+# Alter Ego
+
+> AI creative companion for YouTubers and creators: discover topics, shape an Alter Ego voice, and publish channel-ready content.
+
+## Site
+
+- Home: https://www.ai-alterego.com/
+- Welcome: https://www.ai-alterego.com/welcome
+- Sign up: https://www.ai-alterego.com/register
+- Terms: https://www.ai-alterego.com/terms
+- Privacy: https://www.ai-alterego.com/privacy
+
+## Product
+
+Alter Ego (ai-alterego.com) helps creators find trending topics, build a personal content style (Alter Ego), manage My Channel, and generate publish kits. Primary markets: Traditional Chinese (zh-TW), English, Japanese.
+
+## Contact
+
+- General: info@ai-alterego.com
+- Japan: info-jp@ai-alterego.com
+- Support: support@ai-alterego.com
+
+## Optional
+
+- Sitemap: https://www.ai-alterego.com/sitemap.xml
