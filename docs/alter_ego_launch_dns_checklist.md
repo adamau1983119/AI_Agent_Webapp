@@ -4,7 +4,7 @@
 > **網域**：**`ai-alterego.com`**（Spaceship 註冊；2026-06-02 購入，自動續約至 2027-06-02）  
 > **託管**：**方案 B**（2026-07-29 定案）— **Vercel** 前端 + **Railway** 後端  
 > **進度（2026-07-30 收工）**：API／health／Vercel／**Google Console O2～O3** ✅；正式域登入 E2E／Meta／密鑰輪換 ⏳  
-> **補記（2026-10-02）**：Spacemail 三箱＋**GSC** 網域 TXT ✅（見下 **D6**）；Resend MX／SPF／DKIM **未動**；sitemap／網站追蹤碼 ⏳  
+> **補記（2026-10-02）**：Spacemail 三箱＋**GSC** 網域 TXT ✅（見下 **D6**）；Resend MX／SPF／DKIM **未動**；**PR #78** 後正式域 **sitemap.xml＝XML PASS**＋PROD GA4／Ads gtag ✅（GSC Sitemaps 已提交）  
 > **SoT 交叉**：[`專案完整架構表_v8.md`](../專案完整架構表_v8.md) **品牌與網域**、[`工作記錄.md`](../工作記錄.md) 頂部 · 備份 [`docs/backups/2026-07-30_v8_hosting_b_day2_snapshot/`](./backups/2026-07-30_v8_hosting_b_day2_snapshot/SNAPSHOT_README.md)
 
 ---
