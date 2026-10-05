@@ -32,6 +32,8 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             "/openapi.json",
             "/redoc",
             "/api/v1/billing/webhook",
+            "/api/v1/images/proxy",
+            "/api/v1/images/download-jpeg",
         ]
         # 儲存請求記錄：{ip: [(timestamp, ...), ...]}
         self.request_history: Dict[str, list] = defaultdict(list)

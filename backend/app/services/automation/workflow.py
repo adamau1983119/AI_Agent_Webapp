@@ -358,6 +358,9 @@ class AutomationWorkflow:
                     img["image_type"] = ImageType.MATCHED.value
                     img["order"] = max_order + idx + 1
                     await self.image_repo.create_image(img)
+                    from app.services.images.jpeg_store import persist_source_jpeg
+
+                    await persist_source_jpeg(img.get("id") or "", img.get("url") or "")
                     added_count += 1
                 except Exception as e:
                     logger.warning(f"添加匹配圖片失敗: {e}")

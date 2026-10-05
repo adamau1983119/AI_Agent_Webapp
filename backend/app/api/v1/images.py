@@ -823,6 +823,9 @@ async def match_photos_for_topic(
                 }
                 
                 created = await image_repo.create_image(image_data)
+                from app.services.images.jpeg_store import persist_source_jpeg
+
+                await persist_source_jpeg(image_data["id"], image_data.get("url") or "")
                 saved_images.append(_convert_to_response(created))
             except Exception as e:
                 logger.warning(f"保存照片失敗: {e}")
