@@ -74,3 +74,20 @@ export async function downloadImageAsJpeg(
   const jpeg = await canvasToJpegBlob(canvas)
   triggerDownload(jpeg, filename)
 }
+
+/** Save the photo already on screen as JPEG, with no heading. Same canvas path as title images. */
+export async function downloadShownPhotoAsJpeg(
+  img: HTMLImageElement | null,
+  proxyUrl: string,
+  filename: string
+): Promise<void> {
+  if (img && img.naturalWidth > 0) {
+    try {
+      await downloadImageElementAsJpeg(img, filename)
+      return
+    } catch {
+      // A tainted canvas cannot be read. Reload through the proxy instead.
+    }
+  }
+  await downloadImageAsJpeg(proxyUrl, filename)
+}

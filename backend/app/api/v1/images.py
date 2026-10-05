@@ -271,18 +271,19 @@ async def download_compressed_jpeg(
     image_id: str = Query(..., description="圖片 ID"),
 ):
     """Return a stored ≤200KB JPEG, or compress the source URL once and keep it."""
-    from app.services.images.jpeg_compress import fetch_and_compress
-    from app.services.images.jpeg_store import (
-        load_stored_jpeg,
-        save_stored_jpeg,
-        split_source_image_id,
-        url_from_topic_sources,
-    )
-
     try:
+        from app.services.images.jpeg_store import (
+            load_stored_jpeg,
+            save_stored_jpeg,
+            split_source_image_id,
+            url_from_topic_sources,
+        )
+
         stored = await load_stored_jpeg(image_id)
         if stored:
             return _jpeg_attachment(image_id, stored)
+        from app.services.images.jpeg_compress import fetch_and_compress
+
         doc = await image_repo.get_image_by_id(image_id)
         url = ((doc or {}).get("url") or "").strip()
         if not url:
