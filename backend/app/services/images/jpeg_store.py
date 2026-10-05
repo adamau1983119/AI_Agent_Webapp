@@ -7,11 +7,11 @@ from typing import Any, Dict, Optional, Tuple
 from bson.binary import Binary
 
 from app.database import get_database
-from app.services.images.jpeg_compress import DEFAULT_MAX_BYTES, fetch_and_compress
 
 logger = logging.getLogger(__name__)
 
 COLLECTION = "image_jpegs"
+MAX_STORED = 200 * 1024
 
 
 def http_image_url(value: Any) -> str:
@@ -60,7 +60,7 @@ async def load_stored_jpeg(image_id: str) -> Optional[bytes]:
 
 
 async def save_stored_jpeg(image_id: str, data: bytes) -> None:
-    if not image_id or not data or len(data) > DEFAULT_MAX_BYTES:
+    if not image_id or not data or len(data) > MAX_STORED:
         return
     db = await get_database()
     await db[COLLECTION].update_one(
@@ -78,6 +78,8 @@ async def persist_source_jpeg(image_id: str, url: str) -> bool:
     try:
         if await load_stored_jpeg(image_id):
             return True
+        from app.services.images.jpeg_compress import fetch_and_compress
+
         data = await fetch_and_compress(url, tag="TOPIC_IMAGE_STORE")
         await save_stored_jpeg(image_id, data)
         return True
