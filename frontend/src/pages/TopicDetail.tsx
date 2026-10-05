@@ -32,6 +32,8 @@ import { titleScriptMismatch } from '@/lib/topicLanguages'
 import { copyToClipboard } from '@/utils/copyToClipboard'
 import { Copy, Sparkles, Image as ImageIcon, Search, ExternalLink, ArrowDownCircle, ArrowLeft } from 'lucide-react'
 import { markTopicRead } from '@/lib/topicReadState'
+import PublicTourCoach from '@/components/tour/PublicTourCoach'
+import { readPublicTour, writePublicTour, TOUR_STEPS, type PublicTourState } from '@/lib/publicTour'
 
 function getProxyImageUrl(imageUrl: string): string {
   if (!imageUrl) return ''
@@ -52,6 +54,7 @@ export default function TopicDetail() {
   const [showImageSearch, setShowImageSearch] = useState(false)
   const [showLoginPrompt, setShowLoginPrompt] = useState(false)
   const [composeTitles, setComposeTitles] = useState<string[]>([])
+  const [tour, setTour] = useState<PublicTourState>(() => readPublicTour())
   const [viewStartTime, setViewStartTime] = useState<number | null>(null)
   const [displayOverride, setDisplayOverride] = useState<TopicDisplayOverride | null>(null)
   const [showCollectionTitle, setShowCollectionTitle] = useState(false)
@@ -184,11 +187,13 @@ export default function TopicDetail() {
   const bodyLooksLikeChrome = useMemo(() => {
     const text = (cachedSourceTranslation || originalContentText || '').trim()
     if (!text) return false
+    if (/your next read|jump to categor/i.test(text) && text.length < 800) return true
     const mega = (text.match(/Fashion|Beauty|Wellness|Lifestyle|Celebrities|Lookbook|Streetsnaps/gi) || [])
       .length
-    if (mega >= 4) return true
+    if (mega >= 6 && text.length < 800) return true
+    if (mega >= 4 && text.length < 400) return true
     if (/^加入\s*POPBEE/i.test(text) || /^加入\s*會員/i.test(text)) return true
-    if (text.length < 80 && mega >= 2) return true
+    if (text.length < 220 && mega >= 2) return true
     return false
   }, [cachedSourceTranslation, originalContentText])
 
@@ -199,9 +204,14 @@ export default function TopicDetail() {
       !bodyLooksLikeChrome
   )
 
+  const sourceTooThin =
+    originalContentText.length < 200 && cachedSourceTranslation.length < 200
+
   const useFlashFallback =
     Boolean(factSummaryText) &&
-    (bodyLooksLikeChrome || (!originalContentText && !cachedSourceTranslation))
+    (bodyLooksLikeChrome ||
+      sourceTooThin ||
+      (!originalContentText && !cachedSourceTranslation))
 
   const isShowingFactSummary =
     (sourceViewMode !== 'original' && !cachedSourceTranslation && Boolean(factSummaryText)) ||
@@ -382,6 +392,52 @@ export default function TopicDetail() {
     }
   }
 
+  const saveTour = (next: PublicTourState) => {
+    writePublicTour(next)
+    setTour(next)
+  }
+
+  useEffect(() => {
+    if (tour.status !== 'active' || !id || tour.topicId !== id) return
+    if (tour.step === 1) {
+      saveTour({ ...tour, step: 2 })
+    }
+  }, [id, tour.status, tour.topicId, tour.step])
+
+  const tourOn = tour.status === 'active' && !!id && tour.topicId === id && tour.step >= 2
+
+  useEffect(() => {
+    if (!tourOn) return
+    const map: Record<number, string> = {
+      2: 'section-composer',
+      3: 'section-postkit',
+      4: 'btn-topic-detail-match-photos',
+      5: 'section-composer-whole',
+    }
+    const testId = map[tour.step]
+    if (!testId) return
+    const el = document.querySelector(`[data-testid="${testId}"]`)
+    el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }, [tourOn, tour.step])
+
+  const advanceTour = () => {
+    if (tour.step >= TOUR_STEPS) {
+      saveTour({ ...tour, status: 'done' })
+      return
+    }
+    saveTour({ ...tour, step: tour.step + 1 })
+  }
+
+  const handleTourCopyIg = async () => {
+    const body = (document.querySelector('[data-testid="input-composer-body"]') as HTMLTextAreaElement | null)?.value || ''
+    if (body.trim()) {
+      const ok = await copyToClipboard(body)
+      if (ok) showSuccess(t('content.copied'))
+      else showError(t('common.failed'))
+    }
+    window.open('https://www.instagram.com/', '_blank', 'noopener,noreferrer')
+  }
+
   const heroImageUrl = useMemo(() => {
     if (images && images.length > 0 && images[0]?.url) {
       return getProxyImageUrl(images[0].url)
@@ -425,7 +481,11 @@ export default function TopicDetail() {
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 min-h-screen bg-[#FAF9F7] dark:bg-gray-900 max-w-7xl mx-auto space-y-6">
+    <div
+      className={`p-4 sm:p-6 lg:p-8 min-h-screen bg-[#FAF9F7] dark:bg-gray-900 max-w-7xl mx-auto space-y-6 ${
+        tourOn ? 'pb-40' : ''
+      }`}
+    >
       {/* 1. 頂部區域：標題、多語切換、轉貼文章快捷鍵、喜歡/不喜歡 */}
       <header className="flex flex-col gap-4 pb-4 border-b border-gray-200 dark:border-gray-800">
         <button
@@ -897,7 +957,16 @@ export default function TopicDetail() {
         </div>
       )}
 
-      {/* 圖片搜尋模態框 */}
+      {tourOn ? (
+        <PublicTourCoach
+          step={tour.step}
+          onNext={advanceTour}
+          onSkipStep={advanceTour}
+          onSkipAll={() => saveTour({ ...tour, status: 'skipped' })}
+          onCopyIg={() => void handleTourCopyIg()}
+        />
+      ) : null}
+
       {showImageSearch && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <ImageSearch

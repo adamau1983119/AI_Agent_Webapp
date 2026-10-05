@@ -187,27 +187,64 @@ class ArticleExtractor:
                 seen.add(u)
         return images
 
+    def _jsonld_bodies(self, soup: Any) -> List[str]:
+        import json
+
+        out: List[str] = []
+        for script in soup.find_all("script", attrs={"type": "application/ld+json"}):
+            raw = script.string or script.get_text() or ""
+            if "articleBody" not in raw:
+                continue
+            try:
+                data = json.loads(raw)
+            except Exception:
+                continue
+            items = data if isinstance(data, list) else [data]
+            if isinstance(data, dict) and isinstance(data.get("@graph"), list):
+                items = data["@graph"]
+            for it in items:
+                if isinstance(it, dict) and isinstance(it.get("articleBody"), str):
+                    out.append(it["articleBody"])
+        return out
+
     def _extract_content_soup(self, soup: Any) -> str:
-        candidates = [
-            soup.find('article'),
-            soup.find('div', attrs={'itemprop': 'articleBody'}),
-            soup.find('div', class_=re.compile(r'(article[-_]body|post[-_]content|entry[-_]content|article[-_]content|story[-_]body|c-entry-content)', re.I)),
-            soup.find('main'),
-            soup.find('body'),
-        ]
+        from app.utils.article_boilerplate import clean_extracted_text, strip_boilerplate_nodes
+
+        best = ""
+        for raw in self._jsonld_bodies(soup):
+            cleaned = clean_extracted_text(raw)
+            if len(cleaned) > len(best):
+                best = cleaned
+        candidates: List[Any] = list(soup.find_all("article"))
+        for extra in (
+            soup.find("div", attrs={"itemprop": "articleBody"}),
+            soup.find(
+                "div",
+                class_=re.compile(
+                    r"(article[-_]body|post[-_]content|entry[-_]content|"
+                    r"article[-_]content|story[-_]body|c-entry-content|news-article)",
+                    re.I,
+                ),
+            ),
+            soup.find("main"),
+            soup.find("body"),
+        ):
+            if extra is not None:
+                candidates.append(extra)
         for container in candidates:
             if not container:
                 continue
-            container_copy = BeautifulSoup(str(container), 'html.parser')
-            for tag in container_copy.find_all(['script', 'style', 'nav', 'header', 'footer', 'aside', 'iframe', 'form', 'noscript', 'svg', 'button']):
+            container_copy = BeautifulSoup(str(container), "html.parser")
+            for tag in container_copy.find_all(
+                ["script", "style", "nav", "header", "footer", "aside", "iframe", "form", "noscript", "svg", "button"]
+            ):
                 tag.decompose()
-            from app.utils.article_boilerplate import clean_extracted_text, strip_boilerplate_nodes
             strip_boilerplate_nodes(container_copy)
-            text = container_copy.get_text(separator='\n', strip=True)
+            text = container_copy.get_text(separator="\n", strip=True)
             cleaned = clean_extracted_text(text)
-            if len(cleaned) >= 30:
-                return cleaned[:5000]
-        return ""
+            if len(cleaned) > len(best):
+                best = cleaned
+        return best[:5000] if best else ""
 
     def _extract_content_regex(self, html_text: str) -> str:
         # 去除 script, style, nav 等標籤內容

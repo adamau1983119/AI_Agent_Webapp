@@ -444,7 +444,11 @@ class TopicCollector:
                             if img_url not in all_images:
                                 all_images.append(img_url)
                     if article_info.get("original_content"):
-                        source_info["original_content"] = article_info.get("original_content")
+                        from app.utils.article_extract_quality import body_is_storable
+
+                        body = article_info.get("original_content") or ""
+                        if body_is_storable(body):
+                            source_info["original_content"] = body
                     if article_info.get("language"):
                         source_info["language"] = article_info.get("language")
                     if article_info.get("style"):
@@ -698,7 +702,11 @@ class TopicCollector:
                             
                             if article_info.get("success"):
                                 source_info["images"] = article_info.get("images", [])
-                                source_info["original_content"] = article_info.get("original_content")
+                                from app.utils.article_extract_quality import body_is_storable
+
+                                body = article_info.get("original_content") or ""
+                                if body_is_storable(body):
+                                    source_info["original_content"] = body
                                 source_info["language"] = article_info.get("language")
                                 style_info = article_info.get("style")
                                 if style_info:

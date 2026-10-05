@@ -73,7 +73,11 @@ async def resolve_source_article_translation(
         source_lang = str(sources[0].get("language") or "")
 
     # 產卡 finalize 才補抓；讀路徑禁止現場爬文
-    if on_demand and (not raw_content or len(raw_content) < 80) and source_url:
+    from app.utils.article_extract_quality import looks_like_toc
+
+    if on_demand and source_url and (
+        not raw_content or len(raw_content) < 400 or looks_like_toc(raw_content)
+    ):
         try:
             from app.utils.article_extractor import ArticleExtractor
             extractor = ArticleExtractor()

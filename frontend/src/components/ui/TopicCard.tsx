@@ -56,6 +56,7 @@ interface TopicCardProps {
   enableAutoTranslate?: boolean
   /** 列表預設可藏「已譯（快取）」；不改 fromCache 計算與翻譯管線 */
   hideCacheBadge?: boolean
+  highlight?: boolean
 }
 
 const gradientClasses = {
@@ -69,6 +70,7 @@ export default function TopicCard({
   kolStyleTestId,
   enableAutoTranslate = false,
   hideCacheBadge = false,
+  highlight = false,
 }: TopicCardProps) {
   const { t, language } = useTranslation()
   const [override, setOverride] = useState<TopicDisplayOverride | null>(null)
@@ -237,7 +239,12 @@ export default function TopicCard({
   }`
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden hover:shadow-lg transition-shadow p-3 md:p-4 h-full min-h-[120px] flex flex-col">
+    <div
+      className={`bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden hover:shadow-lg transition-shadow p-3 md:p-4 h-full min-h-[120px] flex flex-col ${
+        highlight ? 'outline outline-2 outline-black outline-offset-2' : ''
+      }`}
+      data-testid={highlight ? 'card-tour-public-target' : undefined}
+    >
       <div className="flex items-start gap-3 mb-2 md:mb-3">
         <Link to={`/topics/${topic.id}`} className="flex-shrink-0">
           {previewImage ? (

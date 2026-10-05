@@ -11,7 +11,9 @@ from app.utils.logger import log_cost_event
 
 MAX_EDGE = 1440
 DEFAULT_MAX_BYTES = 200 * 1024
+MAX_FETCH_BYTES = 8 * 1024 * 1024
 FETCH_TIMEOUT = 30.0
+Image.MAX_IMAGE_PIXELS = 12_000_000
 
 
 def _looks_like_image(raw: bytes, content_type: str) -> bool:
@@ -38,7 +40,7 @@ def compress_jpeg_bytes(raw: bytes, max_bytes: int = DEFAULT_MAX_BYTES) -> Tuple
     try:
         img = Image.open(io.BytesIO(raw))
         img.load()
-    except UnidentifiedImageError as e:
+    except (UnidentifiedImageError, Image.DecompressionBombError) as e:
         raise ValueError("unidentified_image") from e
     if img.mode not in ("RGB", "L"):
         img = img.convert("RGB")
@@ -80,13 +82,21 @@ async def fetch_and_compress(
     if not (url or "").strip():
         raise ValueError("missing_url")
     async with httpx.AsyncClient(timeout=FETCH_TIMEOUT, follow_redirects=True) as client:
-        res = await client.get(
+        async with client.stream(
+            "GET",
             url.strip(),
             headers={"User-Agent": "Mozilla/5.0 (compatible; AlterEgo/1.0)"},
-        )
-        res.raise_for_status()
-        raw = res.content
-        ct = res.headers.get("content-type", "")
+        ) as res:
+            res.raise_for_status()
+            ct = res.headers.get("content-type", "")
+            chunks = []
+            total = 0
+            async for chunk in res.aiter_bytes():
+                total += len(chunk)
+                if total > MAX_FETCH_BYTES:
+                    raise ValueError("too_large")
+                chunks.append(chunk)
+            raw = b"".join(chunks)
     if not _looks_like_image(raw, ct):
         raise ValueError("not_an_image")
     compressed, _, _ = compress_jpeg_bytes(raw, max_bytes=max_bytes)

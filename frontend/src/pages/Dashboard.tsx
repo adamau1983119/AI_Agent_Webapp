@@ -1,5 +1,5 @@
-import { useEffect } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { topicsAPI } from '@/api/client'
 import TopicCard from '@/components/ui/TopicCard'
@@ -7,6 +7,14 @@ import ConnectionErrorDisplay from '@/components/ui/ConnectionErrorDisplay'
 import InfiniteTopicsList from '@/components/features/InfiniteTopicsList'
 import { usePageTitle } from '@/hooks/usePageTitle'
 import { useTranslation } from '@/i18n'
+import PublicTourCoach from '@/components/tour/PublicTourCoach'
+import {
+  pickPublicTourTopic,
+  readPublicTour,
+  shouldForceSample,
+  writePublicTour,
+  type PublicTourState,
+} from '@/lib/publicTour'
 import {
   EXPECTED_DAILY_TOPICS,
   countTopicsForHktDay,
@@ -31,6 +39,7 @@ function parseDashTab(raw: string | null): DashTab {
 export default function Dashboard() {
   usePageTitle()
   const { t, language } = useTranslation()
+  const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const tab = parseDashTab(searchParams.get('tab'))
 
@@ -55,6 +64,23 @@ export default function Dashboard() {
   const topics = topicsError ? [] : topicsResponse?.data || []
   const todayTopicsCount = countTopicsForHktDay(topics)
   const displayTopics = dedupeTopicsByTitle(filterTopicsForHktDay(topics))
+  const [tour, setTour] = useState<PublicTourState>(() => readPublicTour())
+  const forceSample = shouldForceSample(searchParams.toString())
+  const tourPick = pickPublicTourTopic(displayTopics)
+
+  useEffect(() => {
+    if (!tourPick) return
+    if (!forceSample && (tour.status === 'skipped' || tour.status === 'done')) return
+    if (tour.status === 'active' && tour.topicId) return
+    const next: PublicTourState = { status: 'active', step: 1, topicId: tourPick.id }
+    writePublicTour(next)
+    setTour(next)
+  }, [tourPick, forceSample, tour.status, tour.topicId])
+
+  const saveTour = (next: PublicTourState) => {
+    writePublicTour(next)
+    setTour(next)
+  }
 
   useEffect(() => {
     if (topicsError || todayTopicsCount >= EXPECTED_DAILY_TOPICS) return
@@ -124,7 +150,12 @@ export default function Dashboard() {
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {list.map((topic) => (
         <div key={topic.id} className="h-full">
-          <TopicCard topic={topic} enableAutoTranslate={false} hideCacheBadge />
+          <TopicCard
+            topic={topic}
+            enableAutoTranslate={false}
+            hideCacheBadge
+            highlight={tour.status === 'active' && tour.step === 1 && tour.topicId === topic.id}
+          />
         </div>
       ))}
     </div>
@@ -134,7 +165,12 @@ export default function Dashboard() {
   const showAllEmpty = tab === 'all' && !topicsLoading && displayTopics.length === 0
 
   return (
-    <div className="min-h-screen bg-[#FAF9F7] p-6 sm:p-8 font-sans" data-testid="dashboard-topic-cards-only">
+    <div
+      className={`min-h-screen bg-[#FAF9F7] p-6 sm:p-8 font-sans ${
+        tour.status === 'active' && tour.step === 1 ? 'pb-40' : ''
+      }`}
+      data-testid="dashboard-topic-cards-only"
+    >
       {topicsError && (
         <div className="mb-6">
           <ConnectionErrorDisplay
@@ -251,6 +287,20 @@ export default function Dashboard() {
           showTimeGroups
           pageSize={20}
           emptyMessage={t('topics.noTopics')}
+        />
+      ) : null}
+      {tour.status === 'active' && tour.step === 1 && tour.topicId ? (
+        <PublicTourCoach
+          step={1}
+          onNext={() => {
+            saveTour({ ...tour, step: 2 })
+            navigate(`/topics/${tour.topicId}`)
+          }}
+          onSkipStep={() => {
+            saveTour({ ...tour, step: 2 })
+            navigate(`/topics/${tour.topicId}`)
+          }}
+          onSkipAll={() => saveTour({ status: 'skipped', step: 1, topicId: tour.topicId })}
         />
       ) : null}
     </div>

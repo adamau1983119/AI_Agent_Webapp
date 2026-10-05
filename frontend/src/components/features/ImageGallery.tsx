@@ -90,33 +90,36 @@ function ImageGalleryItem({
   const handleDownloadJpeg = async () => {
     if (downloading) return
     setDownloading(true)
+    const filename = `featured-${index + 1}.jpg`
     try {
-      // 1) Real backend: fetch source → compress ≤200KB → download
-      const compressedUrl = `${API_BASE_URL}/images/download-jpeg?image_id=${encodeURIComponent(image.id)}`
-      const res = await fetch(compressedUrl)
-      if (res.ok) {
-        const blob = await res.blob()
-        if (blob.size > 0 && (blob.type.includes('jpeg') || blob.type.includes('jpg') || blob.size > 1000)) {
-          const href = URL.createObjectURL(blob)
-          const a = document.createElement('a')
-          a.href = href
-          a.download = `featured-${index + 1}.jpg`
-          document.body.appendChild(a)
-          a.click()
-          a.remove()
-          URL.revokeObjectURL(href)
-          showSuccess(t('images.downloadJpegDone'))
-          return
+      try {
+        const compressedUrl = `${API_BASE_URL}/images/download-jpeg?image_id=${encodeURIComponent(image.id)}`
+        const res = await fetch(compressedUrl)
+        if (res.ok) {
+          const blob = await res.blob()
+          if (blob.size > 0 && (blob.type.includes('jpeg') || blob.type.includes('jpg') || blob.size > 1000)) {
+            const href = URL.createObjectURL(blob)
+            const a = document.createElement('a')
+            a.href = href
+            a.download = filename
+            document.body.appendChild(a)
+            a.click()
+            a.remove()
+            URL.revokeObjectURL(href)
+            showSuccess(t('images.downloadJpegDone'))
+            return
+          }
         }
+      } catch {
+        // Stored or live compress can fail closed (500/CORS). Use the image already on screen.
       }
-      // 2) Fallback: already-loaded <img> (no second proxy fetch)
       if (imgRef.current && imgRef.current.naturalWidth > 0) {
-        await downloadImageElementAsJpeg(imgRef.current, `featured-${index + 1}.jpg`)
+        await downloadImageElementAsJpeg(imgRef.current, filename)
         showSuccess(t('images.downloadJpegDone'))
         return
       }
       // 3) Last resort: re-fetch proxy
-      await downloadImageAsJpeg(proxyUrl, `featured-${index + 1}.jpg`)
+      await downloadImageAsJpeg(proxyUrl, filename)
       showSuccess(t('images.downloadJpegDone'))
     } catch {
       showError(t('images.downloadJpegFailed'))

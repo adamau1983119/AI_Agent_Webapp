@@ -508,6 +508,19 @@ data-testid="{類型}-{位置}-{功能}"
 | `img-title-edit-live-preview` | 圖 | TopicDetail 即時預覽 |
 | `banner-compose-unsaved` | 橫幅 | 離開遺失警告 |
 
+### 4.10c 公眾主題卡導覽 (`PublicTourCoach.tsx` · Dashboard／TopicDetail)
+
+| Test ID | 元素 | 功能 |
+|---------|------|------|
+| `panel-tour-public` | 區塊 | 底部五拍教練 |
+| `text-tour-public-progress` | 文字 | 步驟 n／5 |
+| `card-tour-public-target` | 卡片 | Dashboard 高亮目標卡 |
+| `btn-tour-public-next` | 按鈕 | 下一步（第 1–4 拍） |
+| `btn-tour-public-skip-step` | 按鈕 | 略過此步 |
+| `btn-tour-public-skip-all` | 按鈕 | 略過整段導覽 |
+| `btn-tour-public-copy-ig` | 按鈕 | 複製全文並開 Instagram |
+| `btn-tour-public-finish` | 按鈕 | 完成導覽 |
+
 ### 4.10 內容生成面板 (`ContentGenerationPanel.tsx`)
 
 | Test ID | 元素 | 功能 |
