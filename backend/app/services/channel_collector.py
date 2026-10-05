@@ -368,7 +368,25 @@ class ChannelCollector:
                 }
                 if image_url:
                     source_entry["images"] = [image_url]
-                if summary:
+                if source_url.startswith("http"):
+                    from app.utils.article_body_resolve import resolve_article_body
+                    from app.utils.article_extract_quality import body_is_storable
+                    from app.utils.article_extractor import ArticleExtractor
+
+                    fetched = await resolve_article_body(
+                        ArticleExtractor(), source_url, rss_html=summary
+                    )
+                    fetched_body = (fetched.get("original_content") or "").strip()
+                    if body_is_storable(fetched_body):
+                        source_entry["original_content"] = fetched_body
+                    fetched_imgs = [
+                        u for u in (fetched.get("images") or []) if isinstance(u, str) and u.startswith("http")
+                    ]
+                    if fetched_imgs:
+                        source_entry["images"] = fetched_imgs[:6]
+                        if not image_url:
+                            image_url = fetched_imgs[0]
+                elif summary:
                     source_entry["original_content"] = summary
 
                 scan = apply_scan_to_source(
@@ -416,6 +434,13 @@ class ChannelCollector:
             try:
                 await self.topic_repo.create_topic(topic_doc)
                 saved += 1
+                image_urls = []
+                for source in topic_doc.get("sources") or []:
+                    image_urls.extend(source.get("images") or [])
+                if image_urls:
+                    from app.services.images.jpeg_store import persist_topic_source_jpegs
+
+                    await persist_topic_source_jpegs(topic_doc["id"], image_urls, limit=4)
             except Exception as e:
                 logger.warning(f"寫入主題失敗（略過）: {e}")
 

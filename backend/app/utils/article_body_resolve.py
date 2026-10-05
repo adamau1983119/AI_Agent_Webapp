@@ -3,7 +3,11 @@ from __future__ import annotations
 
 from typing import Any, Dict
 
-from app.utils.article_extract_quality import accept_extracted_body, text_quality
+from app.utils.article_extract_quality import (
+    accept_extracted_body,
+    rss_body_is_strong,
+    text_quality,
+)
 
 
 def _log(tag: str, **fields: Any) -> None:
@@ -49,13 +53,15 @@ async def resolve_article_body(
 ) -> Dict[str, Any]:
     """Prefer RSS HTML body; HTTP only if RSS weak. Shell never counts as success body."""
     out = _empty()
+    rss_info: Dict[str, Any] | None = None
+    rss_body = ""
     rss = (rss_html or "").strip()
     if rss:
         rss_info = extractor.extract_from_html_content(rss, link or "")
-        body = (rss_info.get("original_content") or "").strip()
-        if body and accept_extracted_body(body):
+        rss_body = (rss_info.get("original_content") or "").strip()
+        if rss_body and rss_body_is_strong(rss_body):
             _adopt(out, rss_info)
-            q = text_quality(body)
+            q = text_quality(rss_body)
             _log(
                 "TOPIC_EXTRACT_RSS_FIRST",
                 cjk=q.get("cjk"),
@@ -69,8 +75,9 @@ async def resolve_article_body(
                 cjk=q.get("cjk"),
                 mega=q.get("mega_hits"),
             )
-            return out
-        if body:
+            if out.get("images"):
+                return out
+        if rss_body:
             _log(
                 "TOPIC_EXTRACT_QUALITY",
                 source="rss",
@@ -82,7 +89,6 @@ async def resolve_article_body(
     http_info = await extractor.extract_article_info(link)
     http_body = (http_info.get("original_content") or "").strip()
     if http_body and accept_extracted_body(http_body) and http_info.get("success"):
-        # Only adopt HTTP body when RSS did not already provide a good body.
         if not out.get("original_content"):
             _adopt(out, http_info)
             q = text_quality(http_body)
@@ -105,4 +111,6 @@ async def resolve_article_body(
                 ok=0,
                 reason=q.get("reason") or http_info.get("error") or "weak",
             )
+    if not out.get("original_content") and rss_info and rss_body and accept_extracted_body(rss_body):
+        _adopt(out, rss_info)
     return out

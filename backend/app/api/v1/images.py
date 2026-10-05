@@ -254,28 +254,7 @@ async def proxy_image(
         return _proxy_fallback_image("server_error")
 
 
-@router.get("/download-jpeg")
-async def download_compressed_jpeg(
-    request: Request,
-    image_id: str = Query(..., description="圖片 ID"),
-):
-    """Fetch source URL, compress ≤200KB JPEG, return file (real backend path)."""
-    from app.services.images.jpeg_compress import fetch_and_compress
-
-    doc = await image_repo.get_image_by_id(image_id)
-    if not doc:
-        raise HTTPException(status_code=404, detail="image_not_found")
-    url = (doc.get("url") or "").strip()
-    if not url:
-        raise HTTPException(status_code=400, detail="missing_url")
-    try:
-        data = await fetch_and_compress(url, tag="DOWNLOAD_JPEG")
-    except ValueError as e:
-        logger.warning(f"download-jpeg bad input id={image_id}: {e}")
-        raise HTTPException(status_code=400, detail=str(e) or "bad_image") from e
-    except Exception as e:
-        logger.warning(f"download-jpeg compress failed id={image_id}: {e}")
-        raise HTTPException(status_code=502, detail="compress_failed") from e
+def _jpeg_attachment(image_id: str, data: bytes) -> Response:
     return Response(
         content=data,
         media_type="image/jpeg",
@@ -284,6 +263,45 @@ async def download_compressed_jpeg(
             "Cache-Control": "private, max-age=3600",
         },
     )
+
+
+@router.get("/download-jpeg")
+async def download_compressed_jpeg(
+    request: Request,
+    image_id: str = Query(..., description="圖片 ID"),
+):
+    """Return a stored ≤200KB JPEG, or compress the source URL once and keep it."""
+    from app.services.images.jpeg_compress import fetch_and_compress
+    from app.services.images.jpeg_store import (
+        load_stored_jpeg,
+        save_stored_jpeg,
+        split_source_image_id,
+        url_from_topic_sources,
+    )
+
+    try:
+        stored = await load_stored_jpeg(image_id)
+        if stored:
+            return _jpeg_attachment(image_id, stored)
+        doc = await image_repo.get_image_by_id(image_id)
+        url = ((doc or {}).get("url") or "").strip()
+        if not url:
+            parsed = split_source_image_id(image_id)
+            topic = await topic_repo.get_topic_by_id(parsed[0]) if parsed else None
+            url = url_from_topic_sources(topic or {}, parsed[1]) if parsed and topic else ""
+        if not url:
+            raise HTTPException(status_code=404, detail="image_not_found")
+        data = await fetch_and_compress(url, tag="DOWNLOAD_JPEG")
+        await save_stored_jpeg(image_id, data)
+        return _jpeg_attachment(image_id, data)
+    except HTTPException:
+        raise
+    except ValueError as e:
+        logger.warning(f"download-jpeg bad input id={image_id}: {e}")
+        raise HTTPException(status_code=400, detail=str(e) or "bad_image") from e
+    except Exception as e:
+        logger.warning(f"download-jpeg compress failed id={image_id}: {e}")
+        raise HTTPException(status_code=502, detail="compress_failed") from e
 
 
 @router.post("/title-image")
@@ -728,15 +746,19 @@ async def match_photos_for_topic(
             if featured_slots(len(existing_images) + len(saved_images)) <= 0:
                 break
             try:
+                from app.services.images.jpeg_store import http_image_url, persist_source_jpeg
+
+                url = http_image_url(img_url)
                 # 檢查是否已存在
-                existing = [img for img in existing_images if img.get("url") == img_url]
-                if existing:
+                existing = [img for img in existing_images if url and img.get("url") == url]
+                if existing and url:
+                    await persist_source_jpeg(existing[0].get("id") or "", url)
                     continue
                 
                 image_data = {
                     "id": f"{topic_id}_source_{idx}",
                     "topic_id": topic_id,
-                    "url": img_url,
+                    "url": url or (img_url if isinstance(img_url, str) else ""),
                     "source": ImageSource.SOURCE_ARTICLE.value,
                     "image_type": ImageType.SOURCE.value,
                     "photographer": "",
@@ -748,6 +770,8 @@ async def match_photos_for_topic(
                     "height": None,
                 }
                 created = await image_repo.create_image(image_data)
+                if url:
+                    await persist_source_jpeg(image_data["id"], url)
                 saved_images.append(created)
                 max_order += 1
             except Exception as e:

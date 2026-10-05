@@ -11,8 +11,11 @@ _NOISE_LINE = re.compile(
     r"facebook|whatsapp|instagram|pinterest|twitter|linkedin|threads|"
     r"advertisement|sponsored|advertiser content|"
     r"跳至分類[:：]?.*|jump to categor(?:y|ies)[:：]?.*|"
+    r"your next read[:：]?.*|你的下一篇閱讀[:：]?.*|"
+    r"last day to exhibit.*|book exhibit table.*|"
+    r"disrupt doors open.*|register now\.?|"
     r"跳至主要內容|skip to(?:\s+the)?\s+main\s+content|"
-    r"photo credit[:：]?.*|圖片來源[:：]?.*|"
+    r"photo credit[:：]?.*|image credit[:：]?.*|圖片來源[:：]?.*|"
     r"share this(?:\s+article)?(?:\s+on\b.*)?|分享此文|分享本文|分享到|"
     r"在.{1,24}上分享(?:此文)?|"
     r"以電子郵件分享.*|列印此文|print this(?:\s+article)?|"
@@ -50,7 +53,7 @@ _NOISE_EXACT = frozenset({
     "advertisement", "share", "分享", "立即登記",
     "時尚", "配件", "美妝", "成衣", "美妝特輯", "商業", "零售",
     "fashion", "accessories", "beauty", "business", "retail",
-    "ready to wear",
+    "ready to wear", "close",
 })
 _HANDLE = re.compile(r"^@[\w.]+$")
 _PHOTO_BY = re.compile(r"^[\w\s.\-·'’]{2,40}/@[\w.]+$", re.I)
@@ -64,6 +67,14 @@ _NOISE_TOKENS = (
     "recirc", "video-playlist", "latest-video", "author-bio",
 )
 _BODY_MIN = 56
+_SITE_TAIL = re.compile(
+    r"\s\|\s*(Who What Wear|Vogue|WWD|Elle|Harper'?s Bazaar)\s*$",
+    re.I,
+)
+_TOC_HEAD = re.compile(
+    r"^(what is .+|how it works|my experience(?: and review)?|is the .+ worth it\??)$",
+    re.I,
+)
 
 
 def _match_key(line: str) -> str:
@@ -94,7 +105,9 @@ def _is_chrome_line(line: str, key: str) -> bool:
         return True
     if mega_menu_hits(line) >= 4:
         return True
-    if "圖片來源" in line and len(line) <= 40:
+    if _SITE_TAIL.search(line) or _TOC_HEAD.match(key):
+        return True
+    if line.endswith("?") and len(line) <= 72:
         return True
     return False
 
@@ -102,9 +115,9 @@ def _is_chrome_line(line: str, key: str) -> bool:
 def _looks_like_body(line: str) -> bool:
     if _CTA_PREFIX.match(line) or mega_menu_hits(line) >= 4:
         return False
-    if len(line) >= _BODY_MIN:
+    if len(line) >= 56 and bool(_BODY_START.search(line)):
         return True
-    return len(line) >= 40 and bool(_BODY_START.search(line))
+    return len(line) >= 80
 
 
 def _drop_leading_recirc(lines: List[str]) -> List[str]:
@@ -124,7 +137,9 @@ def clean_extracted_text(text: str) -> str:
         if not key or _ONLY_WRAP.match(line):
             continue
         if _CUTOFF.match(key):
-            break
+            if lines:
+                break
+            continue
         if _CTA_PREFIX.match(key) or _CTA_PREFIX.match(line):
             if lines:
                 break

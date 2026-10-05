@@ -276,11 +276,14 @@ class AutomationWorkflow:
             max_order = max([img.get("order", 0) for img in existing_images]) if existing_images else -1
             
             for idx, img_url in enumerate(source_images[:5]):  # 最多保存5張原文圖片
+                from app.services.images.jpeg_store import http_image_url, persist_source_jpeg
+
+                url = http_image_url(img_url)
                 try:
                     image_data = {
                         "id": f"{topic_id}_source_{idx}",
                         "topic_id": topic_id,
-                        "url": img_url,
+                        "url": url or (img_url if isinstance(img_url, str) else ""),
                         "source": ImageSource.SOURCE_ARTICLE.value,
                         "image_type": ImageType.SOURCE.value,
                         "photographer": "",
@@ -296,7 +299,8 @@ class AutomationWorkflow:
                     logger.info(f"保存原文圖片: {img_url}")
                 except Exception as e:
                     logger.warning(f"保存原文圖片失敗 {img_url}: {e}")
-                    continue
+                if url:
+                    await persist_source_jpeg(f"{topic_id}_source_{idx}", url)
         
         # 2. 基於原文內容搜尋匹配圖片（image_type=matched）
         # 優先使用原文內容，如果沒有則使用生成的中文內容
