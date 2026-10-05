@@ -11,7 +11,7 @@ import type { ImageReorderItem } from '@/api/images'
 import ImagePreview from './ImagePreview'
 import { useTranslation } from '@/i18n'
 import { FEATURED_PHOTO_CAP } from '@/lib/featuredPhotos'
-import { downloadImageAsJpeg, downloadImageElementAsJpeg } from '@/lib/downloadJpeg'
+import { downloadShownPhotoAsJpeg } from '@/lib/downloadJpeg'
 
 /**
  * 生成圖片代理 URL
@@ -92,34 +92,7 @@ function ImageGalleryItem({
     setDownloading(true)
     const filename = `featured-${index + 1}.jpg`
     try {
-      try {
-        const compressedUrl = `${API_BASE_URL}/images/download-jpeg?image_id=${encodeURIComponent(image.id)}`
-        const res = await fetch(compressedUrl)
-        if (res.ok) {
-          const blob = await res.blob()
-          if (blob.size > 0 && (blob.type.includes('jpeg') || blob.type.includes('jpg') || blob.size > 1000)) {
-            const href = URL.createObjectURL(blob)
-            const a = document.createElement('a')
-            a.href = href
-            a.download = filename
-            document.body.appendChild(a)
-            a.click()
-            a.remove()
-            URL.revokeObjectURL(href)
-            showSuccess(t('images.downloadJpegDone'))
-            return
-          }
-        }
-      } catch {
-        // Stored or live compress can fail closed (500/CORS). Use the image already on screen.
-      }
-      if (imgRef.current && imgRef.current.naturalWidth > 0) {
-        await downloadImageElementAsJpeg(imgRef.current, filename)
-        showSuccess(t('images.downloadJpegDone'))
-        return
-      }
-      // 3) Last resort: re-fetch proxy
-      await downloadImageAsJpeg(proxyUrl, filename)
+      await downloadShownPhotoAsJpeg(imgRef.current, proxyUrl, filename)
       showSuccess(t('images.downloadJpegDone'))
     } catch {
       showError(t('images.downloadJpegFailed'))
