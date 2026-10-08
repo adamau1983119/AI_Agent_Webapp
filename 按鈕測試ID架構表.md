@@ -512,14 +512,25 @@ data-testid="{類型}-{位置}-{功能}"
 
 | Test ID | 元素 | 功能 |
 |---------|------|------|
-| `panel-tour-public` | 區塊 | 底部五拍教練 |
-| `text-tour-public-progress` | 文字 | 步驟 n／5 |
+| `panel-tour-public` | 區塊 | 錨定六拍教練（對準目標；找不到目標時落回底部） |
+| `frame-tour-public-anchor` | 框 | 目標外框 |
+| `text-tour-public-progress` | 文字 | 步驟 n／6 |
+| `section-composer-length` | 區塊 | 組裝器字數（在風格之上） |
+| `section-composer-style` | 區塊 | 組裝器風格 |
 | `card-tour-public-target` | 卡片 | Dashboard 高亮目標卡 |
-| `btn-tour-public-next` | 按鈕 | 下一步（第 1–4 拍） |
+| `btn-tour-public-next` | 按鈕 | 下一步（第 1–5 拍） |
 | `btn-tour-public-skip-step` | 按鈕 | 略過此步 |
 | `btn-tour-public-skip-all` | 按鈕 | 略過整段導覽 |
 | `btn-tour-public-copy-ig` | 按鈕 | 複製全文並開 Instagram |
-| `btn-tour-public-finish` | 按鈕 | 完成導覽 |
+| `btn-tour-public-finish` | 按鈕 | 完成導覽（接到 `/my-channel?mcTour=1`） |
+
+### 4.10d 我的頻道空態導覽 (`McEmptyTourCoach.tsx`)
+
+| Test ID | 元素 | 功能 |
+|---------|------|------|
+| `panel-tour-mc` | 區塊 | 建頻道／專屬卡交接教練 |
+| `btn-tour-mc-create` | 按鈕 | 前往 `/channels/create` |
+| `btn-tour-mc-skip` | 按鈕 | 關閉交接（去掉 `mcTour`） |
 
 ### 4.10 內容生成面板 (`ContentGenerationPanel.tsx`)
 

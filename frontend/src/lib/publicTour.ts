@@ -1,6 +1,27 @@
 const STORAGE_KEY = 'ae_tour_public_v1'
 export const TOUR_SAMPLE_QUERY = 'tourSample'
-export const TOUR_STEPS = 5
+export const MC_TOUR_QUERY = 'mcTour'
+export const TOUR_STEPS = 6
+
+export function tourAnchorTestId(step: number): string | undefined {
+  switch (step) {
+    case 1:
+      return 'card-tour-public-target'
+    case 2:
+      return 'section-composer-length'
+    case 3:
+      return 'section-composer-style'
+    case 4:
+      return 'btn-composer-generate-pack'
+    case 5:
+      return 'btn-topic-detail-match-photos'
+    case 6:
+      return 'btn-composer-copy-all'
+    default:
+      return undefined
+  }
+}
+export const MC_TOUR_HREF = `/my-channel?${MC_TOUR_QUERY}=1`
 
 export type PublicTourStatus = 'idle' | 'active' | 'skipped' | 'done'
 export type PublicTourState = {

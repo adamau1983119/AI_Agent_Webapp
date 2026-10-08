@@ -83,6 +83,12 @@ export default function Dashboard() {
   }
 
   useEffect(() => {
+    if (tour.status !== 'active' || tour.step !== 1 || !tour.topicId) return
+    const el = document.querySelector('[data-testid="card-tour-public-target"]')
+    el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }, [tour.status, tour.step, tour.topicId, displayTopics.length])
+
+  useEffect(() => {
     if (topicsError || todayTopicsCount >= EXPECTED_DAILY_TOPICS) return
     const id = window.setInterval(() => {
       refetchTopics()

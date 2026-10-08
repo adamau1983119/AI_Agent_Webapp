@@ -33,7 +33,14 @@ import { copyToClipboard } from '@/utils/copyToClipboard'
 import { Copy, Sparkles, Image as ImageIcon, Search, ExternalLink, ArrowDownCircle, ArrowLeft } from 'lucide-react'
 import { markTopicRead } from '@/lib/topicReadState'
 import PublicTourCoach from '@/components/tour/PublicTourCoach'
-import { readPublicTour, writePublicTour, TOUR_STEPS, type PublicTourState } from '@/lib/publicTour'
+import {
+  MC_TOUR_HREF,
+  readPublicTour,
+  writePublicTour,
+  TOUR_STEPS,
+  tourAnchorTestId,
+  type PublicTourState,
+} from '@/lib/publicTour'
 
 function getProxyImageUrl(imageUrl: string): string {
   if (!imageUrl) return ''
@@ -408,13 +415,7 @@ export default function TopicDetail() {
 
   useEffect(() => {
     if (!tourOn) return
-    const map: Record<number, string> = {
-      2: 'section-composer',
-      3: 'section-postkit',
-      4: 'btn-topic-detail-match-photos',
-      5: 'section-composer-whole',
-    }
-    const testId = map[tour.step]
+    const testId = tourAnchorTestId(tour.step)
     if (!testId) return
     const el = document.querySelector(`[data-testid="${testId}"]`)
     el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
@@ -423,6 +424,7 @@ export default function TopicDetail() {
   const advanceTour = () => {
     if (tour.step >= TOUR_STEPS) {
       saveTour({ ...tour, status: 'done' })
+      navigate(MC_TOUR_HREF)
       return
     }
     saveTour({ ...tour, step: tour.step + 1 })

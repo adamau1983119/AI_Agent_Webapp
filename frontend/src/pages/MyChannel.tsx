@@ -2,7 +2,7 @@
  * MyChannel 首屏 — feed + 點數解鎖 + 熱門模板（MC-4～MC-6）
  */
 import { useCallback, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useTranslation } from '@/i18n';
 import { usePageTitle } from '@/hooks/usePageTitle';
@@ -14,6 +14,8 @@ import {
 } from '@/api/myChannel';
 import { APIError } from '@/api/errors';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import McEmptyTourCoach from '@/components/tour/McEmptyTourCoach';
+import { MC_TOUR_QUERY } from '@/lib/publicTour';
 
 type UnlockedMap = Record<string, UnlockResponse>;
 
@@ -32,7 +34,10 @@ function templateCreateHref(tpl: ChannelTemplate): string {
 
 export default function MyChannel() {
   const { t, language } = useTranslation();
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   usePageTitle(t('myChannel.pageTitle'));
+  const mcTourOn = searchParams.get(MC_TOUR_QUERY) === '1';
 
   const [cards, setCards] = useState<MyChannelFeedCard[]>([]);
   const [balance, setBalance] = useState(0);
@@ -106,7 +111,11 @@ export default function MyChannel() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8">
+    <div
+      className={`max-w-3xl mx-auto px-4 py-8 ${
+        mcTourOn && (!hasChannels || empty) ? 'pb-40' : ''
+      }`}
+    >
       <header className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900 dark:text-white" data-testid="heading-my-channel">
@@ -144,7 +153,11 @@ export default function MyChannel() {
 
       {empty ? (
         <div
-          className="rounded-lg border border-dashed border-gray-300 dark:border-gray-600 p-10 text-center"
+          className={`rounded-lg border border-dashed p-10 text-center ${
+            mcTourOn
+              ? 'border-black dark:border-white ring-2 ring-black/10'
+              : 'border-gray-300 dark:border-gray-600'
+          }`}
           data-testid="panel-my-channel-empty"
         >
           <p className="text-gray-600 dark:text-gray-400 mb-6">
@@ -235,6 +248,16 @@ export default function MyChannel() {
           })}
         </ul>
       )}
+      {mcTourOn && (!hasChannels || empty) ? (
+        <McEmptyTourCoach
+          onCreate={() => navigate('/channels/create')}
+          onSkip={() => {
+            const next = new URLSearchParams(searchParams)
+            next.delete(MC_TOUR_QUERY)
+            setSearchParams(next, { replace: true })
+          }}
+        />
+      ) : null}
     </div>
   );
 }
