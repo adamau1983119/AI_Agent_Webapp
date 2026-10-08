@@ -11,8 +11,10 @@ import { useAuthStore } from '../stores/authStore';
 import { authApi } from '../api/auth';
 import { showWarning, showSuccess } from '../utils/toast';
 import { BRAND } from '@/lib/brand';
+import { useNoindex } from '@/hooks/useNoindex';
 
 export default function Register() {
+  useNoindex();
   const { t, language, setLanguage } = useTranslation();
   const navigate = useNavigate();
   
