@@ -70,6 +70,8 @@ function App() {
         {/* Phase 1: 認證頁面（無 Layout） */}
         <Route path="/language" element={<LanguageSelection />} />
         <Route path="/welcome" element={<Welcome />} />
+        <Route path="/en" element={<Welcome />} />
+        <Route path="/ja" element={<Welcome />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
