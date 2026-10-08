@@ -201,46 +201,50 @@ export default function PostComposerPanel({
             </button>
           ))}
         </div>
-        <p className="text-xs font-medium text-gray-500">{t('composer.style')}</p>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-          {STYLES.map((id) => (
-            <button
-              key={id}
-              type="button"
-              data-testid={`btn-composer-style-${id}`}
-              onClick={() => setStyle(id)}
-              className={`min-h-[44px] px-2 rounded-xl border-2 text-xs font-medium touch-manipulation ${
-                style === id
-                  ? 'border-primary bg-primary/10 text-primary'
-                  : 'border-gray-200 dark:border-gray-600'
-              }`}
-            >
-              {t(`content.style.${id}`)}
-            </button>
-          ))}
+        <div data-testid="section-composer-length">
+          <p className="text-xs font-medium text-gray-500">{t('composer.length')}</p>
+          <div className="mt-2 grid grid-cols-2 gap-2">
+            {LENGTHS.map((n) => {
+              const over = n > cap
+              return (
+                <button
+                  key={n}
+                  type="button"
+                  disabled={over}
+                  title={over ? t('composer.overCap') : undefined}
+                  data-testid={`btn-composer-length-${n}`}
+                  onClick={() => !over && setMaxChars(n)}
+                  className={`min-h-[44px] rounded-xl border-2 text-xs font-medium touch-manipulation disabled:opacity-40 ${
+                    maxChars === n
+                      ? 'border-primary bg-primary/10 text-primary'
+                      : 'border-gray-200 dark:border-gray-600'
+                  }`}
+                >
+                  {t(LENGTH_KEYS[n])}
+                </button>
+              )
+            })}
+          </div>
         </div>
-        <p className="text-xs font-medium text-gray-500">{t('composer.length')}</p>
-        <div className="grid grid-cols-2 gap-2">
-          {LENGTHS.map((n) => {
-            const over = n > cap
-            return (
+        <div data-testid="section-composer-style">
+          <p className="text-xs font-medium text-gray-500">{t('composer.style')}</p>
+          <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {STYLES.map((id) => (
               <button
-                key={n}
+                key={id}
                 type="button"
-                disabled={over}
-                title={over ? t('composer.overCap') : undefined}
-                data-testid={`btn-composer-length-${n}`}
-                onClick={() => !over && setMaxChars(n)}
-                className={`min-h-[44px] rounded-xl border-2 text-xs font-medium touch-manipulation disabled:opacity-40 ${
-                  maxChars === n
+                data-testid={`btn-composer-style-${id}`}
+                onClick={() => setStyle(id)}
+                className={`min-h-[44px] px-2 rounded-xl border-2 text-xs font-medium touch-manipulation ${
+                  style === id
                     ? 'border-primary bg-primary/10 text-primary'
                     : 'border-gray-200 dark:border-gray-600'
                 }`}
               >
-                {t(LENGTH_KEYS[n])}
+                {t(`content.style.${id}`)}
               </button>
-            )
-          })}
+            ))}
+          </div>
         </div>
         <button
           type="button"
