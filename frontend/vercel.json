@@ -5,8 +5,10 @@
   "installCommand": "npm install",
   "framework": "vite",
   "rewrites": [
+    { "source": "/en", "destination": "/en.html" },
+    { "source": "/ja", "destination": "/ja.html" },
     {
-      "source": "/((?!sitemap\\.xml$|robots\\.txt$|llms\\.txt$|logo\\.png$|assets/).*)",
+      "source": "/((?!sitemap\\.xml$|robots\\.txt$|llms\\.txt$|logo\\.png$|favicon\\.png$|en\\.html$|ja\\.html$|assets/).*)",
       "destination": "/index.html"
     }
   ],

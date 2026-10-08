@@ -11,6 +11,15 @@ export default defineConfig({
       '@lang-config': path.resolve(__dirname, '../backend/config'),
     },
   },
+  build: {
+    rollupOptions: {
+      input: {
+        main: path.resolve(__dirname, 'index.html'),
+        en: path.resolve(__dirname, 'en.html'),
+        ja: path.resolve(__dirname, 'ja.html'),
+      },
+    },
+  },
   server: {
     port: 3000,
     strictPort: true, // 3000 被佔用時直接失敗，不自動改用 3001
