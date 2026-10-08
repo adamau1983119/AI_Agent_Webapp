@@ -11,8 +11,10 @@ import { useAuthStore } from '../stores/authStore';
 import { authApi } from '../api/auth';
 import { resolvePostLoginPath } from '@/lib/alterEgoRouting';
 import { BRAND } from '@/lib/brand';
+import { useNoindex } from '@/hooks/useNoindex';
 
 export default function Login() {
+  useNoindex();
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
