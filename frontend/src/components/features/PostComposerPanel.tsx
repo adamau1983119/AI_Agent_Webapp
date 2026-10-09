@@ -42,7 +42,7 @@ function assemble(title: string, body: string, tags: string[]): string {
 }
 
 function creditCost(maxChars: number): number {
-  return maxChars > 500 ? 2 : 1
+  return maxChars > 500 ? 20 : 10
 }
 
 export default function PostComposerPanel({

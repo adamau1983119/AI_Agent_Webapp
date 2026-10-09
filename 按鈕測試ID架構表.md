@@ -174,9 +174,9 @@ data-testid="{類型}-{位置}-{功能}"
 | `btn-landing-fx-cny` | 按鈕 | 顯示 CNY | 僅換算 |
 | `btn-landing-fx-hkd` | 按鈕 | 顯示 HKD | 僅換算 |
 | `btn-landing-fx-jpy` | 按鈕 | 顯示 JPY | 僅換算 |
-| `card-landing-pack-usd3` | 卡片 | US$3／180 點（訪客） | `/login` |
-| `card-landing-pack-usd5` | 卡片 | US$5／350 點（訪客） | `/login` |
-| `card-landing-pack-usd10` | 卡片 | US$10／800 點（訪客） | `/login` |
+| `card-landing-pack-usd3` | 卡片 | US$3／1,800 點（訪客） | `/login` |
+| `card-landing-pack-usd5` | 卡片 | US$5／3,500 點（訪客） | `/login` |
+| `card-landing-pack-usd10` | 卡片 | US$10／8,000 點（訪客） | `/login` |
 | `btn-landing-pack-usd3` | 連結 | 訪客選 US$3 | `/login` |
 | `btn-landing-pack-usd5` | 連結 | 訪客選 US$5 | `/login` |
 | `btn-landing-pack-usd10` | 連結 | 訪客選 US$10 | `/login` |
@@ -312,9 +312,10 @@ data-testid="{類型}-{位置}-{功能}"
 | `panel-channels-form-collapsed-hint` | 區塊 | 大螢幕＋助手開啟：表單收合時之虛線提示區 |
 | `btn-channels-expand-wizard-form` | 按鈕 | 展開完整三步表單 |
 | `btn-channels-collapse-wizard-form` | 按鈕 | 收合完整三步表單（僅大螢幕顯示） |
-| `btn-channels-step1-category-{category}` | 按鈕 | Step1 選類別（`fashion`／`food` 等） |
+| `btn-channels-step1-category-{category}` | 按鈕 | Step1 選類別（`fashion`／`food`／`beauty`／`games`／`travel`／`growth`／`lego`／`cosplay` 等） |
 | `btn-channels-step1-next` | 按鈕 | Step1 → Step2 |
 | `btn-channels-step2-region-{region}` | 按鈕 | Step2 選地區（與 `ChannelRegion` 值一致） |
+| `note-channels-step2-global-pack` | 說明 | 該區沒有在地來源時顯示「使用全球包」 |
 | `input-channels-step2-keyword` | 輸入 | 類別為 `other` 時自訂關鍵字 |
 | `btn-channels-step2-keyword-add` | 按鈕 | 新增關鍵字 |
 | `btn-channels-step2-keyword-remove-{index}` | 按鈕 | 移除第 index 個關鍵字 |
@@ -649,9 +650,9 @@ test('login flow', async ({ page }) => {
 | `btn-settings-tab-billing` | 按鈕 | 設定：點數分頁 | `/settings?tab=billing` |
 | `panel-settings-billing` | 區塊 | 點數餘額與購買 | `/settings?tab=billing` |
 | `text-settings-credits-balance` | 文字 | 目前點數 | — |
-| `btn-settings-buy-usd3` | 按鈕 | US$3／180 點 Checkout | Stripe |
-| `btn-settings-buy-usd5` | 按鈕 | US$5／350 點 Checkout | Stripe |
-| `btn-settings-buy-usd10` | 按鈕 | US$10／800 點 Checkout | Stripe |
+| `btn-settings-buy-usd3` | 按鈕 | US$3／1,800 點 Checkout | Stripe |
+| `btn-settings-buy-usd5` | 按鈕 | US$5／3,500 點 Checkout | Stripe |
+| `btn-settings-buy-usd10` | 按鈕 | US$10／8,000 點 Checkout | Stripe |
 | `btn-settings-fx-usd` | 按鈕 | 設定貨架顯示 USD | 僅換算 |
 | `btn-settings-fx-twd` | 按鈕 | 設定貨架顯示 TWD | 僅換算 |
 | `btn-settings-fx-cny` | 按鈕 | 設定貨架顯示 CNY | 僅換算 |

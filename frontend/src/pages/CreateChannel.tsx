@@ -173,6 +173,11 @@ const categories: { value: ChannelCategory; label: string; icon: string }[] = [
   { value: 'sports', label: categoryI18nKeys.sports, icon: categoryIcons.sports },
   { value: 'tech', label: categoryI18nKeys.tech, icon: categoryIcons.tech },
   { value: 'entertainment', label: categoryI18nKeys.entertainment, icon: categoryIcons.entertainment },
+  { value: 'beauty', label: categoryI18nKeys.beauty, icon: categoryIcons.beauty },
+  { value: 'games', label: categoryI18nKeys.games, icon: categoryIcons.games },
+  { value: 'travel', label: categoryI18nKeys.travel, icon: categoryIcons.travel },
+  { value: 'growth', label: categoryI18nKeys.growth, icon: categoryIcons.growth },
+  { value: 'lego', label: categoryI18nKeys.lego, icon: categoryIcons.lego },
   { value: 'other', label: categoryI18nKeys.other, icon: categoryIcons.other },
 ];
 
@@ -1984,6 +1989,13 @@ export default function CreateChannel() {
                 )}
                 {!step2PoolLoading && !step2PoolError && step2PoolSources.length === 0 && (
                   <p className="text-sm text-gray-500 dark:text-gray-400">{t('channels.step2.poolEmpty')}</p>
+                )}
+
+                {!step2PoolLoading && step2PoolSources.length > 0 &&
+                  step2PoolSources.every((s) => s.role !== 'local' && s.role !== 'kpop') && (
+                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-3" data-testid="note-channels-step2-global-pack">
+                    {t('channels.step2.globalPackNote')}
+                  </p>
                 )}
 
                 {!step2PoolLoading && step2PoolSources.length > 0 && (

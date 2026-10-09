@@ -30,8 +30,8 @@ class TestComposeAdvanced(unittest.TestCase):
         self.assertFalse(length_enabled("threads", 1500))
         self.assertEqual(clamp_max_chars("instagram", 1500), 1500)
         self.assertEqual(clamp_max_chars("facebook", 999), 500)
-        self.assertEqual(compose_credit_cost(500), 1)
-        self.assertEqual(compose_credit_cost(1500), 2)
+        self.assertEqual(compose_credit_cost(500), 10)
+        self.assertEqual(compose_credit_cost(1500), 20)
         self.assertEqual(map_max_chars_to_length(500), "short")
         self.assertEqual(map_max_chars_to_length(1500), "long")
 

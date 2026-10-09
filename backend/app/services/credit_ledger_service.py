@@ -23,7 +23,7 @@ from app.services.credits.credit_wallet import (
     utcnow,
 )
 
-UNLOCK_COST = 1
+UNLOCK_COST = 10
 
 
 class InsufficientCreditsError(Exception):

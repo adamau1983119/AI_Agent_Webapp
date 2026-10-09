@@ -20,6 +20,11 @@ class ChannelCategory(str, Enum):
     SPORTS = "sports"         # 運動
     TECH = "tech"             # 科技
     ENTERTAINMENT = "entertainment"  # 娛樂
+    BEAUTY = "beauty"         # 美妝
+    GAMES = "games"           # 遊戲
+    TRAVEL = "travel"         # 旅遊
+    GROWTH = "growth"         # 個人成長
+    LEGO = "lego"             # Lego 子包
     OTHER = "other"           # 其他（自定義關鍵字）
 
 
@@ -675,6 +680,11 @@ CATEGORY_FALLBACK_MAP = {
     ChannelCategory.FOOD: [ChannelCategory.ENTERTAINMENT, ChannelCategory.TREND],
     ChannelCategory.TREND: [ChannelCategory.TECH, ChannelCategory.ENTERTAINMENT],
     ChannelCategory.OTHER: [ChannelCategory.TREND, ChannelCategory.TECH],
+    ChannelCategory.BEAUTY: [ChannelCategory.FASHION, ChannelCategory.TREND],
+    ChannelCategory.GAMES: [ChannelCategory.TECH, ChannelCategory.ENTERTAINMENT],
+    ChannelCategory.TRAVEL: [ChannelCategory.FOOD, ChannelCategory.TREND],
+    ChannelCategory.GROWTH: [ChannelCategory.FINANCE, ChannelCategory.TREND],
+    ChannelCategory.LEGO: [ChannelCategory.GAMES, ChannelCategory.TREND],
 }
 
 # 地區語言映射
@@ -688,3 +698,7 @@ REGION_LANGUAGE_MAP = {
     ChannelRegion.UK: "en",
     ChannelRegion.GLOBAL: "en",
 }
+
+from app.models.interest_pack_feeds import install_interest_packs
+
+install_interest_packs(DEFAULT_RSS_SOURCES, ChannelCategory, ChannelRegion)

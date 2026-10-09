@@ -39,5 +39,5 @@ def length_enabled(platform: str, n: int) -> bool:
 
 
 def compose_credit_cost(max_chars: int) -> int:
-    """短 500 → 1 點；長 1500 → 2 點。"""
-    return 2 if int(max_chars) > 500 else 1
+    """短 500 → 10 積分；長 1500 → 20 積分。"""
+    return 20 if int(max_chars) > 500 else 10

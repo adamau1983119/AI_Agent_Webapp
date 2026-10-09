@@ -42,64 +42,76 @@ NOW = datetime(2026, 9, 4, 10, 0, 0)
 
 
 class TestCreditGrants(unittest.TestCase):
-    def test_welcome_three_times_ten(self):
+    def test_welcome_once_one_hundred(self):
         wallet = empty_wallet("u1")
-        total = 0
-        for day in ("2026-09-04", "2026-09-05", "2026-09-06"):
-            plan = plan_login_grant(wallet, day, NOW)
-            self.assertEqual(plan["amount"], 10)
-            wallet = apply_grant(wallet, plan, NOW, f"lot-{day}")
-            total += 10
-        self.assertEqual(wallet["welcome_count"], 3)
-        self.assertEqual(total_balance(wallet, NOW), 30)
+        plan = plan_login_grant(wallet, "2026-09-04", NOW)
+        self.assertEqual(plan["amount"], 100)
+        self.assertEqual(plan["kind"], "welcome")
+        wallet = apply_grant(wallet, plan, NOW, "lot-welcome")
+        self.assertEqual(wallet["welcome_count"], 1)
+        self.assertEqual(total_balance(wallet, NOW), 100)
+        nxt = plan_login_grant(wallet, "2026-09-05", NOW)
+        self.assertEqual(nxt["kind"], "daily_skip_cap")
+        self.assertEqual(nxt["amount"], 0)
 
     def test_same_day_idempotent(self):
         wallet = empty_wallet("u1")
         plan = plan_login_grant(wallet, "2026-09-04", NOW)
         wallet = apply_grant(wallet, plan, NOW, "lot-a")
-        self.assertEqual(wallet["last_grant_amount"], 10)
+        self.assertEqual(wallet["last_grant_amount"], 100)
         self.assertEqual(wallet["last_grant_kind"], "welcome")
         self.assertIsNone(plan_login_grant(wallet, "2026-09-04", NOW))
 
-    def test_legacy_topup_then_two_tens(self):
+    def test_legacy_topup_then_daily(self):
         wallet = empty_wallet("u1")
-        wallet["purchased"] = 5
+        wallet["purchased"] = 50
         wallet["legacy_initial"] = True
         plan = plan_login_grant(wallet, "2026-09-04", NOW)
-        self.assertEqual(plan["amount"], 5)
+        self.assertEqual(plan["amount"], 50)
+        self.assertEqual(plan["kind"], "legacy_topup")
         wallet = apply_grant(wallet, plan, NOW, "lot-legacy")
         plan2 = plan_login_grant(wallet, "2026-09-05", NOW)
+        self.assertEqual(plan2["kind"], "daily")
         self.assertEqual(plan2["amount"], 10)
         wallet = apply_grant(wallet, plan2, NOW, "lot-2")
-        plan3 = plan_login_grant(wallet, "2026-09-06", NOW)
-        self.assertEqual(plan3["amount"], 10)
-        wallet = apply_grant(wallet, plan3, NOW, "lot-3")
-        self.assertEqual(total_balance(wallet, NOW), 30)
+        self.assertEqual(total_balance(wallet, NOW), 110)
 
-    def test_daily_plus_five_after_welcome(self):
+    def test_daily_plus_twenty_after_welcome(self):
         wallet = empty_wallet("u1")
-        wallet["welcome_count"] = 3
+        wallet["welcome_count"] = 1
         wallet["last_grant_hkt"] = "2026-09-03"
         plan = plan_login_grant(wallet, "2026-09-04", NOW)
-        self.assertEqual(plan["amount"], 5)
+        self.assertEqual(plan["amount"], 20)
         self.assertEqual(plan["kind"], "daily")
 
-    def test_free_cap_ten_skips_daily(self):
+    def test_free_cap_sixty_skips_daily(self):
         wallet = empty_wallet("u1")
-        wallet["welcome_count"] = 3
+        wallet["welcome_count"] = 1
         wallet["last_grant_hkt"] = "2026-09-03"
-        wallet["lots"] = [make_lot(10, "welcome", NOW, "full")]
+        wallet["lots"] = [make_lot(60, "welcome", NOW, "full")]
         plan = plan_login_grant(wallet, "2026-09-04", NOW)
         self.assertEqual(plan["amount"], 0)
         self.assertEqual(plan["kind"], "daily_skip_cap")
 
     def test_daily_clips_to_cap(self):
         wallet = empty_wallet("u1")
-        wallet["welcome_count"] = 3
+        wallet["welcome_count"] = 1
         wallet["last_grant_hkt"] = "2026-09-03"
-        wallet["lots"] = [make_lot(8, "welcome", NOW, "eight")]
+        wallet["lots"] = [make_lot(50, "welcome", NOW, "fifty")]
         plan = plan_login_grant(wallet, "2026-09-04", NOW)
-        self.assertEqual(plan["amount"], 2)
+        self.assertEqual(plan["amount"], 10)
+
+    def test_existing_balance_scales_once(self):
+        from app.services.credits.credit_wallet import apply_unit_scale
+
+        wallet = empty_wallet("u1")
+        wallet["unit_scale"] = 0
+        wallet["purchased"] = 4
+        wallet["lots"] = [make_lot(3, "daily", NOW, "old")]
+        self.assertTrue(apply_unit_scale(wallet))
+        self.assertEqual(wallet["purchased"], 40)
+        self.assertEqual(wallet["lots"][0]["remaining"], 30)
+        self.assertFalse(apply_unit_scale(wallet))
 
 
 class TestCreditWallet(unittest.TestCase):
@@ -124,9 +136,9 @@ class TestCreditPacks(unittest.TestCase):
     def test_three_packs_no_usd1(self):
         packs = {row["id"]: row for row in list_packs()}
         self.assertEqual(set(packs), {"usd3", "usd5", "usd10"})
-        self.assertEqual(get_pack("usd3")["credits"], 180)
-        self.assertEqual(get_pack("usd5")["credits"], 350)
-        self.assertEqual(get_pack("usd10")["credits"], 800)
+        self.assertEqual(get_pack("usd3")["credits"], 1800)
+        self.assertEqual(get_pack("usd5")["credits"], 3500)
+        self.assertEqual(get_pack("usd10")["credits"], 8000)
         with self.assertRaises(KeyError):
             get_pack("usd1")
 
@@ -149,7 +161,7 @@ class TestPaidPackFromSession(unittest.TestCase):
         from app.services.credits.credit_fulfill import paid_pack_from_session
 
         out = paid_pack_from_session(self._session())
-        self.assertEqual(out["credits"], 180)
+        self.assertEqual(out["credits"], 1800)
         self.assertEqual(out["amount_cents"], 300)
 
     def test_rejects_wrong_amount(self):
@@ -177,7 +189,7 @@ class TestPaidPackFromSession(unittest.TestCase):
             "credits": "9999",
         }
         out = paid_pack_from_session(session)
-        self.assertEqual(out["credits"], 180)
+        self.assertEqual(out["credits"], 1800)
 
 
 if __name__ == "__main__":
