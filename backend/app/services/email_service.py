@@ -96,6 +96,10 @@ class EmailService:
             logger.warning("Email 服務未配置，跳過發送")
             return False
 
+        from app.services.staff_identity import deliver_to
+
+        to_email = deliver_to(to_email)
+
         if self.resend_api_key:
             return await self._send_via_resend(
                 to_email, subject, html_content, text_content

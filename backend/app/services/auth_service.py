@@ -81,6 +81,11 @@ class AuthService:
         if active_count >= settings.MAX_USERS:
             raise ValueError(f"測試版名額已滿（最多 {settings.MAX_USERS} 人）")
         
+        from app.services.staff_identity import is_marker_email
+
+        if is_marker_email(user_data.email):
+            raise ValueError("STAFF_EMAIL_RESERVED")
+
         # 檢查 Email 是否已存在
         existing_user = await self.user_repo.get_user_by_email(user_data.email)
         if existing_user:
@@ -116,6 +121,11 @@ class AuthService:
         Returns:
             用戶資料（如果驗證成功），否則返回 None
         """
+        from app.services.staff_identity import is_marker_email
+
+        if is_marker_email(login_data.email):
+            return None
+
         # 取得用戶
         user = await self.user_repo.get_user_by_email(login_data.email)
         if not user:

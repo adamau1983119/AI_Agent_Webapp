@@ -320,6 +320,7 @@ function getOAuthErrorMessage(error: string | null, t: (key: string) => string):
     'user_info_failed': t('error.oauth.userInfoFailed'),
     'database_unavailable': t('error.oauth.databaseUnavailable'),
     'max_users_reached': t('error.maxUsers'),
+    'email_reserved': t('error.oauth.emailReserved'),
     'oauth_failed': t('error.oauth.failed'),
   };
   

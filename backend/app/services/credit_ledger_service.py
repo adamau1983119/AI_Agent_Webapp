@@ -56,7 +56,7 @@ class CreditLedgerService:
         plan = plan_login_grant(wallet, today_hkt_str(), now)
         if not plan:
             await save_wallet(wallet)
-            return total_balance(wallet)
+            return await self._staff_balance(user_id)
         wallet = apply_grant(wallet, plan, now, f"lot_{secrets.token_urlsafe(8)}")
         await save_wallet(wallet)
         amount = int(plan.get("amount") or 0)
@@ -69,7 +69,12 @@ class CreditLedgerService:
                 balance_after=total_balance(wallet),
                 meta={"kind": plan["kind"], "hkt_day": plan["hkt_day"]},
             )
-        return total_balance(wallet)
+        return await self._staff_balance(user_id)
+
+    async def _staff_balance(self, user_id: str) -> int:
+        from app.services.staff_credit import maybe_staff_refill
+
+        return await maybe_staff_refill(user_id)
 
     async def add_credits(self, user_id: str, amount: int, admin_id: str) -> int:
         if amount <= 0:
@@ -135,7 +140,7 @@ class CreditLedgerService:
             )
         wallet = fifo_debit(wallet, amount)
         await save_wallet(wallet)
-        new_balance = await insert_txn(
+        await insert_txn(
             user_id,
             -amount,
             action=action,
@@ -143,6 +148,7 @@ class CreditLedgerService:
             balance_after=total_balance(wallet),
             topic_id=topic_id,
         )
+        new_balance = await self._staff_balance(user_id)
         await store_idempotency(
             user_id,
             idempotency_key,
