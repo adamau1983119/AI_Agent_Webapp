@@ -117,7 +117,7 @@ export default function ForgotPassword() {
         </div>
         
         <div className="relative z-10 text-center px-12">
-          <h1 className="text-white font-display text-6xl font-light tracking-[0.4em] uppercase mb-8">
+          <h1 className="text-white font-display text-6xl font-light tracking-[0.4em] uppercase pl-[0.4em] mb-8">
             {BRAND.name}
           </h1>
           <div className="w-24 h-px bg-white/50 mx-auto mb-8"></div>
@@ -155,7 +155,7 @@ export default function ForgotPassword() {
           <div className="w-full max-w-sm">
             {/* 移動端 Logo */}
             <div className="lg:hidden text-center mb-12">
-              <h1 className="font-display text-3xl font-light tracking-[0.3em] uppercase text-black">
+              <h1 className="font-display text-3xl font-light tracking-[0.3em] uppercase pl-[0.3em] text-black">
                 {BRAND.name}
               </h1>
               <div className="w-16 h-px bg-black mx-auto mt-4 mb-4"></div>

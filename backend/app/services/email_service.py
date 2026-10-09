@@ -241,8 +241,8 @@ def _lane_crawford_base(body_content: str, font_family: str = "Arial, 'Helvetica
                     <!-- Header -->
                     <tr>
                         <td style="background-color: #000000; padding: 48px 40px; text-align: center;">
-                            <h1 style="margin: 0; color: #FFFFFF; font-size: 28px; font-weight: 300; letter-spacing: 0.4em; text-transform: uppercase;">
-                                INFLUENCERS
+                            <h1 style="margin: 0; color: #FFFFFF; font-size: 28px; font-weight: 300; letter-spacing: 0.4em; padding-left: 0.4em; text-transform: uppercase;">
+                                Alter-ego
                             </h1>
                             <div style="width: 60px; height: 1px; background-color: rgba(255,255,255,0.3); margin: 20px auto;"></div>
                             <p style="margin: 0; color: rgba(255,255,255,0.5); font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase; font-weight: 300;">
@@ -260,7 +260,7 @@ def _lane_crawford_base(body_content: str, font_family: str = "Arial, 'Helvetica
                     <tr>
                         <td style="padding: 32px 40px; text-align: center; border-top: 1px solid #e5e5e5;">
                             <p style="margin: 0; color: #999999; font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase;">
-                                &copy; 2026 INFLUENCERS. All rights reserved.
+                                &copy; 2026 Alter-ego. All rights reserved.
                             </p>
                         </td>
                     </tr>
@@ -291,7 +291,7 @@ def get_verification_email_template(
     您好，
 </p>
 <p style="margin: 0 0 32px; color: #666666; font-size: 14px; line-height: 1.8; font-weight: 300;">
-    感謝您註冊 Influencers AI Agents。請點擊下方按鈕驗證您的 Email 地址：
+    感謝您註冊 Alter-ego。請點擊下方按鈕驗證您的 Email 地址：
 </p>
 <p style="text-align: center; margin: 0 0 32px;">
     <a href="{verify_url}" style="display: inline-block; background-color: #000000; color: #FFFFFF; padding: 16px 48px; text-decoration: none; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 400;">
@@ -323,7 +323,7 @@ def get_verification_email_template(
     Hello,
 </p>
 <p style="margin: 0 0 32px; color: #666666; font-size: 14px; line-height: 1.8; font-weight: 300;">
-    Thank you for signing up for Influencers AI Agents. Please click the button below to verify your email address:
+    Thank you for signing up for Alter-ego. Please click the button below to verify your email address:
 </p>
 <p style="text-align: center; margin: 0 0 32px;">
     <a href="{verify_url}" style="display: inline-block; background-color: #000000; color: #FFFFFF; padding: 16px 48px; text-decoration: none; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 400;">
@@ -355,7 +355,7 @@ def get_verification_email_template(
     こんにちは、
 </p>
 <p style="margin: 0 0 32px; color: #666666; font-size: 14px; line-height: 1.8; font-weight: 300;">
-    Influencers AI Agents にご登録いただきありがとうございます。以下のボタンをクリックして、メールアドレスを確認してください：
+    Alter-ego にご登録いただきありがとうございます。以下のボタンをクリックして、メールアドレスを確認してください：
 </p>
 <p style="text-align: center; margin: 0 0 32px;">
     <a href="{verify_url}" style="display: inline-block; background-color: #000000; color: #FFFFFF; padding: 16px 48px; text-decoration: none; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 400;">
@@ -379,19 +379,19 @@ def get_verification_email_template(
     
     templates = {
         Language.ZH_TW: {
-            "subject": "INFLUENCERS — Email 驗證",
+            "subject": "Alter-ego — Email 驗證",
             "html": _lane_crawford_base(zh_body, "'Noto Sans TC', Arial, 'Helvetica Neue', sans-serif"),
-            "text": f"INFLUENCERS — Email 驗證\n\n感謝您註冊。請點擊以下連結驗證您的 Email：\n\n{verify_url}\n\n此連結將在 24 小時後過期。\n如果您沒有註冊帳號，請忽略此郵件。\n\n© 2026 INFLUENCERS"
+            "text": f"Alter-ego — Email 驗證\n\n感謝您註冊。請點擊以下連結驗證您的 Email：\n\n{verify_url}\n\n此連結將在 24 小時後過期。\n如果您沒有註冊帳號，請忽略此郵件。\n\n© 2026 Alter-ego"
         },
         Language.EN: {
-            "subject": "INFLUENCERS — Email Verification",
+            "subject": "Alter-ego — Email Verification",
             "html": _lane_crawford_base(en_body),
-            "text": f"INFLUENCERS — Email Verification\n\nThank you for signing up. Please click the link below to verify your email:\n\n{verify_url}\n\nThis link will expire in 24 hours.\nIf you didn't create an account, please ignore this email.\n\n© 2026 INFLUENCERS"
+            "text": f"Alter-ego — Email Verification\n\nThank you for signing up. Please click the link below to verify your email:\n\n{verify_url}\n\nThis link will expire in 24 hours.\nIf you didn't create an account, please ignore this email.\n\n© 2026 Alter-ego"
         },
         Language.JA: {
-            "subject": "INFLUENCERS — メールアドレスの確認",
+            "subject": "Alter-ego — メールアドレスの確認",
             "html": _lane_crawford_base(ja_body, "'Noto Sans JP', Arial, 'Helvetica Neue', sans-serif"),
-            "text": f"INFLUENCERS — メールアドレスの確認\n\nご登録ありがとうございます。以下のリンクをクリックしてメールアドレスを確認してください：\n\n{verify_url}\n\nこのリンクは 24 時間後に期限切れになります。\nアカウントを作成していない場合は、このメールを無視してください。\n\n© 2026 INFLUENCERS"
+            "text": f"Alter-ego — メールアドレスの確認\n\nご登録ありがとうございます。以下のリンクをクリックしてメールアドレスを確認してください：\n\n{verify_url}\n\nこのリンクは 24 時間後に期限切れになります。\nアカウントを作成していない場合は、このメールを無視してください。\n\n© 2026 Alter-ego"
         }
     }
     
@@ -511,19 +511,19 @@ def get_password_reset_email_template(
     
     templates = {
         Language.ZH_TW: {
-            "subject": "INFLUENCERS — 重設密碼",
+            "subject": "Alter-ego — 重設密碼",
             "html": _lane_crawford_base(zh_body, "'Noto Sans TC', Arial, 'Helvetica Neue', sans-serif"),
-            "text": f"INFLUENCERS — 重設密碼\n\n我們收到了重設您密碼的請求。請點擊以下連結設定新密碼：\n\n{reset_url}\n\n此連結將在 1 小時後過期。\n如果您沒有請求重設密碼，請忽略此郵件。\n\n© 2026 INFLUENCERS"
+            "text": f"Alter-ego — 重設密碼\n\n我們收到了重設您密碼的請求。請點擊以下連結設定新密碼：\n\n{reset_url}\n\n此連結將在 1 小時後過期。\n如果您沒有請求重設密碼，請忽略此郵件。\n\n© 2026 Alter-ego"
         },
         Language.EN: {
-            "subject": "INFLUENCERS — Reset Password",
+            "subject": "Alter-ego — Reset Password",
             "html": _lane_crawford_base(en_body),
-            "text": f"INFLUENCERS — Reset Password\n\nWe received a request to reset your password. Click the link below:\n\n{reset_url}\n\nThis link will expire in 1 hour.\nIf you didn't request a password reset, please ignore this email.\n\n© 2026 INFLUENCERS"
+            "text": f"Alter-ego — Reset Password\n\nWe received a request to reset your password. Click the link below:\n\n{reset_url}\n\nThis link will expire in 1 hour.\nIf you didn't request a password reset, please ignore this email.\n\n© 2026 Alter-ego"
         },
         Language.JA: {
-            "subject": "INFLUENCERS — パスワードのリセット",
+            "subject": "Alter-ego — パスワードのリセット",
             "html": _lane_crawford_base(ja_body, "'Noto Sans JP', Arial, 'Helvetica Neue', sans-serif"),
-            "text": f"INFLUENCERS — パスワードのリセット\n\nパスワードリセットのリクエストを受け取りました。以下のリンクをクリックしてください：\n\n{reset_url}\n\nこのリンクは 1 時間後に期限切れになります。\nリクエストしていない場合は、このメールを無視してください。\n\n© 2026 INFLUENCERS"
+            "text": f"Alter-ego — パスワードのリセット\n\nパスワードリセットのリクエストを受け取りました。以下のリンクをクリックしてください：\n\n{reset_url}\n\nこのリンクは 1 時間後に期限切れになります。\nリクエストしていない場合は、このメールを無視してください。\n\n© 2026 Alter-ego"
         }
     }
     
@@ -547,7 +547,7 @@ def get_welcome_email_template(
     {user_name}，您好！
 </p>
 <p style="margin: 0 0 32px; color: #666666; font-size: 14px; line-height: 1.8; font-weight: 300;">
-    歡迎加入 Influencers AI Agents。我們很高興您成為我們的一員。以下是您可以開始使用的功能：
+    歡迎加入 Alter-ego。我們很高興您成為我們的一員。以下是您可以開始使用的功能：
 </p>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 32px;">
     <tr>
@@ -586,7 +586,7 @@ def get_welcome_email_template(
     Hello {user_name},
 </p>
 <p style="margin: 0 0 32px; color: #666666; font-size: 14px; line-height: 1.8; font-weight: 300;">
-    Welcome to Influencers AI Agents. We're delighted to have you with us. Here's what you can explore:
+    Welcome to Alter-ego. We're delighted to have you with us. Here's what you can explore:
 </p>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 32px;">
     <tr>
@@ -625,7 +625,7 @@ def get_welcome_email_template(
     {user_name} さん、こんにちは！
 </p>
 <p style="margin: 0 0 32px; color: #666666; font-size: 14px; line-height: 1.8; font-weight: 300;">
-    Influencers AI Agents へようこそ。ご参加いただきありがとうございます。以下の機能をお試しください：
+    Alter-ego へようこそ。ご参加いただきありがとうございます。以下の機能をお試しください：
 </p>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 32px;">
     <tr>
@@ -656,19 +656,19 @@ def get_welcome_email_template(
     
     templates = {
         Language.ZH_TW: {
-            "subject": "INFLUENCERS — 歡迎加入",
+            "subject": "Alter-ego — 歡迎加入",
             "html": _lane_crawford_base(zh_body, "'Noto Sans TC', Arial, 'Helvetica Neue', sans-serif"),
-            "text": f"INFLUENCERS — 歡迎加入\n\n{user_name}，您好！\n\n歡迎加入 Influencers AI Agents！\n\n功能一覽：\n- AI 內容生成\n- 個人化風格\n- 多平台發布\n\n立即開始：{FRONTEND_URL}\n\n© 2026 INFLUENCERS"
+            "text": f"Alter-ego — 歡迎加入\n\n{user_name}，您好！\n\n歡迎加入 Alter-ego！\n\n功能一覽：\n- AI 內容生成\n- 個人化風格\n- 多平台發布\n\n立即開始：{FRONTEND_URL}\n\n© 2026 Alter-ego"
         },
         Language.EN: {
-            "subject": "INFLUENCERS — Welcome",
+            "subject": "Alter-ego — Welcome",
             "html": _lane_crawford_base(en_body),
-            "text": f"INFLUENCERS — Welcome\n\nHello {user_name}!\n\nWelcome to Influencers AI Agents!\n\nFeatures:\n- AI Content Generation\n- Personalized Style\n- Multi-platform Publishing\n\nGet started: {FRONTEND_URL}\n\n© 2026 INFLUENCERS"
+            "text": f"Alter-ego — Welcome\n\nHello {user_name}!\n\nWelcome to Alter-ego!\n\nFeatures:\n- AI Content Generation\n- Personalized Style\n- Multi-platform Publishing\n\nGet started: {FRONTEND_URL}\n\n© 2026 Alter-ego"
         },
         Language.JA: {
-            "subject": "INFLUENCERS — ようこそ",
+            "subject": "Alter-ego — ようこそ",
             "html": _lane_crawford_base(ja_body, "'Noto Sans JP', Arial, 'Helvetica Neue', sans-serif"),
-            "text": f"INFLUENCERS — ようこそ\n\n{user_name} さん、こんにちは！\n\nInfluencers AI Agents へようこそ！\n\n機能一覧：\n- AI コンテンツ生成\n- パーソナライズドスタイル\n- マルチプラットフォーム投稿\n\n今すぐ始める：{FRONTEND_URL}\n\n© 2026 INFLUENCERS"
+            "text": f"Alter-ego — ようこそ\n\n{user_name} さん、こんにちは！\n\nAlter-ego へようこそ！\n\n機能一覧：\n- AI コンテンツ生成\n- パーソナライズドスタイル\n- マルチプラットフォーム投稿\n\n今すぐ始める：{FRONTEND_URL}\n\n© 2026 Alter-ego"
         }
     }
     
