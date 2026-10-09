@@ -2,7 +2,7 @@
 Images API 端點
 """
 from typing import Optional
-from fastapi import APIRouter, HTTPException, Query, Path, Body
+from fastapi import APIRouter, Depends, HTTPException, Query, Path, Body, status
 from fastapi.responses import StreamingResponse, Response
 import httpx
 from urllib.parse import urlparse
@@ -20,6 +20,9 @@ from app.models.image import ImageSource
 from app.utils.i18n import get_error_message, get_user_language
 from fastapi import Request
 from app.config import settings
+from app.middleware.jwt_auth import get_current_user
+from app.services.credit_ledger_service import InsufficientCreditsError
+from app.services.title_image_charge import TITLE_IMAGE_DOWNLOAD_COST, charge_title_image_download
 from datetime import datetime
 import logging
 
@@ -924,3 +927,19 @@ async def validate_photo_match(
     except Exception as e:
         logger.error(f"驗證照片匹配失敗: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/title-image-download")
+async def download_title_image_charge(
+    topic_id: Optional[str] = Body(default=None, embed=True),
+    current_user: dict = Depends(get_current_user),
+):
+    """Confirm-download debit. Canvas preview does not call this."""
+    try:
+        balance = await charge_title_image_download(current_user["id"], topic_id)
+    except InsufficientCreditsError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_402_PAYMENT_REQUIRED,
+            detail="insufficient_credits",
+        ) from exc
+    return {"balance": balance, "cost": TITLE_IMAGE_DOWNLOAD_COST}
