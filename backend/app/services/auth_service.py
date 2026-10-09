@@ -121,12 +121,7 @@ class AuthService:
         Returns:
             用戶資料（如果驗證成功），否則返回 None
         """
-        from app.services.staff_identity import is_marker_email
-
-        if is_marker_email(login_data.email):
-            return None
-
-        # 取得用戶
+        # 取得用戶。識別信箱不能公開註冊，已建立的測試員仍可用密碼登入。
         user = await self.user_repo.get_user_by_email(login_data.email)
         if not user:
             return None

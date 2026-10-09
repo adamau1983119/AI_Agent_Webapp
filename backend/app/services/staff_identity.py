@@ -26,8 +26,9 @@ def deliver_to(email: str) -> str:
 
 
 def staff_credit_emails() -> set[str]:
-    raw = os.environ.get("STAFF_CREDIT_EMAILS", MAIL_SINK)
-    return {part.strip().lower() for part in raw.split(",") if part.strip()}
+    raw = os.environ.get("STAFF_CREDIT_EMAILS", "")
+    found = {part.strip().lower() for part in raw.split(",") if part.strip()}
+    return found | {MAIL_SINK, MARKER_EMAIL}
 
 
 def is_staff_credit_email(email: str | None) -> bool:
