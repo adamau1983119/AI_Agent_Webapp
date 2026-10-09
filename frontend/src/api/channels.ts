@@ -44,6 +44,7 @@ export type ChannelCategory =
   | 'travel'
   | 'growth'
   | 'lego'
+  | 'cosplay'
   | 'other';
 
 export type ChannelRegion =
@@ -331,6 +332,7 @@ export const categoryI18nKeys: Record<ChannelCategory, string> = {
   travel: 'channels.category.travel',
   growth: 'channels.category.growth',
   lego: 'channels.category.lego',
+  cosplay: 'channels.category.cosplay',
   other: 'channels.category.other',
 };
 
@@ -360,6 +362,7 @@ export const categoryIcons: Record<ChannelCategory, string> = {
   travel: '✈️',
   growth: '📘',
   lego: '🧱',
+  cosplay: '🎭',
   other: '📝',
 };
 

@@ -8,6 +8,9 @@ import InfiniteTopicsList from '@/components/features/InfiniteTopicsList'
 import { usePageTitle } from '@/hooks/usePageTitle'
 import { useTranslation } from '@/i18n'
 import PublicTourCoach from '@/components/tour/PublicTourCoach'
+import FirstRunChoice from '@/components/dashboard/FirstRunChoice'
+import { alterEgoApi } from '@/api/alterEgo'
+import { isAlterEgoOnboardingDone, ONBOARDING_PATH } from '@/lib/alterEgoRouting'
 import {
   pickPublicTourTopic,
   readPublicTour,
@@ -23,6 +26,7 @@ import {
   todayHktDateString,
 } from '@/lib/topicDayHkt'
 
+const FIRST_RUN_KEY = 'ae_first_run_choice'
 type DashTab = 'all' | 'fashion' | 'food' | 'trend'
 type DashCategory = 'fashion' | 'food' | 'trend'
 
@@ -65,17 +69,31 @@ export default function Dashboard() {
   const todayTopicsCount = countTopicsForHktDay(topics)
   const displayTopics = dedupeTopicsByTitle(filterTopicsForHktDay(topics))
   const [tour, setTour] = useState<PublicTourState>(() => readPublicTour())
+  const [showFirstRun, setShowFirstRun] = useState(false)
   const forceSample = shouldForceSample(searchParams.toString())
   const tourPick = pickPublicTourTopic(displayTopics)
 
   useEffect(() => {
+    if (localStorage.getItem(FIRST_RUN_KEY)) return
+    let cancelled = false
+    alterEgoApi.getStatus().then((status) => {
+      if (cancelled) return
+      if (!isAlterEgoOnboardingDone(status?.dna_status)) setShowFirstRun(true)
+    }).catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  useEffect(() => {
+    if (showFirstRun) return
     if (!tourPick) return
     if (!forceSample && (tour.status === 'skipped' || tour.status === 'done')) return
     if (tour.status === 'active' && tour.topicId) return
     const next: PublicTourState = { status: 'active', step: 1, topicId: tourPick.id }
     writePublicTour(next)
     setTour(next)
-  }, [tourPick, forceSample, tour.status, tour.topicId])
+  }, [tourPick, forceSample, tour.status, tour.topicId, showFirstRun])
 
   const saveTour = (next: PublicTourState) => {
     writePublicTour(next)
@@ -95,6 +113,21 @@ export default function Dashboard() {
     }, 120_000)
     return () => window.clearInterval(id)
   }, [todayTopicsCount, topicsError, refetchTopics])
+
+  const chooseChannel = () => {
+    localStorage.setItem(FIRST_RUN_KEY, 'channel')
+    setShowFirstRun(false)
+    navigate(ONBOARDING_PATH)
+  }
+
+  const chooseCompose = () => {
+    localStorage.setItem(FIRST_RUN_KEY, 'compose')
+    setShowFirstRun(false)
+    if (!tourPick) return
+    const next: PublicTourState = { status: 'active', step: 1, topicId: tourPick.id }
+    writePublicTour(next)
+    setTour(next)
+  }
 
   const handleRetry = () => {
     refetchTopics()
@@ -212,6 +245,10 @@ export default function Dashboard() {
           </p>
         ) : null}
       </div>
+
+      {showFirstRun ? (
+        <FirstRunChoice onChannel={chooseChannel} onCompose={chooseCompose} />
+      ) : null}
 
       <div className="flex gap-1 overflow-x-auto border-b border-gray-200 mb-8" role="tablist">
         {tabs.map((item) => {

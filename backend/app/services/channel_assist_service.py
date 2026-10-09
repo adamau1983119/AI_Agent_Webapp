@@ -505,6 +505,7 @@ Return only JSON, no other text."""
             "travel": ChannelCategory.TRAVEL.value,
             "growth": ChannelCategory.GROWTH.value,
             "lego": ChannelCategory.LEGO.value,
+            "cosplay": ChannelCategory.COSPLAY.value,
             "other": ChannelCategory.OTHER.value,
         }
         

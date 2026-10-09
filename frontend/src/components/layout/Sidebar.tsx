@@ -2,6 +2,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { useUIStore } from '@/stores/uiStore'
 import { useAuthStore } from '@/stores/authStore'
 import { useTranslation } from '@/i18n'
+import BrandMark from '@/components/brand/BrandMark'
 
 /** v7 導航可見性（對齊 專案完整架構表_v8.md 「前端路由」） */
 type V7NavVisibility = 'show' | 'hide' | 'beta' | 'soon'
@@ -18,11 +19,11 @@ const menuItemsConfig: Array<{
   { path: '/discover', labelKey: 'nav.discover', icon: 'compass', testId: 'link-sidebar-discover', v7Nav: 'hide' },
   { path: '/my-channel', labelKey: 'nav.channels', icon: 'channel', testId: 'link-sidebar-my-channel', v7Nav: 'show' },
   { path: '/channels', labelKey: 'nav.channelList', icon: 'channel', testId: 'link-sidebar-channels', v7Nav: 'show' },
-  { path: '/inspiration', labelKey: 'nav.inspiration', icon: 'lightbulb', testId: 'link-sidebar-inspiration', v7Nav: 'show' },
-  { path: '/compose-sample', labelKey: 'nav.composeSample', icon: 'sparkles', testId: 'link-sidebar-compose-sample', v7Nav: 'show' },
+  { path: '/inspiration', labelKey: 'nav.inspiration', icon: 'lightbulb', testId: 'link-sidebar-inspiration', v7Nav: 'hide' },
+  { path: '/compose-sample', labelKey: 'nav.composeSample', icon: 'sparkles', testId: 'link-sidebar-compose-sample', v7Nav: 'hide' },
   { path: '/style-profile', labelKey: 'nav.styleProfile', icon: 'sparkles', testId: 'link-sidebar-style', v7Nav: 'hide' },
   { path: '/publish', labelKey: 'nav.publish', icon: 'rocket', testId: 'link-sidebar-publish', v7Nav: 'soon' },
-  { path: '/social-connect', labelKey: 'nav.socialConnect', icon: 'link', testId: 'link-sidebar-social', v7Nav: 'soon' },
+  { path: '/social-connect', labelKey: 'nav.socialConnect', icon: 'link', testId: 'link-sidebar-social', v7Nav: 'show' },
   { path: '/preferences', labelKey: 'nav.preferences', icon: 'settings', testId: 'link-sidebar-preferences', v7Nav: 'hide' },
   { path: '/schedule', labelKey: 'nav.schedule', icon: 'calendar', testId: 'link-sidebar-schedule', v7Nav: 'hide' },
 ]
@@ -58,13 +59,9 @@ export default function Sidebar() {
       {/* Logo - Alter-ego */}
       <div className="p-6 border-b border-gray-200">
         <Link to="/dashboard" data-testid="link-sidebar-logo" className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg">
-            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
-            </svg>
-          </div>
+          <BrandMark />
           <div className="flex flex-col">
-            <span className="text-lg font-bold bg-gradient-to-r from-purple-600 to-cyan-600 bg-clip-text text-transparent">
+            <span className="text-lg font-bold text-black font-display tracking-wide">
               {t('brand.name')}
             </span>
             <span className="text-[10px] text-gray-500 -mt-0.5">{t('brand.tagline')}</span>

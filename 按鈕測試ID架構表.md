@@ -68,15 +68,15 @@ data-testid="{類型}-{位置}-{功能}"
 | Test ID | 元素 | 功能 | 目標路由 |
 |---------|------|------|----------|
 | `link-sidebar-logo` | Logo | 返回首頁 | `/dashboard` |
-| `link-sidebar-dashboard` | 選單項 | 控制面板 | `/dashboard` |
+| `link-sidebar-dashboard` | 選單項 | 今日熱門 | `/dashboard` |
 | `link-sidebar-topics` | 選單項 | 主題列表 — **側欄隱藏**；路由／testid 保留（Header 搜尋仍進 `/topics`） | `/topics` |
 | `link-sidebar-discover` | 選單項 | 探索（公共主題牆）— **側欄隱藏**；路由／testid 保留 | `/discover` |
 | `link-sidebar-my-channel` | 選單項 | 我的頻道 | `/my-channel` |
 | `link-sidebar-channels` | 選單項 | 頻道管理 | `/channels` |
-| `link-sidebar-inspiration` | 選單項 | 靈感策劃 | `/inspiration` |
+| `link-sidebar-inspiration` | 選單項 | 靈感策劃 — **側欄隱藏**；路由／testid 保留 | `/inspiration` |
 | `link-sidebar-style` | 選單項 | 風格檔案 | `/style-profile` |
-| `link-sidebar-publish` | 選單項 | 一鍵發布（側欄標 **即將推出**） | `/publish` |
-| `link-sidebar-social` | 選單項 | 社群連結（側欄標 **即將推出**） | `/social-connect` |
+| `link-sidebar-publish` | 選單項 | 一鍵發布（頁面只顯示敬請期待，側欄不掛即將推出） | `/publish` |
+| `link-sidebar-social` | 選單項 | 社群連結（側欄不掛即將推出） | `/social-connect` |
 | `link-sidebar-preferences` | 選單項 | 偏好設定 — **側欄隱藏**；路由／testid 保留 | `/preferences` |
 | `link-sidebar-schedule` | 選單項 | 排程管理 | `/schedule` |
 | `btn-sidebar-logout` | 按鈕 | 登出 | `/login` |
@@ -119,6 +119,10 @@ data-testid="{類型}-{位置}-{功能}"
 | `link-dashboard-channels` | 連結 | ~~我的頻道~~ **已移除（改側欄）** | — |
 | `link-dashboard-inspiration` | 連結 | ~~靈感策劃~~ **已移除（改側欄）** | — |
 | `link-dashboard-style` | 連結 | ~~風格檔案~~ **已移除（改側欄）** | — |
+| `section-dashboard-first-run` | 區塊 | 新人歡迎與二選一（尚未完成 Alter Ego 且未選過） | `/dashboard` |
+| `btn-dashboard-first-run-channel` | 按鈕 | 了解如何自設頻道 | `/onboarding/alter-ego` |
+| `btn-dashboard-first-run-compose` | 按鈕 | 了解如何生成貼文 | 開始公眾導覽 |
+| `page-publish-soon` | 頁面 | 一鍵發布只顯示敬請期待 | `/publish` |
 
 ### 1.4 Discover 公共主題牆（v7 PF-4）
 
@@ -430,7 +434,7 @@ data-testid="{類型}-{位置}-{功能}"
 | `btn-postkit-copy-hashtags` | 按鈕 | 複製 Hashtag |
 | `btn-postkit-copy-image-1`～`N` | 按鈕 | 複製圖片 URL |
 | `btn-postkit-copy-all` | 按鈕 | 複製全部文字 |
-| `btn-publish-goto-topics` | 按鈕 | `/publish` L0 導向主題列表 |
+| `btn-publish-goto-topics` | 按鈕 | `/publish` L0 導向主題列表 — **頁面不再掛載，列保留** |
 
 > **2026-09-03**：上列 Post Kit testid **保留**（檔案／門禁）；詳情主路改掛 `PostComposerPanel`（舊面板 `{false &&}` 不掛載）。
 
@@ -470,7 +474,7 @@ data-testid="{類型}-{位置}-{功能}"
 | `heading-compose-sample` | 標題 | 練習頁主標 |
 | `compose-coach-strip` | 區塊 | 三步驟教練條 |
 | `btn-compose-sample-to-topic` | 連結 | 導向真實主題（Dashboard） |
-| `link-sidebar-compose-sample` | 側欄 | 組裝練習入口 |
+| `link-sidebar-compose-sample` | 側欄 | 組裝練習入口 — **側欄隱藏**；路由／testid 保留 |
 | `section-title-image-sample` | 區塊 | WWW 標題圖 Sample 根 |
 | `section-www-topic-card` | 區塊 | Who What Wear 示範主題卡 |
 | `link-title-image-sample-source` | 連結 | 原文 Who What Wear |

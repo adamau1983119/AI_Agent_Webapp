@@ -241,12 +241,10 @@ class ChannelService:
             category = ChannelCategory.TREND
         
         category_sources = DEFAULT_RSS_SOURCES.get(category, {})
-        region_sources = category_sources.get(region, [])
-        
-        if not region_sources:
-            # 使用 GLOBAL 作為預設
-            region_sources = category_sources.get(ChannelRegion.GLOBAL, [])
-        
+        region_sources = list(category_sources.get(region, []) or [])
+        if region != ChannelRegion.GLOBAL and not region_sources:
+            region_sources = list(category_sources.get(ChannelRegion.GLOBAL, []) or [])
+
         return [source.copy() for source in region_sources]
     
     def get_target_language(

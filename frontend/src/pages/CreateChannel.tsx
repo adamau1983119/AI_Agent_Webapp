@@ -178,6 +178,7 @@ const categories: { value: ChannelCategory; label: string; icon: string }[] = [
   { value: 'travel', label: categoryI18nKeys.travel, icon: categoryIcons.travel },
   { value: 'growth', label: categoryI18nKeys.growth, icon: categoryIcons.growth },
   { value: 'lego', label: categoryI18nKeys.lego, icon: categoryIcons.lego },
+  { value: 'cosplay', label: categoryI18nKeys.cosplay, icon: categoryIcons.cosplay },
   { value: 'other', label: categoryI18nKeys.other, icon: categoryIcons.other },
 ];
 

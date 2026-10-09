@@ -5,6 +5,7 @@
  */
 import { Link } from 'react-router-dom';
 import { useTranslation } from '../i18n';
+import BrandMark from '@/components/brand/BrandMark';
 
 export default function Privacy() {
   const { t } = useTranslation();
@@ -19,7 +20,10 @@ export default function Privacy() {
         >
           ← {t('common.back')}
         </Link>
-        <span className="font-display text-lg tracking-[0.2em] uppercase">{t('brand.name')}</span>
+        <span className="flex items-center gap-2 font-display text-lg tracking-[0.2em] uppercase">
+          <BrandMark />
+          {t('brand.name')}
+        </span>
         <div className="w-16"></div>
       </header>
       

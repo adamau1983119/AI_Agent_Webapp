@@ -32,7 +32,7 @@ type Box = {
   width: number
   height: number
   panelLeft: number
-  placeBelow: boolean
+  panelTop: number
 }
 
 type Props = {
@@ -52,14 +52,20 @@ function measureAnchor(testId: string): Box | null {
   let panelLeft = r.left
   if (panelLeft + panelW > window.innerWidth - 16) panelLeft = window.innerWidth - 16 - panelW
   if (panelLeft < 16) panelLeft = 16
-  const placeBelow = r.bottom + 200 < window.innerHeight || r.top < 180
+  const panelH = 240
+  const gap = 16
+  let top = r.bottom + gap
+  if (top + panelH > window.innerHeight - 16) top = r.top - gap - panelH
+  if (top < 16) top = 16
+  const overlaps = !(top + panelH <= r.top || top >= r.bottom)
+  if (overlaps) top = Math.max(16, Math.min(r.bottom + gap, window.innerHeight - 16 - panelH))
   return {
     top: r.top,
     left: r.left,
     width: r.width,
     height: r.height,
     panelLeft,
-    placeBelow,
+    panelTop: top,
   }
 }
 
@@ -99,8 +105,10 @@ export default function PublicTourCoach({
         position: 'fixed',
         left: box.panelLeft,
         width: 'min(28rem, calc(100vw - 2rem))',
-        top: box.placeBelow ? box.top + box.height + 12 : undefined,
-        bottom: box.placeBelow ? undefined : window.innerHeight - box.top + 12,
+        top: box.panelTop,
+        maxHeight: 'calc(100vh - 2rem)',
+        overflow: 'auto',
+        backgroundColor: '#ffffff',
       }
     : {}
 
