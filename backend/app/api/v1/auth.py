@@ -122,6 +122,8 @@ async def register(user_data: UserCreate, request: Request):
         # 處理特定的錯誤訊息，轉換為 i18n
         if error_message == "EMAIL_ALREADY_REGISTERED":
             error_message = get_error_message("auth.email_already_registered", language)
+        elif error_message == "STAFF_EMAIL_RESERVED":
+            error_message = get_error_message("auth.email_reserved", language)
         elif "測試版名額已滿" in error_message:
             # 保持原訊息（已包含數字）
             pass
@@ -444,6 +446,13 @@ async def google_callback(
             )
             return RedirectResponse(
                 url=f"{settings.FRONTEND_URL}/login?error=user_info_failed"
+            )
+
+        from app.services.staff_identity import is_marker_email
+
+        if is_marker_email(email):
+            return RedirectResponse(
+                url=f"{settings.FRONTEND_URL}/login?error=email_reserved"
             )
         
         # 3. 建立或更新用戶

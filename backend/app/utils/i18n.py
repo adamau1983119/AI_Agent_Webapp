@@ -56,6 +56,11 @@ class I18nErrorMessages:
             "en": "This email is already registered. Please sign in with this email",
             "ja": "このメールアドレスは既に登録されています。このメールアドレスでログインしてください"
         },
+        "auth.email_reserved": {
+            "zh-TW": "此 Email 不能註冊或登入",
+            "en": "This email cannot be registered or used to sign in",
+            "ja": "このメールアドレスは登録・ログインに使えません"
+        },
         "auth.already_verified": {
             "zh-TW": "Email 已驗證，無需重新驗證",
             "en": "Email is already verified, no need to verify again",
