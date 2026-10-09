@@ -38,6 +38,10 @@ export default function Welcome() {
   const hasLanguage = localStorage.getItem('preferred-language');
 
   useEffect(() => {
+    document.title = `${t('brand.name')}｜${t('brand.tagline')}`;
+  }, [t]);
+
+  useEffect(() => {
     if (isAuthenticated) {
       resolvePostLoginPath().then((path) => navigate(path, { replace: true }));
     }
