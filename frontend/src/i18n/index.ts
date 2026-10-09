@@ -220,7 +220,7 @@ const zhTW = {
   'legal.privacy.section7.list3':
     '日本用戶：依個人情報保護法（APPI），向境外第三方提供個人相關資訊時，我們確保該第三方採取與本法相當之保護措施；詳情或行使權利請來信聯繫。',
   'legal.privacy.section8.title': '8. 聯繫我們',
-  'legal.privacy.section8.content': '如有任何隱私相關問題，請聯繫：privacy@influencers.ai',
+  'legal.privacy.section8.content': '如有任何隱私相關問題，請聯繫：info@ai-alterego.com',
   
   // 用戶設定
   'settings.title': '設定',
@@ -1728,7 +1728,7 @@ const en: typeof zhTW = {
   'legal.privacy.section7.list3':
     'For users in Japan: under the Act on the Protection of Personal Information (APPI), when personal-related information is provided to third parties abroad, we ensure equivalent safeguards; contact us to exercise your rights or request details.',
   'legal.privacy.section8.title': '8. Contact Us',
-  'legal.privacy.section8.content': 'For any privacy-related questions, please contact: privacy@influencers.ai',
+  'legal.privacy.section8.content': 'For any privacy-related questions, please contact: info@ai-alterego.com',
   
   // User Settings
   'settings.title': 'Settings',
@@ -3229,7 +3229,7 @@ const ja: typeof zhTW = {
   'legal.privacy.section7.list3':
     '日本のお客様：個人情報保護法（APPI）に基づき、国外の第三者へ個人関連情報を提供する際は、当該第三者が本法と同等の保護措置を講じていることを確保します。権利行使・詳細はメールでお問い合わせください。',
   'legal.privacy.section8.title': '8. お問い合わせ',
-  'legal.privacy.section8.content': 'プライバシーに関するご質問は、privacy@influencers.ai までご連絡ください。',
+  'legal.privacy.section8.content': 'プライバシーに関するご質問は、info@ai-alterego.com までご連絡ください。',
   
   // ユーザー設定
   'settings.title': '設定',
