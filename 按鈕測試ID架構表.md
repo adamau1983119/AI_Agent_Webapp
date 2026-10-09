@@ -493,7 +493,7 @@ data-testid="{類型}-{位置}-{功能}"
 | `btn-title-edit-demo-photo-{id}` | 按鈕 | Demo 選底圖 |
 | `btn-title-edit-demo-heading-{n}` | 按鈕 | Demo 選標題 |
 | `btn-title-edit-demo-writing-{h\|v}` | 按鈕 | 橫排／直書 |
-| `btn-title-edit-demo-face-{hei\|song\|kai}` | 按鈕 | 字款（黑／宋／楷） |
+| `btn-title-edit-demo-face-{hei\|song\|kai}` | 按鈕 | 字款（黑／宋／楷）；不再掛載，列保留 |
 | `btn-title-edit-demo-bg-{black\|white\|navy\|…}` | 按鈕 | 標題底色（10 色） |
 | `btn-title-edit-demo-v-{top\|middle\|bottom}` | 按鈕 | 垂直位置 |
 | `btn-title-edit-demo-h-{left\|center\|right}` | 按鈕 | 水平位置 |
@@ -506,10 +506,11 @@ data-testid="{類型}-{位置}-{功能}"
 | `btn-title-edit-live-photo-{id}` | 按鈕 | 選精選底圖（經 proxy） |
 | `btn-title-edit-live-heading-{n}` | 按鈕 | 選 Compose／主題標題 |
 | `btn-title-edit-live-writing-{h\|v}` | 按鈕 | 橫排／直書 |
-| `btn-title-edit-live-face-{hei\|song\|kai}` | 按鈕 | 字款 |
+| `btn-title-edit-live-face-{hei\|song\|kai}` | 按鈕 | 字款；不再掛載，列保留 |
+| `btn-title-edit-{demo\|live}-face-{noto-sans-tc\|noto-serif-tc\|noto-sans-hk\|lxgw-wenkai-tc\|huninn\|noto-sans-jp\|noto-serif-jp\|biz-udp-gothic\|biz-udp-mincho\|m-plus-1\|inter\|roboto\|open-sans\|poppins\|montserrat}` | 按鈕 | 字款：介面語言各顯示 5 款 |
 | `btn-title-edit-live-bg-{…}` | 按鈕 | 標題底色 |
 | `btn-title-edit-live-v-{…}`／`h-{…}`／`font-{…}` | 按鈕 | 位置／字級 |
-| `btn-title-edit-live-confirm` | 按鈕 | 確認下載標題圖 JPG |
+| `btn-title-edit-live-confirm` | 按鈕 | 確認下載標題圖 JPG（扣 10 點） |
 | `img-title-edit-live-preview` | 圖 | TopicDetail 即時預覽 |
 | `banner-compose-unsaved` | 橫幅 | 離開遺失警告 |
 

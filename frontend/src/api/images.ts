@@ -319,4 +319,12 @@ export const imagesAPI = {
       }),
     })
   },
+
+  /** 標題圖確認下載扣 10 點。預覽不走這支。 */
+  chargeTitleImageDownload: async (topicId?: string): Promise<{ balance: number; cost: number }> => {
+    return await fetchAPI(`/images/title-image-download`, {
+      method: 'POST',
+      body: JSON.stringify({ topic_id: topicId || null }),
+    })
+  },
 }

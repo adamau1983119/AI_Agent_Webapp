@@ -840,6 +840,14 @@ export default function TopicDetail() {
             hintKey="titleImage.editPanelHint"
             filename="title-image.jpg"
             emptyHintKey="titleImage.needComposeOrTitle"
+            chargeDownload={async () => {
+              if (!isAuthenticated) {
+                setShowLoginPrompt(true)
+                throw new Error('auth')
+              }
+              await imagesAPI.chargeTitleImageDownload(topic.id)
+              await queryClient.invalidateQueries({ queryKey: ['creditsBalance'] })
+            }}
           />
           {false && (
           <ContentGenerationPanel

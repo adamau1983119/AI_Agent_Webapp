@@ -3,18 +3,24 @@
  */
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '@/i18n'
+import { APIError } from '@/api/errors'
 import {
-  renderAndDownloadEdit,
+  downloadEditBlob,
+  renderEditBlob,
   renderEditPreviewDataUrl,
   TITLE_BG_OPTS,
   TITLE_BG_PALETTE,
-  type FontFace,
   type FontScale,
   type HAlign,
   type TitleBg,
   type VAlign,
   type WritingMode,
 } from '@/lib/renderTitleImageEdit'
+import {
+  faceLabelKey,
+  facesForLanguage,
+  type TitleFontId,
+} from '@/lib/titleImageFonts'
 import { showError, showSuccess } from '@/utils/toast'
 
 export type TitleEditPhoto = { id: string; url: string }
@@ -23,8 +29,6 @@ const V_OPTS: VAlign[] = ['top', 'middle', 'bottom']
 const H_OPTS: HAlign[] = ['left', 'center', 'right']
 const F_OPTS: FontScale[] = ['sm', 'md', 'lg']
 const W_OPTS: WritingMode[] = ['h', 'v']
-const FACE_OPTS: FontFace[] = ['hei', 'song', 'kai']
-
 type Props = {
   photos: TitleEditPhoto[]
   headings: string[]
@@ -34,6 +38,8 @@ type Props = {
   hintKey: 'titleImage.editDemoHint' | 'titleImage.editPanelHint'
   filename: string
   emptyHintKey?: 'titleImage.needComposeOrTitle'
+  /** 正式詳情頁：畫好 JPG 後先扣 10 點，成功才存檔。示範頁不傳。 */
+  chargeDownload?: () => Promise<void>
 }
 
 export default function TitleImageEditPanel({
@@ -44,8 +50,10 @@ export default function TitleImageEditPanel({
   hintKey,
   filename,
   emptyHintKey,
+  chargeDownload,
 }: Props) {
-  const { t } = useTranslation()
+  const { t, language } = useTranslation()
+  const faces = facesForLanguage(language)
   const cleanHeadings = useMemo(
     () => headings.map((h) => h.trim()).filter(Boolean).slice(0, 5),
     [headings]
@@ -56,7 +64,7 @@ export default function TitleImageEditPanel({
   const [vAlign, setVAlign] = useState<VAlign>('middle')
   const [hAlign, setHAlign] = useState<HAlign>('center')
   const [fontScale, setFontScale] = useState<FontScale>('md')
-  const [fontFace, setFontFace] = useState<FontFace>('hei')
+  const [fontFace, setFontFace] = useState<TitleFontId>(faces[0])
   const [titleBg, setTitleBg] = useState<TitleBg>('black')
   const [preview, setPreview] = useState<string | null>(null)
   const [previewing, setPreviewing] = useState(false)
@@ -75,6 +83,10 @@ export default function TitleImageEditPanel({
   useEffect(() => {
     if (headingIdx >= cleanHeadings.length) setHeadingIdx(0)
   }, [cleanHeadings.length, headingIdx])
+
+  useEffect(() => {
+    if (!faces.includes(fontFace)) setFontFace(faces[0])
+  }, [faces, fontFace])
 
   const photo = photos.find((p) => p.id === photoId) || photos[0] || null
   const heading = cleanHeadings[headingIdx] || ''
@@ -124,9 +136,16 @@ export default function TitleImageEditPanel({
     if (!editOpts) return
     setBusy(true)
     try {
-      await renderAndDownloadEdit({ ...editOpts, filename })
-      showSuccess(t('titleImage.demoDownloadDone'))
-    } catch {
+      const blob = await renderEditBlob(editOpts)
+      if (chargeDownload) await chargeDownload()
+      downloadEditBlob(blob, filename)
+      showSuccess(t(chargeDownload ? 'titleImage.downloadCharged' : 'titleImage.demoDownloadDone'))
+    } catch (error) {
+      if (error instanceof Error && error.message === 'auth') return
+      if (error instanceof APIError && error.status === 402) {
+        showError(t('composer.insufficientCredits'))
+        return
+      }
       showError(t('common.failed'))
     } finally {
       setBusy(false)
@@ -248,7 +267,7 @@ export default function TitleImageEditPanel({
 
       <p className="text-xs font-medium text-gray-500">{t('titleImage.editFace')}</p>
       <div className="flex flex-wrap gap-2" data-testid={sid('face')}>
-        {FACE_OPTS.map((f) => (
+        {faces.map((f) => (
           <button
             key={f}
             type="button"
@@ -256,7 +275,7 @@ export default function TitleImageEditPanel({
             className={chip(fontFace === f)}
             onClick={() => setFontFace(f)}
           >
-            {t(`titleImage.face.${f}` as 'titleImage.face.hei')}
+            {t(faceLabelKey(f) as 'titleImage.face.notoSansTc')}
           </button>
         ))}
       </div>
@@ -334,7 +353,7 @@ export default function TitleImageEditPanel({
         onClick={() => void confirmDownload()}
         className="w-full min-h-[44px] rounded-xl bg-primary text-white text-sm font-medium disabled:opacity-50"
       >
-        {busy ? t('common.loading') : t('titleImage.editConfirm')}
+        {busy ? t('common.loading') : t(chargeDownload ? 'titleImage.editConfirmLive' : 'titleImage.editConfirm')}
       </button>
     </section>
   )

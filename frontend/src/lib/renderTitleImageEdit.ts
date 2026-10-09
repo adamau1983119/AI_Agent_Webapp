@@ -1,12 +1,13 @@
 /** Demo editor: photo + heading + align + font face/size + writing + bg → JPEG. */
 
+import { canvasFontFamily, ensureTitleFont, type TitleFontId } from '@/lib/titleImageFonts'
+
+export type { TitleFontId as FontFace } from '@/lib/titleImageFonts'
 export type VAlign = 'top' | 'middle' | 'bottom'
 export type HAlign = 'left' | 'center' | 'right'
 export type FontScale = 'sm' | 'md' | 'lg'
 /** h = 橫排；v = 直書（字由上而下，欄由右而左） */
 export type WritingMode = 'h' | 'v'
-/** 三字款：黑／宋／楷（系統字堆疊，免下載） */
-export type FontFace = 'hei' | 'song' | 'kai'
 /** 標題底色 10 選 */
 export type TitleBg =
   | 'black'
@@ -23,12 +24,6 @@ export type TitleBg =
 const MAX_EDGE = 1080
 const JPEG_Q = 0.9
 const SCALE: Record<FontScale, number> = { sm: 0.04, md: 0.055, lg: 0.078 }
-
-const FONT_STACK: Record<FontFace, string> = {
-  hei: '"Segoe UI", "Microsoft YaHei", "PingFang TC", "Noto Sans TC", sans-serif',
-  song: 'Georgia, "PMingLiU", "Songti TC", "Noto Serif TC", serif',
-  kai: '"DFKai-SB", "KaiTi", "Kaiti TC", "STKaiti", serif',
-}
 
 /** fill = 底條色；ink = 文字色（淺底用深字）；swatch = UI 色塊 */
 export const TITLE_BG_PALETTE: Record<TitleBg, { fill: string; ink: string; swatch: string }> = {
@@ -193,13 +188,12 @@ function drawEditHeading(
   hAlign: HAlign,
   fontScale: FontScale,
   writing: WritingMode,
-  fontFace: FontFace,
+  fontFace: TitleFontId,
   titleBg: TitleBg
 ) {
   const pad = Math.round(w * 0.06)
   const fontSize = Math.max(22, Math.round(w * SCALE[fontScale]))
-  const weight = fontFace === 'hei' ? '700' : '600'
-  ctx.font = `${weight} ${fontSize}px ${FONT_STACK[fontFace]}`
+  ctx.font = `600 ${fontSize}px ${canvasFontFamily(fontFace)}`
   if (writing === 'v') {
     drawVertical(ctx, heading, w, h, vAlign, hAlign, fontSize, pad, titleBg)
   } else {
@@ -229,7 +223,7 @@ export type EditRenderOpts = {
   hAlign: HAlign
   fontScale: FontScale
   writing: WritingMode
-  fontFace: FontFace
+  fontFace: TitleFontId
   titleBg: TitleBg
 }
 
@@ -239,6 +233,7 @@ async function renderCanvas(opts: EditRenderOpts, edge: number): Promise<HTMLCan
   canvas.height = edge
   const ctx = canvas.getContext('2d')
   if (!ctx) throw new Error('canvas')
+  await ensureTitleFont(opts.fontFace, opts.heading)
   await paintBase(ctx, opts.photoUrl, edge, edge)
   drawEditHeading(
     ctx,
@@ -260,18 +255,28 @@ export async function renderEditPreviewDataUrl(opts: EditRenderOpts): Promise<st
   return canvas.toDataURL('image/jpeg', 0.85)
 }
 
-export async function renderAndDownloadEdit(opts: EditRenderOpts & { filename: string }): Promise<void> {
+export async function renderEditBlob(opts: EditRenderOpts): Promise<Blob> {
   const canvas = await renderCanvas(opts, MAX_EDGE)
   const blob = await new Promise<Blob | null>((resolve) => {
     canvas.toBlob(resolve, 'image/jpeg', JPEG_Q)
   })
   if (!blob) throw new Error('encode')
+  return blob
+}
+
+export function downloadEditBlob(blob: Blob, filename: string): void {
   const href = URL.createObjectURL(blob)
   const a = document.createElement('a')
+  const name = filename.toLowerCase().endsWith('.jpg') ? filename : `${filename}.jpg`
   a.href = href
-  a.download = opts.filename.toLowerCase().endsWith('.jpg') ? opts.filename : `${opts.filename}.jpg`
+  a.download = name
   document.body.appendChild(a)
   a.click()
   a.remove()
   URL.revokeObjectURL(href)
+}
+
+export async function renderAndDownloadEdit(opts: EditRenderOpts & { filename: string }): Promise<void> {
+  const blob = await renderEditBlob(opts)
+  downloadEditBlob(blob, opts.filename)
 }
