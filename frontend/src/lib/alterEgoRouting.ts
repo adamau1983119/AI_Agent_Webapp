@@ -25,7 +25,7 @@ export function pathAfterDnaStatus(status: DnaStatus | string | null | undefined
   if (status === 'active' || status === 'skipped' || status === 'legacy_only') {
     return envPostLoginPath() ?? DASHBOARD_PATH;
   }
-  return ONBOARDING_PATH;
+  return DASHBOARD_PATH;
 }
 
 export function isAlterEgoOnboardingDone(
@@ -37,10 +37,8 @@ export function isAlterEgoOnboardingDone(
 export async function resolvePostLoginPath(): Promise<string> {
   try {
     const status = await alterEgoApi.getStatus();
-    const path = pathAfterDnaStatus(status?.dna_status);
-    if (path === ONBOARDING_PATH) return ONBOARDING_PATH;
-    return envPostLoginPath() ?? path;
+    return pathAfterDnaStatus(status?.dna_status);
   } catch {
-    return ONBOARDING_PATH;
+    return DASHBOARD_PATH;
   }
 }

@@ -64,15 +64,35 @@ _LEGO = [
     _f("The Brothers Brick", "https://www.brothers-brick.com/feed/"),
     _f("The Brick Blogger", "https://thebrickblogger.com/feed/"),
 ]
+_COSPLAY = [
+    _f("Anime News Network", "https://www.animenewsnetwork.com/all/rss.xml"),
+    _f("Kotaku", "https://kotaku.com/rss"),
+    _f("Siliconera", "https://www.siliconera.com/feed/"),
+    _f("Nintendo Life", "https://www.nintendolife.com/feeds/news"),
+]
 
 
 def _regions(local_map: Dict[str, List[dict]], pool: List[dict], n: int = 8) -> Dict[str, List[dict]]:
-    out = {key: _fill(rows, pool, n) for key, rows in local_map.items()}
+    """台港日只留在地來源。沒有在地來源時不把全球清單抄進該國。"""
+    out = {key: [dict(row) for row in rows] for key, rows in local_map.items()}
     deep = ("hong_kong", "taiwan", "japan")
-    for key in deep + ("korea", "china", "usa", "uk", "global"):
-        depth = n if key in deep else min(4, n)
-        out.setdefault(key, _fill([], pool, depth))
+    for key in deep:
+        out.setdefault(key, [])
+    global_rows = _as_global(_fill([], pool, max(n, len(pool))))
+    out["global"] = global_rows
+    for key in ("korea", "china", "usa", "uk"):
+        out[key] = _as_global(_fill([], pool, min(4, n)))
     return out
+
+
+def _as_global(rows: List[dict]) -> List[dict]:
+    copied = []
+    for row in rows:
+        item = dict(row)
+        if item.get("role") not in ("local", "kpop"):
+            item["role"] = "global"
+        copied.append(item)
+    return copied
 
 
 def extra_packs() -> Dict[str, Dict[str, List[dict]]]:
@@ -99,6 +119,7 @@ def extra_packs() -> Dict[str, Dict[str, List[dict]]]:
         "travel": _regions({}, _TRAVEL),
         "growth": _regions({}, _GROWTH),
         "lego": _regions({}, _LEGO, n=2),
+        "cosplay": _regions({}, _COSPLAY, n=4),
     }
 
 
@@ -117,26 +138,8 @@ def relabel_global_reprints(sources: Dict[Any, Any]) -> None:
 
 
 def deepen_primary_markets(sources: Dict[Any, Any], region_enum: Any) -> None:
-    """台港澳日清單不足 8 條時，只補上該類別已收錄的全球來源。"""
-    deep = (region_enum("taiwan"), region_enum("hong_kong"), region_enum("japan"))
-    pool_key = region_enum("global")
-    for regions in sources.values():
-        pool = regions.get(pool_key) or []
-        for region in deep:
-            rows = regions.get(region)
-            if not isinstance(rows, list):
-                continue
-            seen = {row.get("url") for row in rows}
-            for row in pool:
-                if len(rows) >= 8:
-                    break
-                if row.get("url") in seen:
-                    continue
-                copy = dict(row)
-                if copy.get("role") not in ("local", "kpop"):
-                    copy["role"] = "global"
-                rows.append(copy)
-                seen.add(copy.get("url"))
+    """不把全球來源抄進台港日。沒有在地來源時，讀取端改用全球包。"""
+    del sources, region_enum
 
 
 def install_interest_packs(sources: Dict[Any, Any], category_enum: Any, region_enum: Any) -> None:

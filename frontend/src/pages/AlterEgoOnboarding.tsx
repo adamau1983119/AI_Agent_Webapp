@@ -13,6 +13,7 @@ import {
 } from '@/api/alterEgo';
 import { pathAfterDnaStatus, isAlterEgoOnboardingDone } from '@/lib/alterEgoRouting';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import BrandMark from '@/components/brand/BrandMark';
 
 const PLATFORMS: AlterEgoPlatform[] = ['facebook', 'threads', 'x'];
 
@@ -124,7 +125,8 @@ export default function AlterEgoOnboarding() {
     <div className="min-h-screen bg-[#FAF9F7] font-sans">
       <header className="border-b border-gray-200 bg-[#FAF9F7]/95 sticky top-0 z-10">
         <div className="max-w-2xl mx-auto px-4 py-4 flex items-center justify-between gap-4">
-          <h1 className="text-lg font-medium text-black" data-testid="heading-alter-ego-onboarding">
+          <h1 className="flex items-center gap-3 text-lg font-medium text-black" data-testid="heading-alter-ego-onboarding">
+            <BrandMark />
             {t('alterEgo.title')}
           </h1>
           <button

@@ -11,6 +11,7 @@ import { useAuthStore } from '../stores/authStore';
 import { authApi } from '../api/auth';
 import { showWarning, showSuccess } from '../utils/toast';
 import { BRAND } from '@/lib/brand';
+import BrandMark from '@/components/brand/BrandMark';
 import { useNoindex } from '@/hooks/useNoindex';
 
 export default function Register() {
@@ -293,6 +294,7 @@ export default function Register() {
         </div>
         
         <div className="relative z-10 text-center px-12">
+          <BrandMark onDark className="mb-8" />
           <h1 className="text-white font-display text-6xl font-light tracking-[0.4em] uppercase pl-[0.4em] mb-8">
             {BRAND.name}
           </h1>
@@ -308,6 +310,7 @@ export default function Register() {
         <div className="w-full max-w-md">
           {/* 移動端 Logo */}
           <div className="lg:hidden text-center mb-12">
+            <BrandMark className="mx-auto mb-4" />
             <h1 className="font-display text-3xl font-light tracking-[0.3em] uppercase pl-[0.3em] text-black">
               {BRAND.name}
             </h1>

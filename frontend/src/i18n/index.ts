@@ -48,7 +48,7 @@ const zhTW = {
   
   // 導航
   'nav.home': '首頁',
-  'nav.dashboard': '控制面板',
+  'nav.dashboard': '今日熱門',
   'nav.topics': '主題',
   'nav.discover': '探索',
   'nav.channels': '我的頻道',
@@ -670,7 +670,11 @@ const zhTW = {
   'channels.otherCategoryKeywords': '選擇「其他」類別時請輸入至少一個關鍵字',
   
   // 儀表板 - 擴展
-  'dashboard.title': '控制面板',
+  'dashboard.title': '今日熱門',
+  'dashboard.firstRunTitle': '歡迎進入 Alter-ego',
+  'dashboard.firstRunBody': '為了多謝你的加入，迎新 100 點已經在帳上。請盡情享用。想先了解哪一件？',
+  'dashboard.firstRunChannel': '了解如何自設頻道',
+  'dashboard.firstRunCompose': '了解如何生成貼文',
   'dashboard.todayTopics': '今日熱門主題',
   'dashboard.latestTopics': '最新熱門主題',
   'dashboard.generating': '正在生成今日主題...',
@@ -1078,6 +1082,7 @@ const zhTW = {
   
   // 發布
   'publish.title': '一鍵發布',
+  'publish.soonOnly': '全新功能，敬請期待！',
   
   // 排程（Sidebar /schedule → GET /schedules）
   'schedule.title': '排程管理',
@@ -1556,7 +1561,7 @@ const en: typeof zhTW = {
   
   // Navigation
   'nav.home': 'Home',
-  'nav.dashboard': 'Dashboard',
+  'nav.dashboard': "Today's topics",
   'nav.topics': 'Topics',
   'nav.discover': 'Discover',
   'nav.channels': 'My Channels',
@@ -2172,7 +2177,11 @@ const en: typeof zhTW = {
   'channels.otherCategoryKeywords': 'Please enter at least one keyword when selecting "Other" category',
   
   // Dashboard - Extended
-  'dashboard.title': 'Dashboard',
+  'dashboard.title': "Today's topics",
+  'dashboard.firstRunTitle': 'Welcome to Alter-ego',
+  'dashboard.firstRunBody': 'Thank you for joining. 100 welcome credits are already in your account. Enjoy them. What would you like to learn first?',
+  'dashboard.firstRunChannel': 'How to set up a channel',
+  'dashboard.firstRunCompose': 'How to generate a post',
   'dashboard.todayTopics': "Today's Hot Topics",
   'dashboard.latestTopics': 'Latest Hot Topics',
   'dashboard.generating': "Generating today's topics...",
@@ -2579,6 +2588,7 @@ const en: typeof zhTW = {
   
   // Publish
   'publish.title': 'One-Click Publish',
+  'publish.soonOnly': 'A new feature is on the way.',
   
   // Schedule
   'schedule.title': 'Schedule Management',
@@ -3057,7 +3067,7 @@ const ja: typeof zhTW = {
   
   // ナビゲーション
   'nav.home': 'ホーム',
-  'nav.dashboard': 'ダッシュボード',
+  'nav.dashboard': '今日のトピック',
   'nav.topics': 'トピック',
   'nav.discover': 'ディスカバー',
   'nav.channels': 'マイチャンネル',
@@ -3675,7 +3685,11 @@ const ja: typeof zhTW = {
   'channels.otherCategoryKeywords': '「その他」カテゴリを選択した場合は、少なくとも1つのキーワードを入力してください',
   
   // ダッシュボード - 拡張
-  'dashboard.title': 'ダッシュボード',
+  'dashboard.title': '今日のトピック',
+  'dashboard.firstRunTitle': 'Alter-ego へようこそ',
+  'dashboard.firstRunBody': 'ご参加ありがとうございます。100ポイントはすでに入っています。どうぞお使いください。先に知りたいのはどちらですか？',
+  'dashboard.firstRunChannel': 'チャンネルの作り方',
+  'dashboard.firstRunCompose': '投稿の作り方',
   'dashboard.todayTopics': '今日の人気トピック',
   'dashboard.latestTopics': '最新の人気トピック',
   'dashboard.generating': '今日のトピックを生成中...',
@@ -4082,6 +4096,7 @@ const ja: typeof zhTW = {
   
   // 公開
   'publish.title': 'ワンクリック公開',
+  'publish.soonOnly': '新しい機能を準備しています。',
   
   // スケジュール
   'schedule.title': 'スケジュール管理',

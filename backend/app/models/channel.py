@@ -25,6 +25,7 @@ class ChannelCategory(str, Enum):
     TRAVEL = "travel"         # 旅遊
     GROWTH = "growth"         # 個人成長
     LEGO = "lego"             # Lego 子包
+    COSPLAY = "cosplay"       # Cosplay 子包
     OTHER = "other"           # 其他（自定義關鍵字）
 
 
@@ -685,6 +686,7 @@ CATEGORY_FALLBACK_MAP = {
     ChannelCategory.TRAVEL: [ChannelCategory.FOOD, ChannelCategory.TREND],
     ChannelCategory.GROWTH: [ChannelCategory.FINANCE, ChannelCategory.TREND],
     ChannelCategory.LEGO: [ChannelCategory.GAMES, ChannelCategory.TREND],
+    ChannelCategory.COSPLAY: [ChannelCategory.ENTERTAINMENT, ChannelCategory.TREND],
 }
 
 # 地區語言映射
