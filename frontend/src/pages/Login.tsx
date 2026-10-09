@@ -15,7 +15,7 @@ import { useNoindex } from '@/hooks/useNoindex';
 
 export default function Login() {
   useNoindex();
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   
@@ -52,7 +52,7 @@ export default function Login() {
   };
   
   const handleGoogleLogin = () => {
-    window.location.href = authApi.getGoogleLoginUrl();
+    window.location.href = authApi.getGoogleLoginUrl(language);
   };
 
   const handleGuestMode = () => {

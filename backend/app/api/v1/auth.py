@@ -154,6 +154,16 @@ async def login(login_data: UserLogin, request: Request):
     """
     user = await auth_service.authenticate_user(login_data)
     
+    if user:
+        from app.utils.ui_language import screen_language
+        chosen = screen_language(request)
+        if chosen:
+            updated = await auth_service.user_repo.update_user(
+                user["id"], {"language": chosen}
+            )
+            if updated:
+                user = updated
+
     if not user:
         language = get_user_language(request=request)
         raise HTTPException(
@@ -329,6 +339,7 @@ async def google_login(request: Request):
     
     # Google OAuth 授權 URL
     from urllib.parse import urlencode
+    from app.utils.ui_language import allowed_language, seal_oauth_language
     params = {
         "client_id": settings.GOOGLE_OAUTH_CLIENT_ID,
         "redirect_uri": settings.GOOGLE_OAUTH_REDIRECT_URI,
@@ -337,6 +348,9 @@ async def google_login(request: Request):
         "access_type": "offline",
         "prompt": "consent"
     }
+    sealed = seal_oauth_language(allowed_language(request.query_params.get("lang")))
+    if sealed:
+        params["state"] = sealed
     
     auth_url = f"https://accounts.google.com/o/oauth2/v2/auth?{urlencode(params)}"
     
@@ -346,7 +360,8 @@ async def google_login(request: Request):
 @router.get("/google/callback")
 async def google_callback(
     code: Optional[str] = None,
-    error: Optional[str] = None
+    error: Optional[str] = None,
+    state: Optional[str] = None,
 ):
     """
     Google OAuth 回調
@@ -356,6 +371,9 @@ async def google_callback(
     import httpx
     from app.services.email_service import email_service
     from app.models.user import Language, UserRole, UserStatus
+    from app.utils.ui_language import open_oauth_language
+
+    oauth_lang = open_oauth_language(state)
     
     if error:
         # 重定向到前端錯誤頁面
@@ -438,11 +456,14 @@ async def google_callback(
             
             if user:
                 # 關聯 Google 帳號到現有帳號
-                await auth_service.user_repo.update_user(user["id"], {
+                google_patch = {
                     "google_id": google_id,
                     "avatar_url": avatar_url or user.get("avatar_url"),
                     "email_verified": True,  # Google 已驗證 Email
-                })
+                }
+                if oauth_lang:
+                    google_patch["language"] = oauth_lang
+                await auth_service.user_repo.update_user(user["id"], google_patch)
                 user = await auth_service.user_repo.get_user_by_id(user["id"])
             else:
                 # 檢查用戶數量限制
@@ -465,7 +486,7 @@ async def google_callback(
                     "name": name,
                     "google_id": google_id,
                     "avatar_url": avatar_url,
-                    "language": Language.ZH_TW.value,
+                    "language": oauth_lang or Language.ZH_TW.value,
                     "role": UserRole.USER.value,
                     "status": UserStatus.ACTIVE.value,
                     "email_verified": True,  # Google 已驗證 Email
@@ -483,13 +504,17 @@ async def google_callback(
                     await email_service.send_welcome_email(
                         to_email=email,
                         user_name=name or email.split("@")[0],
-                        language=Language.ZH_TW
+                        language=Language(oauth_lang or Language.ZH_TW.value),
                     )
                 except Exception as mail_err:
                     logger.warning(
                         "Google OAuth 新用戶歡迎郵件略過（不影響登入）: %s",
                         mail_err,
                     )
+
+        if oauth_lang and user and user.get("language") != oauth_lang:
+            await auth_service.user_repo.update_user(user["id"], {"language": oauth_lang})
+            user = await auth_service.user_repo.get_user_by_id(user["id"]) or user
         
         # 更新最後登入時間
         await auth_service.user_repo.update_last_login(user["id"])
