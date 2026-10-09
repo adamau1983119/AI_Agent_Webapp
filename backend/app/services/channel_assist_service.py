@@ -498,6 +498,13 @@ Return only JSON, no other text."""
             "tech": ChannelCategory.TECH.value,
             "technology": ChannelCategory.TECH.value,
             "entertainment": ChannelCategory.ENTERTAINMENT.value,
+            "beauty": ChannelCategory.BEAUTY.value,
+            "makeup": ChannelCategory.BEAUTY.value,
+            "games": ChannelCategory.GAMES.value,
+            "gaming": ChannelCategory.GAMES.value,
+            "travel": ChannelCategory.TRAVEL.value,
+            "growth": ChannelCategory.GROWTH.value,
+            "lego": ChannelCategory.LEGO.value,
             "other": ChannelCategory.OTHER.value,
         }
         

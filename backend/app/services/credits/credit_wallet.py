@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
 LOT_DAYS = 7
+UNIT_SCALE = 10
 
 
 def utcnow() -> datetime:
@@ -30,7 +31,23 @@ def empty_wallet(user_id: str) -> Dict[str, Any]:
         "last_grant_hkt": None,
         "legacy_initial": False,
         "fulfilled_keys": [],
+        "unit_scale": UNIT_SCALE,
     }
+
+
+def apply_unit_scale(wallet: Dict[str, Any]) -> bool:
+    """舊單位餘額乘 10 一次。已是新單位則不動。"""
+    if int(wallet.get("unit_scale") or 0) >= UNIT_SCALE:
+        return False
+    for lot in wallet.get("lots") or []:
+        if not isinstance(lot, dict):
+            continue
+        lot["remaining"] = int(lot.get("remaining") or 0) * UNIT_SCALE
+        if "amount" in lot:
+            lot["amount"] = int(lot.get("amount") or 0) * UNIT_SCALE
+    wallet["purchased"] = int(wallet.get("purchased") or 0) * UNIT_SCALE
+    wallet["unit_scale"] = UNIT_SCALE
+    return True
 
 
 def expire_lots(lots: List[dict], now: Optional[datetime] = None) -> List[dict]:

@@ -5,6 +5,7 @@ import re
 from typing import Any, List
 
 from app.utils.article_extract_quality import mega_menu_hits
+from app.utils.staff_bio import drop_leading_staff_bios
 
 _NOISE_LINE = re.compile(
     r"^(?:"
@@ -148,7 +149,7 @@ def clean_extracted_text(text: str) -> str:
             continue
         lines.append(line)
     lines = _drop_leading_recirc(lines)
-    return "\n\n".join(lines)[:5000]
+    return drop_leading_staff_bios("\n\n".join(lines))[:5000]
 
 
 def looks_like_chrome_body(text: str) -> bool:

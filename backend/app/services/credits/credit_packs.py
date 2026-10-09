@@ -4,9 +4,9 @@ from __future__ import annotations
 from typing import Dict, List
 
 PACKS: Dict[str, dict] = {
-    "usd3": {"id": "usd3", "credits": 180, "amount_cents": 300, "currency": "usd"},
-    "usd5": {"id": "usd5", "credits": 350, "amount_cents": 500, "currency": "usd"},
-    "usd10": {"id": "usd10", "credits": 800, "amount_cents": 1000, "currency": "usd"},
+    "usd3": {"id": "usd3", "credits": 1800, "amount_cents": 300, "currency": "usd"},
+    "usd5": {"id": "usd5", "credits": 3500, "amount_cents": 500, "currency": "usd"},
+    "usd10": {"id": "usd10", "credits": 8000, "amount_cents": 1000, "currency": "usd"},
 }
 
 

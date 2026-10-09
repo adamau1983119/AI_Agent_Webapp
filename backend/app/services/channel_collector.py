@@ -1,7 +1,7 @@
 """
 頻道主題收集服務
-對齊專案架構：全球多語 RSS → AI 翻譯為用戶語言（資訊差）；
-三層備援（L1 頻道 RSS → L2 相近類別 → L3 僅 RSS 全失敗時）。
+自選頻道只用 RSS 標題與摘要，不呼叫翻譯或摘要模型。
+Layer 1 頻道 RSS，不足時 Layer 2 相近類別。沒有 RSS 就不出卡。
 """
 from typing import Optional, Dict, Any, List, Set, Tuple
 from datetime import datetime
@@ -15,7 +15,6 @@ from app.services.channel_service import ChannelService
 from app.services.automation.topic_collector import TopicCollector
 from app.models.topic import Status, Category
 from app.models.channel import ChannelCollectionStatus
-from app.services.ai.ai_service_factory import AIServiceFactory
 import logging
 
 logger = logging.getLogger(__name__)
@@ -59,9 +58,9 @@ class ChannelCollector:
         """
         為單一頻道收集主題（對齊 v4.0 / 專案完整架構表「資訊差」）。
 
-        - 接受任何語言的 RSS；標題／摘要經 TopicCollector._translate_title 轉為用戶語言
+        - 接受任何語言的 RSS；自選頻道沿用 RSS 標題與摘要，不呼叫翻譯或摘要模型
         - Layer 1 → 不足時 Layer 2（相近類別）
-        - 僅當 RSS 完全無結果時才 Layer 3 AI（不為湊滿 10 筆而憑空生成）
+        - RSS 沒有項目就不出卡，不另呼叫模型湊數
         - 使用者 selected_feeds：Layer 1 信任來源，不做關鍵字剔除
         """
         channel = await self.channel_repo.get_channel_by_id(channel_id)
@@ -150,20 +149,7 @@ class ChannelCollector:
                 )
 
             if len(topics) == 0:
-                from app.utils.cost_controls import ai_topic_fallback_enabled
-                if ai_topic_fallback_enabled():
-                    collection_log["layer_3"]["attempted"] = 1
-                    ai_topics = await self._generate_ai_topics(
-                        channel, min(TOPICS_PER_CHANNEL, 5), target_language
-                    )
-                    if ai_topics:
-                        collection_log["layer_3"]["success"] = 1
-                        topics.extend(ai_topics)
-                else:
-                    logger.info(
-                        "頻道 %s RSS 無結果；Layer3 AI 已關閉 (ENABLE_AI_TOPIC_FALLBACK=false)",
-                        channel_id,
-                    )
+                logger.info("頻道 %s RSS 無結果，不呼叫模型", channel_id)
 
             saved_count = await self._persist_topics(channel, topics, target_language)
 
@@ -260,18 +246,14 @@ class ChannelCollector:
                 if norm_title in seen_titles:
                     continue
 
-                translated_title, description = await self._topic_collector._translate_title(
-                    original_title, topic_category, target_language
-                )
-
                 if link:
                     seen_links.add(link)
                 seen_titles.add(norm_title)
 
                 topics.append({
-                    "title": translated_title,
+                    "title": original_title,
                     "original_title": original_title,
-                    "summary": description or raw_summary[:200] if raw_summary else "",
+                    "summary": raw_summary[:300],
                     "source_url": link,
                     "source_name": source_name,
                     "source_layer": source.get("layer", 1),
@@ -351,7 +333,6 @@ class ChannelCollector:
 
                 topic_id = f"topic_{mapped_category}_{stamp}_{secrets.token_hex(4)}"
 
-                from app.services.summarization.summary_flash_service import generate_summary_flash
                 from app.services.automation.topic_post_scan import (
                     apply_scan_to_source,
                     stamp_scan_on_topic,
@@ -396,11 +377,7 @@ class ChannelCollector:
                 raw_for_flash = (
                     scan.get("content_clean") or summary or original_title
                 )
-                summary_flash = await generate_summary_flash(
-                    title=original_title,
-                    raw_text=raw_for_flash,
-                    topic_id=topic_id,
-                )
+                summary_flash = (summary or raw_for_flash or original_title)[:300]
 
                 topic_doc: Dict[str, Any] = {
                     "id": topic_id,
@@ -486,62 +463,9 @@ class ChannelCollector:
         count: int,
         target_language: str,
     ) -> List[Dict[str, Any]]:
-        """Layer 3：僅在 RSS 全失敗時，依頻道設定生成（並翻譯）。"""
-        try:
-            ai_service = AIServiceFactory.get_service()
-            category = channel.get("category", "trend")
-            region = channel.get("region", "global")
-            keywords = channel.get("custom_keywords", [])
-            lang_labels = {"zh-TW": "繁體中文", "en": "English", "ja": "日本語"}
-            category_labels = {
-                "fashion": "時尚", "food": "美食", "trend": "趨勢",
-                "finance": "財經", "sports": "運動", "tech": "科技",
-                "entertainment": "娛樂", "other": "其他",
-            }
-            prompt = f"""作為內容策劃專家，請為以下頻道生成 {count} 個具國際視野的靈感主題（非虛構新聞標題，而是可追蹤的內容方向）。
-
-頻道設定：
-- 類別：{category_labels.get(category, category)}
-- 地區：{region}
-- 關鍵字：{', '.join(keywords) if keywords else '無'}
-- 輸出語言：{lang_labels.get(target_language, "繁體中文")}
-
-格式（嚴格遵守）：
-主題1: [標題]
-描述: [描述]
-
-主題2: [標題]
-描述: [描述]"""
-
-            response = await ai_service.generate(prompt)
-            if not response:
-                return []
-
-            parsed = self._parse_ai_topics(response, channel, count)
-            topic_category = self._to_topic_category(category)
-            out: List[Dict[str, Any]] = []
-            for p in parsed:
-                translated_title, desc = await self._topic_collector._translate_title(
-                    p["title"], topic_category, target_language
-                )
-                out.append({
-                    "title": translated_title,
-                    "original_title": p["title"],
-                    "summary": desc or p.get("summary", ""),
-                    "source_url": None,
-                    "source_name": "AI Generated (RSS unavailable)",
-                    "source_layer": 3,
-                    "image_url": None,
-                    "channel_id": channel.get("id", ""),
-                    "category": category,
-                    "region": region,
-                    "collected_at": datetime.utcnow().isoformat(),
-                    "is_ai_generated": True,
-                })
-            return out
-        except Exception as e:
-            logger.error(f"Layer 3 AI 生成失敗: {e}")
-            return []
+        """自選頻道不呼叫模型。RSS 沒有項目就不出卡。"""
+        del channel, count, target_language
+        return []
 
     def _parse_ai_topics(
         self, response: str, channel: Dict[str, Any], count: int

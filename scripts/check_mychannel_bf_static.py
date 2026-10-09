@@ -36,7 +36,7 @@ def main() -> int:
         ("PD-MC1-01 credit_ledger_service", CREDIT.exists() and "decr_credits" in credit, ""),
         (
             "PD-MC1-02 welcome/daily grants",
-            "WELCOME_PER_LOGIN = 10" in grants and "DAILY_LOGIN_CREDITS = 5" in grants,
+            "WELCOME_PER_LOGIN = 100" in grants and "DAILY_LOGIN_CREDITS = 20" in grants,
             "",
         ),
         ("PD-MC1-03 admin AddPoints", "/credits" in api and "add_credits" in credit, ""),

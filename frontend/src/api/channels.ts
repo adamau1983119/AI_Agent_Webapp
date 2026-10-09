@@ -39,6 +39,11 @@ export type ChannelCategory =
   | 'sports'
   | 'tech'
   | 'entertainment'
+  | 'beauty'
+  | 'games'
+  | 'travel'
+  | 'growth'
+  | 'lego'
   | 'other';
 
 export type ChannelRegion =
@@ -321,6 +326,11 @@ export const categoryI18nKeys: Record<ChannelCategory, string> = {
   sports: 'channels.category.sports',
   tech: 'channels.category.tech',
   entertainment: 'channels.category.entertainment',
+  beauty: 'channels.category.beauty',
+  games: 'channels.category.games',
+  travel: 'channels.category.travel',
+  growth: 'channels.category.growth',
+  lego: 'channels.category.lego',
   other: 'channels.category.other',
 };
 
@@ -345,6 +355,11 @@ export const categoryIcons: Record<ChannelCategory, string> = {
   sports: '⚽',
   tech: '💻',
   entertainment: '🎬',
+  beauty: '💄',
+  games: '🎮',
+  travel: '✈️',
+  growth: '📘',
+  lego: '🧱',
   other: '📝',
 };
 

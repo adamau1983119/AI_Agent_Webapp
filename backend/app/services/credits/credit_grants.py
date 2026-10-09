@@ -1,4 +1,4 @@
-"""Welcome 10×3 then daily +5 with free cap 10 (HKT day, 7-day lots)."""
+"""Join once +100, then daily +20, free cap 60 (HKT day, 7-day lots)."""
 from __future__ import annotations
 
 from datetime import datetime
@@ -6,11 +6,11 @@ from typing import Any, Dict, Optional
 
 from app.services.credits.credit_wallet import expire_lots, free_remaining, make_lot
 
-WELCOME_PER_LOGIN = 10
-WELCOME_TOPUP_LEGACY = 5
-DAILY_LOGIN_CREDITS = 5
-FREE_CAP = 10
-WELCOME_LOGINS = 3
+WELCOME_PER_LOGIN = 100
+WELCOME_TOPUP_LEGACY = 50
+DAILY_LOGIN_CREDITS = 20
+FREE_CAP = 60
+WELCOME_LOGINS = 1
 
 
 def plan_login_grant(wallet: dict, hkt_day: str, now: datetime) -> Optional[Dict[str, Any]]:

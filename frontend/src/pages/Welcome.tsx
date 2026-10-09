@@ -23,9 +23,9 @@ import CreditPackShelf from '@/components/credits/CreditPackShelf';
 import type { CreditPack } from '@/api/billing';
 
 const LANDING_PACKS: CreditPack[] = [
-  { id: 'usd3', credits: 180, amount_cents: 300, currency: 'usd' },
-  { id: 'usd5', credits: 350, amount_cents: 500, currency: 'usd' },
-  { id: 'usd10', credits: 800, amount_cents: 1000, currency: 'usd' },
+  { id: 'usd3', credits: 1800, amount_cents: 300, currency: 'usd' },
+  { id: 'usd5', credits: 3500, amount_cents: 500, currency: 'usd' },
+  { id: 'usd10', credits: 8000, amount_cents: 1000, currency: 'usd' },
 ];
 
 const FEATURE_KEYS = ['trends', 'aiWrite', 'channel', 'inspiration', 'style', 'postKit'] as const;

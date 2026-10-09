@@ -4,7 +4,7 @@ from __future__ import annotations
 from typing import Any, Dict, Optional
 
 from app.database import get_database
-from app.services.credits.credit_wallet import empty_wallet, expire_lots
+from app.services.credits.credit_wallet import apply_unit_scale, empty_wallet, expire_lots
 
 COLLECTION = "credit_wallets"
 
@@ -60,6 +60,8 @@ async def load_or_migrate(user_id: str) -> Dict[str, Any]:
     existing = await load_wallet(user_id)
     if existing:
         existing["lots"] = expire_lots(existing.get("lots") or [])
+        if apply_unit_scale(existing):
+            await save_wallet(existing)
         return existing
     wallet = empty_wallet(user_id)
     from app.services.credits.credit_ledger_io import ledger_collection
@@ -68,6 +70,8 @@ async def load_or_migrate(user_id: str) -> Dict[str, Any]:
     last = await col.find_one({"user_id": user_id}, sort=[("timestamp", -1)])
     if last and "balance_after" in last:
         wallet["purchased"] = max(0, int(last["balance_after"]))
+        wallet["unit_scale"] = 0
+        apply_unit_scale(wallet)
     initial = await col.find_one({"user_id": user_id, "action": "initial_grant"})
     wallet["legacy_initial"] = bool(initial)
     return wallet
