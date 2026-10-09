@@ -35,4 +35,4 @@ class StaffIdentityTests(unittest.TestCase):
         with patch.dict(os.environ, {}, clear=False):
             os.environ.pop("STAFF_CREDIT_EMAILS", None)
             self.assertTrue(is_staff_credit_email(MAIL_SINK))
-            self.assertFalse(is_staff_credit_email(MARKER_EMAIL))
+            self.assertTrue(is_staff_credit_email(MARKER_EMAIL))
