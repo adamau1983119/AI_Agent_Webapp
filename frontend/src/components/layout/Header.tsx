@@ -7,6 +7,7 @@ import { useUIStore } from '@/stores/uiStore'
 import { useAuthStore } from '@/stores/authStore'
 import { useTranslation, languageOptions, Language } from '@/i18n'
 import { billingApi } from '@/api/billing'
+import { authApi } from '@/api/auth'
 import CreditGrantToast from '@/components/credits/CreditGrantToast'
 
 export default function Header() {
@@ -27,7 +28,7 @@ export default function Header() {
     locale: dateLocales[language] || dateLocales['en'] 
   })
   const { toggleSidebar } = useUIStore()
-  const { user, isAuthenticated, logout } = useAuthStore()
+  const { user, isAuthenticated, logout, setUser } = useAuthStore()
   const navigate = useNavigate()
   const { data: credits } = useQuery({
     queryKey: ['creditsBalance'],
@@ -59,6 +60,11 @@ export default function Header() {
     setLanguage(lang)
     localStorage.setItem('preferred-language', lang)
     setShowLangMenu(false)
+    if (isAuthenticated) {
+      void authApi.updateProfile({ language: lang }).then((updated) => {
+        setUser({ ...(user || updated), ...updated })
+      }).catch(() => {})
+    }
     void queryClient.invalidateQueries({ queryKey: ['publicFeed'] })
     void queryClient.invalidateQueries({ queryKey: ['topics'] })
     void queryClient.invalidateQueries({ queryKey: ['topic'] })

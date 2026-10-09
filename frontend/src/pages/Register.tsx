@@ -153,7 +153,7 @@ export default function Register() {
   };
   
   const handleGoogleRegister = () => {
-    window.location.href = authApi.getGoogleLoginUrl();
+    window.location.href = authApi.getGoogleLoginUrl(language);
   };
   
   const handleChange = (field: string, value: string | boolean) => {

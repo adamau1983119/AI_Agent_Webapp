@@ -132,9 +132,13 @@ export const authApi = {
   /**
    * Google OAuth 登入 URL
    */
-  getGoogleLoginUrl: (): string => {
+  getGoogleLoginUrl: (language?: string): string => {
     const baseUrl = API_BASE_URL.replace('/api/v1', '');
-    return `${baseUrl}/api/v1/auth/google/login`;
+    const url = `${baseUrl}/api/v1/auth/google/login`;
+    if (language === 'zh-TW' || language === 'en' || language === 'ja') {
+      return `${url}?lang=${encodeURIComponent(language)}`;
+    }
+    return url;
   },
 
   /**
