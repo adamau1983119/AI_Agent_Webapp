@@ -552,7 +552,7 @@ data-testid="{類型}-{位置}-{功能}"
 | `btn-tour-public-skip-step` | 按鈕 | 略過此步 |
 | `btn-tour-public-skip-all` | 按鈕 | 略過整段導覽 |
 | `btn-tour-public-copy-ig` | 按鈕 | 複製全文並開 Instagram |
-| `btn-tour-public-finish` | 按鈕 | 完成導覽（接到 `/my-channel?mcTour=1`） |
+| `btn-tour-public-finish` | 按鈕 | 完成導覽（留在原頁） |
 
 ### 4.10d 我的頻道空態導覽 (`McEmptyTourCoach.tsx`)
 

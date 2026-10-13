@@ -34,7 +34,6 @@ import { Copy, Sparkles, Image as ImageIcon, Search, ExternalLink, ArrowDownCirc
 import { markTopicRead } from '@/lib/topicReadState'
 import PublicTourCoach from '@/components/tour/PublicTourCoach'
 import {
-  MC_TOUR_HREF,
   readPublicTour,
   writePublicTour,
   TOUR_STEPS,
@@ -421,7 +420,6 @@ export default function TopicDetail() {
   const advanceTour = () => {
     if (tour.step >= TOUR_STEPS) {
       saveTour({ ...tour, status: 'done' })
-      navigate(MC_TOUR_HREF)
       return
     }
     saveTour({ ...tour, step: tour.step + 1 })
