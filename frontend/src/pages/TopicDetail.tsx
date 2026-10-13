@@ -38,7 +38,7 @@ import {
   readPublicTour,
   writePublicTour,
   TOUR_STEPS,
-  tourAnchorTestId,
+  findTourAnchor,
   type PublicTourState,
 } from '@/lib/publicTour'
 
@@ -415,10 +415,7 @@ export default function TopicDetail() {
 
   useEffect(() => {
     if (!tourOn) return
-    const testId = tourAnchorTestId(tour.step)
-    if (!testId) return
-    const el = document.querySelector(`[data-testid="${testId}"]`)
-    el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    findTourAnchor(tour.step)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
   }, [tourOn, tour.step])
 
   const advanceTour = () => {

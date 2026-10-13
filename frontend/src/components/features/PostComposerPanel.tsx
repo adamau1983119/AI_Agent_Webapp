@@ -185,7 +185,7 @@ export default function PostComposerPanel({
         </h3>
         <p className="text-xs text-gray-500">{t('composer.coachHint')}</p>
         <p className="text-xs font-medium text-gray-500">{t('composer.platform')}</p>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-2" data-testid="section-composer-platform">
           {PLATFORMS.map(({ id, Icon }) => (
             <button
               key={id}

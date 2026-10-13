@@ -1,25 +1,41 @@
-const STORAGE_KEY = 'ae_tour_public_v1'
+const STORAGE_KEY = 'ae_tour_public_v2'
 export const TOUR_SAMPLE_QUERY = 'tourSample'
 export const MC_TOUR_QUERY = 'mcTour'
-export const TOUR_STEPS = 6
+export const TOUR_STEPS = 7
 
-export function tourAnchorTestId(step: number): string | undefined {
+export function tourAnchorTestIds(step: number): string[] {
   switch (step) {
     case 1:
-      return 'card-tour-public-target'
+      return ['card-tour-public-target']
     case 2:
-      return 'section-composer-length'
+      return ['section-composer-platform']
     case 3:
-      return 'section-composer-style'
+      return ['section-composer-length']
     case 4:
-      return 'btn-composer-generate-pack'
+      return ['section-composer-style']
     case 5:
-      return 'btn-topic-detail-match-photos'
+      return ['btn-composer-generate-pack']
     case 6:
-      return 'btn-composer-copy-all'
+      return ['grid-title-edit-live-photos', 'section-title-image-edit-live']
+    case 7:
+      return ['btn-composer-copy-all']
     default:
-      return undefined
+      return []
   }
+}
+
+export function tourAnchorTestId(step: number): string | undefined {
+  return tourAnchorTestIds(step)[0]
+}
+
+export function findTourAnchor(step: number): HTMLElement | null {
+  for (const id of tourAnchorTestIds(step)) {
+    const el = document.querySelector(`[data-testid="${id}"]`)
+    if (!(el instanceof HTMLElement)) continue
+    const rect = el.getBoundingClientRect()
+    if (rect.width >= 2 && rect.height >= 2) return el
+  }
+  return null
 }
 export const MC_TOUR_HREF = `/my-channel?${MC_TOUR_QUERY}=1`
 
