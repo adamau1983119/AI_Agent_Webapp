@@ -2,7 +2,7 @@
  * Alter Ego 首登 onboarding — 貼範文 + 仿文預覽 + Skip（AE-1d）
  */
 import { useEffect, useState } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useTranslation, type Language } from '@/i18n';
 import { useAuthStore } from '@/stores/authStore';
@@ -20,7 +20,9 @@ const PLATFORMS: AlterEgoPlatform[] = ['facebook', 'threads', 'x'];
 export default function AlterEgoOnboarding() {
   const { t, language } = useTranslation();
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
+  const [searchParams] = useSearchParams();
+  const previewNewUser = searchParams.get('preview') === '1' && user?.role === 'tester';
 
   const [status, setStatus] = useState<DnaStatusResponse | null>(null);
   const [loadingStatus, setLoadingStatus] = useState(true);
@@ -51,13 +53,17 @@ export default function AlterEgoOnboarding() {
     );
   }
 
-  if (isAlterEgoOnboardingDone(status?.dna_status)) {
+  if (isAlterEgoOnboardingDone(status?.dna_status) && !previewNewUser) {
     return <Navigate to={pathAfterDnaStatus(status?.dna_status)} replace />;
   }
 
   const filledExemplars = exemplars.map((e) => e.trim()).filter(Boolean);
 
   const handleSkip = async () => {
+    if (previewNewUser) {
+      navigate('/dashboard', { replace: true });
+      return;
+    }
     setBusy('skip');
     try {
       await alterEgoApi.skip();
@@ -72,6 +78,7 @@ export default function AlterEgoOnboarding() {
   };
 
   const handleExtract = async () => {
+    if (previewNewUser) return;
     if (filledExemplars.length < 1) {
       toast.error(t('alterEgo.exemplarRequired'));
       return;
@@ -100,7 +107,7 @@ export default function AlterEgoOnboarding() {
   };
 
   const handlePreview = async () => {
-    if (!extracted) return;
+    if (previewNewUser || !extracted) return;
     setBusy('preview');
     try {
       const preview = await alterEgoApi.preview(platform, t('alterEgo.defaultTopicHint'), language);
@@ -118,7 +125,7 @@ export default function AlterEgoOnboarding() {
   };
 
   const handleContinue = () => {
-    navigate(pathAfterDnaStatus('active'), { replace: true });
+    navigate(previewNewUser ? '/dashboard' : pathAfterDnaStatus('active'), { replace: true });
   };
 
   return (
