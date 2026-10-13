@@ -155,8 +155,17 @@ data-testid="{類型}-{位置}-{功能}"
 | `link-my-channel-source-{id}` | 連結 | 開啟原文 |
 | `list-my-channel-slots` | 列表 | 最多三格設立板 |
 | `btn-my-channel-enter-{id}` | 連結 | 進入頻道 |
-| `btn-my-channel-adjust-{id}` | 連結 | 調整已設立頻道 |
-| `btn-my-channel-delete-{id}` | 按鈕 | 取消這個頻道 |
+| `btn-my-channel-adjust-{id}` | 連結 | 已移出設立板；調整只在頻道管理 |
+| `btn-my-channel-delete-{id}` | 按鈕 | 已移出設立板；取消只在頻道管理 |
+| `heading-channel-manage` | 標題 | 頻道管理 |
+| `text-channels-manage-empty` | 文字 | 尚未設定時請去我的頻道 |
+| `btn-channels-manage-go-my-channel` | 連結 | 空狀態裡的「我的頻道」 |
+| `list-channels-manage` | 列表 | 已設立頻道，只有編輯與取消 |
+| `btn-channels-manage-edit-{id}` | 連結 | 調整（編輯） |
+| `btn-channels-manage-cancel-{id}` | 按鈕 | 取消這個頻道 |
+| `btn-channels-manage-cancel-dismiss` | 按鈕 | 關閉取消警告 |
+| `btn-channels-manage-cancel-confirm` | 按鈕 | 確認取消，記錄與主題卡一併刪除 |
+| `btn-channels-manage-retry` | 按鈕 | 載入失敗後重試 |
 | `btn-my-channel-add-slot` | 連結 | ＋ 我的頻道 |
 | `btn-my-channel-delete-cancel` | 按鈕 | 關閉取消確認 |
 | `btn-my-channel-delete-confirm` | 按鈕 | 確認取消頻道 |
