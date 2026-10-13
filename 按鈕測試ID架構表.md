@@ -541,13 +541,14 @@ data-testid="{類型}-{位置}-{功能}"
 
 | Test ID | 元素 | 功能 |
 |---------|------|------|
-| `panel-tour-public` | 區塊 | 錨定六拍教練（對準目標；找不到目標時落回底部） |
+| `panel-tour-public` | 區塊 | 錨定七拍教練（對準目標；找不到目標時落回底部） |
 | `frame-tour-public-anchor` | 框 | 目標外框 |
-| `text-tour-public-progress` | 文字 | 步驟 n／6 |
+| `text-tour-public-progress` | 文字 | 步驟 n／7 |
+| `section-composer-platform` | 區塊 | 組裝器平台（Facebook／Instagram） |
 | `section-composer-length` | 區塊 | 組裝器字數（在風格之上） |
 | `section-composer-style` | 區塊 | 組裝器風格 |
 | `card-tour-public-target` | 卡片 | Dashboard 高亮目標卡 |
-| `btn-tour-public-next` | 按鈕 | 下一步（第 1–5 拍） |
+| `btn-tour-public-next` | 按鈕 | 下一步（第 1–6 拍） |
 | `btn-tour-public-skip-step` | 按鈕 | 略過此步 |
 | `btn-tour-public-skip-all` | 按鈕 | 略過整段導覽 |
 | `btn-tour-public-copy-ig` | 按鈕 | 複製全文並開 Instagram |

@@ -1,29 +1,26 @@
-import { useEffect, useState, type CSSProperties } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
+import { createPortal } from 'react-dom'
 import { useTranslation, type TranslationKey } from '@/i18n'
-import { TOUR_STEPS, tourAnchorTestId } from '@/lib/publicTour'
+import { TOUR_STEPS, findTourAnchor } from '@/lib/publicTour'
 
+const PURPLE = '#581c87'
 const TITLE: Record<number, TranslationKey> = {
   1: 'tour.public.step1Title',
-  2: 'tour.public.lengthTitle',
-  3: 'tour.public.styleTitle',
-  4: 'tour.public.generateTitle',
-  5: 'tour.public.photosTitle',
-  6: 'tour.public.copyTitle',
+  2: 'tour.public.platformTitle',
+  3: 'tour.public.lengthTitle',
+  4: 'tour.public.styleTitle',
+  5: 'tour.public.generateTitle',
+  6: 'tour.public.titleImageTitle',
+  7: 'tour.public.copyTitle',
 }
 const BODY: Record<number, TranslationKey> = {
   1: 'tour.public.step1Body',
-  2: 'tour.public.lengthBody',
-  3: 'tour.public.styleBody',
-  4: 'tour.public.generateBody',
-  5: 'tour.public.photosBody',
-  6: 'tour.public.copyBody',
-}
-const CTA: Record<number, TranslationKey> = {
-  1: 'tour.public.step1Cta',
-  2: 'tour.public.step2Cta',
-  3: 'tour.public.step3Cta',
-  4: 'tour.public.step4Cta',
-  5: 'tour.public.step2Cta',
+  2: 'tour.public.platformBody',
+  3: 'tour.public.lengthBody',
+  4: 'tour.public.styleBody',
+  5: 'tour.public.generateBody',
+  6: 'tour.public.titleImageBody',
+  7: 'tour.public.copyBody',
 }
 
 type Box = {
@@ -43,29 +40,29 @@ type Props = {
   onCopyIg?: () => void
 }
 
-function measureAnchor(testId: string): Box | null {
-  const el = document.querySelector(`[data-testid="${testId}"]`)
-  if (!(el instanceof HTMLElement)) return null
+function measureAnchor(el: HTMLElement, panel: HTMLElement | null): Box {
   const r = el.getBoundingClientRect()
-  if (r.width < 2 || r.height < 2) return null
   const panelW = Math.min(448, window.innerWidth - 32)
   let panelLeft = r.left
   if (panelLeft + panelW > window.innerWidth - 16) panelLeft = window.innerWidth - 16 - panelW
   if (panelLeft < 16) panelLeft = 16
-  const panelH = 240
-  const gap = 16
-  let top = r.bottom + gap
-  if (top + panelH > window.innerHeight - 16) top = r.top - gap - panelH
-  if (top < 16) top = 16
-  const overlaps = !(top + panelH <= r.top || top >= r.bottom)
-  if (overlaps) top = Math.max(16, Math.min(r.bottom + gap, window.innerHeight - 16 - panelH))
+  const panelH = panel?.offsetHeight || 200
+  const gap = 12
+  let panelTop = r.bottom + gap
+  if (panelTop + panelH > window.innerHeight - 16) panelTop = r.top - gap - panelH
+  if (panelTop < 16) panelTop = 16
+  const overlaps = panelTop < r.bottom + 4 && panelTop + panelH > r.top - 4
+  if (overlaps) {
+    const above = r.top - gap - panelH
+    panelTop = above >= 16 ? above : Math.max(16, r.bottom + gap)
+  }
   return {
     top: r.top,
     left: r.left,
     width: r.width,
     height: r.height,
     panelLeft,
-    panelTop: top,
+    panelTop,
   }
 }
 
@@ -78,28 +75,45 @@ export default function PublicTourCoach({
 }: Props) {
   const { t } = useTranslation()
   const isLast = step === TOUR_STEPS
-  const anchorId = tourAnchorTestId(step)
+  const panelRef = useRef<HTMLElement | null>(null)
   const [box, setBox] = useState<Box | null>(null)
 
   useEffect(() => {
-    if (!anchorId) {
-      setBox(null)
-      return
+    let stopped = false
+    let frames = 0
+    let stable = 0
+    let last = ''
+    let raf = 0
+    const tick = () => {
+      if (stopped) return
+      const el = findTourAnchor(step)
+      const next = el ? measureAnchor(el, panelRef.current) : null
+      const key = next
+        ? [next.top, next.left, next.width, next.height, next.panelTop].map((n) => Math.round(n)).join(':')
+        : 'none'
+      stable = key === last ? stable + 1 : 0
+      last = key
+      setBox(next)
+      frames += 1
+      if (stable < 4 && frames < 45) raf = window.requestAnimationFrame(tick)
     }
-    const update = () => setBox(measureAnchor(anchorId))
-    update()
-    const timer = window.setTimeout(update, 350)
-    window.addEventListener('scroll', update, true)
-    window.addEventListener('resize', update)
+    const kick = () => {
+      frames = 0
+      stable = 0
+      window.cancelAnimationFrame(raf)
+      raf = window.requestAnimationFrame(tick)
+    }
+    kick()
+    window.addEventListener('scroll', kick, true)
+    window.addEventListener('resize', kick)
     return () => {
-      window.clearTimeout(timer)
-      window.removeEventListener('scroll', update, true)
-      window.removeEventListener('resize', update)
+      stopped = true
+      window.cancelAnimationFrame(raf)
+      window.removeEventListener('scroll', kick, true)
+      window.removeEventListener('resize', kick)
     }
-  }, [anchorId, step])
+  }, [step])
 
-  const panelClass =
-    'z-40 max-w-lg rounded-2xl border border-gray-200 bg-white p-4 shadow-lg'
   const panelStyle: CSSProperties = box
     ? {
         position: 'fixed',
@@ -108,11 +122,17 @@ export default function PublicTourCoach({
         top: box.panelTop,
         maxHeight: 'calc(100vh - 2rem)',
         overflow: 'auto',
-        backgroundColor: '#ffffff',
+        backgroundColor: PURPLE,
+        color: '#ffffff',
       }
-    : {}
+    : { backgroundColor: PURPLE, color: '#ffffff' }
 
-  return (
+  const primaryBtn =
+    'min-h-[44px] px-4 rounded-full bg-white text-[11px] tracking-[0.14em] uppercase'
+  const ghostBtn =
+    'min-h-[44px] px-4 rounded-full border border-white text-white text-[11px] tracking-[0.14em] uppercase'
+
+  const card = (
     <>
       {box ? (
         <div
@@ -127,16 +147,21 @@ export default function PublicTourCoach({
         />
       ) : null}
       <aside
-        className={box ? panelClass : `fixed bottom-4 left-4 right-4 mx-auto ${panelClass}`}
-        style={box ? panelStyle : undefined}
+        ref={panelRef}
+        className={
+          box
+            ? 'z-40 max-w-lg rounded-2xl border border-[#581c87] p-4 shadow-lg'
+            : 'fixed bottom-4 left-4 right-4 z-40 mx-auto max-w-lg rounded-2xl border border-[#581c87] p-4 shadow-lg'
+        }
+        style={panelStyle}
         data-testid="panel-tour-public"
         aria-label={t('tour.public.aria')}
       >
-        <p className="text-[11px] uppercase tracking-[0.14em] text-gray-500" data-testid="text-tour-public-progress">
+        <p className="text-[11px] uppercase tracking-[0.14em] text-white" data-testid="text-tour-public-progress">
           {t('tour.public.progress', { n: String(step), total: String(TOUR_STEPS) })}
         </p>
-        <h2 className="mt-2 text-sm font-medium text-gray-900">{t(TITLE[step] || TITLE[1])}</h2>
-        <p className="mt-1 text-sm text-gray-600 leading-relaxed">{t(BODY[step] || BODY[1])}</p>
+        <h2 className="mt-2 text-sm font-medium text-white">{t(TITLE[step] || TITLE[1])}</h2>
+        <p className="mt-1 text-sm text-white leading-relaxed">{t(BODY[step] || BODY[1])}</p>
         <div className="mt-4 flex flex-wrap gap-2">
           {isLast ? (
             <>
@@ -144,7 +169,8 @@ export default function PublicTourCoach({
                 type="button"
                 data-testid="btn-tour-public-copy-ig"
                 onClick={onCopyIg}
-                className="min-h-[44px] px-4 rounded-full bg-black text-white text-[11px] tracking-[0.14em] uppercase"
+                className={primaryBtn}
+                style={{ color: PURPLE }}
               >
                 {t('tour.public.step5Cta')}
               </button>
@@ -152,7 +178,7 @@ export default function PublicTourCoach({
                 type="button"
                 data-testid="btn-tour-public-finish"
                 onClick={onNext}
-                className="min-h-[44px] px-4 rounded-full border border-black text-[11px] tracking-[0.14em] uppercase"
+                className={ghostBtn}
               >
                 {t('tour.public.finish')}
               </button>
@@ -162,16 +188,17 @@ export default function PublicTourCoach({
               type="button"
               data-testid="btn-tour-public-next"
               onClick={onNext}
-              className="min-h-[44px] px-4 rounded-full bg-black text-white text-[11px] tracking-[0.14em] uppercase"
+              className={primaryBtn}
+              style={{ color: PURPLE }}
             >
-              {t(CTA[step] || CTA[1])}
+              {t(step === 1 ? 'tour.public.step1Cta' : 'tour.public.step2Cta')}
             </button>
           )}
           <button
             type="button"
             data-testid="btn-tour-public-skip-step"
             onClick={onSkipStep}
-            className="min-h-[44px] px-4 rounded-full border border-gray-300 text-[11px] tracking-[0.14em] uppercase"
+            className={ghostBtn}
           >
             {t('tour.public.skipStep')}
           </button>
@@ -179,7 +206,7 @@ export default function PublicTourCoach({
             type="button"
             data-testid="btn-tour-public-skip-all"
             onClick={onSkipAll}
-            className="min-h-[44px] px-3 text-[11px] text-gray-500 underline"
+            className="min-h-[44px] px-3 text-[11px] text-white underline"
           >
             {t('tour.public.skipAll')}
           </button>
@@ -187,4 +214,6 @@ export default function PublicTourCoach({
       </aside>
     </>
   )
+
+  return createPortal(card, document.body)
 }
