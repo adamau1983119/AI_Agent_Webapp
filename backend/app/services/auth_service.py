@@ -5,7 +5,7 @@ Phase 2: 會員系統
 """
 from typing import Optional, Dict, Any
 from datetime import datetime
-from passlib.context import CryptContext
+import bcrypt
 from app.services.repositories.user_repository import UserRepository
 from app.models.user import (
     UserCreate, UserLogin, UserResponse, UserRole, UserStatus,
@@ -22,8 +22,10 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# 密碼加密上下文
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def _password_bytes(password: str) -> bytes:
+    """bcrypt 只取前 72 bytes。先截斷，避免新版 bcrypt 直接拋錯。"""
+    return password.encode("utf-8")[:72]
 
 
 class AuthService:
@@ -49,7 +51,16 @@ class AuthService:
         Returns:
             是否匹配
         """
-        return pwd_context.verify(plain_password, hashed_password)
+        if not plain_password or not hashed_password:
+            return False
+        try:
+            return bcrypt.checkpw(
+                _password_bytes(plain_password),
+                hashed_password.encode("utf-8"),
+            )
+        except (ValueError, TypeError):
+            logger.warning("password verify failed: invalid hash")
+            return False
     
     def get_password_hash(self, password: str) -> str:
         """
@@ -61,7 +72,7 @@ class AuthService:
         Returns:
             雜湊密碼
         """
-        return pwd_context.hash(password)
+        return bcrypt.hashpw(_password_bytes(password), bcrypt.gensalt()).decode("utf-8")
     
     async def register_user(self, user_data: UserCreate) -> tuple[Dict[str, Any], str]:
         """

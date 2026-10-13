@@ -54,8 +54,8 @@ elasticsearch>=8.11.0
 # JWT 認證
 python-jose[cryptography]>=3.3.0
 
-# 密碼加密
-passlib[bcrypt]>=1.7.4
+# 密碼雜湊。passlib 1.7.4 在 bcrypt>=4.1 初始化時會讓登入 500。
+bcrypt>=4.0.1,<5
 
 # Email 發送（Gmail SMTP）
 aiosmtplib>=3.0.0
