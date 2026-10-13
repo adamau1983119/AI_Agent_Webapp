@@ -153,6 +153,16 @@ data-testid="{類型}-{位置}-{功能}"
 | `list-my-channel-feed` | 列表 | feed 卡 |
 | `btn-my-channel-unlock-{id}` | 按鈕 | 解鎖原文 |
 | `link-my-channel-source-{id}` | 連結 | 開啟原文 |
+| `list-my-channel-slots` | 列表 | 最多三格設立板 |
+| `btn-my-channel-enter-{id}` | 連結 | 進入頻道 |
+| `btn-my-channel-adjust-{id}` | 連結 | 調整已設立頻道 |
+| `btn-my-channel-delete-{id}` | 按鈕 | 取消這個頻道 |
+| `btn-my-channel-add-slot` | 連結 | ＋ 我的頻道 |
+| `btn-my-channel-delete-cancel` | 按鈕 | 關閉取消確認 |
+| `btn-my-channel-delete-confirm` | 按鈕 | 確認取消頻道 |
+| `heading-my-channel-personal` | 標題 | 我的自選頻道 |
+| `list-my-channel-switch` | 列表 | 只切換已成立頻道 |
+| `btn-my-channel-switch-{id}` | 連結 | 切到該頻道 |
 
 ---
 
@@ -363,9 +373,12 @@ data-testid="{類型}-{位置}-{功能}"
 
 | Test ID | 元素 | 功能 |
 |---------|------|------|
-| `btn-channel-detail-back` | 按鈕 | 返回頻道列表 |
-| `btn-channel-detail-collect` | 按鈕 | 手動觸發收集 |
+| `btn-channel-detail-back` | 按鈕 | 返回我的頻道 |
+| `btn-channel-detail-collect` | 按鈕 | 請按此掣出主題卡 10 |
 | `btn-channel-detail-edit` | 連結 | 跳轉到頻道設定頁 |
+| `channel-detail-topics-grid` | 區塊 | 過往與本次主題卡格子 |
+| `select-channel-edit-category` | 選單 | 調整類別 |
+| `select-channel-edit-region` | 選單 | 調整地區 |
 
 ### 4.7 頻道設定頁 (`ChannelEdit.tsx`)
 

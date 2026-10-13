@@ -1,5 +1,5 @@
 /**
- * MyChannel 首屏 — feed + 點數解鎖 + 熱門模板（MC-4～MC-6）
+ * 我的頻道 — 最多三格設立板。進入後才是「我的自選頻道」。
  */
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
@@ -7,98 +7,64 @@ import toast from 'react-hot-toast';
 import { useTranslation } from '@/i18n';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import {
-  myChannelApi,
-  type ChannelTemplate,
-  type MyChannelFeedCard,
-  type UnlockResponse,
-} from '@/api/myChannel';
-import { APIError } from '@/api/errors';
+  channelsApi,
+  Channel,
+  ChannelCategory,
+  ChannelRegion,
+  categoryI18nKeys,
+  regionI18nKeys,
+} from '@/api/channels';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import McEmptyTourCoach from '@/components/tour/McEmptyTourCoach';
 import { MC_TOUR_QUERY } from '@/lib/publicTour';
 
-type UnlockedMap = Record<string, UnlockResponse>;
-
-function unlockKey(topicId: string, lang: string): string {
-  return `mc-unlock:${topicId}:${lang}`;
-}
-
-function templateCreateHref(tpl: ChannelTemplate): string {
-  const q = new URLSearchParams({
-    category: tpl.category,
-    region: tpl.region,
-    name: tpl.suggested_name,
-  });
-  return `/channels/create?${q.toString()}`;
-}
-
 export default function MyChannel() {
-  const { t, language } = useTranslation();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   usePageTitle(t('myChannel.pageTitle'));
   const mcTourOn = searchParams.get(MC_TOUR_QUERY) === '1';
 
-  const [cards, setCards] = useState<MyChannelFeedCard[]>([]);
-  const [balance, setBalance] = useState(0);
+  const [channels, setChannels] = useState<Channel[]>([]);
+  const [maxChannels, setMaxChannels] = useState(3);
   const [loading, setLoading] = useState(true);
-  const [empty, setEmpty] = useState(false);
-  const [hasChannels, setHasChannels] = useState(true);
-  const [templates, setTemplates] = useState<ChannelTemplate[]>([]);
-  const [unlockingId, setUnlockingId] = useState<string | null>(null);
-  const [unlocked, setUnlocked] = useState<UnlockedMap>({});
-  const [needCreditsId, setNeedCreditsId] = useState<string | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<Channel | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
-  const loadFeed = useCallback(async () => {
+  const loadChannels = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await myChannelApi.getFeed(language);
-      setCards(Array.isArray(res.data) ? res.data : []);
-      setBalance(typeof res.balance === 'number' ? res.balance : 0);
-      setEmpty(Boolean(res.empty));
-      setHasChannels(Boolean(res.has_channels));
-      if (!res.has_channels) {
-        const tpl = await myChannelApi.getChannelTemplates();
-        setTemplates(Array.isArray(tpl.data) ? tpl.data : []);
-      } else {
-        setTemplates([]);
-      }
+      const res = await channelsApi.getMyChannels();
+      setChannels(Array.isArray(res.channels) ? res.channels : []);
+      setMaxChannels(typeof res.max_channels === 'number' ? res.max_channels : 3);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : t('common.error');
       toast.error(msg);
-      setCards([]);
-      setEmpty(true);
-      setHasChannels(false);
-      setTemplates([]);
+      setChannels([]);
     } finally {
       setLoading(false);
     }
-  }, [language, t]);
+  }, [t]);
 
   useEffect(() => {
-    loadFeed();
-    setUnlocked({});
-  }, [loadFeed]);
+    loadChannels();
+  }, [loadChannels]);
 
-  const handleUnlock = async (topicId: string) => {
-    if (unlockingId) return;
-    setUnlockingId(topicId);
+  const emptyCount = Math.max(0, maxChannels - channels.length);
+
+  const confirmDelete = async () => {
+    if (!pendingDelete || deleting) return;
+    setDeleting(true);
     try {
-      const res = await myChannelApi.unlock(topicId, unlockKey(topicId, language), language);
-      setUnlocked((prev) => ({ ...prev, [topicId]: res }));
-      setBalance(res.balance);
-      setNeedCreditsId(null);
-      toast.success(t('myChannel.unlockSuccess'));
+      await channelsApi.deleteChannel(pendingDelete.id);
+      toast.success(t('channels.deleted'));
+      setPendingDelete(null);
+      await loadChannels();
     } catch (err: unknown) {
-      if (err instanceof APIError && err.status === 402) {
-        setNeedCreditsId(topicId);
-        toast.error(t('myChannel.insufficientCredits'));
-      } else {
-        const msg = err instanceof Error ? err.message : t('common.error');
-        toast.error(msg);
-      }
+      const msg = err instanceof Error ? err.message : t('channels.deleteFailed');
+      toast.error(msg);
     } finally {
-      setUnlockingId(null);
+      setDeleting(false);
     }
   };
 
@@ -111,150 +77,112 @@ export default function MyChannel() {
   }
 
   return (
-    <div
-      className={`max-w-3xl mx-auto px-4 py-8 ${
-        mcTourOn && (!hasChannels || empty) ? 'pb-40' : ''
-      }`}
-    >
-      <header className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white" data-testid="heading-my-channel">
-            {t('myChannel.title')}
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">{t('myChannel.subtitle')}</p>
-        </div>
-        <p className="text-sm font-medium text-gray-800 dark:text-gray-200" data-testid="text-my-channel-balance">
-          {t('myChannel.balance', { n: String(balance) })}
-        </p>
+    <div className={`max-w-5xl mx-auto px-4 py-8 ${mcTourOn ? 'pb-40' : ''}`}>
+      <header className="mb-8">
+        <h1
+          className="text-2xl font-semibold text-gray-900 dark:text-white"
+          data-testid="heading-my-channel"
+        >
+          {t('myChannel.title')}
+        </h1>
+        <p className="text-gray-600 dark:text-gray-400 mt-3 leading-relaxed">{t('myChannel.boardLead')}</p>
+        <p className="text-gray-600 dark:text-gray-400 mt-2 leading-relaxed">{t('myChannel.boardLead2')}</p>
       </header>
 
-      {!hasChannels && templates.length > 0 && (
-        <section className="mb-8" data-testid="panel-my-channel-templates">
-          <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-            {t('myChannel.templatesTitle')}
-          </h2>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">{t('myChannel.templatesSubtitle')}</p>
-          <ul className="grid gap-3 sm:grid-cols-2">
-            {templates.map((tpl) => (
-              <li key={tpl.id}>
-                <Link
-                  to={templateCreateHref(tpl)}
-                  data-testid={`btn-my-channel-template-${tpl.id}`}
-                  className="block rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:border-gray-400 min-h-[44px]"
-                >
-                  <p className="font-medium text-gray-900 dark:text-white">{t(tpl.name_key)}</p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{t(tpl.desc_key)}</p>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
-      {empty ? (
-        <div
-          className={`rounded-lg border border-dashed p-10 text-center ${
-            mcTourOn
-              ? 'border-black dark:border-white ring-2 ring-black/10'
-              : 'border-gray-300 dark:border-gray-600'
-          }`}
-          data-testid="panel-my-channel-empty"
-        >
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
-            {hasChannels ? t('myChannel.emptyFeed') : t('myChannel.emptyNoChannel')}
-          </p>
-          <div className="flex flex-wrap justify-center gap-3">
+      <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" data-testid="list-my-channel-slots">
+        {channels.map((channel) => (
+          <li
+            key={channel.id}
+            className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 flex flex-col"
+          >
+            <h2 className="text-lg font-medium text-gray-900 dark:text-white">{channel.name}</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              {t(categoryI18nKeys[channel.category as ChannelCategory])}
+              {' · '}
+              {t(regionI18nKeys[channel.region as ChannelRegion])}
+            </p>
+            {channel.description ? (
+              <p className="text-sm text-gray-600 dark:text-gray-300 mt-3 line-clamp-3">{channel.description}</p>
+            ) : null}
+            <div className="mt-auto pt-4 flex flex-col gap-2">
+              <Link
+                to={`/channels/${channel.id}`}
+                data-testid={`btn-my-channel-enter-${channel.id}`}
+                className="min-h-[44px] inline-flex items-center justify-center rounded-full bg-black text-white text-sm"
+              >
+                {t('myChannel.enterChannel')}
+              </Link>
+              <Link
+                to={`/channels/${channel.id}/edit`}
+                data-testid={`btn-my-channel-adjust-${channel.id}`}
+                className="min-h-[44px] inline-flex items-center justify-center rounded-full border border-gray-300 text-sm text-gray-800 dark:text-gray-100"
+              >
+                {t('myChannel.adjust')}
+              </Link>
+              <button
+                type="button"
+                data-testid={`btn-my-channel-delete-${channel.id}`}
+                onClick={() => setPendingDelete(channel)}
+                className="min-h-[44px] text-sm text-red-600"
+              >
+                {t('myChannel.cancelChannel')}
+              </button>
+            </div>
+          </li>
+        ))}
+        {Array.from({ length: emptyCount }).map((_, index) => (
+          <li key={`empty-${index}`}>
             <Link
               to="/channels/create"
-              data-testid="btn-my-channel-create-channel"
-              className="px-5 py-3 bg-black text-white text-sm tracking-wide uppercase min-h-[44px] inline-flex items-center"
+              data-testid={index === 0 ? 'btn-my-channel-add-slot' : `btn-my-channel-add-slot-${index}`}
+              className="min-h-[180px] h-full rounded-2xl border border-dashed border-gray-300 dark:border-gray-600 flex flex-col items-center justify-center gap-2 text-gray-700 dark:text-gray-200 hover:border-black"
             >
-              {t('myChannel.createChannel')}
+              <span className="text-lg">{t('myChannel.addSlot')}</span>
+              <span className="text-sm text-gray-500">{t('myChannel.slotRemaining', { n: String(emptyCount) })}</span>
             </Link>
-            <Link
-              to="/discover"
-              data-testid="btn-my-channel-go-discover"
-              className="px-5 py-3 border border-gray-300 text-gray-900 text-sm tracking-wide uppercase min-h-[44px] inline-flex items-center"
-            >
-              {t('myChannel.goDiscover')}
-            </Link>
+          </li>
+        ))}
+      </ul>
+
+      {pendingDelete && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-md w-full">
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+              {t('channels.deleteConfirm')}
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
+              {t('channels.deleteWarning', { name: pendingDelete.name })}
+            </p>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                data-testid="btn-my-channel-delete-cancel"
+                onClick={() => setPendingDelete(null)}
+                className="flex-1 min-h-[44px] rounded-lg bg-gray-200 dark:bg-gray-600"
+              >
+                {t('common.cancel')}
+              </button>
+              <button
+                type="button"
+                data-testid="btn-my-channel-delete-confirm"
+                onClick={confirmDelete}
+                disabled={deleting}
+                className="flex-1 min-h-[44px] rounded-lg bg-red-500 text-white disabled:opacity-50"
+              >
+                {deleting ? t('common.deleting') : t('common.delete')}
+              </button>
+            </div>
           </div>
         </div>
-      ) : (
-        <ul className="space-y-4" data-testid="list-my-channel-feed">
-          {cards.map((card) => {
-            const unlockData = unlocked[card.id];
-            return (
-              <li
-                key={card.id}
-                className="rounded-lg border border-gray-200 dark:border-gray-700 p-4 sm:p-5 bg-white dark:bg-gray-800"
-                data-testid={`card-my-channel-${card.id}`}
-              >
-                <div className="flex gap-4">
-                  {card.image_url && (
-                    <img
-                      src={card.image_url}
-                      alt=""
-                      className="w-20 h-20 rounded object-cover flex-shrink-0 hidden sm:block"
-                    />
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <h2 className="font-medium text-gray-900 dark:text-white truncate">{card.heading}</h2>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{card.intro}</p>
-                    {unlockData ? (
-                      <div className="mt-3 space-y-2" data-testid={`panel-my-channel-unlocked-${card.id}`}>
-                        <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-line">
-                          {unlockData.digest_300}
-                        </p>
-                        <a
-                          href={unlockData.source_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          data-testid={`link-my-channel-source-${card.id}`}
-                          className="text-sm text-primary underline min-h-[44px] inline-flex items-center"
-                        >
-                          {t('myChannel.openSource')}
-                        </a>
-                      </div>
-                    ) : (
-                      <div className="mt-3 space-y-2">
-                        <button
-                          type="button"
-                          data-testid={`btn-my-channel-unlock-${card.id}`}
-                          disabled={unlockingId === card.id}
-                          onClick={() => handleUnlock(card.id)}
-                          className="px-4 py-2 text-sm font-medium bg-primary text-white rounded-md min-h-[44px] disabled:opacity-50"
-                        >
-                          {unlockingId === card.id ? t('common.processing') : t('myChannel.unlockCta')}
-                        </button>
-                        {needCreditsId === card.id && (
-                          <p className="text-sm text-gray-600 flex flex-wrap items-center gap-3">
-                            <span>{t('myChannel.insufficientCredits')}</span>
-                            <Link
-                              to="/settings?tab=billing"
-                              data-testid={`btn-my-channel-buy-credits-${card.id}`}
-                              className="inline-flex items-center min-h-[44px] px-4 rounded-full border border-[#1a1a1a] text-[11px] tracking-[0.16em] uppercase"
-                            >
-                              {t('credits.buy')}
-                            </Link>
-                          </p>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </li>
-            );
-          })}
-        </ul>
       )}
-      {mcTourOn && (!hasChannels || empty) ? (
+
+      {mcTourOn ? (
         <McEmptyTourCoach
           onCreate={() => navigate('/channels/create')}
           onSkip={() => {
-            const next = new URLSearchParams(searchParams)
-            next.delete(MC_TOUR_QUERY)
-            setSearchParams(next, { replace: true })
+            const next = new URLSearchParams(searchParams);
+            next.delete(MC_TOUR_QUERY);
+            setSearchParams(next, { replace: true });
           }}
         />
       ) : null}

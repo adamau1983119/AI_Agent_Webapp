@@ -112,7 +112,7 @@ class TopicRepository(BaseRepository):
             list_topics_hidden_filter,
         )
 
-        clauses: List[Dict[str, Any]] = []
+        clauses: List[Dict[str, Any]] = [{"channel_id": None}]
         gen_f = list_topics_generation_filter(include_legacy=include_legacy)
         if gen_f:
             clauses.append(gen_f)

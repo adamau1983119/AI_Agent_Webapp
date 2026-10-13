@@ -62,6 +62,7 @@ def hkt_today_topics_filter(*, include_legacy: bool = False) -> Dict:
     start_utc, end_utc = hkt_day_utc_bounds()
     return merge_topic_list_filters(
         {"generated_at": {"$gte": start_utc, "$lte": end_utc}},
+        {"channel_id": None},
         list_topics_generation_filter(include_legacy=include_legacy),
         list_topics_hidden_filter(include_hidden=False),
     )
