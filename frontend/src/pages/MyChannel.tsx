@@ -28,9 +28,6 @@ export default function MyChannel() {
   const [channels, setChannels] = useState<Channel[]>([]);
   const [maxChannels, setMaxChannels] = useState(3);
   const [loading, setLoading] = useState(true);
-  const [pendingDelete, setPendingDelete] = useState<Channel | null>(null);
-  const [deleting, setDeleting] = useState(false);
-
   const loadChannels = useCallback(async () => {
     setLoading(true);
     try {
@@ -51,22 +48,6 @@ export default function MyChannel() {
   }, [loadChannels]);
 
   const emptyCount = Math.max(0, maxChannels - channels.length);
-
-  const confirmDelete = async () => {
-    if (!pendingDelete || deleting) return;
-    setDeleting(true);
-    try {
-      await channelsApi.deleteChannel(pendingDelete.id);
-      toast.success(t('channels.deleted'));
-      setPendingDelete(null);
-      await loadChannels();
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : t('channels.deleteFailed');
-      toast.error(msg);
-    } finally {
-      setDeleting(false);
-    }
-  };
 
   if (loading) {
     return (
@@ -104,29 +85,14 @@ export default function MyChannel() {
             {channel.description ? (
               <p className="text-sm text-gray-600 dark:text-gray-300 mt-3 line-clamp-3">{channel.description}</p>
             ) : null}
-            <div className="mt-auto pt-4 flex flex-col gap-2">
+            <div className="mt-auto pt-4">
               <Link
                 to={`/channels/${channel.id}`}
                 data-testid={`btn-my-channel-enter-${channel.id}`}
-                className="min-h-[44px] inline-flex items-center justify-center rounded-full bg-black text-white text-sm"
+                className="min-h-[44px] inline-flex items-center justify-center rounded-full bg-black text-white text-sm w-full"
               >
                 {t('myChannel.enterChannel')}
               </Link>
-              <Link
-                to={`/channels/${channel.id}/edit`}
-                data-testid={`btn-my-channel-adjust-${channel.id}`}
-                className="min-h-[44px] inline-flex items-center justify-center rounded-full border border-gray-300 text-sm text-gray-800 dark:text-gray-100"
-              >
-                {t('myChannel.adjust')}
-              </Link>
-              <button
-                type="button"
-                data-testid={`btn-my-channel-delete-${channel.id}`}
-                onClick={() => setPendingDelete(channel)}
-                className="min-h-[44px] text-sm text-red-600"
-              >
-                {t('myChannel.cancelChannel')}
-              </button>
             </div>
           </li>
         ))}
@@ -143,38 +109,6 @@ export default function MyChannel() {
           </li>
         ))}
       </ul>
-
-      {pendingDelete && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-md w-full">
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-              {t('channels.deleteConfirm')}
-            </h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
-              {t('channels.deleteWarning', { name: pendingDelete.name })}
-            </p>
-            <div className="flex gap-3">
-              <button
-                type="button"
-                data-testid="btn-my-channel-delete-cancel"
-                onClick={() => setPendingDelete(null)}
-                className="flex-1 min-h-[44px] rounded-lg bg-gray-200 dark:bg-gray-600"
-              >
-                {t('common.cancel')}
-              </button>
-              <button
-                type="button"
-                data-testid="btn-my-channel-delete-confirm"
-                onClick={confirmDelete}
-                disabled={deleting}
-                className="flex-1 min-h-[44px] rounded-lg bg-red-500 text-white disabled:opacity-50"
-              >
-                {deleting ? t('common.deleting') : t('common.delete')}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {mcTourOn ? (
         <McEmptyTourCoach

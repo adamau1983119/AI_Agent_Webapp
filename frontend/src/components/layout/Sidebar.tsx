@@ -18,7 +18,7 @@ const menuItemsConfig: Array<{
   { path: '/topics', labelKey: 'nav.topics', icon: 'document', testId: 'link-sidebar-topics', v7Nav: 'hide' },
   { path: '/discover', labelKey: 'nav.discover', icon: 'compass', testId: 'link-sidebar-discover', v7Nav: 'hide' },
   { path: '/my-channel', labelKey: 'nav.channels', icon: 'channel', testId: 'link-sidebar-my-channel', v7Nav: 'show' },
-  { path: '/channels', labelKey: 'nav.channelList', icon: 'channel', testId: 'link-sidebar-channels', v7Nav: 'hide' },
+  { path: '/channels', labelKey: 'nav.channelList', icon: 'channel', testId: 'link-sidebar-channels', v7Nav: 'show' },
   { path: '/inspiration', labelKey: 'nav.inspiration', icon: 'lightbulb', testId: 'link-sidebar-inspiration', v7Nav: 'hide' },
   { path: '/compose-sample', labelKey: 'nav.composeSample', icon: 'sparkles', testId: 'link-sidebar-compose-sample', v7Nav: 'hide' },
   { path: '/style-profile', labelKey: 'nav.styleProfile', icon: 'sparkles', testId: 'link-sidebar-style', v7Nav: 'hide' },
