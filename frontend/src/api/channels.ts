@@ -69,6 +69,8 @@ export interface ChannelCreateRequest {
 
 export interface ChannelUpdateRequest {
   name?: string;
+  category?: ChannelCategory;
+  region?: ChannelRegion;
   custom_keywords?: string[];
   description?: string;
   status?: 'active' | 'paused';

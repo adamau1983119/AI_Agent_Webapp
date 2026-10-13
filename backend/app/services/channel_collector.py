@@ -318,6 +318,7 @@ class ChannelCollector:
         now = datetime.utcnow()
         stamp = now.strftime("%Y%m%d%H%M%S")
         saved = 0
+        saved_docs: List[Dict[str, Any]] = []
         display_lang = target_language or "zh-TW"
         docs: List[Dict[str, Any]] = []
 
@@ -411,6 +412,7 @@ class ChannelCollector:
             try:
                 await self.topic_repo.create_topic(topic_doc)
                 saved += 1
+                saved_docs.append(topic_doc)
                 image_urls = []
                 for source in topic_doc.get("sources") or []:
                     image_urls.extend(source.get("images") or [])
@@ -420,6 +422,10 @@ class ChannelCollector:
                     await persist_topic_source_jpegs(topic_doc["id"], image_urls, limit=4)
             except Exception as e:
                 logger.warning(f"寫入主題失敗（略過）: {e}")
+
+        if saved_docs:
+            from app.services.channel_topic_locale import ensure_channel_topic_packs
+            await ensure_channel_topic_packs(saved_docs)
 
         logger.info(f"頻道 {channel_id} 已寫入 {saved}/{len(topics)} 個主題至 topics")
         return saved

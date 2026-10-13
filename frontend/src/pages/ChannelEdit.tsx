@@ -14,7 +14,6 @@ import {
   ChannelRegion,
   categoryI18nKeys,
   regionI18nKeys,
-  categoryIcons,
 } from '../api/channels';
 import toast from 'react-hot-toast';
 
@@ -34,6 +33,8 @@ export default function ChannelEdit() {
   // 表單狀態
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [category, setCategory] = useState<ChannelCategory>('trend');
+  const [region, setRegion] = useState<ChannelRegion>('global');
   const [customKeywords, setCustomKeywords] = useState<string[]>([]);
   const [keywordInput, setKeywordInput] = useState('');
   const [status, setStatus] = useState<'active' | 'paused'>('active');
@@ -60,6 +61,8 @@ export default function ChannelEdit() {
       setChannel(data);
       setName(data.name);
       setDescription(data.description || '');
+      setCategory(data.category);
+      setRegion(data.region);
       setCustomKeywords(data.custom_keywords || []);
       setStatus(data.status === 'active' ? 'active' : 'paused');
     } catch (err: any) {
@@ -84,13 +87,20 @@ export default function ChannelEdit() {
     e.preventDefault();
     if (!id) return;
     
+    if (category === 'other' && customKeywords.length === 0) {
+      toast.error(t('channels.validation.keywordsRequired'));
+      return;
+    }
+
     setIsSubmitting(true);
     
     try {
       const updateData: ChannelUpdateRequest = {
         name: name.trim(),
         description: description.trim() || undefined,
-        custom_keywords: customKeywords.length > 0 ? customKeywords : undefined,
+        category,
+        region,
+        custom_keywords: customKeywords,
         status,
       };
       
@@ -111,7 +121,7 @@ export default function ChannelEdit() {
     try {
       await channelsApi.deleteChannel(id);
       toast.success(t('channels.deleted'));
-      navigate('/channels');
+      navigate('/my-channel');
     } catch (err: any) {
       toast.error(err.message || t('channels.deleteFailed'));
     } finally {
@@ -146,7 +156,7 @@ export default function ChannelEdit() {
           <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
             <p className="text-red-800 dark:text-red-200">{error || t('channels.notFound')}</p>
             <button
-              onClick={() => navigate('/channels')}
+              onClick={() => navigate('/my-channel')}
               data-testid="btn-channel-edit-back"
               className="mt-4 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
             >
@@ -184,29 +194,6 @@ export default function ChannelEdit() {
         </div>
         
         {/* 頻道資訊顯示（只讀） */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg mb-6">
-          <div className="flex items-center gap-4 mb-4">
-            <span className="text-4xl">
-              {categoryIcons[channel.category as ChannelCategory]}
-            </span>
-            <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">{t('channels.category')}</p>
-              <p className="font-medium text-gray-900 dark:text-white">
-                {t(categoryI18nKeys[channel.category as ChannelCategory])}
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">{t('channels.region')}</p>
-              <p className="font-medium text-gray-900 dark:text-white">
-                {t(regionI18nKeys[channel.region as ChannelRegion])}
-              </p>
-            </div>
-          </div>
-          <p className="text-xs text-gray-400 dark:text-gray-500">
-            {t('channels.categoryRegionNote')}
-          </p>
-        </div>
-        
         {/* 表單 */}
         <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg space-y-6">
           {/* 頻道名稱 */}
@@ -238,6 +225,41 @@ export default function ChannelEdit() {
               data-testid="input-channel-edit-description"
               className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             />
+          </div>
+
+          <div>
+            <label htmlFor="category" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              {t('channels.category')}
+            </label>
+            <select
+              id="category"
+              value={category}
+              onChange={(e) => setCategory(e.target.value as ChannelCategory)}
+              data-testid="select-channel-edit-category"
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white min-h-[44px]"
+            >
+              {(Object.keys(categoryI18nKeys) as ChannelCategory[]).map((key) => (
+                <option key={key} value={key}>{t(categoryI18nKeys[key])}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="region" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              {t('channels.region')}
+            </label>
+            <select
+              id="region"
+              value={region}
+              onChange={(e) => setRegion(e.target.value as ChannelRegion)}
+              data-testid="select-channel-edit-region"
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white min-h-[44px]"
+            >
+              {(Object.keys(regionI18nKeys) as ChannelRegion[]).map((key) => (
+                <option key={key} value={key}>{t(regionI18nKeys[key])}</option>
+              ))}
+            </select>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">{t('channels.categoryRegionNote')}</p>
           </div>
           
           {/* 自定義關鍵字 */}

@@ -220,6 +220,7 @@ async def update_channel(
     
     可更新的欄位：
     - **name**: 頻道名稱
+    - **category** / **region**: 類別與地區；變更後清空已選來源，下次收集才套用
     - **custom_keywords**: 自定義關鍵字
     - **description**: 頻道描述
     - **status**: 狀態（active/paused）
@@ -346,6 +347,16 @@ async def list_channel_topics(
         page=page,
         limit=limit,
     )
+
+    from app.services.channel_topic_locale import ensure_channel_topic_packs
+
+    if await ensure_channel_topic_packs(topics):
+        topics, total = await _topic_repo.list_by_channel_id(
+            channel_id=channel_id,
+            user_id=current_user["id"],
+            page=page,
+            limit=limit,
+        )
 
     if lang:
         from app.api.v1.topics import normalize_language

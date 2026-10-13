@@ -102,13 +102,22 @@ class ChannelService:
         if not channel:
             return None, get_error_message("channel.not_found", language)
         
-        # 過濾空值
-        update_dict = {k: v for k, v in update_data.model_dump().items() if v is not None}
-        
+        update_dict = {}
+        for key, value in update_data.model_dump().items():
+            if value is None:
+                continue
+            update_dict[key] = value.value if hasattr(value, "value") else value
+
         if not update_dict:
             return channel, None
-        
-        # 更新頻道
+
+        scope_changed = (
+            update_dict.get("category") not in (None, channel.get("category"))
+            or update_dict.get("region") not in (None, channel.get("region"))
+        )
+        if scope_changed:
+            update_dict["selected_feeds"] = []
+
         updated = await self.channel_repo.update_channel(channel_id, update_dict)
         
         if not updated:
@@ -139,6 +148,9 @@ class ChannelService:
         
         if not success:
             return False, get_error_message("channel.delete_failed", language)
+
+        from app.services.channel_board_purge import purge_channel_topics
+        await purge_channel_topics(channel_id)
         
         logger.info(f"用戶 {user_id} 刪除頻道: {channel_id}")
         

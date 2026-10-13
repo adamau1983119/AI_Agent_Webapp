@@ -95,6 +95,8 @@ class ChannelCreate(ChannelBase):
 class ChannelUpdate(BaseModel):
     """更新頻道請求"""
     name: Optional[str] = Field(None, min_length=1, max_length=50)
+    category: Optional[ChannelCategory] = None
+    region: Optional[ChannelRegion] = None
     custom_keywords: Optional[List[str]] = None
     description: Optional[str] = Field(None, max_length=200)
     status: Optional[ChannelStatus] = None
