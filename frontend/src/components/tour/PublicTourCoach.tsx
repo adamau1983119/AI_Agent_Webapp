@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom'
 import { useTranslation, type TranslationKey } from '@/i18n'
 import { TOUR_STEPS, findTourAnchor } from '@/lib/publicTour'
 
-const PURPLE = '#581c87'
+const PURPLE = '#a855f7'
 const TITLE: Record<number, TranslationKey> = {
   1: 'tour.public.step1Title',
   2: 'tour.public.platformTitle',
@@ -150,8 +150,8 @@ export default function PublicTourCoach({
         ref={panelRef}
         className={
           box
-            ? 'z-40 max-w-lg rounded-2xl border border-[#581c87] p-4 shadow-lg'
-            : 'fixed bottom-4 left-4 right-4 z-40 mx-auto max-w-lg rounded-2xl border border-[#581c87] p-4 shadow-lg'
+            ? 'z-40 max-w-lg rounded-2xl border border-purple-500 p-4 shadow-lg'
+            : 'fixed bottom-4 left-4 right-4 z-40 mx-auto max-w-lg rounded-2xl border border-purple-500 p-4 shadow-lg'
         }
         style={panelStyle}
         data-testid="panel-tour-public"
