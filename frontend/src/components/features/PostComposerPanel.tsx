@@ -3,6 +3,7 @@
  * Keep tray / Threads / Post Kit UI hidden (MVP). Does not auto-call LLM.
  */
 import { useEffect, useMemo, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { Copy, Facebook, Instagram, RefreshCw, Sparkles } from 'lucide-react'
 import { alterEgoApi, type ComposePart, type ComposePlatform, type ComposeStyle } from '@/api/alterEgo'
@@ -65,6 +66,7 @@ export default function PostComposerPanel({
   onTitlesChange?: (titles: string[]) => void
 }) {
   const { t } = useTranslation()
+  const queryClient = useQueryClient()
   const isDemo = mode === 'demo'
   const [platform, setPlatform] = useState<ComposePlatform>(isDemo ? 'instagram' : 'facebook')
   const [style, setStyle] = useState<ComposeStyle>(isDemo ? 'humorous' : 'casual')
@@ -140,9 +142,9 @@ export default function PostComposerPanel({
         body: part === 'title' || part === 'hashtags' || part === 'meta' ? body : res.body || body,
         hashtag_sets: res.hashtag_sets,
       })
-      if (res.short_body) showError(t('composer.shortBodyHint'))
-      else showSuccess(t('common.success'))
+      showSuccess(t('composer.generatedCharged', { n: String(res.credits_charged) }))
       setNeedCredits(false)
+      await queryClient.invalidateQueries({ queryKey: ['creditsBalance'] })
     } catch (error: unknown) {
       const status = error instanceof APIError ? error.status : 0
       if (status === 401) {
@@ -402,6 +404,18 @@ export default function PostComposerPanel({
             {t('composer.copyAll')}
           </button>
         </div>
+        {generating && !isDemo ? (
+          <p
+            className="text-xs text-gray-500 flex items-center gap-2"
+            data-testid="text-composer-generating"
+          >
+            <span
+              className="inline-block h-4 w-4 shrink-0 animate-spin rounded-full border-b-2 border-primary"
+              aria-hidden
+            />
+            <span>{t('composer.generatingWait')}</span>
+          </p>
+        ) : null}
         <p className="text-xs text-gray-500">{t('composer.charCount', { used: String(used), max: String(limit) })}</p>
         <pre className="text-sm whitespace-pre-wrap font-sans rounded-xl bg-gray-50 p-4 min-h-[96px]">
           {whole || t('composer.emptyPack')}

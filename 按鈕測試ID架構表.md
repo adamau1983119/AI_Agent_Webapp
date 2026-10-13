@@ -470,6 +470,7 @@ data-testid="{類型}-{位置}-{功能}"
 | `btn-composer-hashtag-set-1`～`3` | 按鈕 | 選 Hashtag 組填入 |
 | `btn-composer-copy-all` | 按鈕 | 複製整體文章 |
 | `section-composer-whole` | 區塊 | 整體文章預覽 |
+| `text-composer-generating` | 文字 | 整體文章區：生成中，完成後才扣點 |
 | `page-compose-sample` | 頁面 | `/compose-sample` 示範／練習頁 |
 | `heading-compose-sample` | 標題 | 練習頁主標 |
 | `compose-coach-strip` | 區塊 | 三步驟教練條 |
