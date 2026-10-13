@@ -335,7 +335,7 @@ data-testid="{類型}-{位置}-{功能}"
 | `panel-channels-form-collapsed-hint` | 區塊 | 大螢幕＋助手開啟：表單收合時之虛線提示區 |
 | `btn-channels-expand-wizard-form` | 按鈕 | 展開完整三步表單 |
 | `btn-channels-collapse-wizard-form` | 按鈕 | 收合完整三步表單（僅大螢幕顯示） |
-| `btn-channels-step1-category-{category}` | 按鈕 | Step1 選類別（`fashion`／`food`／`beauty`／`games`／`travel`／`growth`／`lego`／`cosplay` 等） |
+| `btn-channels-step1-category-{category}` | 按鈕 | Step1 選類別。建立選單不顯示 `lego`／`cosplay`／`other`；個人成長、旅遊仍顯示。列保留 |
 | `btn-channels-step1-next` | 按鈕 | Step1 → Step2 |
 | `btn-channels-step2-region-{region}` | 按鈕 | Step2 選地區（與 `ChannelRegion` 值一致） |
 | `note-channels-step2-global-pack` | 說明 | 該區沒有在地來源時顯示「使用全球包」 |

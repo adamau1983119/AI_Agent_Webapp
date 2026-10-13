@@ -72,7 +72,12 @@ _COSPLAY = [
 ]
 
 
-def _regions(local_map: Dict[str, List[dict]], pool: List[dict], n: int = 8) -> Dict[str, List[dict]]:
+def _regions(
+    local_map: Dict[str, List[dict]],
+    pool: List[dict],
+    n: int = 8,
+    keep_local: tuple = (),
+) -> Dict[str, List[dict]]:
     """台港日只留在地來源。沒有在地來源時不把全球清單抄進該國。"""
     out = {key: [dict(row) for row in rows] for key, rows in local_map.items()}
     deep = ("hong_kong", "taiwan", "japan")
@@ -81,6 +86,8 @@ def _regions(local_map: Dict[str, List[dict]], pool: List[dict], n: int = 8) -> 
     global_rows = _as_global(_fill([], pool, max(n, len(pool))))
     out["global"] = global_rows
     for key in ("korea", "china", "usa", "uk"):
+        if key in keep_local and out.get(key):
+            continue
         out[key] = _as_global(_fill([], pool, min(4, n)))
     return out
 
@@ -96,6 +103,8 @@ def _as_global(rows: List[dict]) -> List[dict]:
 
 
 def extra_packs() -> Dict[str, Dict[str, List[dict]]]:
+    from app.models.regional_growth_travel_feeds import growth_local_map, travel_local_map
+
     return {
         "beauty": _regions(
             {
@@ -116,8 +125,16 @@ def extra_packs() -> Dict[str, Dict[str, List[dict]]]:
             },
             _GAMES,
         ),
-        "travel": _regions({}, _TRAVEL),
-        "growth": _regions({}, _GROWTH),
+        "travel": _regions(
+            travel_local_map(),
+            _TRAVEL,
+            keep_local=("china", "usa", "uk", "korea"),
+        ),
+        "growth": _regions(
+            growth_local_map(),
+            _GROWTH,
+            keep_local=("usa", "uk", "korea"),
+        ),
         "lego": _regions({}, _LEGO, n=2),
         "cosplay": _regions({}, _COSPLAY, n=4),
     }

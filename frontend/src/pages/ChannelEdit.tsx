@@ -16,6 +16,7 @@ import {
   regionI18nKeys,
 } from '../api/channels';
 import toast from 'react-hot-toast';
+import { isHiddenCreateCategory } from '../lib/channelCreateMenu';
 
 export default function ChannelEdit() {
   const { id } = useParams<{ id: string }>();
@@ -238,7 +239,9 @@ export default function ChannelEdit() {
               data-testid="select-channel-edit-category"
               className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white min-h-[44px]"
             >
-              {(Object.keys(categoryI18nKeys) as ChannelCategory[]).map((key) => (
+              {(Object.keys(categoryI18nKeys) as ChannelCategory[])
+                .filter((key) => key === category || !isHiddenCreateCategory(key))
+                .map((key) => (
                 <option key={key} value={key}>{t(categoryI18nKeys[key])}</option>
               ))}
             </select>

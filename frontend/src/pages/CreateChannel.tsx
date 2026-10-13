@@ -17,6 +17,7 @@ import {
   categoryIcons,
 } from '../api/channels';
 import toast from 'react-hot-toast';
+import { visibleCreateCategories } from '../lib/channelCreateMenu';
 import { APIError } from '../api/errors';
 import { alterEgoApi } from '../api/alterEgo';
 
@@ -165,7 +166,7 @@ function CreateChannelStepNav(props: {
   );
 }
 
-const categories: { value: ChannelCategory; label: string; icon: string }[] = [
+const categories: { value: ChannelCategory; label: string; icon: string }[] = visibleCreateCategories([
   { value: 'fashion', label: categoryI18nKeys.fashion, icon: categoryIcons.fashion },
   { value: 'food', label: categoryI18nKeys.food, icon: categoryIcons.food },
   { value: 'trend', label: categoryI18nKeys.trend, icon: categoryIcons.trend },
@@ -180,7 +181,7 @@ const categories: { value: ChannelCategory; label: string; icon: string }[] = [
   { value: 'lego', label: categoryI18nKeys.lego, icon: categoryIcons.lego },
   { value: 'cosplay', label: categoryI18nKeys.cosplay, icon: categoryIcons.cosplay },
   { value: 'other', label: categoryI18nKeys.other, icon: categoryIcons.other },
-];
+]);
 
 const regions: { value: ChannelRegion; label: string }[] = [
   { value: 'global', label: regionI18nKeys.global },

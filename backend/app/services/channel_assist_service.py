@@ -603,6 +603,11 @@ Return only JSON, no other text."""
         }
 
         if step == 1:
+            hidden = {
+                ChannelCategory.LEGO,
+                ChannelCategory.COSPLAY,
+                ChannelCategory.OTHER,
+            }
             quick = [
                 {
                     "kind": "category",
@@ -610,6 +615,7 @@ Return only JSON, no other text."""
                     "label_key": f"channels.category.{c.value}",
                 }
                 for c in ChannelCategory
+                if c not in hidden
             ]
             return {
                 "step": 1,
