@@ -10,6 +10,7 @@ import { useTranslation } from '@/i18n'
 import PublicTourCoach from '@/components/tour/PublicTourCoach'
 import FirstRunChoice from '@/components/dashboard/FirstRunChoice'
 import { alterEgoApi } from '@/api/alterEgo'
+import { useAuthStore } from '@/stores/authStore'
 import { isAlterEgoOnboardingDone, ONBOARDING_PATH } from '@/lib/alterEgoRouting'
 import {
   pickPublicTourTopic,
@@ -68,12 +69,17 @@ export default function Dashboard() {
   const topics = topicsError ? [] : topicsResponse?.data || []
   const todayTopicsCount = countTopicsForHktDay(topics)
   const displayTopics = dedupeTopicsByTitle(filterTopicsForHktDay(topics))
+  const seeAsNewUser = useAuthStore((s) => s.user?.role) === 'tester'
   const [tour, setTour] = useState<PublicTourState>(() => readPublicTour())
-  const [showFirstRun, setShowFirstRun] = useState(false)
+  const [showFirstRun, setShowFirstRun] = useState(seeAsNewUser)
   const forceSample = shouldForceSample(searchParams.toString())
   const tourPick = pickPublicTourTopic(displayTopics)
 
   useEffect(() => {
+    if (seeAsNewUser) {
+      setShowFirstRun(true)
+      return
+    }
     if (localStorage.getItem(FIRST_RUN_KEY)) return
     let cancelled = false
     alterEgoApi.getStatus().then((status) => {
@@ -83,17 +89,17 @@ export default function Dashboard() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [seeAsNewUser])
 
   useEffect(() => {
-    if (showFirstRun) return
+    if (seeAsNewUser || showFirstRun) return
     if (!tourPick) return
     if (!forceSample && (tour.status === 'skipped' || tour.status === 'done')) return
     if (tour.status === 'active' && tour.topicId) return
     const next: PublicTourState = { status: 'active', step: 1, topicId: tourPick.id }
     writePublicTour(next)
     setTour(next)
-  }, [tourPick, forceSample, tour.status, tour.topicId, showFirstRun])
+  }, [seeAsNewUser, tourPick, forceSample, tour.status, tour.topicId, showFirstRun])
 
   const saveTour = (next: PublicTourState) => {
     writePublicTour(next)
@@ -115,13 +121,13 @@ export default function Dashboard() {
   }, [todayTopicsCount, topicsError, refetchTopics])
 
   const chooseChannel = () => {
-    localStorage.setItem(FIRST_RUN_KEY, 'channel')
+    if (!seeAsNewUser) localStorage.setItem(FIRST_RUN_KEY, 'channel')
     setShowFirstRun(false)
-    navigate(ONBOARDING_PATH)
+    navigate(seeAsNewUser ? `${ONBOARDING_PATH}?preview=1` : ONBOARDING_PATH)
   }
 
   const chooseCompose = () => {
-    localStorage.setItem(FIRST_RUN_KEY, 'compose')
+    if (!seeAsNewUser) localStorage.setItem(FIRST_RUN_KEY, 'compose')
     setShowFirstRun(false)
     if (!tourPick) return
     const next: PublicTourState = { status: 'active', step: 1, topicId: tourPick.id }
