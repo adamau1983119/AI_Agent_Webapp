@@ -18,6 +18,7 @@ import {
 } from '../api/channels';
 import toast from 'react-hot-toast';
 import { visibleCreateCategories } from '../lib/channelCreateMenu';
+import { buildChannelNameChoices } from '../lib/channelNameChoices';
 import { APIError } from '../api/errors';
 import { alterEgoApi } from '../api/alterEgo';
 
@@ -198,7 +199,7 @@ export default function CreateChannel() {
   const { t, language } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
   
   // 表單狀態
   const [step, setStep] = useState(1);
@@ -261,6 +262,7 @@ export default function CreateChannel() {
   } | null>(null);
   /** 多輪對話紀錄（畫面保留 + 送後端上下文） */
   const [assistHistory, setAssistHistory] = useState<AssistChatTurn[]>([]);
+  const [feedPoolEpoch, setFeedPoolEpoch] = useState(0);
   const assistChatEndRef = useRef<HTMLDivElement>(null);
 
   /** 後端精靈結構化選項（檢索 MVP：RSS 白名單）；Step 1＝類別，Step 2＝地區＋扣已選後之 feed */
@@ -304,13 +306,6 @@ export default function CreateChannel() {
       setDesktopFormExpanded(false);
     }
   }, [showAssist]);
-
-  /** Step 3 須使用表單送出：大螢幕＋助手開啟時自動展開，避免收合狀態無法按「建立」 */
-  useEffect(() => {
-    if (showAssist && step === 3) {
-      setDesktopFormExpanded(true);
-    }
-  }, [showAssist, step]);
 
   useEffect(() => {
     if (!showAssist) return;
@@ -455,17 +450,8 @@ export default function CreateChannel() {
         const merged = mergeFeedsByUrl(boost, sources);
         setStep2PoolSources(merged);
         if (showAssistRef.current) setFeedActionBanner(null);
-        setSelectedReferenceSourceUrls((prev) => {
-          const poolUrls = new Set(merged.map((s) => s.url));
-          const boostUrls = boost.map((s) => s.url).filter((u) => poolUrls.has(u));
-          if (boostUrls.length > 0) {
-            return new Set(boostUrls.slice(0, MAX_STEP2_SELECTED_FEEDS));
-          }
-          const kept = [...prev].filter((u) => poolUrls.has(u)).slice(0, MAX_STEP2_SELECTED_FEEDS);
-          if (kept.length > 0) return new Set(kept);
-          const n = Math.min(MAX_STEP2_SELECTED_FEEDS, merged.length);
-          return new Set(merged.slice(0, n).map((s) => s.url));
-        });
+        const floor = Math.min(5, merged.length);
+        setSelectedReferenceSourceUrls(new Set(merged.slice(0, floor).map((s) => s.url)));
       } catch {
         if (!cancelled) {
           setStep2PoolError(true);
@@ -481,7 +467,7 @@ export default function CreateChannel() {
     return () => {
       cancelled = true;
     };
-  }, [step, category, region]);
+  }, [step, category, region, feedPoolEpoch]);
   
   // 未登入
   if (!isAuthenticated) {
@@ -513,27 +499,28 @@ export default function CreateChannel() {
   
   // AI 助手：快捷按鈕點擊（類別）
   // 若已選「非全球」地區，輸入框改為類別+地區一句話，避免先選類別再選地區時被覆寫成只剩地區。
-  const handleQuickCategoryClick = (cat: ChannelCategory) => {
-    setCategory(cat);
-    const categoryText = t(categoryI18nKeys[cat]);
-    const regionText = t(regionI18nKeys[region]);
-    if (region !== 'global') {
-      setAssistInput(t('channels.assist.quickPreset', { category: categoryText, region: regionText }));
-    } else {
-      setAssistInput(t('channels.assist.quickCategory', { category: categoryText }));
-    }
+  const pushChat = (userLine: string, assistantLine: string) => {
+    const stamp = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+    setAssistHistory((prev) => [
+      ...prev,
+      { id: `u-${stamp}`, role: 'user', content: userLine },
+      { id: `a-${stamp}`, role: 'assistant', content: assistantLine },
+    ]);
   };
 
-  // AI 助手：快捷按鈕點擊（地區）
+  const handleQuickCategoryClick = (cat: ChannelCategory) => {
+    assistPoolBoostRef.current = [];
+    setCategory(cat);
+    setFeedPoolEpoch((n) => n + 1);
+    const categoryText = t(categoryI18nKeys[cat]);
+    pushChat(categoryText, t('channels.assist.pickedCategory', { category: categoryText }));
+    setStep(2);
+  };
+
   const handleQuickRegionClick = (reg: ChannelRegion) => {
     setRegion(reg);
     const regionText = t(regionI18nKeys[reg]);
-    const categoryText = category ? t(categoryI18nKeys[category]) : '';
-    if (category !== null) {
-      setAssistInput(t('channels.assist.quickPreset', { category: categoryText, region: regionText }));
-    } else {
-      setAssistInput(t('channels.assist.quickRegion', { region: regionText }));
-    }
+    pushChat(regionText, t('channels.assist.pickedRegion', { region: regionText }));
   };
 
   // AI 助手：預設組合快捷按鈕
@@ -654,6 +641,8 @@ export default function CreateChannel() {
         if (result.keywords.length > 0) {
           setCustomKeywords(result.keywords);
         }
+        setStep(2);
+        setFeedPoolEpoch((n) => n + 1);
         toast.success(t('channels.assist.autoFilled'));
       } else if (result.confidence >= 0.5) {
         const categoryName = result.category ? t(categoryI18nKeys[result.category as ChannelCategory]) : '-';
@@ -697,29 +686,13 @@ export default function CreateChannel() {
         setCustomKeywords(assistResult.keywords);
       }
       setStep(2);
-      setShowAssist(false);
-      setAssistInput('');
-      setAssistResult(null);
-      setAssistHistory([]);
-      setAssistRequestError(null);
-      setFeedActionBanner(null);
+      setFeedPoolEpoch((n) => n + 1);
       toast.success(t('channels.assist.applied'));
     }
   };
   
-  // AI 助手：關閉
-  const handleAssistClose = () => {
-    assistPoolBoostRef.current = [];
-    assistShownSourceUrlsRef.current = [];
-    setAssistAiNaming(null);
-    setAssistRequestError(null);
-    setFeedActionBanner(null);
-    setShowAssist(false);
-    setAssistInput('');
-    setAssistResult(null);
-    setAssistHistory([]);
-  };
-  
+  // 建立只走助手，不再提供關閉助手、改回表單。
+
   // AI 助手：重置對話
   const handleAssistReset = () => {
     assistShownSourceUrlsRef.current = [];
@@ -884,6 +857,12 @@ export default function CreateChannel() {
   };
 
   const removeFeedFromSelected = (url: string) => {
+    const floor = Math.min(5, step2PoolSources.length);
+    const locked = new Set(step2PoolSources.slice(0, floor).map((s) => s.url));
+    if (locked.has(url)) {
+      toast.error(t('channels.assist.keepRecommended', { count: String(floor) }));
+      return;
+    }
     setSelectedReferenceSourceUrls((prev) => {
       const next = new Set(prev);
       next.delete(url);
@@ -903,6 +882,39 @@ export default function CreateChannel() {
     addFeedToSelected(entry.url);
   };
 
+  const nameLang = language === 'en' || language === 'ja' ? language : 'zh-TW';
+  const displayName =
+    (user?.name || '').trim() || (user?.email || '').split('@')[0] || t('channels.assist.nameFallback');
+  const nameChoices = category
+    ? buildChannelNameChoices(
+        nameLang,
+        displayName,
+        t(regionI18nKeys[region]),
+        t(categoryI18nKeys[category]),
+      )
+    : [];
+  const recommendedFloor = Math.min(5, step2PoolSources.length);
+
+  const togglePoolFeed = (url: string, label: string) => {
+    const locked = new Set(step2PoolSources.slice(0, recommendedFloor).map((s) => s.url));
+    if (locked.has(url)) {
+      toast.error(t('channels.assist.keepRecommended', { count: String(recommendedFloor) }));
+      return;
+    }
+    if (selectedReferenceSourceUrls.has(url)) {
+      removeFeedFromSelected(url);
+    } else {
+      addFeedToSelected(url);
+    }
+    pushChat(label, t('channels.assist.pickedFeed'));
+  };
+
+  const applyNameChoice = (choice: { name: string; description: string }) => {
+    setName(choice.name.slice(0, 50));
+    setDescription(choice.description.slice(0, 200));
+    pushChat(choice.name, t('channels.assist.pickedName'));
+  };
+
   return (
     <main className="relative min-h-screen bg-gray-50 py-8 dark:bg-gray-900">
       <a
@@ -914,7 +926,7 @@ export default function CreateChannel() {
           el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
           window.setTimeout(() => el?.focus({ preventScroll: true }), 200);
         }}
-        className="fixed left-4 top-0 z-[70] -translate-y-full rounded-lg bg-white px-4 py-3 text-sm font-semibold text-gray-900 shadow-lg ring-2 ring-purple-500 transition-transform focus:translate-y-4 focus:outline-none dark:bg-gray-800 dark:text-white"
+        className="hidden"
       >
         {t('channels.phaseC.skipToForm')}
       </a>
@@ -947,26 +959,7 @@ export default function CreateChannel() {
             {t('channels.createDescription')}
           </p>
         </div>
-            {/* AI 助手按鈕：Step 1／Step 2 可開（Step 2 同步精靈地區與尚可加入之 RSS） */}
-            {(step === 1 || step === 2 || step === 3) && (
-              <button
-                type="button"
-                onClick={() => setShowAssist((open) => !open)}
-                data-testid={showAssist ? 'btn-channels-assist-minimize' : 'btn-channels-assist'}
-                className={
-                  showAssist
-                    ? 'flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-gray-700 transition-all hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700 dark:focus-visible:ring-offset-gray-900'
-                    : 'flex items-center gap-2 rounded-lg bg-gradient-to-r from-purple-500 to-cyan-500 px-4 py-2 text-white shadow-lg transition-all hover:from-purple-600 hover:to-cyan-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-50 dark:focus-visible:ring-offset-gray-900'
-                }
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                </svg>
-                <span className="font-medium">
-                  {showAssist ? t('channels.assist.minimizePanel') : t('channels.assist.title')}
-                </span>
-              </button>
-            )}
+            {/* 建立只走助手：收起／展開鈕不再顯示 */}
           </div>
         </div>
         
@@ -985,17 +978,6 @@ export default function CreateChannel() {
                 </svg>
                 {t('channels.assist.title')}
               </h3>
-              <button
-                type="button"
-                onClick={handleAssistClose}
-                data-testid="btn-channels-assist-close"
-                className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 dark:hover:bg-gray-700 dark:hover:text-gray-200"
-                aria-label={t('channels.assist.closePanelAria')}
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
             </div>
 
             {assistRequestError && (
@@ -1032,20 +1014,6 @@ export default function CreateChannel() {
                   >
                     {t('channels.assist.dismissError')}
                   </button>
-                  <a
-                    href="#channel-create-form"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setMobileSummaryOpen(false);
-                      const el = document.getElementById('channel-create-form') as HTMLElement | null;
-                      el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                      window.setTimeout(() => el?.focus({ preventScroll: true }), 200);
-                    }}
-                    className="min-h-[44px] text-sm font-medium text-red-800 underline dark:text-red-200 sm:min-h-0"
-                    data-testid="link-channels-assist-go-to-form"
-                  >
-                    {t('channels.phaseC.goToForm')}
-                  </a>
                 </div>
               </div>
             )}
@@ -1055,6 +1023,82 @@ export default function CreateChannel() {
               role="region"
               aria-labelledby="channels-assist-panel-title"
             >
+            <div className="mb-4">
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                {t('channels.assist.prompt')}
+              </p>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <input
+                  type="text"
+                  value={assistInput}
+                  onChange={(e) => setAssistInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleAssistSubmit();
+                    }
+                  }}
+                  placeholder={t('channels.assist.placeholder')}
+                  data-testid="input-channels-assist"
+                  disabled={isAssisting}
+                  className="flex-1 px-4 py-3 sm:py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:opacity-50 text-sm sm:text-base min-h-[44px]"
+                />
+                <button
+                  onClick={handleAssistSubmit}
+                  disabled={!assistInput.trim() || isAssisting}
+                  data-testid="btn-channels-assist-submit"
+                  className="px-6 py-3 sm:py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 min-h-[44px] text-sm sm:text-base font-medium"
+                >
+                  {isAssisting ? (
+                    <>
+                      <svg className="animate-spin h-4 w-4 sm:h-5 sm:w-5" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                      <span className="hidden sm:inline">{t('common.loading')}</span>
+                    </>
+                  ) : (
+                    t('channels.assist.submit')
+                  )}
+                </button>
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                {t('channels.assist.chatHistory')}
+              </p>
+              <div
+                className="max-h-64 overflow-y-auto rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50/90 dark:bg-gray-900/50 p-3 space-y-3"
+                aria-live="polite"
+                aria-relevant="additions text"
+              >
+                {assistHistory.map((turn) => (
+                  <div
+                    key={turn.id}
+                    className={`flex ${turn.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div
+                      className={`max-w-[88%] rounded-2xl px-3 py-2 text-sm sm:text-base break-words whitespace-pre-line ${
+                        turn.role === 'user'
+                          ? 'bg-purple-600 text-white'
+                          : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-600'
+                      }`}
+                    >
+                      {turn.content}
+                    </div>
+                  </div>
+                ))}
+                {isAssisting && (
+                  <div className="flex justify-start">
+                    <div className="rounded-2xl px-3 py-2 text-sm text-gray-500 dark:text-gray-400 border border-dashed border-gray-300 dark:border-gray-600">
+                      {t('common.loading')}…
+                    </div>
+                  </div>
+                )}
+                <div ref={assistChatEndRef} />
+              </div>
+            </div>
 
             {guidedLoading && (
               <p
@@ -1081,177 +1125,179 @@ export default function CreateChannel() {
                 </button>
               </div>
             )}
-            {!guidedLoading && guidedOptions && guidedOptions.step === 1 && guidedOptions.quick_options.length > 0 && (
+            {step < 3 && (
               <div
                 className="mb-4 rounded-xl border border-dashed border-purple-200 dark:border-purple-700 bg-purple-50/50 dark:bg-purple-950/20 p-3 sm:p-4"
                 data-testid="panel-channels-guided"
               >
                 <p className="text-sm text-gray-700 dark:text-gray-200 mb-2">{t('channels.guided.intro')}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
-                  {t('channels.guided.serverSyncTitle')}
-                </p>
                 <div className="flex flex-wrap gap-2 mb-3">
-                  {guidedOptions.quick_options
-                    .filter((o) => o.kind === 'category')
-                    .map((o) => (
+                  {categories.map((cat) => (
                       <button
-                        key={o.value}
+                        key={cat.value}
                         type="button"
-                        data-testid={`btn-channels-guided-category-${o.value}`}
+                        data-testid={`btn-channels-guided-category-${cat.value}`}
                         disabled={isAssisting}
-                        onClick={() => handleQuickCategoryClick(o.value as ChannelCategory)}
+                        onClick={() => handleQuickCategoryClick(cat.value)}
                         className={`px-3 py-1.5 text-xs sm:text-sm rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] border flex items-center gap-1 ${
-                          category === o.value
+                          category === cat.value
                             ? 'bg-purple-100 dark:bg-purple-900/30 border-purple-400 dark:border-purple-600 text-purple-700 dark:text-purple-300 ring-1 ring-purple-300 dark:ring-purple-700'
                             : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 text-gray-800 dark:text-gray-100 hover:border-purple-300 dark:hover:border-purple-600'
                         }`}
                       >
                         <span className="text-base sm:text-lg">
-                          {categoryIcons[o.value as ChannelCategory] ?? '•'}
+                          {cat.icon}
                         </span>
-                        <span>{t(o.label_key as any)}</span>
+                        <span>{t(cat.label)}</span>
                       </button>
                     ))}
                 </div>
-                <button
-                  type="button"
-                  data-testid="btn-channels-guided-escape"
-                  onClick={handleAssistClose}
-                  className="text-xs text-purple-600 dark:text-purple-400 hover:underline"
-                >
-                  {t('channels.guided.escapeAdvanced')}
-                </button>
               </div>
             )}
 
-            {!guidedLoading && guidedOptions && guidedOptions.step === 2 && (
+            {step === 2 && category && (
               <div
                 className="mb-4 rounded-xl border border-dashed border-purple-200 dark:border-purple-700 bg-purple-50/50 dark:bg-purple-950/20 p-3 sm:p-4"
                 data-testid="panel-channels-guided-step2"
               >
                 <p className="text-sm text-gray-700 dark:text-gray-200 mb-2">{t('channels.guided.introStep2')}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
-                  {t('channels.guided.serverSyncTitleStep2')}
-                </p>
-                {guidedOptions.quick_options.filter((o) => o.kind === 'region').length > 0 && (
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {guidedOptions.quick_options
-                      .filter((o) => o.kind === 'region')
-                      .map((o) => (
-                        <button
-                          key={o.value}
-                          type="button"
-                          data-testid={`btn-channels-guided-region-${o.value}`}
-                          disabled={isAssisting}
-                          onClick={() => handleQuickRegionClick(o.value as ChannelRegion)}
-                          className={`px-3 py-1.5 text-xs sm:text-sm rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] border ${
-                            region === o.value
-                              ? 'bg-purple-100 dark:bg-purple-900/30 border-purple-400 dark:border-purple-600 text-purple-700 dark:text-purple-300 ring-1 ring-purple-300 dark:ring-purple-700'
-                              : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 text-gray-800 dark:text-gray-100 hover:border-purple-300 dark:hover:border-purple-600'
-                          }`}
-                        >
-                          {t(o.label_key as any)}
-                        </button>
-                      ))}
-                  </div>
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {regions.map((reg) => (
+                    <button
+                      key={reg.value}
+                      type="button"
+                      data-testid={`btn-channels-guided-region-${reg.value}`}
+                      disabled={isAssisting}
+                      onClick={() => handleQuickRegionClick(reg.value)}
+                      className={`px-3 py-1.5 text-xs sm:text-sm rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] border ${
+                        region === reg.value
+                          ? 'bg-purple-100 dark:bg-purple-900/30 border-purple-400 dark:border-purple-600 text-purple-700 dark:text-purple-300 ring-1 ring-purple-300 dark:ring-purple-700'
+                          : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 text-gray-800 dark:text-gray-100 hover:border-purple-300 dark:hover:border-purple-600'
+                      }`}
+                    >
+                      {t(reg.label)}
+                    </button>
+                  ))}
+                </div>
+                {step2PoolLoading && (
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">{t('common.loading')}</p>
                 )}
-                {guidedOptions.feed_options.length > 0 && (
-                  <div className="mb-3">
-                    <p className="text-xs font-medium text-gray-600 dark:text-gray-300 mb-2">
-                      {t('channels.guided.suggestedFeedsTitle')}
-                    </p>
-                    <ul className="space-y-2 max-h-48 overflow-y-auto">
-                      {guidedOptions.feed_options.map((f, idx) => (
-                        <li
-                          key={`${f.url}-${idx}`}
-                          className="flex items-start justify-between gap-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-white/80 dark:bg-gray-800/80 p-2"
-                        >
-                          <div className="min-w-0 flex-1">
-                            <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{f.name}</p>
-                            <p className="text-xs text-gray-500 truncate" title={f.url}>
-                              {f.url}
-                            </p>
-                          </div>
+                {!step2PoolLoading && step2PoolSources.length > 0 && (
+                  <ul className="space-y-2 max-h-64 overflow-y-auto mb-3">
+                    {step2PoolSources.map((source, idx) => {
+                      const locked = idx < recommendedFloor;
+                      const checked = selectedReferenceSourceUrls.has(source.url);
+                      return (
+                        <li key={`${source.url}-${idx}`}>
                           <button
                             type="button"
-                            data-testid={`btn-channels-guided-feed-add-${idx}`}
-                            disabled={isAssisting || selectedReferenceSourceUrls.has(f.url.trim())}
-                            onClick={() => addGuidedFeedToPoolAndSelected(f)}
-                            className="shrink-0 px-2 py-1.5 text-xs font-medium rounded-lg bg-purple-100 dark:bg-purple-900/40 text-purple-800 dark:text-purple-200 hover:bg-purple-200 dark:hover:bg-purple-800/50 disabled:opacity-50 min-h-[44px] md:min-h-0"
+                            data-testid={`btn-channels-assist-source-${idx}`}
+                            disabled={isAssisting}
+                            onClick={() => togglePoolFeed(source.url, source.name)}
+                            className={`w-full text-left rounded-lg border p-2 min-h-[44px] ${
+                              checked
+                                ? 'border-purple-400 bg-white dark:bg-gray-800'
+                                : 'border-gray-200 dark:border-gray-600 bg-white/80 dark:bg-gray-800/80'
+                            }`}
                           >
-                            {t('channels.guided.addSuggestedFeed')}
+                            <p className="text-sm font-medium text-gray-900 dark:text-white">
+                              {checked ? '☑ ' : '☐ '}
+                              {source.name}
+                              {locked ? (
+                                <span className="ml-2 text-xs font-semibold text-purple-600 dark:text-purple-300">
+                                  {t('channels.assist.recommendMark')}
+                                </span>
+                              ) : null}
+                            </p>
                           </button>
                         </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                {guidedOptions.feed_options.length === 0 && (
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">{t('channels.guided.noMoreFeedsHint')}</p>
+                      );
+                    })}
+                  </ul>
                 )}
                 <button
                   type="button"
-                  data-testid="btn-channels-guided-escape-step2"
-                  onClick={handleAssistClose}
-                  className="text-xs text-purple-600 dark:text-purple-400 hover:underline"
+                  data-testid="btn-channels-assist-to-naming"
+                  disabled={isAssisting || step2PoolLoading || !category || selectedReferenceSourceUrls.size < recommendedFloor}
+                  onClick={() => setStep(3)}
+                  className="w-full sm:w-auto px-4 py-2 text-sm font-medium rounded-lg bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50 min-h-[44px]"
                 >
-                  {t('channels.guided.escapeAdvanced')}
+                  {t('channels.assist.toNaming')}
                 </button>
               </div>
             )}
 
-            {!guidedLoading && guidedOptions && guidedOptions.step === 3 && category && (
+            {step === 3 && category && (
               <div
                 className="mb-4 rounded-xl border border-dashed border-purple-200 dark:border-purple-700 bg-purple-50/50 dark:bg-purple-950/20 p-3 sm:p-4"
                 data-testid="panel-channels-guided-step3"
               >
                 <p className="text-sm text-gray-700 dark:text-gray-200 mb-2">{t('channels.guided.introStep3')}</p>
-                {(guidedOptions.suggested_channel_name || guidedOptions.suggested_channel_description) && (
-                  <div className="rounded-lg border border-gray-200 dark:border-gray-600 bg-white/80 dark:bg-gray-800/80 p-3 mb-3 space-y-2">
-                    {guidedOptions.suggested_channel_name ? (
-                      <p className="text-sm text-gray-900 dark:text-white">
-                        <span className="text-xs text-gray-500 block">{t('channels.channelName')}</span>
-                        {guidedOptions.suggested_channel_name}
-                      </p>
-                    ) : null}
-                    {guidedOptions.suggested_channel_description ? (
-                      <p className="text-sm text-gray-700 dark:text-gray-200 whitespace-pre-wrap">
-                        <span className="text-xs text-gray-500 block">{t('channels.channelDescription')}</span>
-                        {guidedOptions.suggested_channel_description}
-                      </p>
-                    ) : null}
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {nameChoices.map((choice, idx) => (
                     <button
+                      key={choice.name}
                       type="button"
-                      data-testid="btn-channels-guided-step3-apply"
-                      disabled={isAssisting}
-                      onClick={() => {
-                        if (guidedOptions.suggested_channel_name) {
-                          setName(guidedOptions.suggested_channel_name.slice(0, 50));
-                        }
-                        if (guidedOptions.suggested_channel_description) {
-                          setDescription(guidedOptions.suggested_channel_description.slice(0, 200));
-                        }
-                        toast.success(t('channels.step3.applyWizardOk'));
-                      }}
-                      className="w-full sm:w-auto px-4 py-2 text-sm font-medium rounded-lg bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50 min-h-[44px]"
+                      data-testid={`btn-channels-assist-name-${idx}`}
+                      onClick={() => applyNameChoice(choice)}
+                      className={`px-3 py-1.5 text-sm rounded-lg border min-h-[44px] ${
+                        name === choice.name
+                          ? 'border-purple-400 bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-100'
+                          : 'border-gray-200 bg-white text-gray-800 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100'
+                      }`}
                     >
-                      {t('channels.step3.applyWizardNaming')}
+                      {choice.name}
                     </button>
-                  </div>
-                )}
-                <button
-                  type="button"
-                  data-testid="btn-channels-guided-escape-step3"
-                  onClick={handleAssistClose}
-                  className="text-xs text-purple-600 dark:text-purple-400 hover:underline"
-                >
-                  {t('channels.guided.escapeAdvanced')}
-                </button>
+                  ))}
+                </div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                  {t('channels.channelName')} <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  data-testid="input-channels-step3-name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder={t('channels.channelNamePlaceholder')}
+                  maxLength={50}
+                  className="w-full px-4 py-3 mb-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                  {t('channels.channelDescription')}
+                </label>
+                <textarea
+                  data-testid="input-channels-step3-description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder={t('channels.channelDescriptionPlaceholder')}
+                  maxLength={200}
+                  rows={2}
+                  className="w-full px-4 py-3 mb-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
+                />
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    data-testid="btn-channels-step3-prev"
+                    onClick={() => setStep(2)}
+                    className="px-6 py-3 text-gray-600 dark:text-gray-300 font-medium hover:text-gray-800 dark:hover:text-white min-h-[44px]"
+                  >
+                    {t('common.previous')}
+                  </button>
+                  <button
+                    type="button"
+                    data-testid="btn-channels-step3-submit"
+                    onClick={handleSubmit}
+                    disabled={!name.trim() || isSubmitting}
+                    className="px-8 py-3 bg-gradient-to-r from-purple-500 to-cyan-500 text-white font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:from-purple-600 hover:to-cyan-600 transition-all min-h-[44px]"
+                  >
+                    {isSubmitting ? t('common.loading') : t('channels.create')}
+                  </button>
+                </div>
               </div>
             )}
             
             {/* 快捷按鈕區域（Step 2／3 開助手時隱藏） */}
-            {!((step === 2 || step === 3) && showAssist) && (
+            {false && (
             <div className="mb-4">
               <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
                 {t('channels.assist.quickButtons')}
@@ -1339,46 +1385,9 @@ export default function CreateChannel() {
               </div>
             </div>
             )}
-            
-            {/* 對話紀錄（保留多輪，與後端 conversation_history 對齊） */}
-            <div className="mb-4">
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
-                {t('channels.assist.chatHistory')}
-              </p>
-              <div
-                className="max-h-64 overflow-y-auto rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50/90 dark:bg-gray-900/50 p-3 space-y-3"
-                aria-live="polite"
-                aria-relevant="additions text"
-              >
-                {assistHistory.map((turn) => (
-                  <div
-                    key={turn.id}
-                    className={`flex ${turn.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                  >
-                    <div
-                      className={`max-w-[88%] rounded-2xl px-3 py-2 text-sm sm:text-base break-words whitespace-pre-line ${
-                        turn.role === 'user'
-                          ? 'bg-purple-600 text-white'
-                          : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-600'
-                      }`}
-                    >
-                      {turn.content}
-                    </div>
-                  </div>
-                ))}
-                {isAssisting && (
-                  <div className="flex justify-start">
-                    <div className="rounded-2xl px-3 py-2 text-sm text-gray-500 dark:text-gray-400 border border-dashed border-gray-300 dark:border-gray-600">
-                      {t('common.loading')}…
-                    </div>
-                  </div>
-                )}
-                <div ref={assistChatEndRef} />
-              </div>
-            </div>
-            
+
             {/* AE F06：貼範文建立 Alter Ego DNA */}
-            <div className="mb-6 p-3 sm:p-4 rounded-lg border border-purple-200 dark:border-purple-800 bg-purple-50/50 dark:bg-purple-900/10">
+            <div className="hidden">
               <h3 className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
                 {t('channels.assist.exemplarTitle')}
               </h3>
@@ -1405,47 +1414,7 @@ export default function CreateChannel() {
               </button>
             </div>
 
-            {/* 輸入區域 */}
-            <div className="mb-4">
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                {t('channels.assist.prompt')}
-              </p>
-              <div className="flex flex-col sm:flex-row gap-2">
-                <input
-                  type="text"
-                  value={assistInput}
-                  onChange={(e) => setAssistInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      handleAssistSubmit();
-                    }
-                  }}
-                  placeholder={t('channels.assist.placeholder')}
-                  data-testid="input-channels-assist"
-                  disabled={isAssisting}
-                  className="flex-1 px-4 py-3 sm:py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:opacity-50 text-sm sm:text-base min-h-[44px]"
-                />
-                <button
-                  onClick={handleAssistSubmit}
-                  disabled={!assistInput.trim() || isAssisting}
-                  data-testid="btn-channels-assist-submit"
-                  className="px-6 py-3 sm:py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 min-h-[44px] text-sm sm:text-base font-medium"
-                >
-                  {isAssisting ? (
-                    <>
-                      <svg className="animate-spin h-4 w-4 sm:h-5 sm:w-5" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                      </svg>
-                      <span className="hidden sm:inline">{t('common.loading')}</span>
-                    </>
-                  ) : (
-                    t('channels.assist.submit')
-                  )}
-                </button>
-              </div>
-            </div>
+            {/* 分析結果 */}
             
             {/* 錯誤訊息顯示 */}
             {!isAssisting && assistResult && assistResult.confidence < 0.5 && !assistResult.clarification_needed && (
@@ -1700,7 +1669,7 @@ export default function CreateChannel() {
           tabIndex={-1}
           className="outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-50 dark:focus-visible:ring-offset-gray-900"
         >
-          {showAssist && !desktopFormExpanded ? (
+          {false ? (
             <div
               className="mb-6 hidden rounded-2xl border-2 border-dashed border-purple-200 bg-purple-50/50 p-6 text-center dark:border-purple-800 dark:bg-purple-950/20 lg:block"
               data-testid="panel-channels-form-collapsed-hint"
@@ -1722,7 +1691,7 @@ export default function CreateChannel() {
           <div
             data-testid="panel-channels-create-form"
             className={`rounded-2xl bg-white p-8 shadow-lg dark:bg-gray-800 ${
-              showAssist && !desktopFormExpanded ? 'lg:hidden' : ''
+              showAssist ? 'hidden' : ''
             }`}
           >
             {showAssist && desktopFormExpanded && step < 3 ? (
@@ -2178,7 +2147,6 @@ export default function CreateChannel() {
                   </label>
                   <input
                     type="text"
-                    data-testid="input-channels-step3-name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder={t('channels.channelNamePlaceholder')}
@@ -2195,7 +2163,6 @@ export default function CreateChannel() {
                     {t('channels.channelDescription')}
                   </label>
                   <textarea
-                    data-testid="input-channels-step3-description"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder={t('channels.channelDescriptionPlaceholder')}
@@ -2235,7 +2202,6 @@ export default function CreateChannel() {
               <div className="mt-8 flex justify-between">
                 <button
                   type="button"
-                  data-testid="btn-channels-step3-prev"
                   onClick={() => setStep(2)}
                   className="px-6 py-3 text-gray-600 dark:text-gray-300 font-medium hover:text-gray-800 dark:hover:text-white"
                 >
@@ -2243,7 +2209,6 @@ export default function CreateChannel() {
                 </button>
                 <button
                   type="button"
-                  data-testid="btn-channels-step3-submit"
                   onClick={handleSubmit}
                   disabled={!name.trim() || isSubmitting}
                   className="px-8 py-3 bg-gradient-to-r from-purple-500 to-cyan-500 text-white font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:from-purple-600 hover:to-cyan-600 transition-all flex items-center gap-2"
@@ -2353,7 +2318,7 @@ export default function CreateChannel() {
                       el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                       window.setTimeout(() => el?.focus({ preventScroll: true }), 150);
                     }}
-                    className="w-full rounded-lg border border-purple-200 bg-purple-50 px-4 py-3 text-sm font-semibold text-purple-900 dark:border-purple-800 dark:bg-purple-950/40 dark:text-purple-100"
+                    className="hidden"
                   >
                     {t('channels.phaseC.goToForm')}
                   </button>

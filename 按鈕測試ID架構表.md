@@ -330,11 +330,11 @@ data-testid="{類型}-{位置}-{功能}"
 | Test ID | 元素 | 功能 |
 |---------|------|------|
 | `btn-channels-create-back` | 按鈕 | 返回頻道列表 |
-| `link-channels-phasec-skip-to-form` | 連結 | 鍵盤／無障礙：跳至主表單區 `#channel-create-form` |
-| `panel-channels-create-form` | 區塊 | 三步驟表單白卡（`id="channel-create-form"` 為外層錨點，可含收合提示） |
-| `panel-channels-form-collapsed-hint` | 區塊 | 大螢幕＋助手開啟：表單收合時之虛線提示區 |
-| `btn-channels-expand-wizard-form` | 按鈕 | 展開完整三步表單 |
-| `btn-channels-collapse-wizard-form` | 按鈕 | 收合完整三步表單（僅大螢幕顯示） |
+| `link-channels-phasec-skip-to-form` | 連結 | 這頁不再顯示。建立只走助手 |
+| `panel-channels-create-form` | 區塊 | 三步驟表單仍在程式裡，這頁不再顯示 |
+| `panel-channels-form-collapsed-hint` | 區塊 | 這頁不再顯示。建立只走助手 |
+| `btn-channels-expand-wizard-form` | 按鈕 | 這頁不再顯示。建立只走助手 |
+| `btn-channels-collapse-wizard-form` | 按鈕 | 這頁不再顯示。建立只走助手 |
 | `btn-channels-step1-category-{category}` | 按鈕 | Step1 選類別。建立選單不顯示 `lego`／`cosplay`／`other`；個人成長、旅遊仍顯示。列保留 |
 | `btn-channels-step1-next` | 按鈕 | Step1 → Step2 |
 | `btn-channels-step2-region-{region}` | 按鈕 | Step2 選地區（與 `ChannelRegion` 值一致） |
@@ -348,10 +348,13 @@ data-testid="{類型}-{位置}-{功能}"
 | `input-channels-step3-description` | 輸入 | Step3 頻道描述 |
 | `panel-channels-step3-preview` | 區塊 | Step3 預覽卡 |
 | `btn-channels-step3-prev` | 按鈕 | Step3 → Step2 |
-| `btn-channels-step3-submit` | 按鈕 | 建立頻道（主 CTA） |
-| `btn-channels-assist` | 按鈕 | 助手收合時：展開 AI 助手（`/channels/create` 進頁預設開啟時較少出現） |
-| `btn-channels-assist-minimize` | 按鈕 | 助手展開時：收起助手（不清空狀態；與關閉 ✕ 不同） |
-| `btn-channels-assist-close` | 按鈕 | 關閉助手對話框 |
+| `btn-channels-step3-submit` | 按鈕 | 建立頻道（主 CTA，在助手內） |
+| `btn-channels-assist-source-{index}` | 按鈕 | 訂閱來源。前 5 個為推薦，名單不足 5 個時全部先勾 |
+| `btn-channels-assist-to-naming` | 按鈕 | 來源夠數後，進入為頻道命名 |
+| `btn-channels-assist-name-{index}` | 按鈕 | 三個名稱其中一個（0／1／2） |
+| `btn-channels-assist` | 按鈕 | 這頁不再顯示。建立只走助手，不再提供收起後再展開 |
+| `btn-channels-assist-minimize` | 按鈕 | 這頁不再顯示。建立只走助手 |
+| `btn-channels-assist-close` | 按鈕 | 這頁不再顯示。建立只走助手 |
 | `panel-channels-create-summary` | 區塊 | 建立前摘要（名稱／描述／類別／地區／RSS 數；Phase B，助手開啟時顯示） |
 | `panel-channels-assist-request-error` | 區塊 | Phase C：`/channels/assist` 失敗時助手內提示 |
 | `btn-channels-assist-error-dismiss` | 按鈕 | 關閉助手內分析錯誤橫幅 |
@@ -360,18 +363,19 @@ data-testid="{類型}-{位置}-{功能}"
 | `text-channels-phasec-step-hint` | 文字 | Phase C：步驟圓圈與精靈敘事對齊說明（助手開啟時） |
 | `panel-channels-assist-feed-action-error` | 區塊 | Phase C：表單區 RSS 池／白名單／validate／建立失敗時，助手內同步橫幅（助手開啟時） |
 | `btn-channels-assist-feed-error-dismiss` | 按鈕 | 關閉上述表單區錯誤橫幅 |
-| `link-channels-assist-go-to-form` | 連結 | 從助手錯誤橫幅捲動並聚焦至主表單區 `#channel-create-form` |
+| `link-channels-assist-go-to-form` | 連結 | 這頁不再顯示。建立只走助手 |
 | `btn-channels-mobile-summary-drawer` | 按鈕 | 小螢幕：開啟「步驟與摘要」底抽屜 |
 | `btn-channels-mobile-drawer-backdrop` | 按鈕 | 抽屜遮罩（關閉） |
 | `btn-channels-mobile-drawer-close` | 按鈕 | 抽屜標題列關閉 |
 | `text-channels-mobile-drawer-step-hint` | 文字 | 抽屜內步驟說明（與 `text-channels-phasec-step-hint` 同文案） |
-| `btn-channels-mobile-drawer-go-form` | 按鈕 | 抽屜內「前往表單」 |
-| `input-channels-assist` | 輸入框 | AI 助手輸入 |
+| `btn-channels-mobile-drawer-go-form` | 按鈕 | 這頁不再顯示。建立只走助手 |
+| `input-channels-assist` | 輸入框 | AI 助手輸入。可選，置頂 |
 | `btn-channels-assist-submit` | 按鈕 | 提交助手輸入 |
 | `btn-channels-assist-confirm` | 按鈕 | 確認應用結果 |
 | `btn-channels-assist-modify` | 按鈕 | 修改輸入 |
-| `btn-channels-assist-preset-{key}` | 按鈕 | 預設組合按鈕（japanFashion/hkFood/globalTrend等） |
-| `btn-channels-assist-quick-category-{category}` | 按鈕 | 快捷選擇類別（finance/sports/tech/entertainment/other） |
+| `btn-channels-assist-preset-{key}` | 按鈕 | 這頁不再顯示。常見組合已從建立頁拿掉 |
+| `btn-channels-assist-quick-category-{category}` | 按鈕 | 這頁不再顯示。其他類別列已從建立頁拿掉 |
+| `btn-channels-guided-escape` | 按鈕 | 這頁不再顯示。建立只走助手 |
 | `btn-channels-assist-quick-region-{region}` | 按鈕 | 快捷選擇地區（全部 8 個地區） |
 | `btn-channels-step2-pool-add-{index}` | 按鈕 | Step 2 候選池「加入」已選（index 為候選列表序號） |
 | `btn-channels-step2-selected-remove-{index}` | 按鈕 | Step 2 已選來源「移除」（index 為已選列表序號） |
