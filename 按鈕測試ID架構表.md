@@ -197,9 +197,9 @@ data-testid="{類型}-{位置}-{功能}"
 | `btn-landing-fx-cny` | 按鈕 | 顯示 CNY | 僅換算 |
 | `btn-landing-fx-hkd` | 按鈕 | 顯示 HKD | 僅換算 |
 | `btn-landing-fx-jpy` | 按鈕 | 顯示 JPY | 僅換算 |
-| `card-landing-pack-usd3` | 卡片 | US$3／1,800 點（訪客） | `/login` |
-| `card-landing-pack-usd5` | 卡片 | US$5／3,500 點（訪客） | `/login` |
-| `card-landing-pack-usd10` | 卡片 | US$10／8,000 點（訪客） | `/login` |
+| `card-landing-pack-usd3` | 卡片 | US$3／900 點（訪客） | `/login` |
+| `card-landing-pack-usd5` | 卡片 | US$5／1,750 點（訪客） | `/login` |
+| `card-landing-pack-usd10` | 卡片 | US$10／4,000 點（訪客） | `/login` |
 | `btn-landing-pack-usd3` | 連結 | 訪客選 US$3 | `/login` |
 | `btn-landing-pack-usd5` | 連結 | 訪客選 US$5 | `/login` |
 | `btn-landing-pack-usd10` | 連結 | 訪客選 US$10 | `/login` |
