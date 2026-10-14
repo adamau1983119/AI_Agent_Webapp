@@ -3,12 +3,12 @@ AI 頻道助手服務
 使用 DeepSeek API 解析用戶自然語言輸入，協助建立頻道
 """
 import json
-import re
 from typing import Optional, Dict, Any, List
 from app.services.ai.deepseek import DeepSeekService
 from app.models.channel import (
     ChannelCategory, ChannelRegion, DEFAULT_RSS_SOURCES
 )
+from app.services.channel_assist_policy import ASSIST_CATEGORIES, finalize_intent
 from app.services.channel_service import channel_service
 import logging
 
@@ -219,144 +219,48 @@ class ChannelAssistService:
         """
         history = conversation_history or []
         dialogue_section = self._build_dialogue_section(user_input, language, history)
-
-        # 根據語言選擇提示詞
+        catalog = "|".join(sorted(ASSIST_CATEGORIES))
         if language.startswith("zh"):
-            prompt_template = """你是一個頻道建立助手。根據用戶的描述，提取以下資訊：
-
-{dialogue_section}
-
-請回傳 JSON 格式：
-{{
-  "category": "fashion|food|trend|finance|sports|tech|entertainment|other",
-  "region": "hong_kong|taiwan|japan|korea|china|usa|uk|global",
-  "keywords": ["關鍵字1", "關鍵字2"],
-  "confidence": 0.0-1.0,
-  "clarification_needed": true|false,
-  "clarification_question": "如果需要澄清，問什麼問題",
-  "suggested_channel_name": "簡短頻道標題（約 2～24 字；信心足且不需澄清時填寫，否則 null）",
-  "suggested_channel_description": "一句話頻道說明（約 20～120 字；否則 null）"
-}}
-
-可用類別：
-- fashion: 時尚、穿搭、服裝、潮流
-- food: 美食、料理、餐廳、飲食
-- trend: 趨勢、流行、社會議題
-- finance: 財經、投資、經濟
-- sports: 運動、體育
-- tech: 科技、技術、數位
-- entertainment: 娛樂、影視、音樂
-- other: 其他（需要自定義關鍵字）
-
-可用地區：
-- hong_kong: 香港
-- taiwan: 台灣
-- japan: 日本
-- korea: 韓國
-- china: 中國大陸
-- usa: 美國
-- uk: 英國
-- global: 全球
-
-範例：
-輸入：「我想看日本的潮流穿搭」
-輸出：{{
-  "category": "fashion",
-  "region": "japan", 
-  "keywords": ["潮流", "穿搭"],
-  "confidence": 0.95,
-  "clarification_needed": false
-}}
-
-輸入：「美食」
-輸出：{{
-  "category": "food",
-  "region": null,
-  "keywords": [],
-  "confidence": 0.6,
-  "clarification_needed": true,
-  "clarification_question": "你想看哪個地區的美食內容？"
-}}
-
-請只回傳 JSON，不要包含其他文字。"""
+            role = (
+                "你是頻道定位專家。語氣肯定，不追問。"
+                "只輸出 JSON，不要解釋。"
+            )
         elif language == "ja":
-            prompt_template = """あなたはチャンネル作成アシスタントです。ユーザーの説明に基づいて、以下の情報を抽出してください：
+            role = (
+                "あなたはチャンネル設計の専門家です。断定し、質問で返さない。"
+                "JSON だけを出力する。"
+            )
+        else:
+            role = (
+                "You are a channel strategist. Be decisive and do not ask follow-up questions. "
+                "Return JSON only."
+            )
+        return f"""{role}
 
 {dialogue_section}
 
-JSON形式で返してください：
+Pick one primary category, only from: {catalog}.
+If the topic is outside these 11 (including lego, cosplay, other, pets, politics), set category to null and out_of_catalog to true.
+Regions may only be hong_kong|taiwan|japan|korea|china|usa|uk|global.
+If no region is stated, or the region is outside those eight, set region to global and region_defaulted to true. Never say there is no source list.
+If the user explicitly asks for global, set region to global and region_defaulted to false.
+If several categories or regions appear, keep only the primary pair and set split_channel to true.
+clarification_needed must be false. suggested_channel_name and suggested_channel_description must be null.
+
 {{
-  "category": "fashion|food|trend|finance|sports|tech|entertainment|other",
+  "category": "{catalog}|null",
   "region": "hong_kong|taiwan|japan|korea|china|usa|uk|global",
-  "keywords": ["キーワード1", "キーワード2"],
-  "confidence": 0.0-1.0,
-  "clarification_needed": true|false,
-  "clarification_question": "明確化が必要な場合、何を尋ねるか",
-  "suggested_channel_name": "短いチャンネル名（明確で補足不要なときのみ、それ以外は null）",
-  "suggested_channel_description": "一文の説明（不要なら null）"
-}}
+  "keywords": ["keyword"],
+  "confidence": 0.9,
+  "out_of_catalog": false,
+  "region_defaulted": false,
+  "split_channel": false,
+  "clarification_needed": false,
+  "clarification_question": null,
+  "suggested_channel_name": null,
+  "suggested_channel_description": null
+}}"""
 
-利用可能なカテゴリ：
-- fashion: ファッション、スタイル、服装
-- food: グルメ、料理、レストラン
-- trend: トレンド、流行、社会問題
-- finance: 金融、投資、経済
-- sports: スポーツ
-- tech: テクノロジー、デジタル
-- entertainment: エンターテインメント、映画、音楽
-- other: その他（カスタムキーワードが必要）
-
-利用可能な地域：
-- hong_kong: 香港
-- taiwan: 台湾
-- japan: 日本
-- korea: 韓国
-- china: 中国
-- usa: アメリカ
-- uk: イギリス
-- global: グローバル
-
-JSONのみを返してください。"""
-        else:  # English
-            prompt_template = """You are a channel creation assistant. Extract the following information from the user's description:
-
-{dialogue_section}
-
-Return JSON format:
-{{
-  "category": "fashion|food|trend|finance|sports|tech|entertainment|other",
-  "region": "hong_kong|taiwan|japan|korea|china|usa|uk|global",
-  "keywords": ["keyword1", "keyword2"],
-  "confidence": 0.0-1.0,
-  "clarification_needed": true|false,
-  "clarification_question": "What to ask if clarification is needed",
-  "suggested_channel_name": "Short channel title when intent is clear (else null)",
-  "suggested_channel_description": "One-sentence channel description (else null)"
-}}
-
-Available categories:
-- fashion: fashion, style, clothing, trends
-- food: food, cuisine, restaurants, dining
-- trend: trends, popular topics, social issues
-- finance: finance, investment, economy
-- sports: sports, athletics
-- tech: technology, digital
-- entertainment: entertainment, movies, music
-- other: other (requires custom keywords)
-
-Available regions:
-- hong_kong: Hong Kong
-- taiwan: Taiwan
-- japan: Japan
-- korea: Korea
-- china: China
-- usa: USA
-- uk: UK
-- global: Global
-
-Return only JSON, no other text."""
-        
-        return prompt_template.format(dialogue_section=dialogue_section)
     
     async def parse_user_intent(
         self,
@@ -399,144 +303,16 @@ Return only JSON, no other text."""
             
             # 解析 JSON
             result = json.loads(response)
-            
-            def _clip_opt(val: Any, max_len: int) -> Optional[str]:
-                if val is None:
-                    return None
-                if not isinstance(val, str):
-                    return None
-                s = val.strip()
-                return s[:max_len] if s else None
-
-            # 驗證和標準化結果
-            parsed = {
-                "category": self._normalize_category(result.get("category")),
-                "region": self._normalize_region(result.get("region")),
-                "keywords": result.get("keywords", []),
-                "confidence": float(result.get("confidence", 0.0)),
-                "clarification_needed": bool(result.get("clarification_needed", False)),
-                "clarification_question": result.get("clarification_question", ""),
-                "suggested_channel_name": _clip_opt(result.get("suggested_channel_name"), 50),
-                "suggested_channel_description": _clip_opt(result.get("suggested_channel_description"), 200),
-            }
-            
+            parsed = finalize_intent(result)
             logger.info(f"AI 解析結果: {parsed}")
-            
             return parsed
             
         except json.JSONDecodeError as e:
             logger.error(f"JSON 解析失敗: {e}, 回應: {response[:200]}")
-            # 根據語言返回對應的錯誤訊息
-            clarification_question = self._get_error_message("parse_failed", language)
-            return {
-                "category": None,
-                "region": None,
-                "keywords": [],
-                "confidence": 0.0,
-                "clarification_needed": True,
-                "clarification_question": clarification_question,
-                "suggested_channel_name": None,
-                "suggested_channel_description": None,
-            }
+            return finalize_intent({})
         except Exception as e:
             logger.error(f"AI 解析錯誤: {e}")
-            # 根據語言返回對應的錯誤訊息
-            clarification_question = self._get_error_message("processing_error", language)
-            return {
-                "category": None,
-                "region": None,
-                "keywords": [],
-                "confidence": 0.0,
-                "clarification_needed": True,
-                "clarification_question": clarification_question,
-                "suggested_channel_name": None,
-                "suggested_channel_description": None,
-            }
-    
-    def _get_error_message(self, error_type: str, language: str = "zh-TW") -> str:
-        """
-        根據語言返回對應的錯誤訊息
-        
-        Args:
-            error_type: 錯誤類型（parse_failed/processing_error）
-            language: 用戶語言
-            
-        Returns:
-            對應語言的錯誤訊息
-        """
-        error_messages = {
-            "parse_failed": {
-                "zh-TW": "抱歉，我無法理解您的輸入。請試試用更明確的方式描述，例如：「我想看日本的時尚內容」",
-                "en": "Sorry, I couldn't understand your input. Please try describing it more clearly, for example: \"I want to see Japanese fashion content\"",
-                "ja": "申し訳ございませんが、入力内容を理解できませんでした。より明確に説明してください。例：「日本のファッションコンテンツを見たい」"
-            },
-            "processing_error": {
-                "zh-TW": "抱歉，處理您的請求時發生錯誤。請稍後再試。",
-                "en": "Sorry, an error occurred while processing your request. Please try again later.",
-                "ja": "申し訳ございませんが、リクエストの処理中にエラーが発生しました。後でもう一度お試しください。"
-            }
-        }
-        
-        # 如果語言不在字典中，使用英文作為預設
-        lang = language if language in error_messages[error_type] else "en"
-        return error_messages[error_type].get(lang, error_messages[error_type]["en"])
-    
-    def _normalize_category(self, category: Optional[str]) -> Optional[str]:
-        """標準化類別"""
-        if not category:
-            return None
-        
-        category_lower = category.lower().strip()
-        
-        # 映射常見變體
-        category_map = {
-            "fashion": ChannelCategory.FASHION.value,
-            "food": ChannelCategory.FOOD.value,
-            "trend": ChannelCategory.TREND.value,
-            "finance": ChannelCategory.FINANCE.value,
-            "sports": ChannelCategory.SPORTS.value,
-            "tech": ChannelCategory.TECH.value,
-            "technology": ChannelCategory.TECH.value,
-            "entertainment": ChannelCategory.ENTERTAINMENT.value,
-            "beauty": ChannelCategory.BEAUTY.value,
-            "makeup": ChannelCategory.BEAUTY.value,
-            "games": ChannelCategory.GAMES.value,
-            "gaming": ChannelCategory.GAMES.value,
-            "travel": ChannelCategory.TRAVEL.value,
-            "growth": ChannelCategory.GROWTH.value,
-            "lego": ChannelCategory.LEGO.value,
-            "cosplay": ChannelCategory.COSPLAY.value,
-            "other": ChannelCategory.OTHER.value,
-        }
-        
-        return category_map.get(category_lower, category_lower)
-    
-    def _normalize_region(self, region: Optional[str]) -> Optional[str]:
-        """標準化地區"""
-        if not region:
-            return None
-        
-        region_lower = region.lower().strip()
-        
-        # 映射常見變體
-        region_map = {
-            "hong_kong": ChannelRegion.HONG_KONG.value,
-            "hk": ChannelRegion.HONG_KONG.value,
-            "taiwan": ChannelRegion.TAIWAN.value,
-            "tw": ChannelRegion.TAIWAN.value,
-            "japan": ChannelRegion.JAPAN.value,
-            "jp": ChannelRegion.JAPAN.value,
-            "korea": ChannelRegion.KOREA.value,
-            "kr": ChannelRegion.KOREA.value,
-            "china": ChannelRegion.CHINA.value,
-            "cn": ChannelRegion.CHINA.value,
-            "usa": ChannelRegion.USA.value,
-            "us": ChannelRegion.USA.value,
-            "uk": ChannelRegion.UK.value,
-            "global": ChannelRegion.GLOBAL.value,
-        }
-        
-        return region_map.get(region_lower, region_lower)
+            return finalize_intent({})
     
     def recommend_sources(
         self,

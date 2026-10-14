@@ -11,6 +11,8 @@ from app.models.channel import (
 )
 from app.services.channel_service import channel_service, MAX_CHANNELS_PER_USER
 from app.services.channel_collector import channel_collector
+from app.services.channel_assist_policy import blocked_intent
+from app.services.channel_assist_quota import consume_analysis, reset_pending_on_create
 from app.services.channel_assist_service import channel_assist_service
 from app.services.feed_url_probe_service import probe_feed_url
 from app.services.feed_validate_rate_limit import (
@@ -81,6 +83,7 @@ async def create_channel(
         )
     
     logger.info(f"用戶 {current_user['email']} 建立頻道: {channel['name']}")
+    await reset_pending_on_create(current_user["id"])
     
     return ChannelResponse(**channel)
 
@@ -471,6 +474,11 @@ class ChannelAssistResponse(BaseModel):
     recommended_sources: List[Dict[str, Any]] = Field(default=[], description="推薦的 RSS 來源")
     suggested_channel_name: Optional[str] = Field(None, description="#32 建議頻道名稱")
     suggested_channel_description: Optional[str] = Field(None, description="#33 建議頻道描述")
+    out_of_catalog: bool = Field(False, description="不在 11 類，不進訂閱來源")
+    region_defaulted: bool = Field(False, description="地區不在八個裡，已改為全球")
+    split_channel: bool = Field(False, description="多興趣或多地區，只做主要一組")
+    quota_blocked: bool = Field(False, description="已達每頻道 10 次或當日 30 次，未呼叫模型")
+    last_analysis: bool = Field(False, description="這是該頻道第 10 次或當日第 30 次")
 
 
 class WizardQuickOptionItem(BaseModel):
@@ -540,16 +548,24 @@ async def assist_channel_creation(
     try:
         # 解析用戶意圖
         history_payload = [turn.model_dump() for turn in request.conversation_history][-24:]
+        quota = await consume_analysis(current_user["id"])
+        if not quota["allowed"]:
+            parsed = blocked_intent()
+        else:
+            parsed = await channel_assist_service.parse_user_intent(
+                user_input=request.user_input,
+                language=request.language,
+                conversation_history=history_payload,
+            )
+            parsed["last_analysis"] = bool(quota["last_analysis"])
 
-        parsed = await channel_assist_service.parse_user_intent(
-            user_input=request.user_input,
-            language=request.language,
-            conversation_history=history_payload,
-        )
-        
-        # 如果解析成功且有類別和地區，推薦來源
         recommended_sources = []
-        if parsed["category"] and parsed["region"] and parsed["confidence"] >= 0.7:
+        if (
+            not parsed.get("quota_blocked")
+            and not parsed.get("out_of_catalog")
+            and parsed.get("category")
+            and parsed.get("region")
+        ):
             recommended_sources = channel_assist_service.recommend_sources(
                 category=parsed["category"],
                 region=parsed["region"],
@@ -568,6 +584,11 @@ async def assist_channel_creation(
             recommended_sources=recommended_sources,
             suggested_channel_name=parsed.get("suggested_channel_name"),
             suggested_channel_description=parsed.get("suggested_channel_description"),
+            out_of_catalog=bool(parsed.get("out_of_catalog")),
+            region_defaulted=bool(parsed.get("region_defaulted")),
+            split_channel=bool(parsed.get("split_channel")),
+            quota_blocked=bool(parsed.get("quota_blocked")),
+            last_analysis=bool(parsed.get("last_analysis")),
         )
         
     except Exception as e:

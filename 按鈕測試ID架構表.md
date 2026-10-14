@@ -349,7 +349,8 @@ data-testid="{類型}-{位置}-{功能}"
 | `panel-channels-step3-preview` | 區塊 | Step3 預覽卡 |
 | `btn-channels-step3-prev` | 按鈕 | Step3 → Step2 |
 | `btn-channels-step3-submit` | 按鈕 | 建立頻道（主 CTA，在助手內） |
-| `btn-channels-assist-source-{index}` | 按鈕 | 訂閱來源。前 5 個為推薦，名單不足 5 個時全部先勾 |
+| `btn-channels-assist-source-{index}` | 按鈕 | 訂閱來源勾選。前 5 個為推薦，名單不足 5 個時全部先勾 |
+| `link-channels-assist-source-{index}` | 連結 | 來源名稱開新分頁。RSS 開網站首頁 |
 | `btn-channels-assist-to-naming` | 按鈕 | 來源夠數後，進入為頻道命名 |
 | `btn-channels-assist-name-{index}` | 按鈕 | 三個名稱其中一個（0／1／2） |
 | `btn-channels-assist` | 按鈕 | 這頁不再顯示。建立只走助手，不再提供收起後再展開 |

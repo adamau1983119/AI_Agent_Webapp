@@ -242,6 +242,11 @@ export const channelsApi = {
     recommended_sources: Array<{ name: string; url: string; role: string }>;
     suggested_channel_name: string | null;
     suggested_channel_description: string | null;
+    out_of_catalog?: boolean;
+    region_defaulted?: boolean;
+    split_channel?: boolean;
+    quota_blocked?: boolean;
+    last_analysis?: boolean;
   }> => {
     return fetchAPI('/channels/assist', {
       method: 'POST',
