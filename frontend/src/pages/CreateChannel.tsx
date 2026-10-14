@@ -23,6 +23,26 @@ import { APIError } from '../api/errors';
 import { alterEgoApi } from '../api/alterEgo';
 
 const MAX_STEP2_SELECTED_FEEDS = 10;
+const assistHintClass = 'mb-3 text-lg font-semibold text-purple-700 dark:text-purple-300';
+
+function sourceHomepage(raw: string): string {
+  try {
+    const urlObj = new URL(raw);
+    const path = urlObj.pathname.toLowerCase();
+    const host = urlObj.hostname.toLowerCase();
+    const isFeed =
+      path.includes('/rss') ||
+      path.includes('/feed') ||
+      path.endsWith('.xml') ||
+      path.endsWith('.rss') ||
+      host.startsWith('rss.') ||
+      host.includes('feedburner');
+    if (isFeed) return `${urlObj.protocol}//${urlObj.hostname}`;
+    return raw;
+  } catch {
+    return raw;
+  }
+}
 
 /** 依後端 429 body.detail.code 選 i18n（見 feed_validate_rate_limit.py） */
 function rateLimitToastI18nKey(err: unknown): string {
@@ -259,6 +279,11 @@ export default function CreateChannel() {
     recommended_sources: Array<{ name: string; url: string; role: string }>;
     suggested_channel_name: string | null;
     suggested_channel_description: string | null;
+    out_of_catalog?: boolean;
+    region_defaulted?: boolean;
+    split_channel?: boolean;
+    quota_blocked?: boolean;
+    last_analysis?: boolean;
   } | null>(null);
   /** 多輪對話紀錄（畫面保留 + 送後端上下文） */
   const [assistHistory, setAssistHistory] = useState<AssistChatTurn[]>([]);
@@ -619,12 +644,15 @@ export default function CreateChannel() {
         });
       }
 
-      if (result.clarification_needed) {
-        replyText = result.clarification_question || t('channels.assist.clarificationDefault');
-      } else if (result.confidence >= 0.7 && result.category && result.region) {
+      const lines: string[] = [];
+      if (result.quota_blocked) {
+        lines.push(t('channels.assist.quotaBlocked'));
+      } else if (result.out_of_catalog || !result.category || !result.region) {
+        lines.push(result.clarification_question || t('channels.assist.outOfCatalog'));
+      } else {
         const categoryName = t(categoryI18nKeys[result.category as ChannelCategory]);
         const regionName = t(regionI18nKeys[result.region as ChannelRegion]);
-        replyText =
+        lines.push(
           result.keywords.length > 0
             ? t('channels.assist.responseWithKeywords', {
                 category: categoryName,
@@ -634,8 +662,10 @@ export default function CreateChannel() {
             : t('channels.assist.responseWithoutKeywords', {
                 category: categoryName,
                 region: regionName,
-              });
-
+              })
+        );
+        if (result.region_defaulted) lines.push(t('channels.assist.choseGlobal'));
+        if (result.split_channel) lines.push(t('channels.assist.splitChannel'));
         setCategory(result.category as ChannelCategory);
         setRegion(result.region as ChannelRegion);
         if (result.keywords.length > 0) {
@@ -644,16 +674,11 @@ export default function CreateChannel() {
         setStep(2);
         setFeedPoolEpoch((n) => n + 1);
         toast.success(t('channels.assist.autoFilled'));
-      } else if (result.confidence >= 0.5) {
-        const categoryName = result.category ? t(categoryI18nKeys[result.category as ChannelCategory]) : '-';
-        const regionName = result.region ? t(regionI18nKeys[result.region as ChannelRegion]) : '-';
-        replyText = t('channels.assist.responseWithoutKeywords', {
-          category: categoryName,
-          region: regionName,
-        });
-      } else {
-        replyText = t('channels.assist.lowConfidence');
       }
+      if (result.last_analysis && !result.quota_blocked) {
+        lines.push(t('channels.assist.lastAnalysis'));
+      }
+      replyText = lines.filter(Boolean).join('\n');
     } catch (err: unknown) {
       const key = assistFailureI18nKey(err);
       const msg = t(key as any);
@@ -1024,7 +1049,7 @@ export default function CreateChannel() {
               aria-labelledby="channels-assist-panel-title"
             >
             <div className="mb-4">
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+              <p className={assistHintClass} data-testid="text-channels-assist-prompt">
                 {t('channels.assist.prompt')}
               </p>
               <div className="flex flex-col sm:flex-row gap-2">
@@ -1130,7 +1155,7 @@ export default function CreateChannel() {
                 className="mb-4 rounded-xl border border-dashed border-purple-200 dark:border-purple-700 bg-purple-50/50 dark:bg-purple-950/20 p-3 sm:p-4"
                 data-testid="panel-channels-guided"
               >
-                <p className="text-sm text-gray-700 dark:text-gray-200 mb-2">{t('channels.guided.intro')}</p>
+                <p className={assistHintClass} data-testid="text-channels-assist-step1-hint">{t('channels.guided.intro')}</p>
                 <div className="flex flex-wrap gap-2 mb-3">
                   {categories.map((cat) => (
                       <button
@@ -1160,7 +1185,11 @@ export default function CreateChannel() {
                 className="mb-4 rounded-xl border border-dashed border-purple-200 dark:border-purple-700 bg-purple-50/50 dark:bg-purple-950/20 p-3 sm:p-4"
                 data-testid="panel-channels-guided-step2"
               >
-                <p className="text-sm text-gray-700 dark:text-gray-200 mb-2">{t('channels.guided.introStep2')}</p>
+                <p className={assistHintClass} data-testid="text-channels-assist-step2-hint">
+                  {step2PoolSources.length > 5
+                    ? t('channels.assist.sourcesOptional')
+                    : t('channels.guided.introStep2')}
+                </p>
                 <div className="flex flex-wrap gap-2 mb-4">
                   {regions.map((reg) => (
                     <button
@@ -1188,28 +1217,38 @@ export default function CreateChannel() {
                       const locked = idx < recommendedFloor;
                       const checked = selectedReferenceSourceUrls.has(source.url);
                       return (
-                        <li key={`${source.url}-${idx}`}>
+                        <li
+                          key={`${source.url}-${idx}`}
+                          className={`flex items-center gap-2 rounded-lg border p-2 min-h-[44px] ${
+                            checked
+                              ? 'border-purple-400 bg-white dark:bg-gray-800'
+                              : 'border-gray-200 dark:border-gray-600 bg-white/80 dark:bg-gray-800/80'
+                          }`}
+                        >
                           <button
                             type="button"
                             data-testid={`btn-channels-assist-source-${idx}`}
                             disabled={isAssisting}
                             onClick={() => togglePoolFeed(source.url, source.name)}
-                            className={`w-full text-left rounded-lg border p-2 min-h-[44px] ${
-                              checked
-                                ? 'border-purple-400 bg-white dark:bg-gray-800'
-                                : 'border-gray-200 dark:border-gray-600 bg-white/80 dark:bg-gray-800/80'
-                            }`}
+                            className="shrink-0 min-h-[44px] px-2 text-left text-sm font-medium text-gray-900 dark:text-white"
                           >
-                            <p className="text-sm font-medium text-gray-900 dark:text-white">
-                              {checked ? '☑ ' : '☐ '}
-                              {source.name}
-                              {locked ? (
-                                <span className="ml-2 text-xs font-semibold text-purple-600 dark:text-purple-300">
-                                  {t('channels.assist.recommendMark')}
-                                </span>
-                              ) : null}
-                            </p>
+                            {checked ? '☑' : '☐'}
+                            {locked ? (
+                              <span className="ml-2 text-xs font-semibold text-purple-600 dark:text-purple-300">
+                                {t('channels.assist.recommendMark')}
+                              </span>
+                            ) : null}
                           </button>
+                          <a
+                            href={sourceHomepage(source.url)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            data-testid={`link-channels-assist-source-${idx}`}
+                            className="min-w-0 flex-1 text-sm font-semibold text-purple-700 underline dark:text-purple-300"
+                            aria-label={t('channels.assist.openSource', { name: source.name })}
+                          >
+                            {source.name}
+                          </a>
                         </li>
                       );
                     })}
@@ -1232,7 +1271,7 @@ export default function CreateChannel() {
                 className="mb-4 rounded-xl border border-dashed border-purple-200 dark:border-purple-700 bg-purple-50/50 dark:bg-purple-950/20 p-3 sm:p-4"
                 data-testid="panel-channels-guided-step3"
               >
-                <p className="text-sm text-gray-700 dark:text-gray-200 mb-2">{t('channels.guided.introStep3')}</p>
+                <p className={assistHintClass} data-testid="text-channels-assist-step3-hint">{t('channels.guided.introStep3')}</p>
                 <div className="flex flex-wrap gap-2 mb-3">
                   {nameChoices.map((choice, idx) => (
                     <button
@@ -1435,9 +1474,9 @@ export default function CreateChannel() {
             {/* 結果顯示 */}
             {assistResult && (
               <div className="mt-4 p-3 sm:p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                {assistResult.clarification_needed ? (
+                {assistResult.clarification_needed && !assistResult.quota_blocked && !assistResult.out_of_catalog ? (
                   <p className="text-sm text-gray-600 dark:text-gray-400">{t('channels.assist.continueConversation')}</p>
-                ) : (
+                ) : assistResult.category && assistResult.region ? (
                   <div className="space-y-3 sm:space-y-4">
                     <div>
                       <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">{t('channels.assist.category')}</p>
@@ -1557,9 +1596,16 @@ export default function CreateChannel() {
                                   {/* 來源資訊 */}
                                   <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2 mb-1">
-                                      <p className="text-sm sm:text-base font-medium text-gray-900 dark:text-white truncate">
+                                      <a
+                                        href={websiteUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        data-testid={`source-name-link-${idx}`}
+                                        className="text-sm sm:text-base font-semibold text-purple-700 underline dark:text-purple-300 truncate"
+                                        aria-label={t('channels.assist.openSource', { name: source.name })}
+                                      >
                                         {source.name}
-                                      </p>
+                                      </a>
                                       {/* 來源類型標籤 */}
                                       <span className={`flex-shrink-0 px-1.5 py-0.5 text-[10px] sm:text-xs font-medium rounded ${sourceTypeColors[sourceType]}`}>
                                         {t(`channels.assist.sourceType.${sourceType}` as any)}
@@ -1625,7 +1671,7 @@ export default function CreateChannel() {
                       </button>
                     </div>
                   </div>
-                )}
+                ) : null}
               </div>
             )}
             </div>
@@ -1655,7 +1701,7 @@ export default function CreateChannel() {
             <CreateChannelStepNav step={step} t={t} />
             {showAssist && (
               <p
-                className="mx-auto mb-6 max-w-lg px-2 text-center text-xs text-gray-500 dark:text-gray-400"
+                className="mx-auto mb-6 max-w-lg px-2 text-center text-lg font-semibold text-purple-700 dark:text-purple-300"
                 data-testid="text-channels-phasec-step-hint"
               >
                 {t('channels.phaseC.stepHint')}
@@ -2304,7 +2350,7 @@ export default function CreateChannel() {
                   />
                   <CreateChannelStepNav step={step} t={t} />
                   <p
-                    className="mx-auto mb-4 max-w-lg px-2 text-center text-xs text-gray-500 dark:text-gray-400"
+                    className="mx-auto mb-4 max-w-lg px-2 text-center text-lg font-semibold text-purple-700 dark:text-purple-300"
                     data-testid="text-channels-mobile-drawer-step-hint"
                   >
                     {t('channels.phaseC.stepHint')}
