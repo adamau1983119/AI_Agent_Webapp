@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import MainLayout from '@/components/layout/MainLayout'
 import Dashboard from '@/pages/Dashboard'
@@ -39,20 +39,15 @@ import MyChannel from '@/pages/MyChannel'
 import { AlterEgoGateRedirect } from '@/components/auth/AlterEgoGateRedirect'
 import { initializeAuth } from '@/stores/authStore'
 
-// 根路徑重定向：已登入 → AE 導流；新用戶 → 語言；已選語言 → Landing
+// 根路徑：已登入 → AE 導流；未登入 → 可收錄的歡迎頁（不轉去 noindex 語言頁）
 function RootRedirect() {
-  const hasLanguage = localStorage.getItem('preferred-language');
   const token = localStorage.getItem('auth_token');
-  
+
   if (token) {
     return <AlterEgoGateRedirect />;
   }
-  
-  if (!hasLanguage) {
-    return <Navigate to="/language" replace />;
-  }
-  
-  return <Navigate to="/welcome" replace />;
+
+  return <Welcome />;
 }
 
 function App() {
@@ -64,7 +59,7 @@ function App() {
   return (
     <>
       <Routes>
-        {/* 根路徑：重定向到語言選擇或登入頁 */}
+        {/* 根路徑：未登入顯示歡迎頁 */}
         <Route path="/" element={<RootRedirect />} />
         
         {/* Phase 1: 認證頁面（無 Layout） */}
