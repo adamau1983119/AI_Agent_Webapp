@@ -136,9 +136,9 @@ class TestCreditPacks(unittest.TestCase):
     def test_three_packs_no_usd1(self):
         packs = {row["id"]: row for row in list_packs()}
         self.assertEqual(set(packs), {"usd3", "usd5", "usd10"})
-        self.assertEqual(get_pack("usd3")["credits"], 1800)
-        self.assertEqual(get_pack("usd5")["credits"], 3500)
-        self.assertEqual(get_pack("usd10")["credits"], 8000)
+        self.assertEqual(get_pack("usd3")["credits"], 900)
+        self.assertEqual(get_pack("usd5")["credits"], 1750)
+        self.assertEqual(get_pack("usd10")["credits"], 4000)
         with self.assertRaises(KeyError):
             get_pack("usd1")
 
@@ -161,7 +161,7 @@ class TestPaidPackFromSession(unittest.TestCase):
         from app.services.credits.credit_fulfill import paid_pack_from_session
 
         out = paid_pack_from_session(self._session())
-        self.assertEqual(out["credits"], 1800)
+        self.assertEqual(out["credits"], 900)
         self.assertEqual(out["amount_cents"], 300)
 
     def test_rejects_wrong_amount(self):
@@ -189,7 +189,7 @@ class TestPaidPackFromSession(unittest.TestCase):
             "credits": "9999",
         }
         out = paid_pack_from_session(session)
-        self.assertEqual(out["credits"], 1800)
+        self.assertEqual(out["credits"], 900)
 
 
 if __name__ == "__main__":
