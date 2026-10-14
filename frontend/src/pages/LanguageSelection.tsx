@@ -10,10 +10,8 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation, languageOptions, Language } from '../i18n';
 import { BRAND } from '@/lib/brand';
 import BrandMark from '@/components/brand/BrandMark';
-import { useNoindex } from '@/hooks/useNoindex';
 
 export default function LanguageSelection() {
-  useNoindex();
   const navigate = useNavigate();
   const { t, setLanguage } = useTranslation();
   const [selectedLang, setSelectedLang] = useState<Language | null>(null);
