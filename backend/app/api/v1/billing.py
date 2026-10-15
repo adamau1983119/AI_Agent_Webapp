@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field
 from app.middleware.jwt_auth import get_current_user
 from app.services.credit_ledger_service import credit_ledger_service
 from app.services.credits.credit_packs import get_pack, list_packs
+from app.services.credits.credit_books import books_ready, books_token_ok, list_month_books
 from app.services.credits.credit_stripe import (
     create_checkout_session,
     parse_checkout_completed,
@@ -109,3 +110,30 @@ async def confirm_checkout(
         )
     await credit_ledger_service.fulfill_stripe_pack(parsed)
     return await credit_ledger_service.get_wallet_snapshot(current_user["id"])
+
+
+@router.get("/books")
+async def month_books(month: str, request: Request):
+    if not books_ready():
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="books_not_configured",
+        )
+    if not books_token_ok(request.headers.get("x-books-token") or ""):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="books_unauthorized",
+        )
+    try:
+        return list_month_books(month)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="bad_month",
+        ) from exc
+    except Exception as exc:
+        logger.warning("books export failed: %s", exc)
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="books_export_failed",
+        ) from exc
