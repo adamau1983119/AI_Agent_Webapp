@@ -23,6 +23,17 @@ async def compose_copy(
         ) from exc
     except ValueError as exc:
         code = str(exc)
+        lowered = code.lower()
+        if (
+            "model_busy" in lowered
+            or "too busy" in lowered
+            or "service_unavailable" in lowered
+            or "503" in code
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="model_busy",
+            ) from exc
         if "compose_fail" in code or "compose_json" in code:
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,

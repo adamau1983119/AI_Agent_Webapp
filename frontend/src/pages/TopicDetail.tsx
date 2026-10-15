@@ -50,6 +50,19 @@ function getProxyImageUrl(imageUrl: string): string {
   return imageUrl
 }
 
+function articleErrorText(
+  error: { status?: number; message?: string; details?: { detail?: unknown } },
+  fallback: string,
+  translate: (key: 'error.topicNotFound' | 'error.apiKeyNotSet') => string,
+): string {
+  const detail = String(error?.details?.detail || error?.message || '')
+  if (error?.status === 404) return translate('error.topicNotFound')
+  if (detail.includes('API Key') || detail.includes('not configured') || detail.includes('not set')) {
+    return translate('error.apiKeyNotSet')
+  }
+  return fallback
+}
+
 export default function TopicDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
@@ -281,29 +294,7 @@ export default function TopicDetail() {
       showSuccess(t('common.success'))
     },
     onError: (error: any) => {
-      let errorMessage = t('error.generateFailed')
-      if (error?.status === 400) {
-        const errorDetail = error?.details?.detail || error?.message || ''
-        if (typeof errorDetail === 'string' && (errorDetail.includes('API Key') || errorDetail.includes('not configured') || errorDetail.includes('not set'))) {
-          errorMessage = t('error.apiKeyNotSet')
-        } else if (error?.details?.suggestion) {
-          errorMessage = error?.message || error?.details?.detail || t('error.badRequest')
-          if (typeof error?.details?.suggestion === 'string') {
-            errorMessage = `${errorMessage}\n\n${error.details.suggestion}`
-          }
-        } else {
-          errorMessage = error?.message || error?.details?.detail || t('error.badRequest')
-        }
-      } else if (error?.status === 404) {
-        errorMessage = t('error.topicNotFound')
-      } else if (error?.status === 500) {
-        errorMessage = error?.message || t('error.serverError')
-      } else if (error?.message) {
-        errorMessage = error.message
-      } else if (error?.details?.detail) {
-        errorMessage = error.details.detail
-      }
-      showError(errorMessage)
+      showError(articleErrorText(error, t('error.generateFailed'), t))
     },
   })
 
@@ -323,19 +314,7 @@ export default function TopicDetail() {
       showSuccess(t('common.success'))
     },
     onError: (error: any) => {
-      let errorMessage = t('error.regenerateFailed')
-      if (error?.status === 400) {
-        errorMessage = error?.message || error?.details?.detail || t('error.badRequest')
-      } else if (error?.status === 404) {
-        errorMessage = t('error.topicNotFound')
-      } else if (error?.status === 500) {
-        errorMessage = error?.message || t('error.serverError')
-      } else if (error?.message) {
-        errorMessage = error.message
-      } else if (error?.details?.detail) {
-        errorMessage = error.details.detail
-      }
-      showError(errorMessage)
+      showError(articleErrorText(error, t('error.regenerateFailed'), t))
     },
   })
 

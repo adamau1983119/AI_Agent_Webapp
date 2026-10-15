@@ -156,6 +156,14 @@ export default function PostComposerPanel({
         showError(t('composer.insufficientCredits'))
         return
       }
+      const detail = error instanceof APIError ? String(error.details?.detail ?? error.message ?? '') : ''
+      if (
+        status === 503
+        && (detail.includes('model_busy') || detail.includes('too busy') || detail.includes('service_unavailable'))
+      ) {
+        showError(t('composer.modelBusy'))
+        return
+      }
       showError(t('common.failed'))
     } finally {
       setBusyPart(null)

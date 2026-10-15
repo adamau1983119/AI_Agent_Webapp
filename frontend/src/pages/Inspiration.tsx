@@ -209,8 +209,8 @@ export default function Inspiration() {
       setIsGenerating(true);
       const response = await inspirationApi.assistantGenerate(sessionId, answers);
       setGeneratedContent(response);
-    } catch (err: any) {
-      toast.error(err?.message || t('inspiration.assistant.generateFailed'));
+    } catch {
+      toast.error(t('inspiration.assistant.generateFailed'));
     } finally {
       setIsGenerating(false);
     }

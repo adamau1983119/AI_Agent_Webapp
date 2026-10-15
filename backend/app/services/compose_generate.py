@@ -112,5 +112,12 @@ async def generate_compose_part(
             last_err = exc
             logger.warning("[AE_COMPOSE_PARSE_FAIL] user_id=%s err=%s", user_id, exc)
     if pack is None:
+        if _is_model_busy(last_err):
+            raise ValueError("model_busy")
         raise ValueError(f"compose_fail:{type(last_err).__name__}")
     return pack
+
+
+def _is_model_busy(exc: Optional[Exception]) -> bool:
+    text = str(exc or "").lower()
+    return any(mark in text for mark in ("model_busy", "too busy", "service_unavailable", "503"))
