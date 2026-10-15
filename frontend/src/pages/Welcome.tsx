@@ -3,7 +3,8 @@
  * v8 · 變現敘事 + 黑白水點墨斑動效（LOCKED-v1）
  */
 import { useEffect } from 'react';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { usePublicPageSeo } from '@/hooks/usePublicPageSeo';
 import {
   TrendingUp,
   Sparkles,
@@ -36,11 +37,11 @@ export default function Welcome() {
   const { t, language, setLanguage } = useTranslation();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthStore();
-  const hasLanguage = localStorage.getItem('preferred-language');
 
-  useEffect(() => {
-    document.title = `${t('brand.name')}｜${t('brand.tagline')}`;
-  }, [t]);
+  usePublicPageSeo(
+    `${t('brand.name')}｜${t('brand.tagline')}`,
+    t('landing.hero.subtitle'),
+  );
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -50,10 +51,6 @@ export default function Welcome() {
 
   if (isAuthenticated) {
     return null;
-  }
-
-  if (!hasLanguage) {
-    return <Navigate to="/language" replace />;
   }
 
   const handleLang = (code: Language) => {

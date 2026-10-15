@@ -6,9 +6,14 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from '../i18n';
 import BrandMark from '@/components/brand/BrandMark';
+import { usePublicPageSeo } from '@/hooks/usePublicPageSeo';
 
 export default function Terms() {
   const { t } = useTranslation();
+  usePublicPageSeo(
+    `${t('legal.terms.title')}｜${t('brand.name')}`,
+    t('legal.terms.section1.content'),
+  );
   
   return (
     <div className="min-h-screen bg-[#FAF9F7] font-sans">
