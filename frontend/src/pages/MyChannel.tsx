@@ -34,9 +34,8 @@ export default function MyChannel() {
       const res = await channelsApi.getMyChannels();
       setChannels(Array.isArray(res.channels) ? res.channels : []);
       setMaxChannels(typeof res.max_channels === 'number' ? res.max_channels : 3);
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : t('common.error');
-      toast.error(msg);
+    } catch {
+      toast.error(t('myChannel.loadFailed'));
       setChannels([]);
     } finally {
       setLoading(false);

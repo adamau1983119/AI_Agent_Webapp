@@ -279,9 +279,9 @@ const zhTW = {
   'auth.oauthFailed': 'OAuth 認證失敗',
   'auth.emailSendFailed': '註冊成功，但驗證郵件發送失敗。請稍後使用「重新發送驗證郵件」功能',
   'auth.emailNotConfigured': '註冊成功，但郵件服務未配置，無法發送驗證郵件。請聯繫管理員',
-  'error.generateFailed': '生成內容失敗',
-  'error.regenerateFailed': '重新生成內容失敗',
-  'error.apiKeyNotSet': 'DeepSeek API Key 未設定',
+  'error.generateFailed': '內容生成暫時無法使用。過幾分鐘再試一次。',
+  'error.regenerateFailed': '內容生成暫時無法使用。過幾分鐘再試一次。',
+  'error.apiKeyNotSet': '文章模型暫時無法使用。過幾分鐘再試一次。',
   'error.badRequest': '請求參數錯誤',
   'error.topicNotFound': '主題不存在，請重新載入頁面',
   
@@ -330,7 +330,7 @@ const zhTW = {
   'topics.sourceExtractFallback': '來源正文無法完整抽取，改顯示事實摘要；可開啟原文連結查看。',
   'topics.translateArticle': '翻譯報道',
   'topics.translatingArticle': '翻譯報道中…',
-  'topics.translateArticleFailed': '翻譯報道失敗，請稍後再試',
+  'topics.translateArticleFailed': '翻譯暫時無法使用。過幾分鐘再試一次。',
   'topics.heroImage': '主題照片',
   
   // 內容生成
@@ -418,7 +418,7 @@ const zhTW = {
   'common.add': '添加',
   'common.remove': '移除',
   'common.previous': '上一步',
-  'common.failed': '失敗',
+  'common.failed': '暫時無法使用。過幾分鐘再試一次。',
   'common.noData': '沒有找到資料',
   'common.noMoreData': '已顯示全部內容',
   'common.copy': '複製',
@@ -548,7 +548,7 @@ const zhTW = {
   'channels.assist.extractDna': '分析範文風格',
   'channels.assist.extractDone': '風格 DNA 已建立',
   'channels.assist.inputRequired': '請輸入你的需求',
-  'channels.assist.failed': 'AI 助手處理失敗',
+  'channels.assist.failed': '頻道分析暫時無法使用。過幾分鐘再試一次。',
   'channels.assist.autoFilled': '已自動填入表單',
   'channels.assist.applied': '已應用設定',
   'channels.assist.confirm': '確認應用',
@@ -804,7 +804,7 @@ const zhTW = {
   'postKit.titleHook.benefit': '{title}：你必須知道的重點',
   'postKit.copy': '複製',
   'postKit.copied': '已複製到剪貼簿',
-  'postKit.copyFailed': '複製失敗，請手動選取文字',
+  'postKit.copyFailed': '複製暫時無法使用。請手動選取文字。',
   'postKit.copyAll': '複製全部文字',
   'postKit.body': '內文',
   'postKit.script': '腳本',
@@ -1062,7 +1062,7 @@ const zhTW = {
   'inspiration.assistant.topicRequired': '請輸入主題',
   'inspiration.assistant.contentSavedToast': '內容已保存',
   'inspiration.assistant.startFailed': '開始對話失敗',
-  'inspiration.assistant.generateFailed': '生成內容失敗',
+  'inspiration.assistant.generateFailed': '內容生成暫時無法使用。過幾分鐘再試一次。',
   'inspiration.preference.confirmMessage': '您希望將「{name}」設為「{value}」嗎？',
   'inspiration.preference.rememberChoice': '記住選擇',
   // 靈感 - 偏好清理
@@ -1435,7 +1435,7 @@ const zhTW = {
   'alterEgo.exemplarRequired': '請至少貼上一篇範文',
   'alterEgo.extract': '分析我的風格',
   'alterEgo.extractDone': '風格分析完成',
-  'alterEgo.extractSchemaFail': '風格分析暫時失敗，請稍後再試或改貼較短、較口語的範文',
+  'alterEgo.extractSchemaFail': '風格分析暫時無法使用。請再試一次，或改貼較短、較口語的範文。',
   'alterEgo.llmUnavailable': 'AI 服務暫時無法使用（請檢查 DeepSeek API Key 是否有效）',
   'alterEgo.requestTimeout': '分析時間較長，請再試一次（勿連續連按）',
   'alterEgo.previewTitle': '仿文預覽',
@@ -1566,6 +1566,8 @@ const zhTW = {
   'ops.trainer.confirmFail': '存檔失敗',
   'ops.trainer.forbidden': '無權使用訓練窗',
   'ops.trainer.forbiddenHint': '僅限 allowlist 的 admin／tester',
+  'composer.modelBusy': '文章模型的伺服器暫時無法使用。這次沒有生成，點數沒有扣除。過幾分鐘再試一次。',
+  'myChannel.loadFailed': '頻道清單暫時無法使用。過幾分鐘再試一次。',
 };
 
 // 英文翻譯
@@ -1838,9 +1840,9 @@ const en: typeof zhTW = {
   'error.oauth.databaseUnavailable': 'The backend cannot reach MongoDB or authentication failed, so Google sign-in cannot finish. Check MONGODB_URL (e.g. mongodb://localhost:27017), Atlas password (URL-encoded), Network Access allowlist, then restart the backend.',
   'error.oauth.failed': 'Google login failed, please try again',
   'error.oauth.emailReserved': 'This email cannot be registered or used to sign in',
-  'error.generateFailed': 'Failed to generate content',
-  'error.regenerateFailed': 'Failed to regenerate content',
-  'error.apiKeyNotSet': 'DeepSeek API Key not set',
+  'error.generateFailed': 'Content generation is temporarily unavailable. Try again in a few minutes.',
+  'error.regenerateFailed': 'Content generation is temporarily unavailable. Try again in a few minutes.',
+  'error.apiKeyNotSet': 'The article model is temporarily unavailable. Try again in a few minutes.',
   'error.badRequest': 'Bad request parameters',
   'error.topicNotFound': 'Topic not found, please reload the page',
   
@@ -1889,7 +1891,7 @@ const en: typeof zhTW = {
   'topics.sourceExtractFallback': 'Source body could not be fully extracted; showing the fact summary instead. Open the original link for the full article.',
   'topics.translateArticle': 'Translate article',
   'topics.translatingArticle': 'Translating article…',
-  'topics.translateArticleFailed': 'Could not translate the article. Please try again later',
+  'topics.translateArticleFailed': 'Translation is temporarily unavailable. Try again in a few minutes.',
   'topics.heroImage': 'Featured Photo',
   
   // Content Generation
@@ -1977,7 +1979,7 @@ const en: typeof zhTW = {
   'common.add': 'Add',
   'common.remove': 'Remove',
   'common.previous': 'Previous',
-  'common.failed': 'Failed',
+  'common.failed': 'Temporarily unavailable. Try again in a few minutes.',
   'common.noData': 'No data found',
   'common.copy': 'Copy',
   'common.copied': 'Copied',
@@ -2120,7 +2122,7 @@ const en: typeof zhTW = {
   'channels.assist.extractDna': 'Analyze style',
   'channels.assist.extractDone': 'Style DNA saved',
   'channels.assist.inputRequired': 'Please enter your requirement',
-  'channels.assist.failed': 'AI assistant processing failed',
+  'channels.assist.failed': 'Channel analysis is temporarily unavailable. Try again in a few minutes.',
   'channels.assist.autoFilled': 'Form auto-filled',
   'channels.assist.applied': 'Settings applied',
   'channels.assist.confirm': 'Confirm & Apply',
@@ -2360,7 +2362,7 @@ const en: typeof zhTW = {
   'postKit.titleHook.benefit': '{title}: what you need to know',
   'postKit.copy': 'Copy',
   'postKit.copied': 'Copied to clipboard',
-  'postKit.copyFailed': 'Copy failed — please select text manually',
+  'postKit.copyFailed': 'Copy is temporarily unavailable. Select the text yourself.',
   'postKit.copyAll': 'Copy all text',
   'postKit.body': 'Body',
   'postKit.script': 'Script',
@@ -2625,7 +2627,7 @@ const en: typeof zhTW = {
   'inspiration.assistant.topicRequired': 'Please enter a topic',
   'inspiration.assistant.contentSavedToast': 'Content saved',
   'inspiration.assistant.startFailed': 'Failed to start conversation',
-  'inspiration.assistant.generateFailed': 'Failed to generate content',
+  'inspiration.assistant.generateFailed': 'Content generation is temporarily unavailable. Try again in a few minutes.',
   
   // Style Settings
   'style.totalRatingsCount': 'Rated {count} times',
@@ -2990,7 +2992,7 @@ const en: typeof zhTW = {
   'alterEgo.exemplarRequired': 'Add at least one sample post',
   'alterEgo.extract': 'Analyze my style',
   'alterEgo.extractDone': 'Style analysis complete',
-  'alterEgo.extractSchemaFail': 'Style analysis failed. Try again or paste shorter, more conversational samples.',
+  'alterEgo.extractSchemaFail': 'Style analysis is temporarily unavailable. Try again, or paste a shorter, more conversational sample.',
   'alterEgo.llmUnavailable': 'AI service unavailable (check that DeepSeek API Key is valid)',
   'alterEgo.requestTimeout': 'Analysis is taking longer than usual. Please try once more.',
   'alterEgo.previewTitle': 'Preview copy',
@@ -3121,6 +3123,8 @@ const en: typeof zhTW = {
   'ops.trainer.confirmFail': 'Save failed',
   'ops.trainer.forbidden': 'Trainer access denied',
   'ops.trainer.forbiddenHint': 'Admin/tester allowlist only',
+  'composer.modelBusy': 'The article model\'s server is temporarily unavailable. Nothing was generated, and no credits were used. Try again in a few minutes.',
+  'myChannel.loadFailed': 'Your channel list is temporarily unavailable. Try again in a few minutes.',
 };
 
 // 日文翻譯
@@ -3393,9 +3397,9 @@ const ja: typeof zhTW = {
   'error.oauth.databaseUnavailable': 'バックエンドがデータベースに接続できないか、MongoDB 認証に失敗したため、Google ログインを完了できません。MONGODB_URL（ローカルは mongodb://localhost:27017 など）、Atlas のパスワード（URL エンコード）、Network Access を確認し、バックエンドを再起動してください。',
   'error.oauth.failed': 'Google ログインに失敗しました。再試行してください',
   'error.oauth.emailReserved': 'このメールアドレスは登録・ログインに使えません',
-  'error.generateFailed': 'コンテンツの生成に失敗しました',
-  'error.regenerateFailed': 'コンテンツの再生成に失敗しました',
-  'error.apiKeyNotSet': 'DeepSeek API Key が設定されていません',
+  'error.generateFailed': 'コンテンツ生成は一時的に利用できません。数分後にもう一度お試しください。',
+  'error.regenerateFailed': 'コンテンツ生成は一時的に利用できません。数分後にもう一度お試しください。',
+  'error.apiKeyNotSet': '記事モデルは一時的に利用できません。数分後にもう一度お試しください。',
   'error.badRequest': 'リクエストパラメータエラー',
   'error.topicNotFound': 'トピックが見つかりません。ページを再読み込みしてください',
   
@@ -3444,7 +3448,7 @@ const ja: typeof zhTW = {
   'topics.sourceExtractFallback': '本文を完全に抽出できませんでした。事実サマリーを表示しています。全文は原文リンクからご覧ください。',
   'topics.translateArticle': '報道を翻訳',
   'topics.translatingArticle': '報道を翻訳中…',
-  'topics.translateArticleFailed': '報道の翻訳に失敗しました。後でもう一度お試しください',
+  'topics.translateArticleFailed': '翻訳は一時的に利用できません。数分後にもう一度お試しください。',
   'topics.heroImage': 'メイン写真',
   
   // コンテンツ生成
@@ -3532,7 +3536,7 @@ const ja: typeof zhTW = {
   'common.add': '追加',
   'common.remove': '削除',
   'common.previous': '前へ',
-  'common.failed': '失敗',
+  'common.failed': '一時的に利用できません。数分後にもう一度お試しください。',
   'common.noData': 'データが見つかりません',
   'common.copy': 'コピー',
   'common.copied': 'コピーしました',
@@ -3679,7 +3683,7 @@ const ja: typeof zhTW = {
   'channels.assist.extractDna': '文体を分析',
   'channels.assist.extractDone': '文体DNAを保存しました',
   'channels.assist.inputRequired': '要件を入力してください',
-  'channels.assist.failed': 'AI アシスタントの処理に失敗しました',
+  'channels.assist.failed': 'チャンネル分析は一時的に利用できません。数分後にもう一度お試しください。',
   'channels.assist.autoFilled': 'フォームが自動入力されました',
   'channels.assist.applied': '設定が適用されました',
   'channels.assist.confirm': '確認して適用',
@@ -3917,7 +3921,7 @@ const ja: typeof zhTW = {
   'postKit.titleHook.benefit': '{title}：知っておくべきポイント',
   'postKit.copy': 'コピー',
   'postKit.copied': 'クリップボードにコピーしました',
-  'postKit.copyFailed': 'コピーに失敗しました。手動で選択してください',
+  'postKit.copyFailed': 'コピーは一時的に利用できません。文字を自分で選択してください。',
   'postKit.copyAll': '全文をコピー',
   'postKit.body': '本文',
   'postKit.script': '台本',
@@ -4182,7 +4186,7 @@ const ja: typeof zhTW = {
   'inspiration.assistant.topicRequired': 'トピックを入力してください',
   'inspiration.assistant.contentSavedToast': 'コンテンツを保存しました',
   'inspiration.assistant.startFailed': '会話の開始に失敗しました',
-  'inspiration.assistant.generateFailed': 'コンテンツの生成に失敗しました',
+  'inspiration.assistant.generateFailed': 'コンテンツ生成は一時的に利用できません。数分後にもう一度お試しください。',
   
   // スタイル設定
   'style.totalRatingsCount': '{count} 回評価済み',
@@ -4547,7 +4551,7 @@ const ja: typeof zhTW = {
   'alterEgo.exemplarRequired': '少なくとも1件のサンプルを入力してください',
   'alterEgo.extract': '文体を分析',
   'alterEgo.extractDone': '分析が完了しました',
-  'alterEgo.extractSchemaFail': '文体分析に失敗しました。短め・口語のサンプルでもう一度お試しください。',
+  'alterEgo.extractSchemaFail': '文体分析は一時的に利用できません。もう一度試すか、短めの話し言葉の見本を貼ってください。',
   'alterEgo.llmUnavailable': 'AIサービスを利用できません（DeepSeek API Key を確認してください）',
   'alterEgo.requestTimeout': '分析に時間がかかっています。もう一度お試しください。',
   'alterEgo.previewTitle': 'プレビュー',
@@ -4678,6 +4682,8 @@ const ja: typeof zhTW = {
   'ops.trainer.confirmFail': '保存失敗',
   'ops.trainer.forbidden': '訓練窓への権限なし',
   'ops.trainer.forbiddenHint': 'allowlist の admin／tester のみ',
+  'composer.modelBusy': '記事モデルのサーバーは一時的に利用できません。今回は生成されず、ポイントは減っていません。数分後にもう一度お試しください。',
+  'myChannel.loadFailed': 'チャンネル一覧は一時的に利用できません。数分後にもう一度お試しください。',
 };
 
 // 翻譯對照表
