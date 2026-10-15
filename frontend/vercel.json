@@ -7,8 +7,11 @@
   "rewrites": [
     { "source": "/en", "destination": "/en.html" },
     { "source": "/ja", "destination": "/ja.html" },
+    { "source": "/welcome", "destination": "/welcome.html" },
+    { "source": "/terms", "destination": "/terms.html" },
+    { "source": "/privacy", "destination": "/privacy.html" },
     {
-      "source": "/((?!sitemap\\.xml$|robots\\.txt$|llms\\.txt$|logo\\.png$|favicon\\.png$|favicon\\.ico$|en\\.html$|ja\\.html$|assets/).*)",
+      "source": "/((?!sitemap\\.xml$|robots\\.txt$|llms\\.txt$|logo\\.png$|favicon\\.png$|favicon\\.ico$|en\\.html$|ja\\.html$|welcome\\.html$|terms\\.html$|privacy\\.html$|assets/).*)",
       "destination": "/index.html"
     }
   ],
