@@ -52,6 +52,7 @@ def create_checkout_session(user_id: str, pack_id: str, email: str = "") -> str:
     mail = str(email or "").strip()
     if "@" in mail:
         payload["customer_email"] = mail
+        payload["payment_intent_data"] = {"receipt_email": mail}
     session = stripe.checkout.Session.create(**payload)
     url = getattr(session, "url", None) or session.get("url")
     if not url:
