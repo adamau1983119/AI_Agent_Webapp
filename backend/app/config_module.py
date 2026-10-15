@@ -135,6 +135,7 @@ class Settings(BaseSettings):
     FRONTEND_URL: str = "http://localhost:3000"
     STRIPE_SECRET_KEY: str = ""
     STRIPE_WEBHOOK_SECRET: str = ""
+    BOOKS_READ_TOKEN: str = ""
     
     # Meta (Instagram + Facebook + Threads)
     META_APP_ID: str = ""
