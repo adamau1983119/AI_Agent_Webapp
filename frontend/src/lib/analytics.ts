@@ -12,6 +12,8 @@ declare global {
 
 const DEFAULT_GA_ID = 'G-F38Q4L6CPV'
 const DEFAULT_AW_ID = 'AW-18489161677'
+/** Website conversion label for registration. Public snippet value. */
+const SIGN_UP_CONVERSION_SEND_TO = 'AW-18489161677/QrRhCJ2z-6IdEM3vqPBE'
 
 function resolveId(envKey: string, fallback: string): string {
   const fromEnv = (import.meta.env[envKey] as string | undefined)?.trim()
@@ -51,4 +53,7 @@ export function trackProductEvent(name: 'sign_up' | 'generate_post' | 'purchase'
   if (!import.meta.env.PROD) return
   if (typeof window.gtag !== 'function') return
   window.gtag('event', name)
+  if (name === 'sign_up') {
+    window.gtag('event', 'conversion', { send_to: SIGN_UP_CONVERSION_SEND_TO })
+  }
 }
