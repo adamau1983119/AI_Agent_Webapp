@@ -5,6 +5,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { authApi, tokenManager, User, LoginRequest, RegisterRequest, FeatureFlags } from '../api/auth';
+import { trackProductEvent } from '@/lib/analytics';
 
 interface AuthState {
   // 狀態
@@ -58,6 +59,7 @@ export const useAuthStore = create<AuthState>()(
           
           // 取得功能列表
           await get().fetchFeatures();
+          trackProductEvent('sign_up');
           
           return true;
         } catch (error: any) {
@@ -81,6 +83,7 @@ export const useAuthStore = create<AuthState>()(
             // 前端頁面會處理這個警告
             set({ error: user.warning }); // 使用 error 字段顯示警告（前端會以警告樣式顯示）
           }
+          trackProductEvent('sign_up');
           
           return true;
         } catch (error: any) {

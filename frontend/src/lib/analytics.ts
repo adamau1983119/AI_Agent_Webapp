@@ -45,3 +45,10 @@ export function initAnalytics(): void {
   script.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(gaId)}`
   document.head.appendChild(script)
 }
+
+/** Product funnel events. No email or other personal fields. No-op outside production. */
+export function trackProductEvent(name: 'sign_up' | 'generate_post' | 'purchase'): void {
+  if (!import.meta.env.PROD) return
+  if (typeof window.gtag !== 'function') return
+  window.gtag('event', name)
+}

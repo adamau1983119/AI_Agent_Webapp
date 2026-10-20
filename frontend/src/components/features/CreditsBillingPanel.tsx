@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { billingApi, type CreditPack } from '@/api/billing';
 import { APIError } from '@/api/errors';
+import { trackProductEvent } from '@/lib/analytics';
 import { useTranslation } from '@/i18n';
 import CreditPackShelf from '@/components/credits/CreditPackShelf';
 
@@ -37,6 +38,7 @@ export default function CreditsBillingPanel() {
         void billingApi
           .confirmCheckout(sessionId)
           .then(() => {
+            trackProductEvent('purchase');
             void balanceQuery.refetch();
           })
           .catch(() => {
