@@ -8,6 +8,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { useTranslation } from '../i18n';
 import { resolvePostLoginPath } from '@/lib/alterEgoRouting';
+import { trackProductEvent } from '@/lib/analytics';
 
 export default function OAuthCallback() {
   const { t } = useTranslation();
@@ -29,6 +30,7 @@ export default function OAuthCallback() {
       try {
         // 等待 OAuth 回調處理完成，確保狀態已更新
         await handleOAuthCallback(token);
+        trackProductEvent('sign_up');
         
         // 短暫延遲確保狀態已同步到 localStorage
         await new Promise(resolve => setTimeout(resolve, 100));

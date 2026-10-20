@@ -7,6 +7,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { Copy, Facebook, Instagram, RefreshCw, Sparkles } from 'lucide-react'
 import { alterEgoApi, type ComposePart, type ComposePlatform, type ComposeStyle } from '@/api/alterEgo'
+import { trackProductEvent } from '@/lib/analytics'
 import { APIError } from '@/api/errors'
 import { getComposeDemoPack } from '@/data/composeDemoPack'
 import { useTranslation } from '@/i18n'
@@ -143,6 +144,7 @@ export default function PostComposerPanel({
         hashtag_sets: res.hashtag_sets,
       })
       showSuccess(t('composer.generatedCharged', { n: String(res.credits_charged) }))
+      trackProductEvent('generate_post')
       setNeedCredits(false)
       await queryClient.invalidateQueries({ queryKey: ['creditsBalance'] })
     } catch (error: unknown) {
