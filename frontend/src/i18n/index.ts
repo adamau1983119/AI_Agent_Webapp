@@ -70,6 +70,9 @@ const zhTW = {
   // 品牌
   'brand.name': 'Alter-ego',
   'brand.tagline': '網紅 AI 助手',
+  'seo.home.title': 'Alter Ego｜每日選題與社群貼文',
+  'seo.home.description': 'Alter Ego 幫你每天有題可發：主題卡、我的頻道，以及可複製的社群貼文。',
+  'seo.welcome.title': 'Alter Ego｜網紅 AI 助手',
   
   // 問候語
   'greeting.hello': '你好',
@@ -1634,6 +1637,9 @@ const en: typeof zhTW = {
   // Brand
   'brand.name': 'Alter-ego',
   'brand.tagline': 'AI Assistant for Influencers',
+  'seo.home.title': 'Alter Ego | Daily topics and social posts',
+  'seo.home.description': 'Alter Ego gives you a topic to post each day: topic cards, your own channel, and social posts you can copy.',
+  'seo.welcome.title': 'Alter Ego | AI Assistant for Influencers',
   
   // Greeting
   'greeting.hello': 'Hello',
@@ -3191,6 +3197,9 @@ const ja: typeof zhTW = {
   // ブランド
   'brand.name': 'Alter-ego',
   'brand.tagline': 'インフルエンサーAIアシスタント',
+  'seo.home.title': 'Alter Ego｜毎日のネタと投稿文',
+  'seo.home.description': 'Alter Ego は、毎日出せるネタ、マイチャンネル、コピーして投稿できる文を渡します。',
+  'seo.welcome.title': 'Alter Ego｜インフルエンサーAIアシスタント',
   
   // 挨拶
   'greeting.hello': 'こんにちは',

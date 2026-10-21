@@ -38,9 +38,11 @@ export default function Welcome() {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthStore();
 
+  const path = window.location.pathname.replace(/\/$/, '') || '/'
+  const isLangHome = path === '/en' || path === '/ja'
   usePublicPageSeo(
-    `${t('brand.name')}｜${t('brand.tagline')}`,
-    t('landing.hero.subtitle'),
+    isLangHome ? t('seo.home.title') : t('seo.welcome.title'),
+    isLangHome ? t('seo.home.description') : t('landing.hero.subtitle'),
   );
 
   useEffect(() => {
