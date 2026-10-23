@@ -341,8 +341,8 @@ class TopicCollector:
                 feed = feedparser.parse(response.text)
                 feed_title = feed.feed.get("title", source_name)
                 
-                # 處理每個條目
-                scan_n = count * 2
+                # 處理每個條目。多看幾則，不過關就換下一則，仍停在這個角色的配額。
+                scan_n = count * 8
                 if enforce:
                     try:
                         from app.services.automation.topic_card_select_config import (
@@ -483,6 +483,24 @@ class TopicCollector:
                         source_info,
                         fallback_text=content_text or description or title,
                     )
+                    from app.services.automation.topic_publish_gate import rejection
+
+                    gate_body = (
+                        source_info.get("original_content")
+                        or scan.get("content_clean")
+                        or ""
+                    )
+                    gate_reason = await rejection(
+                        url=link,
+                        body=gate_body,
+                        images=all_images,
+                        paywall_declared=bool(article_info.get("paywall_declared")),
+                    )
+                    if gate_reason:
+                        logger.info(
+                            f"TOPIC_PUBLISH_GATE skip {gate_reason}: {title[:80]}"
+                        )
+                        continue
                     flash_input = (
                         scan.get("content_clean")
                         or source_info.get("original_content")
@@ -664,7 +682,7 @@ class TopicCollector:
                     response = await client.get(feed_url)
                     feed = feedparser.parse(response.text)
                     
-                    for entry in feed.entries[:count * 3]:
+                    for entry in feed.entries[:count * 8]:
                         if len(topics) >= count:
                             break
                         
@@ -724,6 +742,27 @@ class TopicCollector:
                                 source_info,
                                 fallback_text=content_text or description or title,
                             )
+                            from app.services.automation.topic_publish_gate import rejection
+
+                            legacy_images = source_info.get("images") or []
+                            gate_body = (
+                                source_info.get("original_content")
+                                or scan.get("content_clean")
+                                or ""
+                            )
+                            gate_reason = await rejection(
+                                url=link,
+                                body=gate_body,
+                                images=legacy_images,
+                                paywall_declared=bool(
+                                    article_info.get("paywall_declared")
+                                ),
+                            )
+                            if gate_reason:
+                                logger.info(
+                                    f"TOPIC_PUBLISH_GATE skip {gate_reason}: {title[:80]}"
+                                )
+                                continue
                             flash_input = (
                                 scan.get("content_clean")
                                 or source_info.get("original_content")

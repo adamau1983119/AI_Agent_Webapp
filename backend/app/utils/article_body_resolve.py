@@ -26,6 +26,7 @@ def _empty() -> Dict[str, Any]:
         "language": None,
         "style": None,
         "success": False,
+        "paywall_declared": False,
     }
 
 
@@ -43,6 +44,8 @@ def _adopt(dst: Dict[str, Any], src: Dict[str, Any]) -> None:
         dst["language"] = src["language"]
     if src.get("style") and not dst.get("style"):
         dst["style"] = src["style"]
+    if src.get("paywall_declared"):
+        dst["paywall_declared"] = True
     _merge_images(dst, src)
 
 
@@ -113,4 +116,6 @@ async def resolve_article_body(
             )
     if not out.get("original_content") and rss_info and rss_body and accept_extracted_body(rss_body):
         _adopt(out, rss_info)
+    if (rss_info or {}).get("paywall_declared") or http_info.get("paywall_declared"):
+        out["paywall_declared"] = True
     return out

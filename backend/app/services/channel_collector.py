@@ -350,6 +350,7 @@ class ChannelCollector:
                 }
                 if image_url:
                     source_entry["images"] = [image_url]
+                fetched: Dict[str, Any] = {}
                 if source_url.startswith("http"):
                     from app.utils.article_body_resolve import resolve_article_body
                     from app.utils.article_extract_quality import body_is_storable
@@ -375,6 +376,28 @@ class ChannelCollector:
                     source_entry,
                     fallback_text=summary or original_title,
                 )
+                from app.services.automation.topic_publish_gate import rejection
+
+                gate_body = (
+                    source_entry.get("original_content")
+                    or scan.get("content_clean")
+                    or ""
+                )
+                gate_images = [
+                    u for u in (source_entry.get("images") or [])
+                    if isinstance(u, str)
+                ]
+                gate_reason = await rejection(
+                    url=source_url,
+                    body=gate_body,
+                    images=gate_images,
+                    paywall_declared=bool(fetched.get("paywall_declared")),
+                )
+                if gate_reason:
+                    logger.info(
+                        f"TOPIC_PUBLISH_GATE skip {gate_reason}: {title[:80]}"
+                    )
+                    continue
                 raw_for_flash = (
                     scan.get("content_clean") or summary or original_title
                 )
