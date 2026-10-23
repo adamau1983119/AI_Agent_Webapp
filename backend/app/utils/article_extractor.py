@@ -121,6 +121,13 @@ class ArticleExtractor:
             "style": style,
             "success": body_ok,
             "quality": q,
+            "paywall_declared": bool(
+                re.search(
+                    r'"isAccessibleForFree"\s*:\s*false',
+                    html_content or "",
+                    re.I,
+                )
+            ),
         }
 
     def _extract_images_soup(self, soup: Any, base_url: str) -> List[str]:
