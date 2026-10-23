@@ -4,8 +4,9 @@
  * 支援多語言：zh-TW, en, ja
  */
 import { Link } from 'react-router-dom';
-import { useTranslation } from '../i18n';
+import { useTranslation, Language } from '../i18n';
 import BrandMark from '@/components/brand/BrandMark';
+import PublicLegalFooter from '@/components/layout/PublicLegalFooter';
 import { usePublicPageSeo } from '@/hooks/usePublicPageSeo';
 
 export default function Terms() {
@@ -16,7 +17,7 @@ export default function Terms() {
   );
   
   return (
-    <div className="min-h-screen bg-[#FAF9F7] font-sans">
+    <div className="min-h-screen bg-[#FAF9F7] font-sans flex flex-col">
       {/* 頂部導航 */}
       <header className="flex items-center justify-between px-8 py-6 border-b border-gray-100">
         <Link 
@@ -81,6 +82,12 @@ export default function Terms() {
           </p>
         </div>
       </main>
+      <PublicLegalFooter
+        privacyTestId="link-landing-privacy"
+        termsTestId="link-landing-terms"
+        sitemapTestId="link-landing-sitemap"
+        langTestId={(code: Language) => `btn-landing-footer-lang-${code === 'zh-TW' ? 'zh' : code}`}
+      />
     </div>
   );
 }

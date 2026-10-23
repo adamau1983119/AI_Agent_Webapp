@@ -17,6 +17,7 @@ import OAuthCallback from '@/pages/OAuthCallback'
 import VerifyEmail from '@/pages/VerifyEmail'
 import Terms from '@/pages/Terms'
 import Privacy from '@/pages/Privacy'
+import Sitemap from '@/pages/Sitemap'
 // Phase 2: 會員系統頁面
 import Settings from '@/pages/Settings'
 // Phase 3: 內容功能頁面
@@ -80,6 +81,7 @@ function App() {
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/terms" element={<Terms />} />
         <Route path="/privacy" element={<Privacy />} />
+        <Route path="/sitemap" element={<Sitemap />} />
         <Route path="/onboarding/alter-ego" element={<AlterEgoOnboarding />} />
         
         {/* 主要頁面（有 Layout） */}

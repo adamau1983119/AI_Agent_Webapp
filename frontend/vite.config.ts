@@ -20,6 +20,7 @@ export default defineConfig({
         welcome: path.resolve(__dirname, 'welcome.html'),
         terms: path.resolve(__dirname, 'terms.html'),
         privacy: path.resolve(__dirname, 'privacy.html'),
+        sitemap: path.resolve(__dirname, 'sitemap.html'),
       },
     },
   },

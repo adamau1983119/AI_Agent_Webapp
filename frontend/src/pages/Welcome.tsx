@@ -20,6 +20,7 @@ import { useTranslation, languageOptions, Language } from '@/i18n';
 import { useAuthStore } from '@/stores/authStore';
 import { resolvePostLoginPath } from '@/lib/alterEgoRouting';
 import WelcomeInkBackground from '@/components/welcome/WelcomeInkBackground';
+import PublicLegalFooter from '@/components/layout/PublicLegalFooter';
 import BrandMark from '@/components/brand/BrandMark';
 import CreditPackShelf from '@/components/credits/CreditPackShelf';
 import type { CreditPack } from '@/api/billing';
@@ -222,27 +223,12 @@ export default function Welcome() {
         </section>
       </main>
 
-      <footer className="relative z-[2] border-t border-black/[0.06] py-8">
-        <div className="max-w-[1120px] mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] text-[#a3a3a3] tracking-[0.15em] uppercase">
-          <span>© 2026 {t('brand.name')}</span>
-          <div className="flex gap-6">
-            <Link
-              to="/terms"
-              data-testid="link-landing-terms"
-              className="hover:text-black transition-colors min-h-[44px] flex items-center"
-            >
-              {t('landing.footer.terms')}
-            </Link>
-            <Link
-              to="/privacy"
-              data-testid="link-landing-privacy"
-              className="hover:text-black transition-colors min-h-[44px] flex items-center"
-            >
-              {t('landing.footer.privacy')}
-            </Link>
-          </div>
-        </div>
-      </footer>
+      <PublicLegalFooter
+        privacyTestId="link-landing-privacy"
+        termsTestId="link-landing-terms"
+        sitemapTestId="link-landing-sitemap"
+        langTestId={(code) => `btn-landing-footer-lang-${code === 'zh-TW' ? 'zh' : code}`}
+      />
     </div>
   );
 }

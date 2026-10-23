@@ -189,6 +189,15 @@ data-testid="{類型}-{位置}-{功能}"
 | `btn-landing-lang-ja` | 按鈕 | 切換日本語 |
 | `link-landing-terms` | 連結 | 使用條款 |
 | `link-landing-privacy` | 連結 | 隱私政策 |
+| `link-landing-sitemap` | 連結 | 網站地圖 → `/sitemap`。歡迎頁、條款、隱私、網站地圖頁尾同一列 |
+| `link-sitemap-zh` | 連結 | 網站地圖頁 → `/welcome` |
+| `link-sitemap-en` | 連結 | 網站地圖頁 → `/en` |
+| `link-sitemap-ja` | 連結 | 網站地圖頁 → `/ja` |
+| `link-sitemap-terms` | 連結 | 網站地圖頁 → `/terms` |
+| `link-sitemap-privacy` | 連結 | 網站地圖頁 → `/privacy` |
+| `btn-landing-footer-lang-zh` | 按鈕 | 頁尾切換繁體中文。歡迎頁、條款、隱私 |
+| `btn-landing-footer-lang-en` | 按鈕 | 頁尾切換 English。歡迎頁、條款、隱私 |
+| `btn-landing-footer-lang-ja` | 按鈕 | 頁尾切換日本語。歡迎頁、條款、隱私 |
 | `card-landing-feature-*` | 卡片 | 功能卡（trends／aiWrite 等） |
 | `link-landing-credits` | 連結 | 捲到點數黑帶 | `#credits` |
 | `section-landing-credits` | 區塊 | 訪客點數包三卡 | `/welcome#credits` |

@@ -10,8 +10,9 @@
     { "source": "/welcome", "destination": "/welcome.html" },
     { "source": "/terms", "destination": "/terms.html" },
     { "source": "/privacy", "destination": "/privacy.html" },
+    { "source": "/sitemap", "destination": "/sitemap.html" },
     {
-      "source": "/((?!sitemap\\.xml$|robots\\.txt$|llms\\.txt$|logo\\.png$|favicon\\.png$|favicon\\.ico$|en\\.html$|ja\\.html$|welcome\\.html$|terms\\.html$|privacy\\.html$|assets/).*)",
+      "source": "/((?!sitemap\\.xml$|robots\\.txt$|llms\\.txt$|logo\\.png$|favicon\\.png$|favicon\\.ico$|en\\.html$|ja\\.html$|welcome\\.html$|terms\\.html$|privacy\\.html$|sitemap\\.html$|assets/).*)",
       "destination": "/index.html"
     }
   ],
