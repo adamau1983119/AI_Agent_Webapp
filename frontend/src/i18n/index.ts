@@ -1427,6 +1427,8 @@ const zhTW = {
   'landing.advanced.sources': '推薦來源較可靠，少亂連',
   'landing.footer.terms': '使用條款',
   'landing.footer.privacy': '隱私政策',
+  'landing.footer.rights': '保留一切權利',
+  'landing.footer.sitemap': '網站地圖',
 
   'alterEgo.title': '建立你的 Alter Ego',
   'alterEgo.intro': '貼上 1～3 篇你平時發文的範例，AI 會學習你的語氣，之後生成內容更貼近你的風格。',
@@ -2987,6 +2989,8 @@ const en: typeof zhTW = {
   'landing.advanced.sources': 'Trusted sources, fewer bad links',
   'landing.footer.terms': 'Terms',
   'landing.footer.privacy': 'Privacy',
+  'landing.footer.rights': 'All rights reserved',
+  'landing.footer.sitemap': 'Site Map',
 
   'alterEgo.title': 'Build your Alter Ego',
   'alterEgo.intro': 'Paste 1–3 sample posts. AI learns your voice for future content.',
@@ -4549,6 +4553,8 @@ const ja: typeof zhTW = {
   'landing.advanced.sources': '信頼できるソースを推薦',
   'landing.footer.terms': '利用規約',
   'landing.footer.privacy': 'プライバシー',
+  'landing.footer.rights': '無断転載を禁じます',
+  'landing.footer.sitemap': 'サイトマップ',
 
   'alterEgo.title': 'Alter Ego を作成',
   'alterEgo.intro': '普段の投稿を1～3件貼り付けると、AIがあなたの文体を学習します。',
