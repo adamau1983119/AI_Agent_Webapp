@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "period_type": "week",
+  "period_start": "2026-10-20",
+  "period_end": "2026-10-26",
+  "env": "production",
+  "provisional": true,
+  "core": {
+    "external_new_users": 2,
+    "external_total_users": 7,
+    "valid_members": 0,
+    "active_users_30d": 4,
+    "successful_generations": 0,
+    "email_subscribers_total": 6,
+    "email_subscribers_new": 2,
+    "ga4_sign_up": 7,
+    "ga4_generate_post": 11,
+    "ga4_purchase": 0,
+    "ads_spend_hkd": null,
+    "ads_clicks": null,
+    "ads_impr": null,
+    "revenue_usd": null
+  },
+  "focus": {
+    "theme": "hygiene",
+    "metrics": {},
+    "notes": ""
+  },
+  "segments": {},
+  "source_notes": "Mongo read-only; GEN=ae_compose|ae_compose_part; email=verified & not weekly_mail_opt_out; no PII; eventCount by eventName; ≠ external customers; HKT week dates as GA4 date_range; Ads API not in this script"
+}
