@@ -20,7 +20,7 @@ REQUIRED = ("period_type", "period_start", "period_end", "core")
 
 
 def _load(path: str | None) -> dict:
-    raw = Path(path).read_text(encoding="utf-8") if path else sys.stdin.read()
+    raw = Path(path).read_text(encoding="utf-8-sig") if path else sys.stdin.read()
     doc = json.loads(raw)
     if not isinstance(doc, dict):
         raise SystemExit("draft must be a JSON object")

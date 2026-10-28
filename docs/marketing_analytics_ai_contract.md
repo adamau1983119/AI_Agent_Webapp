@@ -12,7 +12,7 @@
 | CEO | 審稿、拍板燈號／≤3 決策 | 手算分母 |
 | WorkBuddy | 填表、跑 Python、記錄、營運電郵 | 自創 KPI；寫 users；用客戶 weekly_mail 當營運通知 |
 | Cursor／Gemini | 依本合約分析 | 私改定義 |
-| Python scripts | counts／fetch_ga4／assemble／upsert／rollup JSON | 行銷 FastAPI；改扣點／生成管線；Ads API 另開（待 Developer Token） |
+| Python scripts | counts／fetch_ga4／fetch_ads／assemble／upsert／rollup JSON | 行銷 FastAPI；改扣點／生成管線 |
 
 ## SoT 鐵律
 
@@ -40,8 +40,9 @@ HKT **週一 00:00～週日 23:59**。上週＝上一完整週。首週無上週
 | `provisional` | GA4 內部篩選未「有效」時 true |
 | `schema_version` | **1** |
 
-手填／後台：`ads_spend_hkd`、`ads_clicks`、`ads_impr`、`revenue_usd`、燈號、決策。  
-`ga4_*`：優先 `marketing_period_fetch_ga4.py`（Data API）；憑證未就緒時可暫手填。Ads 欄位等 Developer Token 後再 API。
+手填／後台：`revenue_usd`、燈號、決策。  
+`ga4_*`：`marketing_period_fetch_ga4.py`。  
+`ads_*`：`marketing_period_fetch_ads.py`（API 或 `--handfill`）。週報節奏見 [`marketing_weekly_ops_runbook.md`](./marketing_weekly_ops_runbook.md)。
 
 ## Focus／Segments
 
@@ -62,7 +63,9 @@ HKT **週一 00:00～週日 23:59**。上週＝上一完整週。首週無上週
 python scripts/marketing_period_counts.py --period-start YYYY-MM-DD --period-end YYYY-MM-DD
 # 需 GA4_PROPERTY_ID + GOOGLE_APPLICATION_CREDENTIALS（見 backend/.env.example）
 python scripts/marketing_period_fetch_ga4.py --period-start YYYY-MM-DD --period-end YYYY-MM-DD
-python scripts/marketing_period_assemble.py --period-start YYYY-MM-DD --period-end YYYY-MM-DD --ga4-file ga4.json
+python scripts/marketing_period_fetch_ads.py --period-start YYYY-MM-DD --period-end YYYY-MM-DD
+# 或：… --handfill --spend-hkd N --clicks N --impr N
+python scripts/marketing_period_assemble.py --period-start YYYY-MM-DD --period-end YYYY-MM-DD --ga4-file ga4.json --ads-file ads.json
 python scripts/marketing_period_upsert.py --env production --file draft.json
 python scripts/marketing_period_rollup.py --period-start YYYY-MM-DD --period-end YYYY-MM-DD
 ```
