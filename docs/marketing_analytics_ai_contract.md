@@ -10,9 +10,9 @@
 | 角色 | 做 | 不做 |
 |------|----|------|
 | CEO | 審稿、拍板燈號／≤3 決策 | 手算分母 |
-| WorkBuddy | 填表、跑 Python、記錄、營運電郵 | 自創 KPI；寫 users；用客戶 weekly_mail 當營運通知 |
+| WorkBuddy | 每週 counts／GA4／Ads**手填**／assemble／upsert／export Sheet、記錄、營運電郵 | 自創 KPI；寫 users；用客戶 weekly_mail 當營運通知；逼 CEO 申請 Ads Token |
 | Cursor／Gemini | 依本合約分析 | 私改定義 |
-| Python scripts | counts／fetch_ga4／fetch_ads／assemble／upsert／rollup JSON | 行銷 FastAPI；改扣點／生成管線 |
+| Python scripts | counts／fetch_ga4／fetch_ads／assemble／export_sheet／funnel／upsert／rollup | 行銷 FastAPI；改扣點／生成管線 |
 
 ## SoT 鐵律
 
@@ -67,10 +67,12 @@ python scripts/marketing_period_fetch_ads.py --period-start YYYY-MM-DD --period-
 # 或：… --handfill --spend-hkd N --clicks N --impr N
 python scripts/marketing_period_assemble.py --period-start YYYY-MM-DD --period-end YYYY-MM-DD --ga4-file ga4.json --ads-file ads.json
 python scripts/marketing_period_upsert.py --env production --file draft.json
+python scripts/marketing_period_export_sheet.py --period-start YYYY-MM-DD --out docs/evidence/marketing/ops_weekly.csv
+python scripts/marketing_period_funnel_signup_compose.py --period-start YYYY-MM-DD --period-end YYYY-MM-DD
 python scripts/marketing_period_rollup.py --period-start YYYY-MM-DD --period-end YYYY-MM-DD
 ```
 
-stdout＝JSON。詳見 [`marketing_period_sheet_fields.md`](./marketing_period_sheet_fields.md)。  
+stdout＝JSON（export＝CSV）。Sheet／Looker：[`marketing_looker_sheet_setup.md`](./marketing_looker_sheet_setup.md)。  
 Measurement ID `G-F38Q4L6CPV` ≠ Property ID；後者為數字。
 
 ## 分析稿六段
