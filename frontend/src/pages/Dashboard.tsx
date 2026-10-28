@@ -101,6 +101,18 @@ export default function Dashboard() {
     setTour(next)
   }, [seeAsNewUser, tourPick, forceSample, tour.status, tour.topicId, showFirstRun])
 
+  // 選「生成貼文」時若主題尚未載入，FIRST_RUN_KEY 已寫入但導覽未開 → 主題到齊後直進組裝器（黃燈斷點）
+  useEffect(() => {
+    if (seeAsNewUser || showFirstRun) return
+    if (localStorage.getItem(FIRST_RUN_KEY) !== 'compose') return
+    if (!tourPick) return
+    if (tour.status === 'active' || tour.status === 'done') return
+    const next: PublicTourState = { status: 'active', step: 2, topicId: tourPick.id }
+    writePublicTour(next)
+    setTour(next)
+    navigate(`/topics/${tourPick.id}`)
+  }, [seeAsNewUser, showFirstRun, tourPick, tour.status, navigate])
+
   const saveTour = (next: PublicTourState) => {
     writePublicTour(next)
     setTour(next)
@@ -130,9 +142,11 @@ export default function Dashboard() {
     if (!seeAsNewUser) localStorage.setItem(FIRST_RUN_KEY, 'compose')
     setShowFirstRun(false)
     if (!tourPick) return
-    const next: PublicTourState = { status: 'active', step: 1, topicId: tourPick.id }
+    // 進詳情 step 2＝組裝器錨點，縮短註冊→首次 compose
+    const next: PublicTourState = { status: 'active', step: 2, topicId: tourPick.id }
     writePublicTour(next)
     setTour(next)
+    navigate(`/topics/${tourPick.id}`)
   }
 
   const handleRetry = () => {
