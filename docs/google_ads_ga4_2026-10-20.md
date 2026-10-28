@@ -15,7 +15,9 @@
 
 ## 現在停在這裡
 
-2026-10-28：GA4／Ads 量尺與衛生後台項已做完。行銷週期快照／AI 合約已開 [`marketing_analytics_ai_contract.md`](./marketing_analytics_ai_contract.md)（分支 `feature/v8-marketing-period-snapshots`）。下一步可選：篩選器改「有效」、回家 IP、持續字詞清理；Looker 接 Sheet；正式庫首筆 upsert 須核准。
+2026-10-28：GA4／Ads 量尺與衛生後台項已做完。行銷週期快照／AI 合約已合 main（**PR #123**）。  
+**GA4 Data API 切片**（分支 `feature/v8-marketing-ga4-api`）：`marketing_period_fetch_ga4.py`＋`assemble.py`；需數字 **Property ID**＋服務帳戶 JSON（Viewer）。Ads API 等 Developer Token。  
+下一步可選：篩選器改「有效」、回家 IP、持續字詞清理；Looker 接 Sheet。
 
 ## 廣告帳戶現況
 

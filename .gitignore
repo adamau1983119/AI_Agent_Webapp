@@ -56,6 +56,11 @@ docs/backups/
 *_result.json
 test_report_*.json
 
+# 本機密鑰（服務帳戶 JSON 等；勿提交）
+/json/
+*.iam.gserviceaccount.com*.json
+regal-skyline-*-*.json
+
 # 測試腳本（可選，如果需要可以保留）
 # test_*.py
 # test_*.ps1

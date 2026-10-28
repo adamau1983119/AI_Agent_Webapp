@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "period_start": "2026-10-20",
+  "period_end": "2026-10-26",
+  "provisional": true,
+  "source": "ga4_data_api",
+  "property_id": "557136140",
+  "ga4_sign_up": 7,
+  "ga4_generate_post": 11,
+  "ga4_purchase": 0,
+  "source_notes": "eventCount by eventName; ≠ external customers; HKT week dates as GA4 date_range; Ads API not in this script"
+}

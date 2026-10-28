@@ -65,3 +65,5 @@ email-validator>=2.1.0
 google-auth>=2.23.0
 google-auth-oauthlib>=1.1.0
 google-auth-httplib2>=0.2.0
+# GA4 Data API（scripts/marketing_period_fetch_ga4.py；非產品 FastAPI）
+google-analytics-data>=0.18.0
