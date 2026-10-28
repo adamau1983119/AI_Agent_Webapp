@@ -10,14 +10,17 @@
 - `adammidlife.com` 之後才買。這個月不要寫進廣告。
 - `sign_up` 是唯一主要轉換。網頁瀏覽已改次要。不要再匯入第二個 `sign_up`。
 - **2026-10-28**：正式 Mongo 排除內部後 **外部客戶≈3**。**客戶數 SoT＝Mongo 外部**；GA4 `sign_up`×7 不可當 7 個外部客戶。預設不改程式。
-- **2026-10-28 後台已做**：GA4 `sign_up` 重要活動；GA4↔Ads 連結；內部規則 `staff-office`＋篩選器測試中；Ads 網站連結；搜尋字詞排除 5 個。
+- **2026-10-28 後台已做**：GA4 `sign_up` 重要活動；GA4↔Ads 連結；內部規則 `staff-office`；篩選器 Internal Traffic＝**有效**；Ads 網站連結；搜尋字詞排除 5 個。
+- **預算**：維持小額（週 10/20～26 僅 HKD ~35）。
 - 今天不要做：日本圓子帳、自訂報表、BigQuery、客戶名單 100 人、加強型轉換、再開 MCC、促銷圖片衝優化分數。
 
 ## 現在停在這裡
 
-2026-10-28：GA4 Data API 已合 **PR #125**；週快照已 amend GA4。  
-**Ads**：`marketing_period_fetch_ads.py`（API 或 `--handfill`）。探索層級／Developer Token 未就緒前用手填。  
-**篩選器**：Internal Traffic 改「有效」後設 `GA4_PROVISIONAL=false`。週報節奏 → [`marketing_weekly_ops_runbook.md`](./marketing_weekly_ops_runbook.md)。
+2026-10-28：**PR #125／#126** 已合。篩選器＝**有效**；`provisional=false`。  
+**Ads API**：**已通**（直連 `970-864-5947`；週 10/20～26＝35.17／19／2196；已 upsert）。  
+**MCC**：✅ **2026-10-29** 已掛客戶 `970-864-5947`（MCC `730-946-6170`）。本機 `GOOGLE_ADS_LOGIN_CUSTOMER_ID=7309466170`。`fetch_ads` 掛帳後煙霧 PASS（週 10/20～26＝35.17／19／2196）。  
+**Looker／Sheet**：Sheet [`AlterEgo_ops_weekly`](https://docs.google.com/spreadsheets/d/1uttJA5MwwV7pH8a30bSeDlMBOWfVm0eD3foJVugkxUI/edit) 已貼資料；Looker 報表 **[Alter Ego Weekly Ops](https://lookerstudio.google.com/reporting/5d96e560-baf9-40da-9ad3-cae35c528cbe)** 已建（評量表四張）。  
+**黃燈產品**：`Dashboard` 已縮短「生成貼文」→主題 compose（分支 `feature/v8-marketing-ops-next`；待 PR）。
 
 ## 廣告帳戶現況
 

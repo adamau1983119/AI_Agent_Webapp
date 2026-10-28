@@ -4,7 +4,7 @@
   "period_start": "2026-10-20",
   "period_end": "2026-10-26",
   "env": "production",
-  "provisional": true,
+  "provisional": false,
   "core": {
     "external_new_users": 2,
     "external_total_users": 7,
@@ -16,16 +16,29 @@
     "ga4_sign_up": 7,
     "ga4_generate_post": 11,
     "ga4_purchase": 0,
-    "ads_spend_hkd": null,
-    "ads_clicks": null,
-    "ads_impr": null,
-    "revenue_usd": null
+    "ads_spend_hkd": 35.17,
+    "ads_clicks": 19,
+    "ads_impr": 2196,
+    "revenue_usd": null,
+    "decisions": [
+      "hold_budget_small",
+      "investigate_signup_to_first_compose",
+      "ga4_internal_filter_active_provisional_cleared",
+      "ads_api_live_replace_handfill"
+    ],
+    "traffic_light": "yellow",
+    "founder_noise": "medium",
+    "stop_review_flags": {
+      "review_30d": false,
+      "reassess_90d": false,
+      "note": "week ads_spend_hkd=35.17 via Ads API; far below 30d HKD200 Review gate"
+    }
   },
   "focus": {
     "theme": "hygiene",
     "metrics": {},
-    "notes": ""
+    "notes": "landing=/language; yellow; Ads API 2026-10-28 overwrite handfill 10/20-26; Internal Traffic Active; MCC link optional"
   },
   "segments": {},
-  "source_notes": "Mongo read-only; GEN=ae_compose|ae_compose_part; email=verified & not weekly_mail_opt_out; no PII; eventCount by eventName; ≠ external customers; HKT week dates as GA4 date_range; Ads API not in this script"
+  "source_notes": "Mongo + GA4 API + Ads API (9708645947 direct; HKD 35.17 / 19 clicks / 2196 impr); ga4_sign_up=7 != external_new=2; provisional=false; no PII"
 }

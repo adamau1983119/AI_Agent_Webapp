@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "period_start": "2026-10-20",
+  "period_end": "2026-10-26",
+  "funnel": {
+    "external_total": 7,
+    "external_new_in_period": 2,
+    "new_with_any_compose": 0,
+    "new_with_compose_in_period": 0,
+    "new_without_compose": 2,
+    "external_ever_composed": 0,
+    "median_hours_signup_to_first_compose": null
+  },
+  "breakpoint": "signup_to_first_compose",
+  "source_notes": "external only; compose=ae_compose|ae_compose_part; no PII; GA4 sign_up ≠ Mongo new"
+}
