@@ -67,3 +67,6 @@ google-auth-oauthlib>=1.1.0
 google-auth-httplib2>=0.2.0
 # GA4 Data API（scripts/marketing_period_fetch_ga4.py；非產品 FastAPI）
 google-analytics-data>=0.18.0
+# Google Ads API（scripts/marketing_period_fetch_ads.py；需 Developer Token）
+google-ads>=25.0.0
+

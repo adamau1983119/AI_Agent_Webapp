@@ -16,6 +16,7 @@ WorkBuddy／人工每週將 `marketing_period_counts.py` 輸出＋Ads／GA4 手�
 | email_subscribers_total / _new | script | ≠ customer |
 | ads_spend_hkd / ads_clicks / ads_impr | Ads 手填 | HKD |
 | ga4_sign_up / generate_post / purchase | `fetch_ga4.py`（Data API）或暫手填 | 事件≠客戶；Property ID≠G-ID |
+| ads_spend_hkd / clicks / impr | `fetch_ads.py`（API 或 `--handfill`） | HKD；等 Token 前用手填 |
 | revenue_usd | Stripe／books | USD |
 | revenue_hkd_equiv | 可選 | USD×7.8 |
 | founder_noise | 手填 | low／medium／high |

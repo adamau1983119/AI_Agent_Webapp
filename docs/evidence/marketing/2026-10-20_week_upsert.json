@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "period_type": "week",
+  "period_start": "2026-10-20",
+  "period_end": "2026-10-26",
+  "env": "production",
+  "provisional": false,
+  "core": {
+    "external_new_users": 2,
+    "external_total_users": 7,
+    "valid_members": 0,
+    "active_users_30d": 4,
+    "successful_generations": 0,
+    "email_subscribers_total": 6,
+    "email_subscribers_new": 2,
+    "ads_spend_hkd": 35.17,
+    "ads_clicks": 19,
+    "ads_impr": 2196,
+    "ga4_sign_up": 7,
+    "ga4_generate_post": 11,
+    "ga4_purchase": 0,
+    "revenue_usd": 0,
+    "revenue_hkd_equiv": 0,
+    "fx_usd_hkd": 7.8,
+    "founder_noise": "medium",
+    "traffic_light": "yellow",
+    "decisions": [
+      "hold_budget_pending_ads_fill",
+      "investigate_signup_to_first_compose",
+      "ga4_internal_filter_active_provisional_cleared"
+    ],
+    "stop_review_flags": {
+      "review_30d": false,
+      "reassess_90d": false,
+      "note": "week ads_spend_hkd=35.17; far below 30d HKD200 Review gate"
+    }
+  },
+  "focus": {
+    "theme": "hygiene",
+    "metrics": {},
+    "notes": "landing=/language; yellow; Ads handfill 2026-10-28 from console 10/20-26; Internal Traffic Active"
+  },
+  "segments": {},
+  "source_notes": "Mongo + GA4 API + Ads console handfill (970-864-5947; HKD 35.17 / 19 clicks / 2196 impr); ga4_sign_up=7 ≠ external_new=2; provisional=false; no PII"
+}
