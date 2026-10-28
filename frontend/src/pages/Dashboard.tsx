@@ -76,8 +76,9 @@ export default function Dashboard() {
   const tourPick = pickPublicTourTopic(displayTopics)
 
   useEffect(() => {
+    // tester 可重看首跑；若已選 compose／channel 則不再強制蓋回，避免蓋掉 step 2
     if (seeAsNewUser) {
-      setShowFirstRun(true)
+      if (!localStorage.getItem(FIRST_RUN_KEY)) setShowFirstRun(true)
       return
     }
     if (localStorage.getItem(FIRST_RUN_KEY)) return
@@ -93,6 +94,8 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (seeAsNewUser || showFirstRun) return
+    // 已選「生成貼文」時禁止自動開 step 1（避免蓋掉 compose→step 2）
+    if (localStorage.getItem(FIRST_RUN_KEY) === 'compose') return
     if (!tourPick) return
     if (!forceSample && (tour.status === 'skipped' || tour.status === 'done')) return
     if (tour.status === 'active' && tour.topicId) return
@@ -101,17 +104,18 @@ export default function Dashboard() {
     setTour(next)
   }, [seeAsNewUser, tourPick, forceSample, tour.status, tour.topicId, showFirstRun])
 
-  // 選「生成貼文」時若主題尚未載入，FIRST_RUN_KEY 已寫入但導覽未開 → 主題到齊後直進組裝器（黃燈斷點）
+  // 選「生成貼文」：主題晚到或曾被寫成 step 1 時，一律升到 step 2 並進詳情（含 tester）
   useEffect(() => {
-    if (seeAsNewUser || showFirstRun) return
+    if (showFirstRun) return
     if (localStorage.getItem(FIRST_RUN_KEY) !== 'compose') return
     if (!tourPick) return
-    if (tour.status === 'active' || tour.status === 'done') return
+    if (tour.status === 'done' || tour.status === 'skipped') return
+    if (tour.status === 'active' && tour.step >= 2 && tour.topicId === tourPick.id) return
     const next: PublicTourState = { status: 'active', step: 2, topicId: tourPick.id }
     writePublicTour(next)
     setTour(next)
     navigate(`/topics/${tourPick.id}`)
-  }, [seeAsNewUser, showFirstRun, tourPick, tour.status, navigate])
+  }, [showFirstRun, tourPick, tour.status, tour.step, tour.topicId, navigate])
 
   const saveTour = (next: PublicTourState) => {
     writePublicTour(next)
@@ -139,10 +143,11 @@ export default function Dashboard() {
   }
 
   const chooseCompose = () => {
-    if (!seeAsNewUser) localStorage.setItem(FIRST_RUN_KEY, 'compose')
+    // tester 也要寫 compose，否則晚到補導覽／防 step1 覆蓋都不會觸發
+    localStorage.setItem(FIRST_RUN_KEY, 'compose')
     setShowFirstRun(false)
     if (!tourPick) return
-    // 進詳情 step 2＝組裝器錨點，縮短註冊→首次 compose
+    // 進詳情 step 2＝平台區（組裝器導覽起點）
     const next: PublicTourState = { status: 'active', step: 2, topicId: tourPick.id }
     writePublicTour(next)
     setTour(next)
