@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "period_type": "week",
+  "period_start": "2026-10-26",
+  "period_end": "2026-11-01",
+  "prev_week": {
+    "period_start": "2026-10-19",
+    "period_end": "2026-10-25"
+  },
+  "core": {
+    "external_new_users": 1,
+    "external_total_users": 8,
+    "valid_members": 1,
+    "active_users_30d": 5,
+    "successful_generations": 1,
+    "email_subscribers_total": 6,
+    "email_subscribers_new": 0
+  },
+  "source_notes": "Mongo read-only; GEN=ae_compose|ae_compose_part; email=verified & not weekly_mail_opt_out; no PII",
+  "handfill_hints": [
+    "ads_spend_hkd",
+    "ads_clicks",
+    "ads_impr",
+    "ga4_sign_up",
+    "ga4_generate_post",
+    "ga4_purchase",
+    "revenue_usd",
+    "founder_noise",
+    "provisional",
+    "traffic_light"
+  ]
+}

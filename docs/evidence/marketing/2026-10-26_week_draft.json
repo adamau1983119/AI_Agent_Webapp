@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "period_type": "week",
+  "period_start": "2026-10-26",
+  "period_end": "2026-11-01",
+  "env": "production",
+  "provisional": false,
+  "core": {
+    "external_new_users": 1,
+    "external_total_users": 8,
+    "valid_members": 1,
+    "active_users_30d": 5,
+    "successful_generations": 1,
+    "email_subscribers_total": 6,
+    "email_subscribers_new": 0,
+    "ga4_sign_up": 5,
+    "ga4_generate_post": 9,
+    "ga4_purchase": 0,
+    "ads_spend_hkd": 23.88,
+    "ads_clicks": 18,
+    "ads_impr": 950,
+    "revenue_usd": null,
+    "decisions": [
+      "hold_budget_small",
+      "investigate_signup_to_first_compose",
+      "watch_compose_after_pr128"
+    ],
+    "traffic_light": "yellow",
+    "founder_noise": "medium",
+    "stop_review_flags": {
+      "review_30d": false,
+      "reassess_90d": false,
+      "note": "week ads_spend_hkd=23.88; new=1; below HKD200/new=0 Review gate for this week window"
+    }
+  },
+  "focus": {
+    "theme": "hygiene",
+    "metrics": {},
+    "notes": "landing=/language; yellow carry; corrected window 2026-10-26→2026-11-01 (HKT Mon–Sun); prev 2026-10-19→2026-10-25"
+  },
+  "segments": {},
+  "source_notes": "Mongo read-only; GEN=ae_compose|ae_compose_part; email=verified & not weekly_mail_opt_out; no PII; eventCount by eventName; ≠ external customers; HKT week dates as GA4 date_range; Ads API not in this script; Ads API metrics.cost_micros/1e6 as HKD; HKT week as segments.date"
+}

@@ -1,4 +1,4 @@
-# 行銷營運週報（草稿 · 待 CEO 拍板）
+# 行銷營運週報（已拍板 · 2026-10-29 完整重跑）
 
 依 `docs/marketing_analytics_ai_contract.md`。禁止改 KPI 定義。
 
@@ -8,10 +8,11 @@
 |----|-----|
 | period | week · 2026-10-20～2026-10-26 HKT（一～日） |
 | prev_week | 2026-10-13～2026-10-19 |
-| env | production（Mongo 唯讀 counts） |
+| env | production |
 | schema_version | 1 |
-| provisional | **true**（GA4 內部篩選仍「測試中」；手填 ga4_* 前維持） |
+| provisional | **false**（GA4 Internal Traffic＝有效） |
 | focus.theme | hygiene |
+| 執行日 | 2026-10-29（四）提前跑完整週一 runbook |
 
 ## 2. Core 數字
 
@@ -24,33 +25,35 @@
 | successful_generations | **0** | ledger ae_compose* |
 | email_subscribers_total | **6** | Mongo（≠ customer） |
 | email_subscribers_new | **2** | Mongo |
-| ads_spend_hkd / clicks / impr | **null**（無後台 API；下週補） | Ads |
-| ga4_sign_up / generate_post / purchase | **null**（下週補） | GA4 |
-| revenue_usd | **0** | 本週無 Stripe；US$3 在 10-15 |
-| revenue_hkd_equiv | **0**（×7.8） | 僅顯示 |
+| ads_spend_hkd / clicks / impr | **35.17／19／2196** | Ads API（LOGIN MCC `7309466170`） |
+| ga4_sign_up / generate_post / purchase | **7／11／0** | GA4 Data API property `557136140` |
+| revenue_usd | **null／0** | 本週無 Stripe |
 | founder_noise | **medium** | CEO 同意 |
-| traffic_light | **yellow** | CEO 同意 2026-10-28 |
+| traffic_light | **yellow** | CEO 同意 2026-10-28；2026-10-29 重 upsert |
 
 ## 3. 對帳
 
 - 客戶／新客分母只認 Mongo：本週外部新客 **2**，存量 **7**。  
-- GA4 事件數（待填）**不可**當成外部客戶數。  
-- 有新客但 **valid_members＝0**、**successful_generations＝0** → 註冊未換成產品價值（產文／扣點）。
+- GA4 `sign_up`＝7 **不可**當成 7 個外部客戶。  
+- 有新客但 **valid_members＝0**、**successful_generations＝0** → 註冊未換成產文／扣點。  
+- 漏斗：新客 2 → compose 0；breakpoint＝`signup_to_first_compose`。
 
 ## 4. Focus（hygiene）
 
-- 維持到達 `/language`；持續搜尋字詞清理。  
+- 到達維持 `/language`；持續搜尋字詞清理。  
 - 本週不設 japan（Ads 未拆；無真實 JP 花費）。  
-- 優先搞清楚：新客為何沒有 generate_post／Post Kit 成功路徑。
+- 優先：註冊→首次 compose 摩擦（產品側 #127／#128 已合；下週再看漏斗是否改善）。
 
-## 5. 燈號與 ≤3 建議決策（待拍板）
+## 5. 燈號與 ≤3 決策（已拍板）
 
-- 燈號：**yellow**（CEO 同意）  
-- 停損：本週 new＝2 → 未觸發 30 日「new＝0」門；Ads null 故 spend 門暫不評。  
-- D1：不加薪預算；待 Ads／GA4 補齊再談出價。  
-- D2：查「註冊→首次產文」摩擦（本週 0 成功生成）。  
-- D3：GA4 篩選改「有效」後取消 provisional。
+- 燈號：**yellow**  
+- 停損：未觸發 30 日 Review（Ads 週花費 35.17 ≪ 200；new≠0）。  
+- D1：不加薪預算（`hold_budget_small`）。  
+- D2：查註冊→首次產文（`investigate_signup_to_first_compose`）。  
+- D3：GA4 provisional 已清；Ads API 取代 handfill；MCC LOGIN 已確認。
 
-## 6. 擬寫入快照 JSON
+## 6. 快照
 
-見 `2026-10-20_week_draft.json`。CEO 同意後執行 upsert（production）。
+- 草稿：`2026-10-20_week_draft.json`  
+- upsert：`2026-10-20_week_upsert.json`（production · 2026-10-29）  
+- Sheet 匯出：`ops_weekly.csv` → 貼入 `AlterEgo_ops_weekly`（Looker 自動刷新）

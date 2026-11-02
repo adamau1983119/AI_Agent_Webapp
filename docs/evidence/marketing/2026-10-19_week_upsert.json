@@ -1,0 +1,44 @@
+{
+  "period_start": "2026-10-19",
+  "period_type": "week",
+  "core": {
+    "external_new_users": 3,
+    "external_total_users": 8,
+    "valid_members": 0,
+    "active_users_30d": 5,
+    "successful_generations": 0,
+    "email_subscribers_total": 6,
+    "email_subscribers_new": 3,
+    "ga4_sign_up": 7,
+    "ga4_generate_post": 5,
+    "ga4_purchase": 0,
+    "ads_spend_hkd": 42.87,
+    "ads_clicks": 19,
+    "ads_impr": 1700,
+    "revenue_usd": null,
+    "decisions": [
+      "hold_budget_small",
+      "investigate_signup_to_first_compose"
+    ],
+    "traffic_light": "yellow",
+    "founder_noise": "medium",
+    "stop_review_flags": {
+      "review_30d": false,
+      "reassess_90d": false,
+      "note": "week ads_spend_hkd=42.87; new=3; below HKD200/new=0 Review gate for this week window"
+    }
+  },
+  "created_at": "2026-11-02 05:26:13.048000",
+  "env": "production",
+  "focus": {
+    "theme": "hygiene",
+    "metrics": {},
+    "notes": "corrected window 2026-10-19→2026-10-25 (HKT Mon–Sun); baseline week for WoW after boundary fix"
+  },
+  "period_end": "2026-10-25",
+  "provisional": false,
+  "schema_version": 1,
+  "segments": {},
+  "source_notes": "Mongo read-only; GEN=ae_compose|ae_compose_part; email=verified & not weekly_mail_opt_out; no PII; eventCount by eventName; ≠ external customers; HKT week dates as GA4 date_range; Ads API not in this script; Ads API metrics.cost_micros/1e6 as HKD; HKT week as segments.date",
+  "updated_at": "2026-11-02 05:26:13.048000"
+}

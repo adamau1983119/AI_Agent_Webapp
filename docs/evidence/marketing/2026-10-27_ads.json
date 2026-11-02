@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "period_start": "2026-10-27",
+  "period_end": "2026-11-02",
+  "source": "google_ads_api",
+  "customer_id": "9708645947",
+  "ads_spend_hkd": 23.52,
+  "ads_clicks": 18,
+  "ads_impr": 212,
+  "source_notes": "Ads API metrics.cost_micros/1e6 as HKD; HKT week as segments.date"
+}

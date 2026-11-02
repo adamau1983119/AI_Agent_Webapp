@@ -8,6 +8,7 @@ venv/
 env/
 ENV/
 .venv
+.wb_marketing_venv/
 
 # Node
 node_modules/

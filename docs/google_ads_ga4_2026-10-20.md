@@ -16,11 +16,10 @@
 
 ## 現在停在這裡
 
-2026-10-28：**PR #125／#126** 已合。篩選器＝**有效**；`provisional=false`。  
-**Ads API**：**已通**（直連 `970-864-5947`；週 10/20～26＝35.17／19／2196；已 upsert）。  
-**MCC**：✅ **2026-10-29** 已掛客戶 `970-864-5947`（MCC `730-946-6170`）。本機 `GOOGLE_ADS_LOGIN_CUSTOMER_ID=7309466170`。`fetch_ads` 掛帳後煙霧 PASS（週 10/20～26＝35.17／19／2196）。  
-**Looker／Sheet**：Sheet [`AlterEgo_ops_weekly`](https://docs.google.com/spreadsheets/d/1uttJA5MwwV7pH8a30bSeDlMBOWfVm0eD3foJVugkxUI/edit) 已貼資料；Looker 報表 **[Alter Ego Weekly Ops](https://lookerstudio.google.com/reporting/5d96e560-baf9-40da-9ad3-cae35c528cbe)** 已建（評量表四張）。  
-**黃燈產品**：`Dashboard` 已縮短「生成貼文」→主題 compose（分支 `feature/v8-marketing-ops-next`；待 PR）。
+2026-11-02：**週一完整週報 PASS**（period **10/27～11/02**）：黃燈；新客 **1**／存量 8；valid／gen **1**；Ads **23.52／18／212**；GA4 5／8／0。新客仍 0 compose。`ops_weekly.csv` **2 列**（含 10/20～26）。opsOnly；Python checking＝N/A。  
+**WorkBuddy／Agent**：`push_sheet` → Sheet [`AlterEgo_ops_weekly`](https://docs.google.com/spreadsheets/d/109Xw93X8VEQNc4yxRzIJF7-VhAjeNkycxstLyucneK8/edit)（**不**重建 Looker）。CEO＝審燈號。  
+**Ads／MCC**：API 通；LOGIN `7309466170`。  
+**Looker**：**[Alter Ego Weekly Ops](https://lookerstudio.google.com/reporting/5d96e560-baf9-40da-9ad3-cae35c528cbe)**（資料源＝上列 Sheet）。
 
 ## 廣告帳戶現況
 

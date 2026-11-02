@@ -24,7 +24,9 @@
 4. `assemble.py … --ga4-file … --ads-file … --out draft.json`
 5. 草稿給 CEO 拍燈號／決策 → WorkBuddy：  
    `upsert.py --env production --file draft.json`
-6. `export_sheet.py --period-start … --out docs/evidence/marketing/ops_weekly.csv` → 匯入 Sheet（Looker 見 [`marketing_looker_sheet_setup.md`](./marketing_looker_sheet_setup.md)）
+6. **寫入 Sheet（Agent；禁 CEO 手貼）** — **主路徑**：WorkBuddy 以 **info@** Google（Sheets Skill／Drive）**自建或覆寫原生**試算表 `AlterEgo_ops_weekly`／分頁 `ops_weekly`（欄位＝`export_sheet`／CSV；**禁 xlsx 上傳殼**）。  
+   **備援**：`marketing_period_push_sheet.py --all`（需 `MARKETING_OPS_SHEET_ID`＋SA Editor）。可選先 `export_sheet.py --all` 留本機 CSV。  
+   版面：[`marketing_alter_ego_ops_layout_spec.md`](./marketing_alter_ego_ops_layout_spec.md)；交棒 Prompt：[`workbuddy_marketing_weekly_handoff_prompt.md`](./workbuddy_marketing_weekly_handoff_prompt.md)；連線：[`marketing_looker_sheet_setup.md`](./marketing_looker_sheet_setup.md)
 7. 黃燈可跑：`funnel_signup_compose.py`（無 PII）→ 結果一句寫工作記錄
 8. 可選：`rollup.py`
 
