@@ -1,0 +1,196 @@
+{
+  "schema_version": 1,
+  "period_start": "2026-10-19",
+  "period_end": "2026-10-25",
+  "provisional": false,
+  "source": "ga4_data_api",
+  "property_id": "557136140",
+  "totals": {
+    "sessions": 33.0,
+    "engaged_sessions": 19.0,
+    "total_users": 29.0,
+    "page_views": 96.0
+  },
+  "daily": [
+    {
+      "date": "2026-10-19",
+      "sessions": 2.0,
+      "engaged_sessions": 1.0
+    },
+    {
+      "date": "2026-10-20",
+      "sessions": 7.0,
+      "engaged_sessions": 2.0
+    },
+    {
+      "date": "2026-10-21",
+      "sessions": 9.0,
+      "engaged_sessions": 5.0
+    },
+    {
+      "date": "2026-10-22",
+      "sessions": 3.0,
+      "engaged_sessions": 2.0
+    },
+    {
+      "date": "2026-10-23",
+      "sessions": 5.0,
+      "engaged_sessions": 4.0
+    },
+    {
+      "date": "2026-10-24",
+      "sessions": 2.0,
+      "engaged_sessions": 2.0
+    },
+    {
+      "date": "2026-10-25",
+      "sessions": 5.0,
+      "engaged_sessions": 3.0
+    }
+  ],
+  "by_medium": [
+    {
+      "dims": [
+        "cpc"
+      ],
+      "metrics": [
+        16.0
+      ]
+    },
+    {
+      "dims": [
+        "(none)"
+      ],
+      "metrics": [
+        8.0
+      ]
+    },
+    {
+      "dims": [
+        "referral"
+      ],
+      "metrics": [
+        7.0
+      ]
+    },
+    {
+      "dims": [
+        "organic"
+      ],
+      "metrics": [
+        2.0
+      ]
+    }
+  ],
+  "by_landing": [
+    {
+      "dims": [
+        "/language"
+      ],
+      "metrics": [
+        27.0
+      ]
+    },
+    {
+      "dims": [
+        "(not set)"
+      ],
+      "metrics": [
+        3.0
+      ]
+    },
+    {
+      "dims": [
+        "/welcome"
+      ],
+      "metrics": [
+        2.0
+      ]
+    },
+    {
+      "dims": [
+        "/?gtm_debug=1792468853533"
+      ],
+      "metrics": [
+        1.0
+      ]
+    }
+  ],
+  "by_country": [
+    {
+      "dims": [
+        "Japan"
+      ],
+      "metrics": [
+        12.0
+      ]
+    },
+    {
+      "dims": [
+        "Hong Kong"
+      ],
+      "metrics": [
+        11.0
+      ]
+    },
+    {
+      "dims": [
+        "Taiwan"
+      ],
+      "metrics": [
+        4.0
+      ]
+    },
+    {
+      "dims": [
+        "United States"
+      ],
+      "metrics": [
+        3.0
+      ]
+    },
+    {
+      "dims": [
+        "(not set)"
+      ],
+      "metrics": [
+        2.0
+      ]
+    },
+    {
+      "dims": [
+        "United Kingdom"
+      ],
+      "metrics": [
+        1.0
+      ]
+    }
+  ],
+  "by_device": [
+    {
+      "dims": [
+        "mobile"
+      ],
+      "metrics": [
+        18.0
+      ]
+    },
+    {
+      "dims": [
+        "desktop"
+      ],
+      "metrics": [
+        15.0
+      ]
+    },
+    {
+      "dims": [
+        "smart tv"
+      ],
+      "metrics": [
+        1.0
+      ]
+    }
+  ],
+  "source_notes": "traffic only; 人數／新客 SoT 仍是 Mongo counts；HKT week dates as GA4 date_range"
+}

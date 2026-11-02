@@ -1,0 +1,252 @@
+{
+  "schema_version": 1,
+  "period_start": "2026-10-27",
+  "period_end": "2026-11-02",
+  "provisional": false,
+  "source": "ga4_data_api",
+  "property_id": "557136140",
+  "totals": {
+    "sessions": 32.0,
+    "engaged_sessions": 13.0,
+    "total_users": 31.0,
+    "page_views": 87.0
+  },
+  "daily": [
+    {
+      "date": "2026-10-27",
+      "sessions": 5.0,
+      "engaged_sessions": 4.0
+    },
+    {
+      "date": "2026-10-28",
+      "sessions": 4.0,
+      "engaged_sessions": 2.0
+    },
+    {
+      "date": "2026-10-29",
+      "sessions": 17.0,
+      "engaged_sessions": 3.0
+    },
+    {
+      "date": "2026-10-30",
+      "sessions": 1.0,
+      "engaged_sessions": 1.0
+    },
+    {
+      "date": "2026-10-31",
+      "sessions": 2.0,
+      "engaged_sessions": 1.0
+    },
+    {
+      "date": "2026-11-01",
+      "sessions": 1.0,
+      "engaged_sessions": 1.0
+    },
+    {
+      "date": "2026-11-02",
+      "sessions": 2.0,
+      "engaged_sessions": 1.0
+    }
+  ],
+  "by_medium": [
+    {
+      "dims": [
+        "cpc"
+      ],
+      "metrics": [
+        16.0
+      ]
+    },
+    {
+      "dims": [
+        "(none)"
+      ],
+      "metrics": [
+        14.0
+      ]
+    },
+    {
+      "dims": [
+        "(not set)"
+      ],
+      "metrics": [
+        1.0
+      ]
+    },
+    {
+      "dims": [
+        "organic"
+      ],
+      "metrics": [
+        1.0
+      ]
+    },
+    {
+      "dims": [
+        "referral"
+      ],
+      "metrics": [
+        1.0
+      ]
+    }
+  ],
+  "by_landing": [
+    {
+      "dims": [
+        "/language"
+      ],
+      "metrics": [
+        17.0
+      ]
+    },
+    {
+      "dims": [
+        "/en"
+      ],
+      "metrics": [
+        8.0
+      ]
+    },
+    {
+      "dims": [
+        "/register"
+      ],
+      "metrics": [
+        2.0
+      ]
+    },
+    {
+      "dims": [
+        "/welcome"
+      ],
+      "metrics": [
+        2.0
+      ]
+    },
+    {
+      "dims": [
+        "/"
+      ],
+      "metrics": [
+        1.0
+      ]
+    },
+    {
+      "dims": [
+        "/dashboard"
+      ],
+      "metrics": [
+        1.0
+      ]
+    },
+    {
+      "dims": [
+        "/dashboard?tab=food"
+      ],
+      "metrics": [
+        1.0
+      ]
+    },
+    {
+      "dims": [
+        "/login"
+      ],
+      "metrics": [
+        1.0
+      ]
+    }
+  ],
+  "by_country": [
+    {
+      "dims": [
+        "Hong Kong"
+      ],
+      "metrics": [
+        9.0
+      ]
+    },
+    {
+      "dims": [
+        "Japan"
+      ],
+      "metrics": [
+        9.0
+      ]
+    },
+    {
+      "dims": [
+        "Taiwan"
+      ],
+      "metrics": [
+        4.0
+      ]
+    },
+    {
+      "dims": [
+        "United Kingdom"
+      ],
+      "metrics": [
+        4.0
+      ]
+    },
+    {
+      "dims": [
+        "(not set)"
+      ],
+      "metrics": [
+        2.0
+      ]
+    },
+    {
+      "dims": [
+        "Iran"
+      ],
+      "metrics": [
+        2.0
+      ]
+    },
+    {
+      "dims": [
+        "Afghanistan"
+      ],
+      "metrics": [
+        1.0
+      ]
+    },
+    {
+      "dims": [
+        "United States"
+      ],
+      "metrics": [
+        1.0
+      ]
+    }
+  ],
+  "by_device": [
+    {
+      "dims": [
+        "mobile"
+      ],
+      "metrics": [
+        23.0
+      ]
+    },
+    {
+      "dims": [
+        "desktop"
+      ],
+      "metrics": [
+        8.0
+      ]
+    },
+    {
+      "dims": [
+        "tablet"
+      ],
+      "metrics": [
+        1.0
+      ]
+    }
+  ],
+  "source_notes": "traffic only; 人數／新客 SoT 仍是 Mongo counts；HKT week dates as GA4 date_range"
+}

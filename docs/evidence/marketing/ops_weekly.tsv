@@ -1,2 +1,3 @@
 period_start	period_end	schema_version	provisional	traffic_light	external_new_users	external_total_users	valid_members	active_users_30d	successful_generations	email_subscribers_total	email_subscribers_new	ads_spend_hkd	ads_clicks	ads_impr	ga4_sign_up	ga4_generate_post	ga4_purchase	revenue_usd	revenue_hkd_equiv	founder_noise
-2026-10-20	2026-10-26	1	False	yellow	2	7	0	4	0	6	2	35.17	19	2196	7	11	0			medium
+2026-10-19	2026-10-25	1	False	yellow	3	8	0	5	0	6	3	42.87	19	1700	7	5	0			medium
+2026-10-26	2026-11-01	1	False	yellow	1	8	1	5	1	6	0	23.88	18	950	5	9	0			medium
