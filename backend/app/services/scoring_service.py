@@ -302,7 +302,8 @@ class DiversityScorer:
                 "total_topics": 0,
                 "unique_sources": 0,
                 "source_distribution": {},
-                "status": "no_data"
+                "status": "no_data",
+                "passed": False,
             }
         
         # 收集來源
