@@ -145,3 +145,10 @@ class TestDiversityScorer:
         assert report["passed"] == False  # score < 0.6
         assert report["status"] == "poor"
 
+    def test_diversity_report_empty_includes_passed(self):
+        """空清單報告必須含 passed=False（避免 collect_topics KeyError）"""
+        report = DiversityScorer.get_diversity_report([])
+        assert report["status"] == "no_data"
+        assert "passed" in report
+        assert report["passed"] is False
+

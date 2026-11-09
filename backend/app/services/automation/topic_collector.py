@@ -145,50 +145,47 @@ class TopicCollector:
         try:
             # 使用角色分配策略收集（多收集一些以補償去重損失）
             target_count = int(count * 1.5) if self.enable_dedup else count
-            rss_topics = await self._collect_by_roles(category, target_count, display_language=display_language)
-            
-            # v3.2: 去重過濾
-            if self.enable_dedup and self.deduplicator:
-                unique_topics = []
-                duplicate_count = 0
-                
-                for topic in rss_topics:
-                    title = topic.get("title", "")
-                    is_dup, reason, similar = await self.deduplicator.is_duplicate(title)
-                    
-                    if is_dup:
-                        duplicate_count += 1
-                        logger.debug(f"🔄 跳過重複: {title[:30]}... ({reason})")
-                    else:
-                        unique_topics.append(topic)
-                
-                if duplicate_count > 0:
-                    logger.info(f"🔄 去重: {duplicate_count} 個重複, {len(unique_topics)} 個唯一")
-                
-                topics.extend(unique_topics)
-            else:
-                topics.extend(rss_topics)
-            
-            # 計算多樣性分數
+            rss_topics = await self._collect_by_roles(
+                category, target_count, display_language=display_language
+            )
+            topics.extend(
+                await self._filter_unique_topics(rss_topics)
+            )
+
+            # 去重後仍不足：同輪再擴大收集一次（不開 AI keyword fallback）
+            if self.enable_dedup and self.deduplicator and len(topics) < count:
+                need = count - len(topics)
+                logger.warning(
+                    f"去重後唯一主題不足（{len(topics)}/{count}），"
+                    f"同輪再撈一輪（目標 +{need}）"
+                )
+                retry_target = max(int(need * 2.5), need + 2)
+                more = await self._collect_by_roles(
+                    category, retry_target, display_language=display_language
+                )
+                topics.extend(await self._filter_unique_topics(more))
+
+            # 計算多樣性分數（空清單必須含 passed，避免 KeyError 中斷補產）
             diversity_report = self.diversity_scorer.get_diversity_report(topics)
-            logger.info(f"多樣性報告: score={diversity_report['score']}, "
-                       f"sources={diversity_report['unique_sources']}, "
-                       f"status={diversity_report['status']}")
-            
-            # 如果多樣性不足，記錄警告
-            if not diversity_report['passed']:
-                logger.warning(f"⚠️ 多樣性分數不足: {diversity_report['score']} < 0.6")
-            
+            logger.info(
+                f"多樣性報告: score={diversity_report['score']}, "
+                f"sources={diversity_report['unique_sources']}, "
+                f"status={diversity_report['status']}"
+            )
+            if not diversity_report.get("passed", False):
+                logger.warning(
+                    f"⚠️ 多樣性分數不足: {diversity_report['score']} < 0.6"
+                )
+
             # 如果收集到足夠的主題，返回
             if len(topics) >= count:
-                # v3.2: 記錄去重統計
                 if self.enable_dedup and self.deduplicator:
                     stats = self.deduplicator.get_stats()
                     logger.info(f"📊 去重統計: {stats['duplicate_rate']} 重複率")
                 from app.services.automation.topic_visible_floor import apply_visible_floor
                 apply_visible_floor(topics)
                 return topics[:count]
-            
+
             # 如果不足且允許使用備用方案，使用備用關鍵字生成主題
             from app.utils.cost_controls import ai_topic_fallback_enabled
             if use_fallback and ai_topic_fallback_enabled() and len(topics) < count:
@@ -200,9 +197,10 @@ class TopicCollector:
                 topics.extend(fallback_topics)
             elif use_fallback and not ai_topic_fallback_enabled() and len(topics) < count:
                 logger.info(
-                    f"主題不足 ({len(topics)}/{count})，AI 備援已關閉 (ENABLE_AI_TOPIC_FALLBACK=false)"
+                    f"主題不足 ({len(topics)}/{count})，"
+                    f"AI 備援已關閉 (ENABLE_AI_TOPIC_FALLBACK=false)"
                 )
-                
+
         except Exception as e:
             logger.error(f"收集主題失敗: {e}")
             from app.utils.cost_controls import ai_topic_fallback_enabled
@@ -212,7 +210,29 @@ class TopicCollector:
         from app.services.automation.topic_visible_floor import apply_visible_floor
         apply_visible_floor(topics)
         return topics[:count]
-    
+
+    async def _filter_unique_topics(
+        self, rss_topics: List[Dict[str, Any]]
+    ) -> List[Dict[str, Any]]:
+        """去重過濾；未啟用去重時原樣回傳。"""
+        if not (self.enable_dedup and self.deduplicator):
+            return list(rss_topics)
+        unique_topics: List[Dict[str, Any]] = []
+        duplicate_count = 0
+        for topic in rss_topics:
+            title = topic.get("title", "")
+            is_dup, reason, _similar = await self.deduplicator.is_duplicate(title)
+            if is_dup:
+                duplicate_count += 1
+                logger.debug(f"🔄 跳過重複: {title[:30]}... ({reason})")
+            else:
+                unique_topics.append(topic)
+        if duplicate_count > 0:
+            logger.info(
+                f"🔄 去重: {duplicate_count} 個重複, {len(unique_topics)} 個唯一"
+            )
+        return unique_topics
+
     async def _collect_by_roles(
         self,
         category: Category,
