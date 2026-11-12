@@ -25,6 +25,7 @@ import BrandMark from '@/components/brand/BrandMark';
 import CreditPackShelf from '@/components/credits/CreditPackShelf';
 import { TodayMobileTopics } from '@/components/topics/MobileTopicList';
 import GuestCreditOfferCard from '@/components/welcome/GuestCreditOfferCard';
+import { trackWelcomeCta } from '@/lib/analytics';
 import type { CreditPack } from '@/api/billing';
 
 const LANDING_PACKS: CreditPack[] = [
@@ -131,6 +132,7 @@ export default function Welcome() {
             <Link
               to="/dashboard"
               data-testid="btn-landing-register"
+              onClick={() => trackWelcomeCta('hero_start')}
               className="w-1/3 max-w-[11rem] min-h-[46px] px-2 py-3 rounded-full text-[11px] tracking-[0.12em] uppercase text-white flex items-center justify-center bg-gradient-to-b from-[#2a2a2a] to-[#0d0d0d] shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_6px_18px_rgba(0,0,0,0.12)] hover:from-[#333] hover:to-[#111] transition-colors"
             >
               {t('landing.cta.register')}
@@ -161,6 +163,7 @@ export default function Welcome() {
             showLogin={false}
             monoActions
             costValue={null}
+            analyticsEnabled
           />
         </section>
 

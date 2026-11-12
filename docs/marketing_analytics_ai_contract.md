@@ -41,7 +41,8 @@ HKT **週一 00:00～週日 23:59**。上週＝上一完整週。首週無上週
 | `schema_version` | **1** |
 
 手填／後台：`revenue_usd`、燈號、決策。  
-`ga4_*`：`marketing_period_fetch_ga4.py`。  
+`ga4_*`：`marketing_period_fetch_ga4.py`（Core 僅 `sign_up`／`generate_post`／`purchase`）。  
+Welcome 雙漏斗 CTA 事件（`welcome_cta_click`／`guest_charge_cta_click`）見 [`marketing_welcome_ga4_measurement.md`](./marketing_welcome_ga4_measurement.md)；**不**進 Core 人數卡。  
 `ads_*`：`marketing_period_fetch_ads.py`（API 或 `--handfill`）。週報節奏見 [`marketing_weekly_ops_runbook.md`](./marketing_weekly_ops_runbook.md)。
 
 ## Focus／Segments

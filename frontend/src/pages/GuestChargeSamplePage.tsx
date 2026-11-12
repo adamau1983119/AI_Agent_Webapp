@@ -25,6 +25,7 @@ export default function GuestChargeSamplePage() {
           showLogin={false}
           monoActions
           costValue={null}
+          analyticsEnabled={false}
         />
         <GuestCreditOfferCard
           lang="ja"
@@ -34,6 +35,7 @@ export default function GuestChargeSamplePage() {
           loginTestId="btn-guest-charge-sample-login-ja"
           cancelTestId="btn-guest-charge-sample-cancel-ja"
           showCancel
+          analyticsEnabled={false}
         />
       </div>
     </div>

@@ -8,6 +8,7 @@ import {
   type Language,
   type TranslationKey,
 } from '@/i18n'
+import { trackGuestChargeCta, trackWelcomeCta } from '@/lib/analytics'
 
 const WELCOME = '100'
 const DAILY = '+20'
@@ -28,6 +29,8 @@ export type GuestCreditOfferCardProps = {
   showLogin?: boolean
   /** Welcome only: black card + white type; modal keeps light brand card. */
   monoActions?: boolean
+  /** Production GA4 CTA clicks; off on sample / noindex pages. */
+  analyticsEnabled?: boolean
   /** Close modal without leaving the page (TopicDetail). */
   onCancel?: () => void
   /** This-generate cost; omit / null hides the cost row. */
@@ -45,6 +48,7 @@ export default function GuestCreditOfferCard({
   showCancel = false,
   showLogin = true,
   monoActions = false,
+  analyticsEnabled = true,
   onCancel,
   costValue = DEFAULT_COST,
   kicker,
@@ -55,6 +59,19 @@ export default function GuestCreditOfferCard({
   const L = (key: TranslationKey) => label(lang, key, t)
   const showCost = costValue !== null && costValue !== undefined
   const dark = monoActions
+  const trackRegister = () => {
+    if (!analyticsEnabled) return
+    if (dark) trackWelcomeCta('offer_register')
+    else trackGuestChargeCta('register')
+  }
+  const trackLogin = () => {
+    if (!analyticsEnabled) return
+    trackGuestChargeCta('login')
+  }
+  const trackCancel = () => {
+    if (!analyticsEnabled) return
+    trackGuestChargeCta('cancel')
+  }
 
   const cardShell = dark
     ? 'bg-black rounded-2xl shadow-xl p-6 w-full text-center space-y-5 border border-[#2a2a2a]'
@@ -132,7 +149,12 @@ export default function GuestCreditOfferCard({
       ) : null}
 
       <div className="flex flex-col gap-3 pt-1">
-        <Link to="/register" data-testid={registerTestId} className={ctaClass}>
+        <Link
+          to="/register"
+          data-testid={registerTestId}
+          className={ctaClass}
+          onClick={trackRegister}
+        >
           {L('welcomeOffer.cta')}
         </Link>
         {showLogin && loginTestId ? (
@@ -140,6 +162,7 @@ export default function GuestCreditOfferCard({
             to="/login"
             data-testid={loginTestId}
             className="px-4 py-2 text-sm font-medium text-[#1a1a1a] border border-[#1a1a1a] rounded-xl min-h-[44px] flex items-center justify-center touch-manipulation"
+            onClick={trackLogin}
           >
             {L('landing.cta.login')}
           </Link>
@@ -149,7 +172,10 @@ export default function GuestCreditOfferCard({
             <button
               type="button"
               data-testid={cancelTestId}
-              onClick={onCancel}
+              onClick={() => {
+                trackCancel()
+                onCancel()
+              }}
               className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-xl min-h-[44px] touch-manipulation"
             >
               {L('common.cancel')}
@@ -159,6 +185,7 @@ export default function GuestCreditOfferCard({
               to="/dashboard"
               data-testid={cancelTestId}
               className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-xl min-h-[44px] flex items-center justify-center"
+              onClick={trackCancel}
             >
               {L('common.cancel')}
             </Link>
