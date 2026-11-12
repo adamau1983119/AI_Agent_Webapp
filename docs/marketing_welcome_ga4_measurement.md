@@ -9,14 +9,12 @@
 
 ## A. 立刻（GA4 UI · 零改碼／本檔合入後仍須手做）
 
-### A1. Annotations（註記）
+### A1. Annotations（註記）— ✅ 2026-11-12 已建（info@）
 
-Admin → Annotations（或報表時間軸註記），新增兩筆（HKT）：
-
-| 日期 | 文案 |
-|------|------|
-| 2026-11-12 | `Welcome gift card #134/#135 black mono` |
-| （CTA PR merge 日） | `Welcome GA4 CTA events live (welcome_cta_click / guest_charge_cta_click)` |
+| 日期 | 標題 | 說明 |
+|------|------|------|
+| 2026-11-12 | `Welcome gift card #134/#135` | `black mono gift card on Welcome` |
+| 2026-11-12 | `Welcome GA4 CTA events live #136` | `welcome_cta_click / guest_charge_cta_click` |
 
 ### A2. 14 日前後 Explore
 
@@ -49,9 +47,15 @@ CTA 事件先在 Explore 看；**勿**把 `sign_up` 當外部新客。
 
 ### B1. GA4 後台（事件上線後 1～2 日）
 
-1. Reports → Events：確認 `welcome_cta_click`、`guest_charge_cta_click` 出現。  
+1. Reports → Events：確認 `welcome_cta_click`、`guest_charge_cta_click` 出現（管理「事件」列表可能延遲）。  
 2. 自訂維度（若尚未有）：Event-scoped `cta_id`（參數名 `cta_id`）。  
 3. **7 日內不要**標為 Key event；觀察後再決定（避免污染 Ads `sign_up`）。
+
+### B2. 正式域手測 — ✅ 2026-11-12 PASS
+
+- 網址：`https://www.ai-alterego.com/welcome` → 黑卡「立即行動」  
+- DevTools Network：`collect` Payload → **`en=welcome_cta_click`**、**`ep.cta_id=offer_register`**、`dl=…/welcome`（HTTP 204）  
+- 注意：勿只看 `page_view`（`/register`）；即時總覽可能為 0（內部流量篩選），以 Network 為準
 
 ---
 
