@@ -158,7 +158,9 @@ export default function Welcome() {
         >
           <GuestCreditOfferCard
             registerTestId="btn-welcome-offer-register"
-            loginTestId="btn-welcome-offer-login"
+            showLogin={false}
+            monoActions
+            costValue={null}
           />
         </section>
 

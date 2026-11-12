@@ -1,5 +1,5 @@
 /**
- * Sample only. zh-TW + ja credit offer cards. Does not replace TopicDetail modal.
+ * Sample only. Welcome mono vs modal brand. Does not replace TopicDetail modal.
  */
 import { translateFor } from '@/i18n'
 import { useNoindex } from '@/hooks/useNoindex'
@@ -20,16 +20,16 @@ export default function GuestChargeSamplePage() {
         <GuestCreditOfferCard
           lang="zh-TW"
           cardTestId="card-guest-charge-sample-zh"
-          kicker={`${translateFor('zh-TW', 'guestChargeSample.kicker')} · ${translateFor('zh-TW', 'language.zh-TW')}`}
+          kicker={`${translateFor('zh-TW', 'guestChargeSample.kicker')} · Welcome mono`}
           registerTestId="btn-guest-charge-sample-register-zh"
-          loginTestId="btn-guest-charge-sample-login-zh"
-          cancelTestId="btn-guest-charge-sample-cancel-zh"
-          showCancel
+          showLogin={false}
+          monoActions
+          costValue={null}
         />
         <GuestCreditOfferCard
           lang="ja"
           cardTestId="card-guest-charge-sample-ja"
-          kicker={`${translateFor('ja', 'guestChargeSample.kicker')} · ${translateFor('ja', 'language.ja')}`}
+          kicker={`${translateFor('ja', 'guestChargeSample.kicker')} · modal`}
           registerTestId="btn-guest-charge-sample-register-ja"
           loginTestId="btn-guest-charge-sample-login-ja"
           cancelTestId="btn-guest-charge-sample-cancel-ja"
