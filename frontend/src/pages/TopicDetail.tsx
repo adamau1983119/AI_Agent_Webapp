@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
-import { useParams, useNavigate, useLocation } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { topicsAPI, contentsAPI, imagesAPI, interactionsAPI, API_BASE_URL } from '@/api/client'
+import { topicsAPI, contentsAPI, imagesAPI, API_BASE_URL } from '@/api/client'
 import { showSuccess, showError } from '@/utils/toast'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import ErrorDisplay from '@/components/ui/ErrorDisplay'
@@ -32,6 +32,8 @@ import { titleScriptMismatch } from '@/lib/topicLanguages'
 import { copyToClipboard } from '@/utils/copyToClipboard'
 import { Copy, Sparkles, Image as ImageIcon, Search, ExternalLink, ArrowDownCircle, ArrowLeft } from 'lucide-react'
 import { markTopicRead } from '@/lib/topicReadState'
+import { logTopicBrowse } from '@/lib/topicBrowseLog'
+import { MobileTopicList } from '@/components/topics/MobileTopicList'
 import PublicTourCoach from '@/components/tour/PublicTourCoach'
 import {
   readPublicTour,
@@ -66,34 +68,26 @@ function articleErrorText(
 export default function TopicDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const location = useLocation()
   const queryClient = useQueryClient()
   const { t, language } = useTranslation()
   const { isAuthenticated, user } = useAuthStore()
   const [showImageSearch, setShowImageSearch] = useState(false)
   const [showLoginPrompt, setShowLoginPrompt] = useState(false)
+  const [loginCost, setLoginCost] = useState<number | null>(null)
   const [composeTitles, setComposeTitles] = useState<string[]>([])
   const [tour, setTour] = useState<PublicTourState>(() => readPublicTour())
-  const [viewStartTime, setViewStartTime] = useState<number | null>(null)
   const [displayOverride, setDisplayOverride] = useState<TopicDisplayOverride | null>(null)
   const [showCollectionTitle, setShowCollectionTitle] = useState(false)
   const [sourceViewMode, setSourceViewMode] = useState<'translated' | 'original'>('translated')
   const postKitRef = useRef<HTMLDivElement>(null)
 
-  const requireAuth = (action: () => void) => {
+  const requireAuth = (action: () => void, cost?: number) => {
     if (!isAuthenticated) {
+      setLoginCost(typeof cost === 'number' ? cost : null)
       setShowLoginPrompt(true)
       return
     }
     action()
-  }
-
-  const goBackToHeadlines = () => {
-    if (location.key !== 'default') {
-      navigate(-1)
-      return
-    }
-    navigate('/dashboard')
   }
 
   const {
@@ -105,6 +99,26 @@ export default function TopicDetail() {
     queryFn: () => topicsAPI.getTopic(id!, language),
     enabled: !!id,
   })
+
+  const goBackToHeadlines = () => {
+    if (id) logTopicBrowse('topic_back', id, user?.id)
+    const tab = topic?.category
+    const dest = tab === 'fashion' || tab === 'food' || tab === 'trend'
+      ? `/dashboard?tab=${tab}`
+      : '/dashboard'
+    navigate(dest)
+  }
+
+  const relatedQuery = useQuery({
+    queryKey: ['topic-related', topic?.category, language, id],
+    queryFn: () => topicsAPI.getTopics({
+      limit: 8,
+      lang: language,
+      category: topic?.category,
+    }),
+    enabled: !!topic?.category,
+  })
+  const relatedTopics = (relatedQuery.data?.data || []).filter((item) => item.id !== id).slice(0, 3)
 
   const {
     data: content,
@@ -258,25 +272,14 @@ export default function TopicDetail() {
   }, [id])
 
   useEffect(() => {
-    if (topic) {
-      setViewStartTime(Date.now())
-      
-      return () => {
-        if (viewStartTime) {
-          const duration = Math.floor((Date.now() - viewStartTime) / 1000)
-          if (duration > 5) {
-            interactionsAPI.createInteraction({
-              user_id: user?.id ?? 'user_default',
-              topic_id: id!,
-              article_id: content?.id,
-              action: 'view',
-              duration,
-            }).catch(console.error)
-          }
-        }
-      }
+    if (!topic || !id) return
+    const openedAt = Date.now()
+    logTopicBrowse('topic_open', id, user?.id)
+    return () => {
+      const duration = Math.floor((Date.now() - openedAt) / 1000)
+      logTopicBrowse('topic_dwell', id, user?.id, duration)
     }
-  }, [topic, content, id, viewStartTime, user?.id])
+  }, [topic, id, user?.id])
 
   const generateContentMutation = useMutation({
     mutationFn: (settings?: GenerationSettings) => {
@@ -484,12 +487,11 @@ export default function TopicDetail() {
               </span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-bold font-display text-gray-900 dark:text-white break-words tracking-tight leading-tight">
-              {displayCopy?.localePending ? (
-                <span className="text-gray-500 dark:text-gray-400">{t('topics.translating')}</span>
-              ) : (
-                displayCopy?.title ?? topic.title
-              )}
+              {displayCopy?.title || topic.title}
             </h1>
+            {displayCopy?.localePending ? (
+              <p className="mt-1 text-sm text-gray-500">{t('topics.translating')}</p>
+            ) : null}
             {displayCopy && !displayCopy.localePending && getOriginalTitleLine(topic, displayCopy.title) && (
               <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-sans italic mt-1.5 break-words">
                 {t('topics.originalTitlePrefix')}{' '}
@@ -695,6 +697,20 @@ export default function TopicDetail() {
         </div>
       </section>
 
+      <div className="lg:hidden space-y-3">
+        <p className="text-xs text-gray-500">{t('topicLayout.related')}</p>
+        {relatedTopics.length === 0 ? (
+          <p className="text-sm text-gray-500">{t('topicLayout.empty')}</p>
+        ) : (
+          <MobileTopicList
+            topics={relatedTopics}
+            testId="list-topic-detail-related"
+            compact
+            onOpen={(item) => logTopicBrowse('topic_next', item.id, user?.id)}
+          />
+        )}
+      </div>
+
       {/* 3. 中段雙欄：左欄精選照片（最多 4・2×2） vs 右欄組裝器 */}
       <section className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* 左欄 (5 欄)：圖片庫與管理 */}
@@ -816,6 +832,7 @@ export default function TopicDetail() {
             emptyHintKey="titleImage.needComposeOrTitle"
             chargeDownload={async () => {
               if (!isAuthenticated) {
+                setLoginCost(10)
                 setShowLoginPrompt(true)
                 throw new Error('auth')
               }
@@ -913,28 +930,51 @@ export default function TopicDetail() {
         )}
       </section>
 
+      <button
+        type="button"
+        onClick={goBackToHeadlines}
+        data-testid="btn-topic-detail-back-sticky"
+        className="lg:hidden fixed bottom-4 left-4 right-4 z-40 min-h-[46px] rounded-full border border-[#1a1a1a] bg-[#F7F5F2] text-sm"
+      >
+        {t('topicLayout.back')}
+      </button>
+
       {/* 登入提示模態框 */}
       {showLoginPrompt && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 max-w-md w-full text-center space-y-4">
             <h3 className="text-lg font-semibold font-display text-gray-900 dark:text-white">
-              {t('auth.loginRequired')}
+              {t('guestCharge.title')}
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400 font-sans">
-              {t('auth.loginRequiredMessage')}
+              {loginCost === null
+                ? t('guestCharge.bodyPlain')
+                : t('guestCharge.body', { n: String(loginCost) })}
             </p>
-            <div className="flex gap-3 justify-center pt-2">
+            <div className="flex flex-col gap-3 pt-2">
               <button
+                type="button"
+                data-testid="btn-guest-charge-register"
+                onClick={() => navigate('/register')}
+                className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-xl hover:bg-primary-dark min-h-[44px] touch-manipulation"
+              >
+                {t('landing.cta.register')}
+              </button>
+              <button
+                type="button"
+                data-testid="btn-guest-charge-login"
+                onClick={() => navigate('/login')}
+                className="px-4 py-2 text-sm font-medium text-[#1a1a1a] border border-[#1a1a1a] rounded-xl min-h-[44px] touch-manipulation"
+              >
+                {t('landing.cta.login')}
+              </button>
+              <button
+                type="button"
+                data-testid="btn-guest-charge-cancel"
                 onClick={() => setShowLoginPrompt(false)}
                 className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-xl hover:bg-gray-200 min-h-[44px] touch-manipulation"
               >
                 {t('common.cancel')}
-              </button>
-              <button
-                onClick={() => navigate('/login')}
-                className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-xl hover:bg-primary-dark min-h-[44px] touch-manipulation"
-              >
-                {t('auth.login.title')}
               </button>
             </div>
           </div>

@@ -28,7 +28,8 @@ _NOISE_LINE = re.compile(
     r"在 google 上將我們加入偏好來源|"
     r"add us (?:as a )?google preferred source|"
     r"add us to your preferred sources on google|"
-    r"popbee\s+popbee\s+circle.*|city\s+guide\s+popcast"
+    r"popbee\s+popbee\s+circle.*|city\s+guide\s+popcast|"
+    r"join the conversation"
     r")$",
     re.I,
 )
@@ -74,6 +75,10 @@ _SITE_TAIL = re.compile(
 )
 _TOC_HEAD = re.compile(
     r"^(what is .+|how it works|my experience(?: and review)?|is the .+ worth it\??)$",
+    re.I,
+)
+_TAG_RESIDUE = re.compile(
+    r"data-(?:platform|analytics|action|mrf)|aria-label=|console\.error|\{alert\(|onclick=",
     re.I,
 )
 
@@ -145,7 +150,7 @@ def clean_extracted_text(text: str) -> str:
             if lines:
                 break
             continue
-        if _is_chrome_line(line, key):
+        if _is_chrome_line(line, key) or _TAG_RESIDUE.search(line):
             continue
         lines.append(line)
     lines = _drop_leading_recirc(lines)
@@ -165,15 +170,11 @@ def apply_display_clean_to_topic(topic: dict) -> None:
         return
     sources = topic.get("sources") or []
     if sources and isinstance(sources[0], dict):
-        clean = sources[0].get("content_clean")
-        if isinstance(clean, str) and clean.strip():
-            sources[0]["original_content"] = clean_extracted_text(clean)
-        else:
-            raw = sources[0].get("original_content")
-            if isinstance(raw, str) and raw.strip():
-                cleaned = clean_extracted_text(raw)
-                sources[0]["original_content"] = cleaned
-                sources[0]["content_clean"] = cleaned
+        raw = sources[0].get("content_clean") or sources[0].get("original_content")
+        if isinstance(raw, str) and raw.strip():
+            cleaned = clean_extracted_text(raw)
+            sources[0]["content_clean"] = cleaned
+            sources[0]["original_content"] = cleaned
     ts = topic.get("translated_source_content")
     if isinstance(ts, str) and ts.strip():
         topic["translated_source_content"] = clean_extracted_text(ts)

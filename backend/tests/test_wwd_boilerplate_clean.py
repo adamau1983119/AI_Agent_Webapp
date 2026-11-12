@@ -79,6 +79,23 @@ class TestWwdBoilerplateClean(unittest.TestCase):
         self.assertNotIn("Share this article", out)
         self.assertNotIn("Related Articles", out)
 
+    def test_drops_copy_button_attribute_residue(self):
+        body = (
+            "Shoppers still want physical stores in 2026, and luxury brands "
+            "are opening more doors than they close this year."
+        )
+        raw = (
+            body
+            + "\n\n{alert('Link copied!')}).catch(err => {console.error('Failed to copy')}\" "
+            + "data-platform=\"copy_link\" aria-label=\"Copy link\"\n\n"
+            + "Join the conversation\n"
+        )
+        out = clean_extracted_text(raw)
+        self.assertIn("physical stores", out)
+        self.assertNotIn("data-platform", out)
+        self.assertNotIn("Link copied", out)
+        self.assertNotIn("Join the conversation", out)
+
 
 if __name__ == "__main__":
     unittest.main()

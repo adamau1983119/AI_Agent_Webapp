@@ -30,6 +30,9 @@ import Discover from '@/pages/Discover'
 // Phase 4: AI 個人化頁面
 import StyleProfile from '@/pages/StyleProfile'
 import ComposeSamplePage from '@/pages/ComposeSamplePage'
+import GuestSamplePage from '@/pages/GuestSamplePage'
+import WelcomeSamplePage from '@/pages/WelcomeSamplePage'
+import TopicLayoutSamplePage from '@/pages/TopicLayoutSamplePage'
 import StyleTrainerPage from '@/pages/StyleTrainerPage'
 // Phase 5: 分發與整合頁面
 import SocialConnect from '@/pages/SocialConnect'
@@ -39,21 +42,27 @@ import AlterEgoOnboarding from '@/pages/AlterEgoOnboarding'
 import MyChannel from '@/pages/MyChannel'
 import { AlterEgoGateRedirect } from '@/components/auth/AlterEgoGateRedirect'
 import { initializeAuth } from '@/stores/authStore'
+import { useTranslation } from '@/i18n'
+import { mapGuestLanguage } from '@/lib/mapGuestLanguage'
 
-// 根路徑：已登入 → AE 導流；未選語言 → 語言頁；已選語言 → 歡迎頁
+function EnterDashboard() {
+  const { setLanguage } = useTranslation()
+  useEffect(() => {
+    const saved = localStorage.getItem('preferred-language')
+    if (saved !== 'zh-TW' && saved !== 'en' && saved !== 'ja') {
+      const browserTag = typeof navigator !== 'undefined' ? navigator.language : 'zh-TW'
+      setLanguage(mapGuestLanguage(browserTag))
+    }
+  }, [setLanguage])
+  return <Navigate to="/dashboard" replace />
+}
+
 function RootRedirect() {
-  const hasLanguage = localStorage.getItem('preferred-language');
-  const token = localStorage.getItem('auth_token');
-
+  const token = localStorage.getItem('auth_token')
   if (token) {
-    return <AlterEgoGateRedirect />;
+    return <AlterEgoGateRedirect />
   }
-
-  if (!hasLanguage) {
-    return <Navigate to="/language" replace />;
-  }
-
-  return <Navigate to="/welcome" replace />;
+  return <EnterDashboard />
 }
 
 function App() {
@@ -95,6 +104,9 @@ function App() {
                 <Route path="/topics" element={<Topics />} />
                 <Route path="/topics/:id" element={<TopicDetail />} />
                 <Route path="/compose-sample" element={<ComposeSamplePage />} />
+                <Route path="/guest-sample" element={<GuestSamplePage />} />
+                <Route path="/welcome-sample" element={<WelcomeSamplePage />} />
+                <Route path="/topic-layout-sample" element={<TopicLayoutSamplePage />} />
                 <Route path="/ops/style-trainer" element={<StyleTrainerPage />} />
                 <Route path="/discover" element={<Discover />} />
                 <Route path="/preferences" element={<Preferences />} />
