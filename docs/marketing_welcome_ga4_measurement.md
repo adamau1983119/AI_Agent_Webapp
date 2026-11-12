@@ -1,7 +1,7 @@
 # Welcome 改版 · GA4 量測清單（A／B／C）
 
 > **Ship 日（產品 UI）**：2026-11-12 · PR **#134**／**#135**（黑卡禮遇）  
-> **CTA 事件上線日**：以本文件合入 `main` 之 merge 日為準（工作記錄再註）  
+> **CTA 事件上線日**：2026-11-12 · **PR #136** merge `eba4795`（程式 `770daad`）  
 > **合約**：[`marketing_analytics_ai_contract.md`](./marketing_analytics_ai_contract.md) — **人＝Mongo**；**事件＝GA4**；`sign_up` ≠ 客戶數  
 > **Measurement ID**：`G-F38Q4L6CPV`（≠ Property ID）
 
