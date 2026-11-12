@@ -184,6 +184,9 @@ data-testid="{類型}-{位置}-{功能}"
 | `btn-landing-register` | 按鈕 | 主 CTA「免費開始」→ `/dashboard`（先瀏覽主題卡；註冊改在扣點彈窗） |
 | `btn-landing-login` | 連結 | Header 登入 |
 | `btn-landing-login-hero` | 按鈕 | Hero 次 CTA → `/login` |
+| `section-welcome-credit-offer` | 區塊 | Welcome 主題卡下「免費登入禮遇」 |
+| `btn-welcome-offer-register` | 按鈕 | 立即行動 → `/register` |
+| `btn-welcome-offer-login` | 按鈕 | 禮遇卡登入 → `/login` |
 | `btn-landing-lang-zh` | 按鈕 | 切換繁體中文 |
 | `btn-landing-lang-en` | 按鈕 | 切換 English |
 | `btn-landing-lang-ja` | 按鈕 | 切換日本語 |
@@ -513,7 +516,7 @@ data-testid="{類型}-{位置}-{功能}"
 | `btn-guest-sample-lang-zh` | 按鈕 | 示範頁改看繁體中文（`?lang=zh-TW`） |
 | `btn-guest-sample-lang-en` | 按鈕 | 示範頁改看 English |
 | `btn-guest-sample-lang-ja` | 按鈕 | 示範頁改看日本語 |
-| `btn-guest-charge-register` | 按鈕 | 未登入扣點彈窗：免費開始，前往 `/register` |
+| `btn-guest-charge-register` | 按鈕 | 未登入扣點彈窗：立即行動，前往 `/register`（禮遇卡版面） |
 | `btn-guest-charge-login` | 按鈕 | 未登入扣點彈窗：登入，前往 `/login` |
 | `btn-guest-charge-cancel` | 按鈕 | 關閉未登入扣點彈窗 |
 | `btn-topic-detail-back-sticky` | 按鈕 | 直向固定返回 `/dashboard?tab=分類` |
@@ -523,6 +526,15 @@ data-testid="{類型}-{位置}-{功能}"
 | `list-welcome-sample-topics` | 列表 | 示範頁當日主題卡 |
 | `list-welcome-topics` | 列表 | 正式 Welcome 直向當日主題卡 |
 | `page-topic-layout-sample` | 頁面 | `/topic-layout-sample` 直向詳情示範 |
+| `page-guest-charge-sample` | 頁面 | `/guest-charge-sample` 繁中＋日文雙卡示範 |
+| `card-guest-charge-sample-zh` | 區塊 | 繁中示範卡 |
+| `card-guest-charge-sample-ja` | 區塊 | 日文示範卡 |
+| `btn-guest-charge-sample-register-zh` | 按鈕 | 繁中卡免費開始 → `/register` |
+| `btn-guest-charge-sample-login-zh` | 按鈕 | 繁中卡登入 → `/login` |
+| `btn-guest-charge-sample-cancel-zh` | 按鈕 | 繁中卡取消 → `/dashboard` |
+| `btn-guest-charge-sample-register-ja` | 按鈕 | 日文卡無料で始める → `/register` |
+| `btn-guest-charge-sample-login-ja` | 按鈕 | 日文卡登入 → `/login` |
+| `btn-guest-charge-sample-cancel-ja` | 按鈕 | 日文卡取消 → `/dashboard` |
 | `btn-topic-layout-back` | 按鈕 | 示範頁返回 `/dashboard` |
 | `btn-topic-layout-jump` | 按鈕 | 示範頁捲到下方，不要求登入 |
 | `list-topic-layout-related` | 列表 | 示範頁同分類卡 |

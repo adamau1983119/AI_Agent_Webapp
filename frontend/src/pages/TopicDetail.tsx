@@ -35,6 +35,7 @@ import { markTopicRead } from '@/lib/topicReadState'
 import { logTopicBrowse } from '@/lib/topicBrowseLog'
 import { MobileTopicList } from '@/components/topics/MobileTopicList'
 import { todayHktDateString } from '@/lib/topicDayHkt'
+import GuestCreditOfferCard from '@/components/welcome/GuestCreditOfferCard'
 import PublicTourCoach from '@/components/tour/PublicTourCoach'
 import {
   readPublicTour,
@@ -943,45 +944,18 @@ export default function TopicDetail() {
         {t('topicLayout.back')}
       </button>
 
-      {/* 登入提示模態框 */}
+      {/* 登入提示模態框 — 與 Welcome 禮遇卡同版面 */}
       {showLoginPrompt && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 max-w-md w-full text-center space-y-4">
-            <h3 className="text-lg font-semibold font-display text-gray-900 dark:text-white">
-              {t('guestCharge.title')}
-            </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400 font-sans">
-              {loginCost === null
-                ? t('guestCharge.bodyPlain')
-                : t('guestCharge.body', { n: String(loginCost) })}
-            </p>
-            <div className="flex flex-col gap-3 pt-2">
-              <button
-                type="button"
-                data-testid="btn-guest-charge-register"
-                onClick={() => navigate('/register')}
-                className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-xl hover:bg-primary-dark min-h-[44px] touch-manipulation"
-              >
-                {t('landing.cta.register')}
-              </button>
-              <button
-                type="button"
-                data-testid="btn-guest-charge-login"
-                onClick={() => navigate('/login')}
-                className="px-4 py-2 text-sm font-medium text-[#1a1a1a] border border-[#1a1a1a] rounded-xl min-h-[44px] touch-manipulation"
-              >
-                {t('landing.cta.login')}
-              </button>
-              <button
-                type="button"
-                data-testid="btn-guest-charge-cancel"
-                onClick={() => setShowLoginPrompt(false)}
-                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-xl hover:bg-gray-200 min-h-[44px] touch-manipulation"
-              >
-                {t('common.cancel')}
-              </button>
-            </div>
-          </div>
+          <GuestCreditOfferCard
+            className="max-w-md"
+            registerTestId="btn-guest-charge-register"
+            loginTestId="btn-guest-charge-login"
+            cancelTestId="btn-guest-charge-cancel"
+            showCancel
+            onCancel={() => setShowLoginPrompt(false)}
+            costValue={loginCost === null ? null : String(loginCost)}
+          />
         </div>
       )}
 
