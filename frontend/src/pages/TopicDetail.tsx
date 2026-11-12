@@ -34,6 +34,7 @@ import { Copy, Sparkles, Image as ImageIcon, Search, ExternalLink, ArrowDownCirc
 import { markTopicRead } from '@/lib/topicReadState'
 import { logTopicBrowse } from '@/lib/topicBrowseLog'
 import { MobileTopicList } from '@/components/topics/MobileTopicList'
+import { todayHktDateString } from '@/lib/topicDayHkt'
 import PublicTourCoach from '@/components/tour/PublicTourCoach'
 import {
   readPublicTour,
@@ -115,6 +116,9 @@ export default function TopicDetail() {
       limit: 8,
       lang: language,
       category: topic?.category,
+      beforeDate: todayHktDateString(),
+      sort: 'generated_at',
+      order: 'desc',
     }),
     enabled: !!topic?.category,
   })
@@ -697,7 +701,7 @@ export default function TopicDetail() {
         </div>
       </section>
 
-      <div className="lg:hidden space-y-3">
+      <div className="space-y-3">
         <p className="text-xs text-gray-500">{t('topicLayout.related')}</p>
         {relatedTopics.length === 0 ? (
           <p className="text-sm text-gray-500">{t('topicLayout.empty')}</p>

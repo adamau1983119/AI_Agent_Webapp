@@ -70,6 +70,8 @@ export interface TopicFilters {
   category?: 'fashion' | 'food' | 'trend'
   status?: 'pending' | 'confirmed' | 'deleted'
   date?: string // YYYY-MM-DD
+  /** Strictly before this HKT day (YYYY-MM-DD); ignored if date is set */
+  beforeDate?: string
   search?: string // 搜尋關鍵字
   page?: number
   limit?: number
@@ -149,6 +151,7 @@ export const topicsAPI = {
     if (filters?.category) params.append('category', filters.category)
     if (filters?.status) params.append('status', filters.status)
     if (filters?.date) params.append('date', filters.date)
+    if (filters?.beforeDate) params.append('before_date', filters.beforeDate)
     if (filters?.search && filters.search.trim()) params.append('search', filters.search.trim())
     params.append('page', (filters?.page || 1).toString())
     params.append('limit', (filters?.limit || 30).toString())

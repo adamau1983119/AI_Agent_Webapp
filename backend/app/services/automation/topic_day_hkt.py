@@ -37,6 +37,12 @@ def hkt_day_utc_bounds(date_str: str | None = None) -> Tuple[datetime, datetime]
     return start_utc, end_utc
 
 
+def generated_at_before_hkt_day(date_str: str) -> Dict:
+    """Mongo clause: cards strictly before that HKT calendar day (exclude that day onward)."""
+    start_utc, _ = hkt_day_utc_bounds(date_str)
+    return {"generated_at": {"$lt": start_utc}}
+
+
 def expected_topics_today() -> int:
     from app.config.topic_config import get_topic_config
 
