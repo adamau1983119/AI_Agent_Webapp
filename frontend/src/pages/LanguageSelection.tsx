@@ -5,9 +5,10 @@
  * Style: Lane Crawford 風格 - 高端極簡、黑白為主
  * Font: Cormorant Garamond (display) + Montserrat (sans)
  */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation, languageOptions, Language } from '../i18n';
+import { mapGuestLanguage } from '@/lib/mapGuestLanguage';
 import { BRAND } from '@/lib/brand';
 import BrandMark from '@/components/brand/BrandMark';
 
@@ -19,14 +20,18 @@ export default function LanguageSelection() {
   const handleLanguageSelect = (lang: Language) => {
     setSelectedLang(lang);
     setLanguage(lang);
-    
-    // 儲存到 localStorage
     localStorage.setItem('preferred-language', lang);
-    
-    setTimeout(() => {
-      navigate('/welcome');
-    }, 300);
+    navigate('/dashboard', { replace: true });
   };
+
+  useEffect(() => {
+    const saved = localStorage.getItem('preferred-language');
+    const lang = saved === 'zh-TW' || saved === 'en' || saved === 'ja'
+      ? saved
+      : mapGuestLanguage(typeof navigator !== 'undefined' ? navigator.language : 'zh-TW');
+    setLanguage(lang);
+    navigate('/dashboard', { replace: true });
+  }, [navigate, setLanguage]);
 
   return (
     <div className="min-h-screen bg-[#FAF9F7] flex font-sans">

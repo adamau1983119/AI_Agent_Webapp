@@ -72,7 +72,11 @@ export default function Sidebar() {
       {/* 導航選單 */}
       <nav className="flex-1 p-4">
         <ul className="space-y-2">
-          {visibleMenuItems.map((item) => {
+          {visibleMenuItems.filter((item) => {
+            const readingTopic = location.pathname.startsWith('/topics/')
+            if (!isAuthenticated && readingTopic) return item.path === '/dashboard'
+            return true
+          }).map((item) => {
             const isActive = location.pathname === item.path
             return (
               <li key={item.path}>

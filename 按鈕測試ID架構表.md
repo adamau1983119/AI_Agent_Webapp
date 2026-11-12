@@ -499,15 +499,38 @@ data-testid="{類型}-{位置}-{功能}"
 | `input-composer-intent-custom` | 輸入 | 自訂修訂方向 |
 | `input-composer-body` | 輸入 | 正文（可手改） |
 | `btn-composer-body-ok` | 按鈕 | 正文 OK → 顯示標題／Hashtag |
-| `btn-composer-regen-title` | 按鈕 | 重產 3 標題（−1） |
-| `btn-composer-regen-body` | 按鈕 | 重產內文（−1；帶 keep／intent） |
-| `btn-composer-regen-hashtags` | 按鈕 | 重產 3 組 Hashtag（−1） |
+| `btn-composer-regen-title` | 按鈕 | 重產 3 標題（−{n}，短 10／長 20） |
+| `btn-composer-regen-body` | 按鈕 | 重產內文（−{n}，短 10／長 20；帶 keep／intent） |
+| `btn-composer-regen-hashtags` | 按鈕 | 重產 3 組 Hashtag（−{n}，短 10／長 20） |
 | `btn-composer-title-1`～`3` | 按鈕 | 選標題填入整體文章 |
 | `btn-composer-hashtag-set-1`～`3` | 按鈕 | 選 Hashtag 組填入 |
 | `btn-composer-copy-all` | 按鈕 | 複製整體文章 |
 | `section-composer-whole` | 區塊 | 整體文章預覽 |
 | `text-composer-generating` | 文字 | 整體文章區：生成中，完成後才扣點 |
 | `page-compose-sample` | 頁面 | `/compose-sample` 示範／練習頁 |
+| `page-guest-sample` | 頁面 | `/guest-sample` 瀏覽器語系示範。不改 `/` |
+| `text-guest-sample-showing` | 文字 | 這一頁採用的語言與來源 |
+| `btn-guest-sample-lang-zh` | 按鈕 | 示範頁改看繁體中文（`?lang=zh-TW`） |
+| `btn-guest-sample-lang-en` | 按鈕 | 示範頁改看 English |
+| `btn-guest-sample-lang-ja` | 按鈕 | 示範頁改看日本語 |
+| `btn-guest-charge-register` | 按鈕 | 未登入扣點彈窗：免費開始，前往 `/register` |
+| `btn-guest-charge-login` | 按鈕 | 未登入扣點彈窗：登入，前往 `/login` |
+| `btn-guest-charge-cancel` | 按鈕 | 關閉未登入扣點彈窗 |
+| `btn-topic-detail-back-sticky` | 按鈕 | 直向固定返回 `/dashboard?tab=分類` |
+| `page-welcome-sample` | 頁面 | `/welcome-sample` 直向歡迎示範 |
+| `btn-welcome-sample-register` | 按鈕 | 示範頁前往 `/register` |
+| `btn-welcome-sample-login` | 按鈕 | 示範頁前往 `/login` |
+| `list-welcome-sample-topics` | 列表 | 示範頁當日主題卡 |
+| `list-welcome-topics` | 列表 | 正式 Welcome 直向當日主題卡 |
+| `page-topic-layout-sample` | 頁面 | `/topic-layout-sample` 直向詳情示範 |
+| `btn-topic-layout-back` | 按鈕 | 示範頁返回 `/dashboard` |
+| `btn-topic-layout-jump` | 按鈕 | 示範頁捲到下方，不要求登入 |
+| `list-topic-layout-related` | 列表 | 示範頁同分類卡 |
+| `list-topic-detail-related` | 列表 | 正式詳情直向同分類卡 |
+| `link-mobile-topic` | 連結 | 直向主題卡，前往 `/topics/:id` |
+| `btn-dashboard-lang-zh` | 按鈕 | Dashboard 改繁中 |
+| `btn-dashboard-lang-en` | 按鈕 | Dashboard 改 English |
+| `btn-dashboard-lang-ja` | 按鈕 | Dashboard 改日本語 |
 | `heading-compose-sample` | 標題 | 練習頁主標 |
 | `compose-coach-strip` | 區塊 | 三步驟教練條 |
 | `btn-compose-sample-to-topic` | 連結 | 導向真實主題（Dashboard） |

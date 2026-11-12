@@ -260,7 +260,8 @@ class ArticleExtractor:
         cleaned = re.sub(r'<br\s*/?>', '\n', cleaned, flags=re.I)
         cleaned = re.sub(r'</p>', '\n\n', cleaned, flags=re.I)
         cleaned = re.sub(r'</div>', '\n', cleaned, flags=re.I)
-        cleaned = re.sub(r'<[^>]+>', ' ', cleaned)
+        # Quoted attributes may contain "=>"; do not end the tag at that ">".
+        cleaned = re.sub(r"""<(?:[^>"']|"[^"]*"|'[^']*')*>""", ' ', cleaned, flags=re.DOTALL)
         cleaned = html_lib.unescape(cleaned)
         lines = [l.strip() for l in cleaned.splitlines() if l.strip()]
         result = '\n\n'.join(lines)

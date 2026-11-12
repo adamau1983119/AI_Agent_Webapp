@@ -23,6 +23,7 @@ import WelcomeInkBackground from '@/components/welcome/WelcomeInkBackground';
 import PublicLegalFooter from '@/components/layout/PublicLegalFooter';
 import BrandMark from '@/components/brand/BrandMark';
 import CreditPackShelf from '@/components/credits/CreditPackShelf';
+import { TodayMobileTopics } from '@/components/topics/MobileTopicList';
 import type { CreditPack } from '@/api/billing';
 
 const LANDING_PACKS: CreditPack[] = [
@@ -125,18 +126,18 @@ export default function Welcome() {
           <p className="mt-4 text-sm text-[#6b6b6b] max-w-xl leading-relaxed">
             {t('landing.hero.subtitle')}
           </p>
-          <div className="mt-8 sm:mt-9 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
+          <div className="mt-8 sm:mt-9 flex w-full flex-row items-center justify-center gap-3 sm:gap-4">
             <Link
               to="/register"
               data-testid="btn-landing-register"
-              className="w-full sm:w-auto min-w-[9.2rem] min-h-[46px] px-7 py-3 rounded-full text-[11px] tracking-[0.18em] uppercase text-white flex items-center justify-center bg-gradient-to-b from-[#2a2a2a] to-[#0d0d0d] shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_6px_18px_rgba(0,0,0,0.12)] hover:from-[#333] hover:to-[#111] transition-colors"
+              className="w-1/3 sm:w-auto sm:min-w-[9.2rem] min-h-[46px] px-2 sm:px-7 py-3 rounded-full text-[11px] tracking-[0.12em] sm:tracking-[0.18em] uppercase text-white flex items-center justify-center bg-gradient-to-b from-[#2a2a2a] to-[#0d0d0d] shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_6px_18px_rgba(0,0,0,0.12)] hover:from-[#333] hover:to-[#111] transition-colors"
             >
               {t('landing.cta.register')}
             </Link>
             <Link
               to="/login"
               data-testid="btn-landing-login-hero"
-              className="w-full sm:w-auto min-w-[9.2rem] min-h-[46px] px-7 py-3 rounded-full text-[11px] tracking-[0.18em] uppercase text-[#1a1a1a] border border-[#1a1a1a] flex items-center justify-center hover:bg-[#1a1a1a] hover:text-white transition-colors"
+              className="w-1/3 sm:w-auto sm:min-w-[9.2rem] min-h-[46px] px-2 sm:px-7 py-3 rounded-full text-[11px] tracking-[0.12em] sm:tracking-[0.18em] uppercase text-[#1a1a1a] border border-[#1a1a1a] flex items-center justify-center hover:bg-[#1a1a1a] hover:text-white transition-colors"
             >
               {t('landing.cta.login')}
             </Link>
@@ -144,6 +145,10 @@ export default function Welcome() {
           <p className="mt-5 text-[11px] text-[#a3a3a3] tracking-[0.1em]">
             {t('landing.cta.loginPrompt')}
           </p>
+        </section>
+
+        <section className="lg:hidden relative z-[1] w-full max-w-[1120px] mx-auto px-4 pb-8">
+          <TodayMobileTopics testId="list-welcome-topics" />
         </section>
 
         <section className="relative z-[1] w-full max-w-[1120px] mx-auto px-3 sm:px-6 pb-10 sm:pb-14">

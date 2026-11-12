@@ -6,7 +6,7 @@ import TopicCard from '@/components/ui/TopicCard'
 import ConnectionErrorDisplay from '@/components/ui/ConnectionErrorDisplay'
 import InfiniteTopicsList from '@/components/features/InfiniteTopicsList'
 import { usePageTitle } from '@/hooks/usePageTitle'
-import { useTranslation } from '@/i18n'
+import { useTranslation, languageOptions } from '@/i18n'
 import PublicTourCoach from '@/components/tour/PublicTourCoach'
 import FirstRunChoice from '@/components/dashboard/FirstRunChoice'
 import { alterEgoApi } from '@/api/alterEgo'
@@ -43,7 +43,7 @@ function parseDashTab(raw: string | null): DashTab {
  */
 export default function Dashboard() {
   usePageTitle()
-  const { t, language } = useTranslation()
+  const { t, language, setLanguage } = useTranslation()
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const tab = parseDashTab(searchParams.get('tab'))
@@ -261,9 +261,24 @@ export default function Dashboard() {
       ) : null}
 
       <div className="mb-6">
-        <h3 className="text-[11px] tracking-[0.15em] uppercase text-gray-500">
-          {t('dashboard.headlines')}
-        </h3>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h3 className="text-[11px] tracking-[0.15em] uppercase text-gray-500">
+            {t('dashboard.headlines')}
+          </h3>
+          <div className="flex gap-2">
+            {languageOptions.map((opt) => (
+              <button
+                key={opt.code}
+                type="button"
+                data-testid={`btn-dashboard-lang-${opt.code === 'zh-TW' ? 'zh' : opt.code}`}
+                onClick={() => setLanguage(opt.code)}
+                className={`min-h-[44px] px-2 text-xs ${language === opt.code ? 'underline' : 'text-gray-400'}`}
+              >
+                {opt.shortName}
+              </button>
+            ))}
+          </div>
+        </div>
         {tab === 'all' && !topicsLoading && displayTopics.length > 0 ? (
           <p className="text-sm text-gray-500 font-light mt-2">
             {t('dashboard.todayTopics')} — {displayTopics.length} {t('dashboard.items')}

@@ -61,7 +61,7 @@ export default function PostComposerPanel({
   topicTitle: string
   contextSummary: string
   language: string
-  requireAuth: (action: () => void) => void
+  requireAuth: (action: () => void, cost?: number) => void
   mode?: 'live' | 'demo'
   domain?: string
   onTitlesChange?: (titles: string[]) => void
@@ -262,7 +262,7 @@ export default function PostComposerPanel({
           type="button"
           data-testid="btn-composer-generate-pack"
           disabled={generating}
-          onClick={() => (isDemo ? loadDemo() : requireAuth(() => void runCompose('all')))}
+          onClick={() => (isDemo ? loadDemo() : requireAuth(() => void runCompose('all'), cost))}
           className="w-full inline-flex items-center justify-center gap-2 min-h-[44px] rounded-xl bg-primary text-white text-sm font-medium hover:bg-primary-dark disabled:opacity-50 touch-manipulation"
         >
           <Sparkles className="w-4 h-4" />
@@ -312,11 +312,11 @@ export default function PostComposerPanel({
             type="button"
             data-testid="btn-composer-regen-body"
             disabled={generating}
-            onClick={() => requireAuth(() => void runCompose('body'))}
+            onClick={() => requireAuth(() => void runCompose('body'), cost)}
             className="inline-flex items-center gap-1 text-xs text-primary min-h-[40px] touch-manipulation disabled:opacity-40"
           >
             <RefreshCw className="w-3.5 h-3.5" />
-            {t('composer.regenBody')}
+            {t('composer.regenBody', { n: String(cost) })}
           </button>
         </div>
         <textarea
@@ -344,11 +344,11 @@ export default function PostComposerPanel({
                 type="button"
                 data-testid="btn-composer-regen-title"
                 disabled={generating || !body.trim()}
-                onClick={() => requireAuth(() => void runCompose('title'))}
+                onClick={() => requireAuth(() => void runCompose('title'), cost)}
                 className="inline-flex items-center gap-1 text-xs text-primary min-h-[40px]"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
-                {t('composer.regenTitle')}
+                {t('composer.regenTitle', { n: String(cost) })}
               </button>
             </div>
             <div className="space-y-2">
@@ -372,11 +372,11 @@ export default function PostComposerPanel({
                 type="button"
                 data-testid="btn-composer-regen-hashtags"
                 disabled={generating || !body.trim()}
-                onClick={() => requireAuth(() => void runCompose('hashtags'))}
+                onClick={() => requireAuth(() => void runCompose('hashtags'), cost)}
                 className="inline-flex items-center gap-1 text-xs text-primary min-h-[40px]"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
-                {t('composer.regenTags')}
+                {t('composer.regenTags', { n: String(cost) })}
               </button>
             </div>
             <div className="space-y-2">
