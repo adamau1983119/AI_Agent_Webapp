@@ -33,6 +33,7 @@ import ComposeSamplePage from '@/pages/ComposeSamplePage'
 import GuestSamplePage from '@/pages/GuestSamplePage'
 import WelcomeSamplePage from '@/pages/WelcomeSamplePage'
 import TopicLayoutSamplePage from '@/pages/TopicLayoutSamplePage'
+import GuestChargeSamplePage from '@/pages/GuestChargeSamplePage'
 import StyleTrainerPage from '@/pages/StyleTrainerPage'
 // Phase 5: 分發與整合頁面
 import SocialConnect from '@/pages/SocialConnect'
@@ -107,6 +108,7 @@ function App() {
                 <Route path="/guest-sample" element={<GuestSamplePage />} />
                 <Route path="/welcome-sample" element={<WelcomeSamplePage />} />
                 <Route path="/topic-layout-sample" element={<TopicLayoutSamplePage />} />
+                <Route path="/guest-charge-sample" element={<GuestChargeSamplePage />} />
                 <Route path="/ops/style-trainer" element={<StyleTrainerPage />} />
                 <Route path="/discover" element={<Discover />} />
                 <Route path="/preferences" element={<Preferences />} />

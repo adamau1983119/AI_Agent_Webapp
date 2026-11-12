@@ -24,6 +24,7 @@ import PublicLegalFooter from '@/components/layout/PublicLegalFooter';
 import BrandMark from '@/components/brand/BrandMark';
 import CreditPackShelf from '@/components/credits/CreditPackShelf';
 import { TodayMobileTopics } from '@/components/topics/MobileTopicList';
+import GuestCreditOfferCard from '@/components/welcome/GuestCreditOfferCard';
 import type { CreditPack } from '@/api/billing';
 
 const LANDING_PACKS: CreditPack[] = [
@@ -149,6 +150,16 @@ export default function Welcome() {
 
         <section className="relative z-[1] w-full max-w-[1120px] mx-auto px-4 pb-8">
           <TodayMobileTopics testId="list-welcome-topics" />
+        </section>
+
+        <section
+          data-testid="section-welcome-credit-offer"
+          className="relative z-[1] w-full max-w-md mx-auto px-4 pb-10"
+        >
+          <GuestCreditOfferCard
+            registerTestId="btn-welcome-offer-register"
+            loginTestId="btn-welcome-offer-login"
+          />
         </section>
 
         <section className="relative z-[1] w-full max-w-[1120px] mx-auto px-3 sm:px-6 pb-10 sm:pb-14">

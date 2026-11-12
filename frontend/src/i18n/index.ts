@@ -853,6 +853,17 @@ const zhTW = {
   'guestCharge.title': '登入後才能生成',
   'guestCharge.body': '立刻登記，1 分鐘內用 AI 網紅助手出 post。新帳送 100 點，之後每日登入 +20；點數可寫文章、也可生成標題圖片。這次生成會扣 {n} 點。',
   'guestCharge.bodyPlain': '立刻登記，1 分鐘內用 AI 網紅助手出 post。新帳送 100 點，之後每日登入 +20；點數可寫文章、也可生成標題圖片。這個動作要先加入。',
+  'guestChargeSample.kicker': '示範 · 點數版面',
+  'guestChargeSample.lead': '立刻登記，約 1 分鐘用 AI 網紅助手出 post。',
+  'guestChargeSample.sectionEarn': '加入即享',
+  'guestChargeSample.welcomeLabel': '新帳即送',
+  'guestChargeSample.dailyLabel': '每日登入',
+  'guestChargeSample.useLine': '點數可撰寫貼文，也可生成標題圖片。',
+  'guestChargeSample.costLabel': '這次生成',
+  'guestChargeSample.costUnit': '點',
+  'guestChargeSample.fontNote': '數字＝font-price（Inter）。此頁不取代正式彈窗。',
+  'welcomeOffer.title': '免費登入禮遇',
+  'welcomeOffer.cta': '立即行動',
   'welcomeSample.daily': '每天 {n} 張主題卡',
   'welcomeSample.themesIntro': '每天都有時尚趨勢、美食與餐飲、社交趨勢。我們把網上最新消息整理成主題卡，幫你快速成為網紅。還可以自訂主題卡頻道，按幾個按鈕，最快 1 分鐘生成文章。',
   'welcomeSample.library': '累積 {n} 張可看',
@@ -2437,6 +2448,17 @@ const en: typeof zhTW = {
   'guestCharge.title': 'Sign in to generate',
   'guestCharge.body': 'Sign up and get an AI creator post in about a minute. New accounts get 100 credits, then +20 on daily login—write copy and title images with credits. This generate costs {n} credits.',
   'guestCharge.bodyPlain': 'Sign up and get an AI creator post in about a minute. New accounts get 100 credits, then +20 on daily login—write copy and title images with credits. This action needs an account.',
+  'guestChargeSample.kicker': 'Sample · credit layout',
+  'guestChargeSample.lead': 'Sign up and get an AI creator post in about a minute.',
+  'guestChargeSample.sectionEarn': 'Join and earn',
+  'guestChargeSample.welcomeLabel': 'New account bonus',
+  'guestChargeSample.dailyLabel': 'Daily login',
+  'guestChargeSample.useLine': 'Credits write posts and title images.',
+  'guestChargeSample.costLabel': 'This generate',
+  'guestChargeSample.costUnit': 'credits',
+  'guestChargeSample.fontNote': 'Numerals use font-price (Inter). This page does not replace the live modal.',
+  'welcomeOffer.title': 'Free sign-in gift',
+  'welcomeOffer.cta': 'Act now',
   'welcomeSample.daily': '{n} topic cards each day',
   'welcomeSample.themesIntro': 'Fashion Trends, Food & Dining, and Social Trends, every day. We turn the latest web stories into topic cards, so you can become a creator faster. You can also build your own channel: a few taps, and a post can be ready in as little as a minute.',
   'welcomeSample.library': '{n} cards you can open',
@@ -4022,6 +4044,17 @@ const ja: typeof zhTW = {
   'guestCharge.title': '生成するにはログイン',
   'guestCharge.body': '今すぐ登録すれば、約 1 分で AI 助手の投稿が作れます。新規 100 ポイント、毎日ログインで +20。文章もタイトル画像もポイントで。今回の生成は {n} ポイントです。',
   'guestCharge.bodyPlain': '今すぐ登録すれば、約 1 分で AI 助手の投稿が作れます。新規 100 ポイント、毎日ログインで +20。文章もタイトル画像もポイントで。この操作には口座が必要です。',
+  'guestChargeSample.kicker': '見本 · ポイント版面',
+  'guestChargeSample.lead': '今すぐ登録すれば、約 1 分で AI 助手の投稿が作れます。',
+  'guestChargeSample.sectionEarn': '入会ですぐ',
+  'guestChargeSample.welcomeLabel': '新規ボーナス',
+  'guestChargeSample.dailyLabel': '毎日ログイン',
+  'guestChargeSample.useLine': 'ポイントで投稿文もタイトル画像も。',
+  'guestChargeSample.costLabel': '今回の生成',
+  'guestChargeSample.costUnit': 'ポイント',
+  'guestChargeSample.fontNote': '数字は font-price（Inter）。本番モーダルは置き換えません。',
+  'welcomeOffer.title': '無料ログイン特典',
+  'welcomeOffer.cta': '今すぐ行動',
   'welcomeSample.daily': '毎日 {n} 枚のテーマカード',
   'welcomeSample.themesIntro': '毎日、ファッショントレンド、フード＆ダイニング、ソーシャルトレンド。ネットの最新情報をテーマカードにまとめ、インフルエンサーになるスピードを上げます。チャンネルも自分で作れ、ボタンを数回押すだけで、最短1分で文章を生成できます。',
   'welcomeSample.library': 'これまでに {n} 枚',
@@ -4819,6 +4852,21 @@ export const languageOptions: { code: Language; name: string; shortName: string;
   { code: 'en', name: 'English', shortName: 'EN', icon: 'A' },
   { code: 'ja', name: '日本語', shortName: 'JP', icon: 'あ' },
 ];
+
+/** Read one key in a fixed language (sample dual-locale pages). */
+export function translateFor(
+  lang: Language,
+  key: TranslationKey,
+  params?: Record<string, string>,
+): string {
+  let text = translations[lang][key] || translations['zh-TW'][key] || key
+  if (params) {
+    Object.entries(params).forEach(([paramKey, value]) => {
+      text = text.replace(new RegExp(`{${paramKey}}`, 'g'), value)
+    })
+  }
+  return text
+}
 
 // 導出翻譯 Hook
 export const useTranslation = () => {
