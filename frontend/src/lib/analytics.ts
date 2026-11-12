@@ -15,6 +15,14 @@ const DEFAULT_AW_ID = 'AW-18489161677'
 /** Website conversion label for registration. Public snippet value. */
 const SIGN_UP_CONVERSION_SEND_TO = 'AW-18489161677/QrRhCJ2z-6IdEM3vqPBE'
 
+export type ProductEventName = 'sign_up' | 'generate_post' | 'purchase'
+
+/** Welcome dual-funnel CTAs (not Key events until 7-day review). */
+export type WelcomeCtaId = 'hero_start' | 'offer_register'
+
+/** TopicDetail guest charge modal CTAs. */
+export type GuestChargeCtaId = 'register' | 'login' | 'cancel'
+
 function resolveId(envKey: string, fallback: string): string {
   const fromEnv = (import.meta.env[envKey] as string | undefined)?.trim()
   if (fromEnv) return fromEnv
@@ -49,11 +57,30 @@ export function initAnalytics(): void {
 }
 
 /** Product funnel events. No email or other personal fields. No-op outside production. */
-export function trackProductEvent(name: 'sign_up' | 'generate_post' | 'purchase'): void {
+export function trackProductEvent(name: ProductEventName): void {
   if (!import.meta.env.PROD) return
   if (typeof window.gtag !== 'function') return
   window.gtag('event', name)
   if (name === 'sign_up') {
     window.gtag('event', 'conversion', { send_to: SIGN_UP_CONVERSION_SEND_TO })
   }
+}
+
+/**
+ * Welcome CTA clicks. Params: cta_id only (no PII).
+ * Does not fire Ads conversion — observe 7 days before Key event.
+ */
+export function trackWelcomeCta(ctaId: WelcomeCtaId): void {
+  if (!import.meta.env.PROD) return
+  if (typeof window.gtag !== 'function') return
+  window.gtag('event', 'welcome_cta_click', { cta_id: ctaId })
+}
+
+/**
+ * Guest charge modal CTA clicks. Params: cta_id only (no PII).
+ */
+export function trackGuestChargeCta(ctaId: GuestChargeCtaId): void {
+  if (!import.meta.env.PROD) return
+  if (typeof window.gtag !== 'function') return
+  window.gtag('event', 'guest_charge_cta_click', { cta_id: ctaId })
 }

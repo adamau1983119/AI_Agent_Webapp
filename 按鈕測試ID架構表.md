@@ -185,7 +185,7 @@ data-testid="{類型}-{位置}-{功能}"
 | `btn-landing-login` | 連結 | Header 登入 |
 | `btn-landing-login-hero` | 按鈕 | Hero 次 CTA → `/login` |
 | `section-welcome-credit-offer` | 區塊 | Welcome 主題卡下「免費登入禮遇」 |
-| `btn-welcome-offer-register` | 按鈕 | 立即行動 → `/register`（黑白；禮遇卡無登入鈕） |
+| `btn-welcome-offer-register` | 按鈕 | 立即行動 → `/register`；GA4 `offer_register` |
 | `btn-welcome-offer-login` | — | **已移除**（Welcome 禮遇卡不再顯示） |
 | `btn-landing-lang-zh` | 按鈕 | 切換繁體中文 |
 | `btn-landing-lang-en` | 按鈕 | 切換 English |
