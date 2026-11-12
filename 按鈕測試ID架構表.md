@@ -181,7 +181,7 @@ data-testid="{類型}-{位置}-{功能}"
 
 | Test ID | 元素 | 功能 |
 |---------|------|------|
-| `btn-landing-register` | 按鈕 | 主 CTA → `/register` |
+| `btn-landing-register` | 按鈕 | 主 CTA「免費開始」→ `/dashboard`（先瀏覽主題卡；註冊改在扣點彈窗） |
 | `btn-landing-login` | 連結 | Header 登入 |
 | `btn-landing-login-hero` | 按鈕 | Hero 次 CTA → `/login` |
 | `btn-landing-lang-zh` | 按鈕 | 切換繁體中文 |

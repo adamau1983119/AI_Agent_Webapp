@@ -108,6 +108,10 @@ async def list_topics(
     category: Optional[Category] = Query(None, description="分類篩選"),
     status: Optional[Status] = Query(None, description="狀態篩選"),
     date: Optional[str] = Query(None, description="日期篩選（YYYY-MM-DD）"),
+    before_date: Optional[str] = Query(
+        None,
+        description="嚴格早於該 HKT 日（YYYY-MM-DD）；與 date 同時有時以 date 為準",
+    ),
     search: Optional[str] = Query(None, description="搜尋關鍵字（搜尋標題和來源）"),
     page: int = Query(1, ge=1, description="頁碼"),
     limit: int = Query(10, ge=1, le=100, description="每頁數量"),
@@ -152,6 +156,7 @@ async def list_topics(
             category=category,
             status=status,
             date=date,
+            before_date=before_date,
             search=search,
             page=page,
             limit=limit,

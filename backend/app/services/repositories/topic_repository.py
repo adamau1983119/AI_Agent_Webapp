@@ -79,6 +79,7 @@ class TopicRepository(BaseRepository):
         category: Optional[Category] = None,
         status: Optional[Status] = None,
         date: Optional[str] = None,
+        before_date: Optional[str] = None,
         search: Optional[str] = None,
         page: int = 1,
         limit: int = 10,
@@ -94,6 +95,7 @@ class TopicRepository(BaseRepository):
             category: 分類篩選
             status: 狀態篩選
             date: 日期篩選（YYYY-MM-DD）
+            before_date: 嚴格早於該 HKT 日（YYYY-MM-DD）；與 date 同時有時以 date 為準
             search: 搜尋關鍵字（搜尋標題和來源）
             page: 頁碼
             limit: 每頁數量
@@ -134,6 +136,10 @@ class TopicRepository(BaseRepository):
             clauses.append({
                 "generated_at": {"$gte": start_date, "$lte": end_date}
             })
+        elif before_date:
+            from app.services.automation.topic_day_hkt import generated_at_before_hkt_day
+
+            clauses.append(generated_at_before_hkt_day(before_date))
         if search and search.strip():
             search_query = search.strip()
             clauses.append({
