@@ -1,0 +1,258 @@
+{
+  "scanned": 237,
+  "bad": 27,
+  "bad_rate": 0.1139,
+  "ja_body_fail": 1,
+  "zh_en_chrome": 3,
+  "flag_counts": {
+    "TITLE_ja_MISSING": 20,
+    "ORIG_EN_CHROME": 5,
+    "SRC_ZH_EN_CHROME": 3,
+    "TITLE_en_MISSING": 2,
+    "SRC_ja_MISSING": 1
+  },
+  "sample": {
+    "id": "topic_fashion_20261115160206_2",
+    "flags": [
+      "SRC_ja_MISSING",
+      "SRC_ZH_EN_CHROME",
+      "ORIG_EN_CHROME"
+    ],
+    "titles_i18n_keys": [
+      "zh-TW",
+      "en",
+      "ja"
+    ],
+    "source_keys": [
+      "zh-TW",
+      "en"
+    ],
+    "src_preview": {
+      "zh-TW": "- 柳演錫與徐玄振繼《浪漫醫生金師傅》後時隔 10 年再度同框，從生死患難的醫護同僚轉化為法庭兩端的攻防對手。- 劇情以「同一晚的兩套記憶」為核心，拋棄傳統抓兇套路，直擊人性盲點與東亞社會輿論審判。- 翻拍自英國 ITV 高分懸疑劇《Lia",
+      "en": "Yoo Yeon-seok and Seo Hyun-jin reunite for the first time in 10 years since \"Dr. Romantic,\" transforming from medical co",
+      "ja": ""
+    }
+  },
+  "bad_ids": [
+    {
+      "id": "topic_fashion_20261031160353_0",
+      "category": "fashion",
+      "generated_at": "2026-10-31 16:03:53.601000",
+      "flags": [
+        "TITLE_ja_MISSING"
+      ]
+    },
+    {
+      "id": "topic_fashion_20261031160401_1",
+      "category": "fashion",
+      "generated_at": "2026-10-31 16:04:01.620000",
+      "flags": [
+        "TITLE_ja_MISSING"
+      ]
+    },
+    {
+      "id": "topic_fashion_20261031160406_2",
+      "category": "fashion",
+      "generated_at": "2026-10-31 16:04:06.824000",
+      "flags": [
+        "TITLE_ja_MISSING"
+      ]
+    },
+    {
+      "id": "topic_fashion_20261031160412_3",
+      "category": "fashion",
+      "generated_at": "2026-10-31 16:04:12.807000",
+      "flags": [
+        "TITLE_ja_MISSING"
+      ]
+    },
+    {
+      "id": "topic_fashion_20261031160418_4",
+      "category": "fashion",
+      "generated_at": "2026-10-31 16:04:18.704000",
+      "flags": [
+        "TITLE_ja_MISSING"
+      ]
+    },
+    {
+      "id": "topic_fashion_20261101160506_1",
+      "category": "fashion",
+      "generated_at": "2026-11-01 16:05:06.871000",
+      "flags": [
+        "ORIG_EN_CHROME"
+      ]
+    },
+    {
+      "id": "topic_fashion_20261102160113_2",
+      "category": "fashion",
+      "generated_at": "2026-11-02 16:01:13.874000",
+      "flags": [
+        "SRC_ZH_EN_CHROME",
+        "ORIG_EN_CHROME"
+      ]
+    },
+    {
+      "id": "topic_fashion_20261103160215_1",
+      "category": "fashion",
+      "generated_at": "2026-11-03 16:02:15.158000",
+      "flags": [
+        "ORIG_EN_CHROME"
+      ]
+    },
+    {
+      "id": "topic_fashion_20261104160307_0",
+      "category": "fashion",
+      "generated_at": "2026-11-04 16:03:07.144000",
+      "flags": [
+        "TITLE_ja_MISSING"
+      ]
+    },
+    {
+      "id": "topic_fashion_20261104160316_1",
+      "category": "fashion",
+      "generated_at": "2026-11-04 16:03:16.705000",
+      "flags": [
+        "TITLE_ja_MISSING"
+      ]
+    },
+    {
+      "id": "topic_fashion_20261104160322_2",
+      "category": "fashion",
+      "generated_at": "2026-11-04 16:03:22.119000",
+      "flags": [
+        "TITLE_ja_MISSING"
+      ]
+    },
+    {
+      "id": "topic_fashion_20261104160336_3",
+      "category": "fashion",
+      "generated_at": "2026-11-04 16:03:36.486000",
+      "flags": [
+        "TITLE_ja_MISSING"
+      ]
+    },
+    {
+      "id": "topic_food_20261104160549_0",
+      "category": "food",
+      "generated_at": "2026-11-04 16:05:49.389000",
+      "flags": [
+        "TITLE_ja_MISSING"
+      ]
+    },
+    {
+      "id": "topic_fashion_20261104161808_0",
+      "category": "fashion",
+      "generated_at": "2026-11-04 16:18:08.348000",
+      "flags": [
+        "TITLE_ja_MISSING"
+      ]
+    },
+    {
+      "id": "topic_food_20261104161928_0",
+      "category": "food",
+      "generated_at": "2026-11-04 16:19:28.002000",
+      "flags": [
+        "TITLE_en_MISSING"
+      ]
+    },
+    {
+      "id": "topic_food_20261105163409_0",
+      "category": "food",
+      "generated_at": "2026-11-05 16:34:09.187000",
+      "flags": [
+        "TITLE_en_MISSING"
+      ]
+    },
+    {
+      "id": "topic_fashion_20261109160144_0",
+      "category": "fashion",
+      "generated_at": "2026-11-09 16:01:44.727000",
+      "flags": [
+        "TITLE_ja_MISSING"
+      ]
+    },
+    {
+      "id": "topic_fashion_20261109160154_1",
+      "category": "fashion",
+      "generated_at": "2026-11-09 16:01:54.321000",
+      "flags": [
+        "TITLE_ja_MISSING"
+      ]
+    },
+    {
+      "id": "topic_fashion_20261109160158_2",
+      "category": "fashion",
+      "generated_at": "2026-11-09 16:01:58.574000",
+      "flags": [
+        "TITLE_ja_MISSING"
+      ]
+    },
+    {
+      "id": "topic_fashion_20261109160204_3",
+      "category": "fashion",
+      "generated_at": "2026-11-09 16:02:04.862000",
+      "flags": [
+        "TITLE_ja_MISSING"
+      ]
+    },
+    {
+      "id": "topic_fashion_20261110160208_0",
+      "category": "fashion",
+      "generated_at": "2026-11-10 16:02:08.768000",
+      "flags": [
+        "TITLE_ja_MISSING"
+      ]
+    },
+    {
+      "id": "topic_fashion_20261110160220_1",
+      "category": "fashion",
+      "generated_at": "2026-11-10 16:02:20.365000",
+      "flags": [
+        "TITLE_ja_MISSING"
+      ]
+    },
+    {
+      "id": "topic_fashion_20261110160225_2",
+      "category": "fashion",
+      "generated_at": "2026-11-10 16:02:25.515000",
+      "flags": [
+        "TITLE_ja_MISSING"
+      ]
+    },
+    {
+      "id": "topic_fashion_20261110160231_3",
+      "category": "fashion",
+      "generated_at": "2026-11-10 16:02:31.316000",
+      "flags": [
+        "TITLE_ja_MISSING"
+      ]
+    },
+    {
+      "id": "topic_fashion_20261110160238_4",
+      "category": "fashion",
+      "generated_at": "2026-11-10 16:02:38.756000",
+      "flags": [
+        "TITLE_ja_MISSING"
+      ]
+    },
+    {
+      "id": "topic_fashion_20261111160327_2",
+      "category": "fashion",
+      "generated_at": "2026-11-11 16:03:27.043000",
+      "flags": [
+        "SRC_ZH_EN_CHROME",
+        "ORIG_EN_CHROME"
+      ]
+    },
+    {
+      "id": "topic_fashion_20261115160206_2",
+      "category": "fashion",
+      "generated_at": "2026-11-15 16:02:06.315000",
+      "flags": [
+        "SRC_ja_MISSING",
+        "SRC_ZH_EN_CHROME",
+        "ORIG_EN_CHROME"
+      ]
+    }
+  ]
+}
