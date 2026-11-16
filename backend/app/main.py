@@ -423,6 +423,11 @@ app.add_middleware(
     expose_headers=["X-RateLimit-Limit", "X-RateLimit-Remaining", "X-RateLimit-Reset"],
 )
 
+# 5. 最外層：API 子域 X-Robots-Tag + /robots.txt（GSC；後加先跑）
+from app.middleware.robots_tag import RobotsTagMiddleware
+
+app.add_middleware(RobotsTagMiddleware)
+
 # 注意：移除 CustomCORSMiddleware，避免與 FastAPI CORSMiddleware 衝突
 # FastAPI 的 CORSMiddleware 已經足夠處理所有 CORS 需求
 

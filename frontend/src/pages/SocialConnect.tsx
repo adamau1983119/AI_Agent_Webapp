@@ -13,6 +13,7 @@ import {
   platformLabels,
 } from '../api/social'
 import PlatformIcon from '@/components/ui/PlatformIcon'
+import { useNoindex } from '@/hooks/useNoindex'
 import toast from 'react-hot-toast'
 
 function PlatformCard({
@@ -114,6 +115,7 @@ function PlatformCard({
 }
 
 export default function SocialConnect() {
+  useNoindex()
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
