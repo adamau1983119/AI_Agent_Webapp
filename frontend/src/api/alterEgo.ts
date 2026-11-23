@@ -2,6 +2,7 @@
  * Alter Ego API — onboarding / DNA（AE-1d）
  */
 import { fetchAPI, fetchAPIEnvelope } from './client';
+import { APIError } from './errors';
 import { normalizeUiLanguage } from '@/lib/topicLanguages';
 
 export type DnaStatus = 'pending' | 'active' | 'skipped' | 'legacy_only';
@@ -44,6 +45,45 @@ export interface ComposeResponse {
   max_chars: number;
   short_body?: boolean;
 }
+
+export type OneTapSurface = 'public' | 'my_channel';
+
+export interface OneTapGenerateResponse {
+  pack_token: string;
+  titles: string[];
+  body: string;
+  hashtag_sets: string[][];
+  max_chars: number;
+  short_body?: boolean;
+  credits_required: number;
+  balance: number;
+}
+
+export interface OneTapChargeResponse {
+  credits_charged: number;
+  balance_after: number;
+  already_charged: boolean;
+}
+
+export interface OneTapLatestResponse {
+  pack_token: string;
+  titles: string[];
+  body: string;
+  hashtag_sets: string[][];
+  max_chars: number;
+  short_body?: boolean;
+  charged: boolean;
+  credits_required: number;
+}
+
+/** Seed advanced composer from one-tap (same pack; no extra charge for apply). */
+export type OneTapApplyPack = {
+  titles: string[];
+  body: string;
+  hashtag_sets: string[][];
+  pack_token: string;
+  charged: boolean;
+};
 
 export const alterEgoApi = {
   /** 勿走 unwrap data，避免誤拆壞 dna_status */
@@ -126,4 +166,44 @@ export const alterEgoApi = {
       }),
       timeout: 120000,
     }),
+
+  /** Generate ≤500 pack; no debit until chargeOneTapPack after share. */
+  generateOneTapPack: (payload: {
+    language: string;
+    topic_id?: string;
+    topic_title?: string;
+    context_summary?: string;
+    domain?: ComposeDomain;
+    surface?: OneTapSurface;
+  }) =>
+    fetchAPI<OneTapGenerateResponse>('/alter-ego/one-tap-pack/generate', {
+      method: 'POST',
+      body: JSON.stringify({
+        language: normalizeUiLanguage(payload.language),
+        topic_id: payload.topic_id,
+        topic_title: payload.topic_title || '',
+        context_summary: payload.context_summary || '',
+        domain: payload.domain,
+        surface: payload.surface || 'public',
+      }),
+      timeout: 120000,
+    }),
+
+  chargeOneTapPack: (packToken: string) =>
+    fetchAPI<OneTapChargeResponse>('/alter-ego/one-tap-pack/charge', {
+      method: 'POST',
+      body: JSON.stringify({ pack_token: packToken }),
+    }),
+
+  /** Restore latest pack for topic after leave/share (404 → null). */
+  getLatestOneTapPack: async (topicId: string): Promise<OneTapLatestResponse | null> => {
+    try {
+      return await fetchAPI<OneTapLatestResponse>(
+        `/alter-ego/one-tap-pack/latest?topic_id=${encodeURIComponent(topicId)}`,
+      )
+    } catch (error: unknown) {
+      if (error instanceof APIError && error.status === 404) return null
+      throw error
+    }
+  },
 };

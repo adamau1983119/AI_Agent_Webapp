@@ -84,3 +84,70 @@ export function trackGuestChargeCta(ctaId: GuestChargeCtaId): void {
   if (typeof window.gtag !== 'function') return
   window.gtag('event', 'guest_charge_cta_click', { cta_id: ctaId })
 }
+
+/** One-tap post funnel. No PII. Observe ≥7 days before Key event. Do not optimize Ads on these. */
+export type OneTapEventName =
+  | 'one_tap_impression'
+  | 'one_tap_click'
+  | 'one_tap_generate_success'
+  | 'one_tap_share_success'
+  | 'one_tap_share_cancel'
+
+export type OneTapEventParams = {
+  surface: 'public' | 'my_channel'
+  topic_id?: string
+}
+
+/**
+ * One-tap post events. Params: surface + optional topic_id only (no PII).
+ * Production-only; no-op on localhost.
+ */
+export function trackOneTapEvent(name: OneTapEventName, params: OneTapEventParams): void {
+  if (!import.meta.env.PROD) return
+  if (typeof window.gtag !== 'function') return
+  const payload: Record<string, string> = { surface: params.surface }
+  const topicId = params.topic_id?.trim()
+  if (topicId) payload.topic_id = topicId
+  window.gtag('event', name, payload)
+}
+
+/** Topic Card attention (Tier A). No PII. Observe ≥7 days before Key event. */
+export type TopicOpenParams = {
+  topic_id: string
+  topic_category?: string
+  language?: string
+}
+
+const LAST_TOPIC_SESSION_KEY = 'ae_ga4_last_topic_id'
+
+/**
+ * Fires topic_open; if another topic was opened earlier in this tab session,
+ * also fires topic_open_again (previous_topic / current_topic).
+ */
+export function trackTopicOpen(params: TopicOpenParams): void {
+  if (!import.meta.env.PROD) return
+  if (typeof window.gtag !== 'function') return
+  const topicId = params.topic_id?.trim()
+  if (!topicId) return
+
+  const openPayload: Record<string, string> = { topic_id: topicId }
+  const category = params.topic_category?.trim()
+  if (category) openPayload.topic_category = category
+  const lang = params.language?.trim()
+  if (lang) openPayload.language = lang
+
+  window.gtag('event', 'topic_open', openPayload)
+
+  try {
+    const previous = sessionStorage.getItem(LAST_TOPIC_SESSION_KEY)
+    if (previous && previous !== topicId) {
+      window.gtag('event', 'topic_open_again', {
+        previous_topic: previous,
+        current_topic: topicId,
+      })
+    }
+    sessionStorage.setItem(LAST_TOPIC_SESSION_KEY, topicId)
+  } catch {
+    // sessionStorage may be blocked; open event already sent
+  }
+}

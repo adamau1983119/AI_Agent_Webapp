@@ -51,6 +51,51 @@ class ComposeResponse(BaseModel):
     short_body: bool = False
 
 
+class OneTapGenerateRequest(BaseModel):
+    """Generate ≤500 post pack without debiting; share success charges separately."""
+
+    language: PrimaryLanguage = "zh-TW"
+    topic_id: Optional[str] = Field(default=None, max_length=64)
+    topic_title: str = Field(default="", max_length=300)
+    context_summary: str = Field(default="", max_length=1500)
+    domain: Optional[Literal["fashion", "food", "trend"]] = None
+    surface: Literal["public", "my_channel"] = "public"
+
+
+class OneTapGenerateResponse(BaseModel):
+    pack_token: str
+    titles: List[str]
+    body: str
+    hashtag_sets: List[List[str]]
+    max_chars: int = 500
+    short_body: bool = False
+    credits_required: int = 20
+    balance: int = 0
+
+
+class OneTapChargeRequest(BaseModel):
+    pack_token: str = Field(..., min_length=8, max_length=64)
+
+
+class OneTapChargeResponse(BaseModel):
+    credits_charged: int = 0
+    balance_after: int = 0
+    already_charged: bool = False
+
+
+class OneTapLatestResponse(BaseModel):
+    """Latest one-tap pack for topic (restore after leave / share sheet)."""
+
+    pack_token: str
+    titles: List[str]
+    body: str
+    hashtag_sets: List[List[str]]
+    max_chars: int = 500
+    short_body: bool = False
+    charged: bool = False
+    credits_required: int = 20
+
+
 class PreviewRequest(BaseModel):
     platform: Literal["facebook", "threads", "x"]
     topic_hint: str = Field(default="", max_length=200)
