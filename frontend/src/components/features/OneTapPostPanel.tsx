@@ -38,7 +38,10 @@ async function blobFromDataUrl(dataUrl: string): Promise<Blob | null> {
   }
 }
 
-/** Desktop Chrome/Edge expose navigator.share → Windows share sheet (no download). Phone keeps Web Share. */
+/**
+ * Phone + most tablets → Web Share (coarse pointer and/or width ≤768).
+ * Desktop mouse → download txt+jpg (Windows share sheet is not a download).
+ */
 function preferNativeWebShare(): boolean {
   if (typeof window === 'undefined' || typeof navigator === 'undefined') return false
   if (typeof navigator.share !== 'function') return false
@@ -60,6 +63,10 @@ function triggerBlobDownload(blob: Blob, filename: string) {
   a.click()
   a.remove()
   URL.revokeObjectURL(href)
+}
+
+function downloadTextFile(text: string, filename: string) {
+  triggerBlobDownload(new Blob([text], { type: 'text/plain;charset=utf-8' }), filename)
 }
 
 export default function OneTapPostPanel({
@@ -207,7 +214,10 @@ export default function OneTapPostPanel({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- restore once per topic when auth
   }, [isAuthenticated, topicId])
 
-  const chargeAfterSuccess = async (token: string) => {
+  const chargeAfterSuccess = async (
+    token: string,
+    opts?: { skipAlreadyPaidToast?: boolean },
+  ) => {
     try {
       const res = await alterEgoApi.chargeOneTapPack(token)
       await queryClient.invalidateQueries({ queryKey: ['creditsBalance'] })
@@ -215,7 +225,7 @@ export default function OneTapPostPanel({
       onChargedChange?.(true)
       if (!res.already_charged) {
         showSuccess(t('topics.oneTapShareSuccess', { n: costN }))
-      } else {
+      } else if (!opts?.skipAlreadyPaidToast) {
         showSuccess(t('topics.oneTapAlreadyPaid'))
       }
       trackOneTapEvent('one_tap_share_success', { surface, topic_id: topicId })
@@ -320,9 +330,11 @@ export default function OneTapPostPanel({
           }
 
           if (!shared) {
-            const ok = await copyToClipboard(postText)
-            if (!ok) {
-              showError(t('postKit.copyFailed'))
+            // Desktop primary: Downloads must show post file + image (no Ctrl+V teaching).
+            try {
+              downloadTextFile(postText, 'one-tap-post.txt')
+            } catch {
+              showError(t('common.failed'))
               return
             }
             try {
@@ -338,11 +350,12 @@ export default function OneTapPostPanel({
                 })
               }
             } catch {
-              // text copy already succeeded
+              // post txt already saved
             }
-            if (!charged) {
-              showSuccess(t('topics.oneTapFallbackCopied', { n: costN }))
-            }
+            void copyToClipboard(postText)
+            showSuccess(t('topics.oneTapDownloadedFiles'))
+            await chargeAfterSuccess(packToken, { skipAlreadyPaidToast: true })
+            return
           }
 
           await chargeAfterSuccess(packToken)
@@ -354,13 +367,14 @@ export default function OneTapPostPanel({
   }
 
   const runApplyAdvanced = () => {
-    if (!packToken || !packBody.trim()) {
+    if (!packToken || !postText.trim()) {
       showError(t('composer.emptyPack'))
       return
     }
+    // Editable preview is the assembled post; seed advanced body with current text.
     onApplyToAdvanced?.({
       titles: packTitles.length ? packTitles : [heading || topicTitle],
-      body: packBody,
+      body: postText,
       hashtag_sets: packTags.length ? [packTags] : [[]],
       pack_token: packToken,
       charged,
@@ -368,6 +382,10 @@ export default function OneTapPostPanel({
     showSuccess(
       charged ? t('topics.oneTapAppliedAdvancedPaid') : t('topics.oneTapAppliedAdvanced'),
     )
+  }
+
+  const onEditPostText = (value: string) => {
+    setPostText(value)
   }
 
   const ready = Boolean(packToken && postText.trim())
@@ -394,13 +412,22 @@ export default function OneTapPostPanel({
           <p className="text-[10px] uppercase tracking-wide text-gray-400 mb-1">
             {ready ? t('topics.oneTapContentPreview') : t('topics.oneTapPreview')}
           </p>
-          <p className="text-xs sm:text-sm text-gray-700 dark:text-gray-200 line-clamp-4 whitespace-pre-wrap flex-1 leading-relaxed">
-            {restoring
-              ? t('common.loading')
-              : ready
-                ? postText
-                : teaser || t('topics.noContent')}
-          </p>
+          {restoring ? (
+            <p className="text-xs sm:text-sm text-gray-500 leading-relaxed">{t('common.loading')}</p>
+          ) : ready ? (
+            <textarea
+              value={postText}
+              onChange={(e) => onEditPostText(e.target.value)}
+              rows={5}
+              data-testid={`input-${testIdPrefix}-one-tap-edit`}
+              className="w-full flex-1 min-h-[88px] text-xs sm:text-sm text-gray-700 dark:text-gray-200 bg-transparent border-0 p-0 resize-y focus:ring-0 focus:outline-none leading-relaxed whitespace-pre-wrap"
+              aria-label={t('topics.oneTapContentPreview')}
+            />
+          ) : (
+            <p className="text-xs sm:text-sm text-gray-700 dark:text-gray-200 line-clamp-4 whitespace-pre-wrap flex-1 leading-relaxed">
+              {teaser || t('topics.noContent')}
+            </p>
+          )}
         </div>
         {photoUrl ? (
           <div className="rounded-xl overflow-hidden border border-gray-100 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 aspect-square max-h-[140px] w-full justify-self-end min-[360px]:max-w-[140px]">

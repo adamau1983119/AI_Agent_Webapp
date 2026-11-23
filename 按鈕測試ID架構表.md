@@ -441,7 +441,8 @@ data-testid="{類型}-{位置}-{功能}"
 | `section-topic-detail-one-tap-preview` | 區塊 | 未按／按後矮預覽（摘要＋圖） |
 | `text-topic-detail-one-tap-hint` | 文字 | 市場化說明（台／日 LINE；英郵件／Messages） |
 | `btn-topic-detail-one-tap-post` | 按鈕 | 一鍵產出約 500 字＋標題圖（生成不扣點；BTN-ACT-TOPIC-018） |
-| `btn-topic-detail-one-tap-share` | 按鈕 | 下載／分享；成功後扣 20（`ae_one_tap_pack`；BTN-ACT-TOPIC-019）；已付顯示「已付」 |
+| `btn-topic-detail-one-tap-share` | 按鈕 | 下載／分享；成功後扣 20（`ae_one_tap_pack`；BTN-ACT-TOPIC-019）；已付顯示「已付」；桌面下載 txt+jpg、手機系統分享 |
+| `input-topic-detail-one-tap-edit` | 輸入 | 一鍵產出後可編輯貼文預覽（再下載／套用進階用最新文） |
 | `btn-topic-detail-one-tap-apply-advanced` | 按鈕 | 套用到進階編輯（同包不另扣；BTN-ACT-TOPIC-020） |
 | `text-topic-detail-one-tap-advanced` | 文字 | 進階組裝區標籤（與一鍵路徑分開扣點） |
 | `btn-topic-detail-view-translated` | 按鈕 | 源文章新聞報道：切換查看翻譯內容 |
