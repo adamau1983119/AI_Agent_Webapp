@@ -38,6 +38,30 @@ async function blobFromDataUrl(dataUrl: string): Promise<Blob | null> {
   }
 }
 
+/** Desktop Chrome/Edge expose navigator.share → Windows share sheet (no download). Phone keeps Web Share. */
+function preferNativeWebShare(): boolean {
+  if (typeof window === 'undefined' || typeof navigator === 'undefined') return false
+  if (typeof navigator.share !== 'function') return false
+  try {
+    const coarse = window.matchMedia('(pointer: coarse)').matches
+    const narrow = window.matchMedia('(max-width: 768px)').matches
+    return coarse || narrow
+  } catch {
+    return false
+  }
+}
+
+function triggerBlobDownload(blob: Blob, filename: string) {
+  const href = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = href
+  a.download = filename
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  URL.revokeObjectURL(href)
+}
+
 export default function OneTapPostPanel({
   topicId,
   topicTitle,
@@ -273,7 +297,8 @@ export default function OneTapPostPanel({
             }
           }
 
-          if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+          // Phone only: system share. Desktop skips Web Share (Windows sheet ≠ download).
+          if (preferNativeWebShare()) {
             try {
               const data: ShareData = { text: postText, title: heading || topicTitle }
               if (files.length > 0 && navigator.canShare?.({ files })) {
@@ -300,17 +325,20 @@ export default function OneTapPostPanel({
               showError(t('postKit.copyFailed'))
               return
             }
-            if (photoUrl && heading) {
-              try {
+            try {
+              if (titlePreview) {
+                const blob = await blobFromDataUrl(titlePreview)
+                if (blob) triggerBlobDownload(blob, 'title-image.jpg')
+              } else if (photoUrl && heading) {
                 await renderAndDownloadTitleImage({
                   photoUrl,
                   heading,
                   style: 'a',
                   filename: 'title-image.jpg',
                 })
-              } catch {
-                // text copy already succeeded
               }
+            } catch {
+              // text copy already succeeded
             }
             if (!charged) {
               showSuccess(t('topics.oneTapFallbackCopied', { n: costN }))
@@ -348,8 +376,9 @@ export default function OneTapPostPanel({
     <div
       ref={rootRef}
       data-testid={sid('one-tap')}
-      className="w-full max-w-[560px] mx-auto rounded-2xl bg-white dark:bg-gray-800 shadow-md border border-gray-100 dark:border-gray-700 p-3 sm:p-4 space-y-3"
+      className="w-full max-w-xl mr-auto rounded-2xl bg-white dark:bg-gray-800 shadow-md border border-gray-100 dark:border-gray-700 p-3 sm:p-4 space-y-3"
     >
+      {/* 手機版已驗證好看：紫底提示保留；桌面僅拉滿主欄寬度 */}
       <p
         className="text-sm sm:text-base font-semibold leading-snug text-purple-900 dark:text-purple-100 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-950/50 dark:to-indigo-950/40 border border-purple-200/80 dark:border-purple-700/60 rounded-xl px-3 py-2.5 shadow-sm"
         data-testid={`text-${testIdPrefix}-one-tap-hint`}
@@ -365,7 +394,7 @@ export default function OneTapPostPanel({
           <p className="text-[10px] uppercase tracking-wide text-gray-400 mb-1">
             {ready ? t('topics.oneTapContentPreview') : t('topics.oneTapPreview')}
           </p>
-          <p className="text-xs text-gray-700 dark:text-gray-200 line-clamp-4 whitespace-pre-wrap flex-1">
+          <p className="text-xs sm:text-sm text-gray-700 dark:text-gray-200 line-clamp-4 whitespace-pre-wrap flex-1 leading-relaxed">
             {restoring
               ? t('common.loading')
               : ready
