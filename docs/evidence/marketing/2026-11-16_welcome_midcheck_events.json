@@ -1,0 +1,25 @@
+{
+  "pre": {
+    "all_kept": {
+      "page_view": 94,
+      "session_start": 28,
+      "generate_post": 10,
+      "sign_up": 1
+    },
+    "period": [
+      "2026-11-02",
+      "2026-11-11"
+    ]
+  },
+  "post": {
+    "all_kept": {
+      "page_view": 22,
+      "session_start": 14,
+      "welcome_cta_click": 1
+    },
+    "period": [
+      "2026-11-12",
+      "2026-11-15"
+    ]
+  }
+}

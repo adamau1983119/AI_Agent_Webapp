@@ -436,7 +436,14 @@ data-testid="{類型}-{位置}-{功能}"
 | Test ID | 元素 | 功能 |
 |---------|------|------|
 | `btn-topic-detail-back` | 按鈕 | 返回頭條（保留分類 Tab；無歷史則 `/dashboard`） |
-| `btn-topic-detail-jump-post` | 按鈕 | 快捷滾動至轉貼文章/發文套件 |
+| `btn-topic-detail-jump-post` | 按鈕 | **隱藏**（保留 testid）；改由一鍵出 po |
+| `section-topic-detail-one-tap` | 區塊 | 一鍵出 po 緊湊模組（標題下、主題圖上） |
+| `section-topic-detail-one-tap-preview` | 區塊 | 未按／按後矮預覽（摘要＋圖） |
+| `text-topic-detail-one-tap-hint` | 文字 | 市場化說明（台／日 LINE；英郵件／Messages） |
+| `btn-topic-detail-one-tap-post` | 按鈕 | 一鍵產出約 500 字＋標題圖（生成不扣點；BTN-ACT-TOPIC-018） |
+| `btn-topic-detail-one-tap-share` | 按鈕 | 下載／分享；成功後扣 20（`ae_one_tap_pack`；BTN-ACT-TOPIC-019）；已付顯示「已付」 |
+| `btn-topic-detail-one-tap-apply-advanced` | 按鈕 | 套用到進階編輯（同包不另扣；BTN-ACT-TOPIC-020） |
+| `text-topic-detail-one-tap-advanced` | 文字 | 進階組裝區標籤（與一鍵路徑分開扣點） |
 | `btn-topic-detail-view-translated` | 按鈕 | 源文章新聞報道：切換查看翻譯內容 |
 | `btn-topic-detail-view-original` | 按鈕 | 源文章新聞報道：切換查看英文原文 |
 | `link-topic-detail-original-article` | 連結 | 查看原始媒體出處外部文章 |
@@ -453,7 +460,7 @@ data-testid="{類型}-{位置}-{功能}"
 | `btn-topic-card-show-collected` | 按鈕 | 主題卡：顯示收集時標題 |
 | `btn-topic-detail-translate-display` | 按鈕 | 詳情：譯為目前語言（標題／摘要） |
 | `btn-topic-detail-kol-style` | 按鈕 | 詳情：網紅風格（kol_style Flash 按需） |
-| `btn-topic-detail-show-collected` | 按鈕 | 詳情：顯示收集時標題 |
+| `btn-topic-detail-show-collected` | 按鈕 | 詳情：顯示收集時標題（**隱藏**；保留 testid；一鍵主路不顯示） |
 | `btn-topic-detail-translate-article` | 按鈕 | 詳情：按需翻譯源文章報道（GET 仍 overlay） |
 | `topic-detail-fact-summary-badge` | 標籤 | 詳情：顯示事實摘要徽章 |
 | `topic-detail-source-extract-fallback` | 標籤 | 詳情：源文抽取失敗改顯示摘要提示 |

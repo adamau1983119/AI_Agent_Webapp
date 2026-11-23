@@ -57,6 +57,8 @@ interface TopicCardProps {
   /** 列表預設可藏「已譯（快取）」；不改 fromCache 計算與翻譯管線 */
   hideCacheBadge?: boolean
   highlight?: boolean
+  /** e.g. My Channel → TopicDetail one-tap surface */
+  linkState?: Record<string, unknown>
 }
 
 const gradientClasses = {
@@ -71,7 +73,12 @@ export default function TopicCard({
   enableAutoTranslate = false,
   hideCacheBadge = false,
   highlight = false,
+  linkState,
 }: TopicCardProps) {
+  const topicLink = {
+    pathname: `/topics/${topic.id}`,
+    ...(linkState ? { state: linkState } : {}),
+  }
   const { t, language } = useTranslation()
   const [override, setOverride] = useState<TopicDisplayOverride | null>(null)
   const [standardLoading, setStandardLoading] = useState(false)
@@ -246,7 +253,7 @@ export default function TopicCard({
       data-testid={highlight ? 'card-tour-public-target' : undefined}
     >
       <div className="flex items-start gap-3 mb-2 md:mb-3">
-        <Link to={`/topics/${topic.id}`} className="flex-shrink-0">
+        <Link to={topicLink} className="flex-shrink-0">
           {previewImage ? (
             <div className="relative w-12 h-12 md:w-16 md:h-16 rounded overflow-hidden bg-gray-100">
               <img
@@ -265,7 +272,7 @@ export default function TopicCard({
         </Link>
 
         <div className="flex-1 min-w-0">
-          <Link to={`/topics/${topic.id}`} className="block">
+          <Link to={topicLink} className="block">
             {standardLoading || showTextPending ? (
               <TopicTextSkeleton />
             ) : (
@@ -295,7 +302,7 @@ export default function TopicCard({
         </div>
       </div>
 
-      <Link to={`/topics/${topic.id}`} className="flex-1 flex flex-col justify-between min-h-0">
+      <Link to={topicLink} className="flex-1 flex flex-col justify-between min-h-0">
         <div className="flex-1 min-h-0">
           <div>
             {standardLoading || showTextPending ? (

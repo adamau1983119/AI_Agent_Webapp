@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "period_type": "week",
+  "period_start": "2026-11-09",
+  "period_end": "2026-11-15",
+  "env": "production",
+  "provisional": false,
+  "core": {
+    "external_new_users": 0,
+    "external_total_users": 8,
+    "valid_members": 0,
+    "active_users_30d": 5,
+    "successful_generations": 0,
+    "email_subscribers_total": 6,
+    "email_subscribers_new": 0,
+    "ga4_sign_up": 1,
+    "ga4_generate_post": 5,
+    "ga4_purchase": 0,
+    "ads_spend_hkd": 26.63,
+    "ads_clicks": 18,
+    "ads_impr": 808,
+    "revenue_usd": null,
+    "traffic_light": "yellow",
+    "decisions": [
+      "hold_budget_small",
+      "investigate_signup_to_first_compose",
+      "watch_compose_after_pr128",
+      "watch_welcome_dashboard_landing"
+    ],
+    "founder_noise": "medium",
+    "stop_review_flags": {
+      "review_30d": false,
+      "reassess_90d": false,
+      "note": "trailing30d_ads_hkd=93.38; trailing90d_ads_hkd=93.38; new=0"
+    }
+  },
+  "focus": {
+    "theme": "hygiene",
+    "metrics": {},
+    "notes": "yellow carry; window 2026-11-09~15 HKT; Mongo external_new=0 compose=0; GA4 sign_up=1 generate_post=5; Ads 26.63/18/808; landings /dashboard=9 /language=9; Welcome midcheck Day4 included; upsert PENDING CEO light confirm; 11-02~08 not in this run"
+  },
+  "segments": {},
+  "source_notes": "Mongo read-only; GEN=ae_compose|ae_compose_part; email=verified & not weekly_mail_opt_out; no PII; eventCount by eventName; ≠ external customers; HKT week dates as GA4 date_range; Ads API not in this script; Ads API metrics.cost_micros/1e6 as HKD; HKT week as segments.date",
+  "upsert_status": "pending_ceo_light_confirm",
+  "updated_at": "2026-11-16T11:03:13"
+}

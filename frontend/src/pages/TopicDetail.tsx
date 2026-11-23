@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { topicsAPI, contentsAPI, imagesAPI, API_BASE_URL } from '@/api/client'
 import { showSuccess, showError } from '@/utils/toast'
@@ -13,6 +13,8 @@ import ContentGenerationPanel from '@/components/features/ContentGenerationPanel
 import PostKitPanel from '@/components/features/PostKitPanel'
 import PostComposerPanel from '@/components/features/PostComposerPanel'
 import TitleImageEditPanel from '@/components/features/TitleImageEditPanel'
+import OneTapPostPanel from '@/components/features/OneTapPostPanel'
+import type { OneTapApplyPack, OneTapSurface } from '@/api/alterEgo'
 import { FEATURED_PHOTO_CAP } from '@/lib/featuredPhotos'
 import type { GenerationSettings } from '@/components/features/ContentGenerationPanel'
 import { usePageTitle } from '@/hooks/usePageTitle'
@@ -33,6 +35,7 @@ import { copyToClipboard } from '@/utils/copyToClipboard'
 import { Copy, Sparkles, Image as ImageIcon, Search, ExternalLink, ArrowDownCircle, ArrowLeft } from 'lucide-react'
 import { markTopicRead } from '@/lib/topicReadState'
 import { logTopicBrowse } from '@/lib/topicBrowseLog'
+import { trackTopicOpen } from '@/lib/analytics'
 import { MobileTopicList } from '@/components/topics/MobileTopicList'
 import { todayHktDateString } from '@/lib/topicDayHkt'
 import GuestCreditOfferCard from '@/components/welcome/GuestCreditOfferCard'
@@ -70,18 +73,41 @@ function articleErrorText(
 export default function TopicDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const location = useLocation()
   const queryClient = useQueryClient()
   const { t, language } = useTranslation()
   const { isAuthenticated, user } = useAuthStore()
+  const oneTapSurface: OneTapSurface =
+    (location.state as { oneTapSurface?: string } | null)?.oneTapSurface === 'my_channel'
+      ? 'my_channel'
+      : 'public'
   const [showImageSearch, setShowImageSearch] = useState(false)
   const [showLoginPrompt, setShowLoginPrompt] = useState(false)
   const [loginCost, setLoginCost] = useState<number | null>(null)
   const [composeTitles, setComposeTitles] = useState<string[]>([])
+  const [oneTapSeed, setOneTapSeed] = useState<{
+    titles: string[]
+    body: string
+    hashtag_sets: string[][]
+  } | null>(null)
+  const [oneTapSeedKey, setOneTapSeedKey] = useState(0)
+  const [oneTapTitleImageWaived, setOneTapTitleImageWaived] = useState(false)
   const [tour, setTour] = useState<PublicTourState>(() => readPublicTour())
   const [displayOverride, setDisplayOverride] = useState<TopicDisplayOverride | null>(null)
   const [showCollectionTitle, setShowCollectionTitle] = useState(false)
   const [sourceViewMode, setSourceViewMode] = useState<'translated' | 'original'>('translated')
   const postKitRef = useRef<HTMLDivElement>(null)
+
+  const handleApplyOneTapAdvanced = (pack: OneTapApplyPack) => {
+    setOneTapSeed({
+      titles: pack.titles,
+      body: pack.body,
+      hashtag_sets: pack.hashtag_sets,
+    })
+    setOneTapSeedKey((k) => k + 1)
+    if (pack.charged) setOneTapTitleImageWaived(true)
+    postKitRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
 
   const requireAuth = (action: () => void, cost?: number) => {
     if (!isAuthenticated) {
@@ -276,15 +302,23 @@ export default function TopicDetail() {
     if (id) markTopicRead(id)
   }, [id])
 
+  // Open once per topic id (not on language refetch — that inflated Mongo topic_open).
   useEffect(() => {
-    if (!topic || !id) return
+    if (!topic || !id || topic.id !== id) return
     const openedAt = Date.now()
     logTopicBrowse('topic_open', id, user?.id)
+    trackTopicOpen({
+      topic_id: id,
+      topic_category: topic.category,
+      language: language || undefined,
+    })
     return () => {
       const duration = Math.floor((Date.now() - openedAt) / 1000)
       logTopicBrowse('topic_dwell', id, user?.id, duration)
     }
-  }, [topic, id, user?.id])
+    // language / topic object identity omitted on purpose
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- Tier A: one open per topic id
+  }, [id, topic?.id, user?.id])
 
   const generateContentMutation = useMutation({
     mutationFn: (settings?: GenerationSettings) => {
@@ -505,19 +539,20 @@ export default function TopicDetail() {
             )}
           </div>
 
-          {/* 右側操作按鈕群：轉貼文章 + 點讚/倒讚 */}
+          {/* 右側：點讚／倒讚（轉貼文章已隱藏；一鍵出 po 在標題下） */}
           <div className="flex flex-wrap items-center gap-3 shrink-0">
             <button
               type="button"
               onClick={handleJumpToPostKit}
               data-testid="btn-topic-detail-jump-post"
-              className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-primary hover:bg-primary-dark rounded-xl shadow-sm transition-all duration-200 touch-manipulation min-h-[44px]"
+              className="hidden"
+              aria-hidden="true"
+              tabIndex={-1}
             >
               <ArrowDownCircle className="w-4 h-4" />
               <span>{t('topics.jumpToPost')}</span>
             </button>
 
-            {/* 喜歡 / 不喜歡互動按鈕 */}
             <div className="bg-white dark:bg-gray-800 p-1 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
               <InteractionButtons
                 topicId={id!}
@@ -529,53 +564,68 @@ export default function TopicDetail() {
           </div>
         </div>
 
-        {/* 語系切換輔助條 */}
-        {(needsTranslateToCurrentLanguage(topic, language) || displayCopy?.fromCache) && (
+        {/* 語系切換輔助條（收集時標題／已譯快取標已隱藏） */}
+        {needsTranslateToCurrentLanguage(topic, language) && !showCollectionTitle && (
           <div className="flex flex-wrap items-center gap-2 pt-1">
-            {needsTranslateToCurrentLanguage(topic, language) && !showCollectionTitle && (
-              <>
-                <TopicTranslateDisplayButton
-                  topic={topic}
-                  translationType="standard_translation"
-                  testId="btn-topic-detail-translate-display"
-                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700 disabled:opacity-50 min-h-[38px] touch-manipulation"
-                  onTranslated={(next) => {
-                    setDisplayOverride(next)
-                    setShowCollectionTitle(false)
-                  }}
-                />
-                <TopicTranslateDisplayButton
-                  topic={topic}
-                  translationType="kol_style"
-                  testId="btn-topic-detail-kol-style"
-                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium text-amber-900 dark:text-amber-100 bg-amber-100 dark:bg-amber-900/30 border border-amber-300 dark:border-amber-700 rounded-lg hover:bg-amber-200 dark:hover:bg-amber-900/50 disabled:opacity-50 min-h-[38px] touch-manipulation"
-                  onTranslated={(next) => {
-                    setDisplayOverride(next)
-                    setShowCollectionTitle(false)
-                  }}
-                />
-              </>
-            )}
-            {(displayOverride || showCollectionTitle || displayCopy?.fromCache) && (
-              <button
-                type="button"
-                onClick={() => setShowCollectionTitle((v) => !v)}
-                data-testid="btn-topic-detail-show-collected"
-                className="px-3.5 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 min-h-[38px] touch-manipulation"
-              >
-                {showCollectionTitle
-                  ? t('topics.showTranslatedTitle')
-                  : t('topics.showCollectionTitle')}
-              </button>
-            )}
-            {displayCopy?.fromCache && !showCollectionTitle && (
-              <span className="text-xs text-green-700 dark:text-green-400 px-2 py-1 bg-green-50 dark:bg-green-900/20 rounded font-sans">
-                {t('topics.translatedCached')}
-              </span>
-            )}
+            <TopicTranslateDisplayButton
+              topic={topic}
+              translationType="standard_translation"
+              testId="btn-topic-detail-translate-display"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700 disabled:opacity-50 min-h-[38px] touch-manipulation"
+              onTranslated={(next) => {
+                setDisplayOverride(next)
+                setShowCollectionTitle(false)
+              }}
+            />
+            <TopicTranslateDisplayButton
+              topic={topic}
+              translationType="kol_style"
+              testId="btn-topic-detail-kol-style"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium text-amber-900 dark:text-amber-100 bg-amber-100 dark:bg-amber-900/30 border border-amber-300 dark:border-amber-700 rounded-lg hover:bg-amber-200 dark:hover:bg-amber-900/50 disabled:opacity-50 min-h-[38px] touch-manipulation"
+              onTranslated={(next) => {
+                setDisplayOverride(next)
+                setShowCollectionTitle(false)
+              }}
+            />
           </div>
         )}
+        <button
+          type="button"
+          onClick={() => setShowCollectionTitle((v) => !v)}
+          data-testid="btn-topic-detail-show-collected"
+          className="hidden"
+          aria-hidden="true"
+          tabIndex={-1}
+        >
+          {showCollectionTitle
+            ? t('topics.showTranslatedTitle')
+            : t('topics.showCollectionTitle')}
+        </button>
       </header>
+
+      {/* 一鍵出 po：標題上方已見；模組居中；主題圖在下方 */}
+      <OneTapPostPanel
+        topicId={topic.id}
+        topicTitle={
+          displayCopy?.localePending ? topic.title : displayCopy?.title || topic.title
+        }
+        contextSummary={
+          factSummaryText ||
+          topic.summaryFlash ||
+          topic.summary_flash ||
+          topic.description ||
+          ''
+        }
+        language={language}
+        photoUrl={heroImageUrl || ''}
+        domain={topic.category}
+        surface={oneTapSurface}
+        requireAuth={requireAuth}
+        onApplyToAdvanced={handleApplyOneTapAdvanced}
+        onChargedChange={(paid) => {
+          if (paid) setOneTapTitleImageWaived(true)
+        }}
+      />
 
       {/* 2. 上半部：主視覺大圖 ＋ 源文章翻譯內容摘要 */}
       <section className="space-y-4">
@@ -801,8 +851,14 @@ export default function TopicDetail() {
           )}
         </div>
 
-        {/* 右欄 (7 欄)：社群發文組裝器（舊生成面板／短文卡改為不掛載） */}
+        {/* 右欄 (7 欄)：進階組裝（與一鍵出 po 分開扣點；少搶戲） */}
         <div ref={postKitRef} className="col-span-12 lg:col-span-7 space-y-4">
+          <p
+            className="text-sm font-medium text-gray-500 dark:text-gray-400 px-1"
+            data-testid="text-topic-detail-one-tap-advanced"
+          >
+            {t('topics.oneTapAdvanced')}
+          </p>
           <PostComposerPanel
             topicId={topic.id}
             topicTitle={
@@ -815,6 +871,8 @@ export default function TopicDetail() {
             requireAuth={requireAuth}
             domain={topic.category}
             onTitlesChange={setComposeTitles}
+            seedDraft={oneTapSeed}
+            seedKey={oneTapSeedKey}
           />
           <TitleImageEditPanel
             photos={images.slice(0, FEATURED_PHOTO_CAP).map((img) => ({
@@ -840,6 +898,9 @@ export default function TopicDetail() {
                 setLoginCost(10)
                 setShowLoginPrompt(true)
                 throw new Error('auth')
+              }
+              if (oneTapTitleImageWaived) {
+                return
               }
               await imagesAPI.chargeTitleImageDownload(topic.id)
               await queryClient.invalidateQueries({ queryKey: ['creditsBalance'] })

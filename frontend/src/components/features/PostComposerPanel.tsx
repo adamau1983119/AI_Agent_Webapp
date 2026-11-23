@@ -56,6 +56,8 @@ export default function PostComposerPanel({
   mode = 'live',
   domain,
   onTitlesChange,
+  seedDraft,
+  seedKey,
 }: {
   topicId: string
   topicTitle: string
@@ -65,6 +67,10 @@ export default function PostComposerPanel({
   mode?: 'live' | 'demo'
   domain?: string
   onTitlesChange?: (titles: string[]) => void
+  /** Apply one-tap pack into advanced editor (free; no compose debit). */
+  seedDraft?: Draft | null
+  /** Bump to re-apply same content. */
+  seedKey?: number
 }) {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
@@ -109,6 +115,20 @@ export default function PostComposerPanel({
       setTagIdx(0)
     }
   }
+
+  useEffect(() => {
+    if (!seedDraft) return
+    if (seedDraft.titles.some((x) => x.trim())) {
+      setTitles(seedDraft.titles)
+      setTitleIdx(0)
+    }
+    if (seedDraft.body.trim()) setBody(seedDraft.body)
+    if (seedDraft.hashtag_sets.some((s) => s.length > 0)) {
+      setHashtagSets(seedDraft.hashtag_sets)
+      setTagIdx(0)
+    }
+    setBodyOk(true)
+  }, [seedKey, seedDraft])
 
   const loadDemo = () => {
     const pack = getComposeDemoPack(language, limit >= 1500 ? 1500 : 500)
