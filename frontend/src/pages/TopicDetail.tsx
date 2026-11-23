@@ -603,7 +603,7 @@ export default function TopicDetail() {
         </button>
       </header>
 
-      {/* 一鍵出 po：標題上方已見；模組居中；主題圖在下方 */}
+      {/* 一鍵出 po：對齊手機版（標題下）；桌面拉滿主欄寬度 */}
       <OneTapPostPanel
         topicId={topic.id}
         topicTitle={
