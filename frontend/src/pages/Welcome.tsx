@@ -150,7 +150,7 @@ export default function Welcome() {
           </p>
         </section>
 
-        <section className="relative z-[1] w-full max-w-[1120px] mx-auto px-4 pb-8">
+        <section className="relative z-[1] w-full max-w-md mx-auto px-4 pb-8">
           <TodayMobileTopics testId="list-welcome-topics" />
         </section>
 
