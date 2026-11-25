@@ -29,6 +29,40 @@ function assemble(title: string, body: string, tags: string[]): string {
   return [title, body, tags.join(' ')].filter((p) => p.trim()).join('\n\n')
 }
 
+/** Undo assemble() so PostComposer can re-join title/body/tags without duplicating. */
+function splitAssembledPost(
+  text: string,
+  fallbackTitle: string,
+  fallbackTags: string[],
+): { title: string; body: string; tags: string[] } {
+  const parts = text
+    .split(/\n\n+/)
+    .map((p) => p.trim())
+    .filter(Boolean)
+  if (parts.length === 0) {
+    return { title: fallbackTitle, body: '', tags: fallbackTags }
+  }
+
+  let title = parts[0]
+  let rest = parts.slice(1)
+  let tags = fallbackTags
+
+  if (rest.length > 0) {
+    const last = rest[rest.length - 1]
+    const tokens = last.split(/\s+/).filter(Boolean)
+    if (tokens.length > 0 && tokens.every((t) => t.startsWith('#'))) {
+      tags = tokens
+      rest = rest.slice(0, -1)
+    }
+  }
+
+  return {
+    title: title || fallbackTitle,
+    body: rest.join('\n\n'),
+    tags,
+  }
+}
+
 async function blobFromDataUrl(dataUrl: string): Promise<Blob | null> {
   try {
     const res = await fetch(dataUrl)
@@ -67,6 +101,12 @@ function triggerBlobDownload(blob: Blob, filename: string) {
 
 function downloadTextFile(text: string, filename: string) {
   triggerBlobDownload(new Blob([text], { type: 'text/plain;charset=utf-8' }), filename)
+}
+
+function waitMs(ms: number) {
+  return new Promise<void>((resolve) => {
+    window.setTimeout(resolve, ms)
+  })
 }
 
 export default function OneTapPostPanel({
@@ -330,30 +370,42 @@ export default function OneTapPostPanel({
           }
 
           if (!shared) {
-            // Desktop primary: Downloads must show post file + image (no Ctrl+V teaching).
-            try {
-              downloadTextFile(postText, 'one-tap-post.txt')
-            } catch {
-              showError(t('common.failed'))
-              return
-            }
+            // Desktop: image first, then txt after a short gap (Chrome/Edge often block 2nd immediate download).
+            let imageOk = false
             try {
               if (titlePreview) {
                 const blob = await blobFromDataUrl(titlePreview)
-                if (blob) triggerBlobDownload(blob, 'title-image.jpg')
-              } else if (photoUrl && heading) {
+                if (blob) {
+                  triggerBlobDownload(blob, 'title-image.jpg')
+                  imageOk = true
+                }
+              }
+              if (!imageOk && photoUrl && heading) {
                 await renderAndDownloadTitleImage({
                   photoUrl,
                   heading,
                   style: 'a',
                   filename: 'title-image.jpg',
                 })
+                imageOk = true
               }
             } catch {
-              // post txt already saved
+              imageOk = false
+            }
+            await waitMs(450)
+            try {
+              downloadTextFile(postText, 'one-tap-post.txt')
+            } catch {
+              showError(t('common.failed'))
+              return
+            }
+            if (!imageOk) {
+              showError(t('topics.oneTapImageDownloadFailed'))
             }
             void copyToClipboard(postText)
-            showSuccess(t('topics.oneTapDownloadedFiles'))
+            showSuccess(
+              imageOk ? t('topics.oneTapDownloadedFiles') : t('topics.oneTapDownloadedTextOnly'),
+            )
             await chargeAfterSuccess(packToken, { skipAlreadyPaidToast: true })
             return
           }
@@ -371,11 +423,20 @@ export default function OneTapPostPanel({
       showError(t('composer.emptyPack'))
       return
     }
-    // Editable preview is the assembled post; seed advanced body with current text.
+    // Preview is assemble(title, body, tags); PostComposer reassembles — pass parts, not whole postText.
+    const parsed = splitAssembledPost(
+      postText,
+      heading || topicTitle,
+      packTags.length ? packTags : [],
+    )
+    const nextTitles =
+      packTitles.length > 0
+        ? [parsed.title, ...packTitles.slice(1)]
+        : [parsed.title, '', '']
     onApplyToAdvanced?.({
-      titles: packTitles.length ? packTitles : [heading || topicTitle],
-      body: postText,
-      hashtag_sets: packTags.length ? [packTags] : [[]],
+      titles: nextTitles,
+      body: parsed.body,
+      hashtag_sets: [parsed.tags],
       pack_token: packToken,
       charged,
     })
