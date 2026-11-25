@@ -41,7 +41,11 @@ export function MobileTopicList({
           className="block overflow-hidden rounded-2xl border border-black/5 bg-white"
         >
           {previewUrl(lead) ? (
-            <img src={previewUrl(lead)} alt="" className="h-48 w-full object-cover" />
+            <img
+              src={previewUrl(lead)}
+              alt=""
+              className="h-48 w-full object-cover object-top sm:h-56 md:h-64"
+            />
           ) : (
             <div className="h-24 bg-[#ebe8e3]" />
           )}
