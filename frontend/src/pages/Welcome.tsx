@@ -150,13 +150,13 @@ export default function Welcome() {
           </p>
         </section>
 
-        <section className="relative z-[1] w-full max-w-md mx-auto px-4 pb-8">
+        <section className="relative z-[1] w-full max-w-md md:max-w-4xl mx-auto px-4 pb-8">
           <TodayMobileTopics testId="list-welcome-topics" />
         </section>
 
         <section
           data-testid="section-welcome-credit-offer"
-          className="relative z-[1] w-full max-w-md mx-auto px-4 pb-10"
+          className="relative z-[1] w-full max-w-md md:max-w-4xl mx-auto px-4 pb-10"
         >
           <GuestCreditOfferCard
             registerTestId="btn-welcome-offer-register"
