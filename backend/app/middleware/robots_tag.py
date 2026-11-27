@@ -1,15 +1,15 @@
 """
 API 子域搜尋引擎擋索引（GSC：api.ai-alterego.com 不應進索引）。
 
-- 所有回應加 X-Robots-Tag: noindex, nofollow
-- GET/HEAD /robots.txt → Disallow: /（最外層短路，免 API Key／限流擋 Googlebot）
+- 所有回應加 X-Robots-Tag: noindex, nofollow（真正擋索引）
+- GET/HEAD /robots.txt → Allow: /（允許抓取以便讀到 noindex；避免 GSC「遭到 robots.txt 封鎖」）
 """
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import PlainTextResponse, Response
 from typing import Callable
 
-ROBOTS_BODY = "User-agent: *\nDisallow: /\n"
+ROBOTS_BODY = "User-agent: *\nAllow: /\n"
 ROBOTS_TAG = "noindex, nofollow"
 
 
