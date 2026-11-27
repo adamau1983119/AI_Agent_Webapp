@@ -30,11 +30,13 @@ class TestRobotsTagMiddleware(unittest.TestCase):
     def setUp(self) -> None:
         self.client = TestClient(_app())
 
-    def test_robots_txt_disallow(self) -> None:
+    def test_robots_txt_allow(self) -> None:
         r = self.client.get("/robots.txt")
         self.assertEqual(r.status_code, 200)
         self.assertIn("text/plain", r.headers.get("content-type", ""))
         self.assertEqual(r.text, ROBOTS_BODY)
+        self.assertIn("Allow: /", r.text)
+        self.assertNotIn("Disallow:", r.text)
         self.assertEqual(r.headers.get("x-robots-tag"), ROBOTS_TAG)
 
     def test_json_routes_get_header(self) -> None:
